@@ -25,9 +25,10 @@ void init_task() {
 	cursek(36, -1);
 	printk("done\n");
 
-	printk("Spawning builtin drivers");
+	printk("Loading libsys/drivers");
+	init_kload();
 	cursek(36, -1);
-	printk("fail\n");
+	printk("done\n");
 
 	printk("Starting multitasking");
 	cursek(36, -1);

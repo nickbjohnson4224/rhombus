@@ -1,6 +1,7 @@
 // Copyright 2009 Nick Johnson
 
 #include <lib.h>
+#include <trap.h>
 #include <task.h>
 
 pool_t *tmap;		// Pool allocator for task structures
@@ -27,11 +28,11 @@ u32int rem_task(u16int pid) {
 	return pool_free(tmap, pid);
 }
 
-u32int task_switch(u16int pid) {
-	if (!task[pid >> 7]) return 1;
+image_t *task_switch(u16int pid) {
+	if (!task[pid >> 7]) return NULL;
 	curr_pid = pid;
 	task_t *t = get_task(pid);
 	map_load(&t->map);
-	return 0;
+	return t->image;
 }
 

@@ -41,7 +41,7 @@ void init_mem() {
 	// Identity map necessary kernel memory (i.e. code)
 	i = 0xF8000000;
 	extern u32int end;
-	while (i < (u32int) &end) {
+	while (i < (u32int) 0xF8400000) {
 		page_touch(&kmap, i);
 		page_t new_page = page_fmt(frame_new(), PF_PRES | PF_RW);
 		page_set(&kmap, i, new_page);

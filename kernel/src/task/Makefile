@@ -1,4 +1,4 @@
-SOURCES=table.o signal.o sysmap.o
+SOURCES=table.o signal.o sysmap.o sched.o
 CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc -fomit-frame-pointer
 LDFLAGS=-r
 ASFLAGS=-felf

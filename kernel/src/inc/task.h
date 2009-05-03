@@ -46,7 +46,7 @@ typedef struct {
 task_t *get_task(u16int pid);
 u32int new_task(task_t *src);
 u32int rem_task(u16int pid);
-u32int task_switch(u16int pid);
+image_t *task_switch(u16int pid);
 
 pool_t *tmap;		// Pool allocator for task structures
 task_t *task[128]; 	// 2D array (128*128) of task structures

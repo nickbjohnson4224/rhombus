@@ -6,11 +6,13 @@
 #include <task.h>
 #include <init.h>
 
+__attribute__ ((section(".tdata"))) 
 char *stamp = "\
-Khaos - 0.0 build 008\n\
+Khaos - 0.0 build 009\n\
 Copyright 2009 Nick Johnson\n\n";
 
 typedef void (*init_t)(void);
+__attribute__ ((section(".tdata")))
 init_t init_list[] = {
 init_detect,
 init_mem,
@@ -33,8 +35,8 @@ void init(void *mboot_ptr, u32int mboot_magic) {
 	for (i = 0; init_list[i]; i++) init_list[i]();
 	printk("Khaos booted\n\n");
 
-	register_int(IRQ(1), kb_handler);
-	asm volatile ("sti");
+//	register_int(IRQ(1), kb_handler);
+//	asm volatile ("sti");
 	for(;;);
 
 	panic("loss of purpose");

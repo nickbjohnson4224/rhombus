@@ -3,13 +3,6 @@
 #include <lib.h>
 #include <trap.h>
 
-// Handles IRQ 0, and advances a simple counter used as a clock
-void *pit_handler(image_t *state) {
-	static u32int tick;
-	tick++;
-	return state;
-}
-
 __attribute__ ((section(".ttext"))) 
 void init_pit() {
 	colork(0x9);
@@ -18,7 +11,7 @@ void init_pit() {
 	register_int(IRQ(0), pit_handler);
 
 	// Set the PIT to 256Hz
-	u16int divisor = 1193180 / 256;
+	u16int divisor = 1193180 / 1024;
 	outb(0x43, 0x36);
 	outb(0x40, divisor & 0xFF);
 	outb(0x40, divisor >> 8);
@@ -39,6 +32,7 @@ void init_int() {
 	printk("Re-mapping IRQs");
 
 	// Complex remapping code - even I don't understand it well
+	// Essentially, it moves all IRQs to interrupts 32-47.
 	outb(0x20, 0x11);
 	outb(0xA0, 0x11);
 	outb(0x21, 0x20);
