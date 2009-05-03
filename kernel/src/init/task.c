@@ -26,7 +26,7 @@ void init_task() {
 	printk("done\n");
 
 	printk("Loading libsys/drivers");
-	init_kload();
+
 	cursek(36, -1);
 	printk("done\n");
 

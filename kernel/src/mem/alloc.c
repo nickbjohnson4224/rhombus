@@ -15,7 +15,10 @@ void *kmalloc(u32int size) {
 		if (proto_base & 0xFFF) proto_base = (proto_base & ~0xFFF) + 0x1000;
 		u32int temp = proto_base;
 		proto_base += size;
-		if (proto_base >= 0xF8080000) proto_base = (u32int) &end; // Don't overwrite EBDA!
+		if (proto_base >= 0xF8080000) {
+			proto_base = (u32int) &end; // Don't overwrite EBDA!
+			panic("initial allocator overrun\n");
+		}
 		return (void*) temp;
 	}
 	else {

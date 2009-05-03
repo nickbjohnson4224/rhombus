@@ -75,6 +75,13 @@ void init_detect() {
 	cursek(36, -1);
 	printk("done\n");
 
+	printk("Detecting initrd: ");
+
+	init_kload();
+	
+	cursek(36, -1);
+	printk("done\n");
+
 	colork(0xF);
 
 }

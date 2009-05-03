@@ -6,21 +6,41 @@
 __attribute__ ((section(".tdata")))
 struct tar_header *header[256];
 
+__attribute__ ((section(".tdata")))
+struct tar_header *initrd;
+
 __attribute__ ((section(".ttext")))
-static u8int tar_header_check(struct tar_header *t) {
-	return 0;
+static int tar_header_check(struct tar_header *t) {
+	u32int i, sum = 0;
+	u8int *header_byte = (u8int*) t;
+	for (i = 0;   i < 512; i++) sum += header_byte[i];
+	for (i = 148; i < 156; i++) sum -= header_byte[i]; 	// Discount checksum itself
+	for (i = 148; i < 156; i++) sum += (u8int) ' ';		// Count checksum as spaces
+	if (atoi(t->chksum, 8) == sum) return sum;
+	return -1;
 }
 
 __attribute__ ((section(".ttext")))
 void init_kload() {
 	// Check for initrd (it's really a tape archive)
 	if (!mboot->mods_count) panic("No libsys/driver file found!");
+	initrd = (void*) *(u32int*) (mboot->mods_addr + 0xF8000000) + 0xF8000000;
+	u32int size = ((*(u32int*) (mboot->mods_addr + 0xF8000004) + 0xF8000000) - (u32int) initrd) / 512;
+	printk("%d blocks\n", size);
+
+	// Check validity of tarball
+	if (tar_header_check(initrd) == -1) panic("Tar checksum error");
 
 	// Index initrd for later use
-	u32int *mod = (u32int*) (mboot->mods_addr + 0xF8000000);
-	printk("\n%x: %x %x\n", mod, mod[0], mod[1]);
-	for(;;);
+	u32int i, n;
+	for (i = 0, n = 0; i < size; i++) {
+		if (tar_header_check(&initrd[i]) != -1) {
+			header[n++] = &initrd[i];
+			printk("%s found\n", initrd[i].name);
+			
+		}
+	}
+	header[n] = NULL;
 }
 
 void init_libsys();
-	

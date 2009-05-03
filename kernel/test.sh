@@ -1,3 +1,2 @@
-cp src/khaos run/khaos
-cd run
+cd ../run
 sudo ./run.sh
