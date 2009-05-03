@@ -30,14 +30,16 @@ typedef struct {
 
 void init_task();
 
-/***** TABLE.C *****/
+/***** TASK TABLE *****/
 typedef struct {
 	id_t user;
 	map_t map;
 	image_t *image;
 	u32int flags;
 	u32int sigmask;
-	u32int reserved[2];
+	u16int next_task;
+	u16int quanta;
+	u32int reserved;
 } task_t;
 
 #define TF_READY 0x00
@@ -52,7 +54,7 @@ pool_t *tmap;		// Pool allocator for task structures
 task_t *task[128]; 	// 2D array (128*128) of task structures
 u16int curr_pid;	// Currently loaded task ID
 
-/***** SYSMAP.C *****/
+/***** SYSTEM MAP *****/
 
 // Information about a driver task
 struct driv_id {
@@ -83,5 +85,19 @@ struct sysmap {
 } *sysmap;
 	
 void init_sysmap();
+
+/***** SCHEDULER *****/
+
+struct sched_queue {
+	u16int next;
+	u16int last;
+} sched_queue[4];
+
+void init_sched();
+void insert_sched(u16int pid);
+u16int next_task(u8int flags);
+
+#define SF_FORCED 0x00
+#define SF_VOLUNT 0x01
 
 #endif /*TASK_H*/

@@ -21,6 +21,7 @@ void init_task() {
 	map_load(map_clone(&idle->map, &kmap, MF_CLEAR_USER)); 
 	idle->flags = TF_BLOCK;
 	idle->sigmask = 0x00000000;
+	insert_sched(0);
 	
 	cursek(36, -1);
 	printk("done\n");
@@ -31,8 +32,11 @@ void init_task() {
 	printk("done\n");
 
 	printk("Starting multitasking");
+		
+	init_sched();
+
 	cursek(36, -1);
-	printk("fail\n");
+	printk("done\n");
 
 	printk("Entering user mode");
 	cursek(36, -1);

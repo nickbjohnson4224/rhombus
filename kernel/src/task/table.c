@@ -9,7 +9,10 @@ task_t *task[128]; 	// 2D array (128*128) of task structures
 u16int curr_pid;
 
 task_t *get_task(u16int pid) {
-	if (!task[pid >> 7]) task[pid >> 7] = kmalloc(0x1000);
+	if (!task[pid >> 7]) {
+		task[pid >> 7] = kmalloc(0x1000);
+		memclr(task[pid >> 7], 0x1000);
+	}
 	return &task[pid >> 7][pid & 0x7F];
 }
 
@@ -21,6 +24,7 @@ u32int new_task(task_t *src) {
 	task_ptr->image = src->image;
 	task_ptr->flags = src->flags;
 	task_ptr->sigmask = src->sigmask;
+	insert_sched(new_pid);
 	return new_pid;
 }
 
