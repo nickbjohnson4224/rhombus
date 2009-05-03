@@ -71,3 +71,15 @@ void init_mem() {
 	colork(0xF);
 
 }
+
+void init_free() {
+	colork(0xC);
+	printk("Freeing temporary memory");
+
+	u32int base = SECTION_TDATA_END;
+
+	cursek(36, -1);
+	printk("done\n");
+
+	colork(0xF);
+}

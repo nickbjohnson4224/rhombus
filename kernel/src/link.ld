@@ -9,10 +9,6 @@ SECTIONS {
 		*(.rodata*)
 	}
 
-	.ttext ALIGN (0x1000) : AT(ADDR(.ttext) - 0xF8000000) {
-		*(.ttext)
-	}
-
 	.data : AT(ADDR(.data) - 0xF8000000) {
 		*(.data)
 	}
@@ -23,6 +19,10 @@ SECTIONS {
 
 	.tdata ALIGN (0x1000) : AT(ADDR(.tdata) - 0xF8000000) {
 		*(.tdata)
+	}
+
+	.ttext : AT(ADDR(.ttext) - 0xF8000000) {
+		*(.ttext)
 	}
 
 	.bss : AT(ADDR(.bss) - 0xF8000000) {

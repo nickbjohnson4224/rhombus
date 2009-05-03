@@ -13,7 +13,7 @@ STACKSIZE equ 0x1000
 init_stack:
 	resd STACKSIZE >> 2
 
-section .pdata
+section .tdata
 
 ; Initial kernel address space
 global init_kmap

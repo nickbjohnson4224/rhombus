@@ -60,8 +60,8 @@ struct tar_header {
 
 void init_detect();
 void init_mem();
+void init_free();
 void init_int();
-
 void init_kload();
 void init_libsys();
 

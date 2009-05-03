@@ -26,20 +26,15 @@ void init_kload() {
 	if (!mboot->mods_count) panic("No libsys/driver file found!");
 	initrd = (void*) *(u32int*) (mboot->mods_addr + 0xF8000000) + 0xF8000000;
 	u32int size = ((*(u32int*) (mboot->mods_addr + 0xF8000004) + 0xF8000000) - (u32int) initrd) / 512;
-	printk("%d blocks\n", size);
+	printk("%d blocks", size);
 
 	// Check validity of tarball
 	if (tar_header_check(initrd) == -1) panic("Tar checksum error");
 
 	// Index initrd for later use
 	u32int i, n;
-	for (i = 0, n = 0; i < size; i++) {
-		if (tar_header_check(&initrd[i]) != -1) {
-			header[n++] = &initrd[i];
-			printk("%s found\n", initrd[i].name);
-			
-		}
-	}
+	for (i = 0, n = 0; i < size; i++) if (tar_header_check(&initrd[i]) != -1)
+		header[n++] = &initrd[i];
 	header[n] = NULL;
 }
 
