@@ -8,9 +8,15 @@
 void *pit_handler(image_t *state) {
 	static u32int tick;
 	tick++;
-	u16int pid = next_task();
+
+	task_t *t;
+	t = get_task(curr_pid);
+	t->image = state;
+
+	u16int pid = next_task(0);
 	printk("%d\t", pid);
-	task_t *t = get_task(pid);
+
+	t = get_task(pid);
 	printk("%x\n", t->map);
 	return task_switch(pid);
 }

@@ -91,7 +91,7 @@ void init_sysmap();
 struct sched_queue {
 	u16int next;
 	u16int last;
-} sched_queue[4];
+};
 
 void init_sched();
 void insert_sched(u16int pid);
