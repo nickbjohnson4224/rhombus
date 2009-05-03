@@ -18,11 +18,14 @@ SECTIONS {
 	}
 
 	.tdata ALIGN (0x1000) : AT(ADDR(.tdata) - 0xF8000000) {
+		START_OF_TEMP = .;
 		*(.tdata)
 	}
 
 	.ttext : AT(ADDR(.ttext) - 0xF8000000) {
 		*(.ttext)
+		. = ALIGN(0x1000);
+		END_OF_TEMP = .;
 	}
 
 	.bss : AT(ADDR(.bss) - 0xF8000000) {

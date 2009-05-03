@@ -76,7 +76,17 @@ void init_free() {
 	colork(0xC);
 	printk("Freeing temporary memory");
 
-	u32int base = SECTION_TDATA_END;
+	extern u32int START_OF_TEMP;
+	u32int base = (u32int) &START_OF_TEMP;
+
+	extern u32int END_OF_TEMP;
+	u32int limit = (u32int) &END_OF_TEMP;
+
+	u32int i;
+	for (i = base; i < limit; i += 0x1000) {
+		frame_free(page_ufmt(page_get(&kmap, i)));
+		page_set(&kmap, i, 0x00000000);
+	}
 
 	cursek(36, -1);
 	printk("done\n");
