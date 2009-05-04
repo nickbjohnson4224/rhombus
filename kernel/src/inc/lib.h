@@ -21,6 +21,7 @@ void *memset(void *dest, u8int src, u32int size);
 void *memclr(void *dest, u32int size);
 void *pgclr(u32int *base);
 char *strcpy(char *dest, char *src);
+int strcmp(char *s1, char *s2);
 u32int strlen(char *str);
 u32int atoi(char *str, u8int base);
 char *itoa(u32int n, char *buf, u8int base);

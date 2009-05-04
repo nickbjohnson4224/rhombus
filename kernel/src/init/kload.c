@@ -21,6 +21,11 @@ static int tar_header_check(struct tar_header *t) {
 }
 
 __attribute__ ((section(".ttext")))
+static char * header_contents(struct tar_header *t) {
+	return (char*) ((u32int) t + sizeof(struct tar_header));
+}
+
+__attribute__ ((section(".ttext")))
 void init_kload() {
 	// Check for initrd (it's really a tape archive)
 	if (!mboot->mods_count) panic("No libsys/driver file found!");
@@ -38,4 +43,12 @@ void init_kload() {
 	header[n] = NULL;
 }
 
-void init_libsys();
+__attribute__ ((section(".ttext")))
+void init_libsys() {
+
+	// Check for libsys header
+	u8int n;
+	for (n = 0; n < 256; n++) if (!strcmp(header[n]->name, "libsys")) break;
+	if (n == 256) panic("No system library found");
+
+}

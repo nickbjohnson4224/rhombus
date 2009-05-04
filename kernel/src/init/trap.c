@@ -26,10 +26,6 @@ void init_int() {
 	colork(0x9);
 	printk("Creating interrupts");
 	init_idt();
-	cursek(36, -1);
-	printk("done\n");
-
-	printk("Re-mapping IRQs");
 
 	// Complex remapping code - even I don't understand it well
 	// Essentially, it moves all IRQs to interrupts 32-47.

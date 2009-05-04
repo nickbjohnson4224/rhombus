@@ -68,13 +68,6 @@ void init_detect() {
 	printk("done\n");
 
 	colork(0xA);
-	printk("Creating system map");
-
-	init_sysmap();
-	
-	cursek(36, -1);
-	printk("done\n");
-
 	printk("Detecting initrd: ");
 
 	init_kload();

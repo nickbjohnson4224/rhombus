@@ -47,11 +47,6 @@ void init_mem() {
 		page_set(&kmap, i, new_page);
 		i += 0x1000;
 	}
-	cursek(36, -1);
-	printk("done\n");
-
-
-	printk("Entering full paging");
 
 	// Link the kernel to lower memory temporarily
 	kmap.pdir[0] = kmap.pdir[0xF8000000 >> 22];

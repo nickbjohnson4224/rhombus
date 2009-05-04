@@ -9,14 +9,9 @@ void *pit_handler(image_t *state) {
 	static u32int tick;
 	tick++;
 
-	task_t *t;
-	t = get_task(curr_pid);
+	task_t *t = get_task(curr_pid);
 	t->image = state;
-	if (tick % 16 == 0) new_task(t);
-
-	u16int pid = next_task(0);
-	if (pid) printk("%d\n", pid);
 	
-	state = task_switch(pid);
+	state = task_switch(next_task(0));
 	return state;
 }

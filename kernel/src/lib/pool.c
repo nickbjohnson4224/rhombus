@@ -35,6 +35,7 @@ u32int pool_alloc(pool_t *pool) {
 
 	// Find open bit within word
 	for (b = 0; pool[p].word[w] & (0x1 << b); b++);
+	if (b == 32) panic("pool allocator full");
 
 	pool[p].word[w] |= (0x1 << b);
 	pool[p].total --;

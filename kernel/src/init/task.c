@@ -21,25 +21,19 @@ void init_task() {
 	map_clone(&idle->map, &kmap, MF_CLEAR_USER);
 	idle->flags = TF_BLOCK;
 	idle->sigmask = 0x00000000;
+
+	// Make sure the scheduler works
+	init_sched();
 	
 	cursek(36, -1);
 	printk("done\n");
 
-	printk("Loading libsys/drivers");
+	printk("Loading system library");
+
+	init_libsys();
 
 	cursek(36, -1);
 	printk("done\n");
-
-	printk("Starting multitasking");
-		
-	init_sched();
-
-	cursek(36, -1);
-	printk("done\n");
-
-	printk("Entering user mode");
-	cursek(36, -1);
-	printk("fail\n");
 
 	colork(0xF);
 

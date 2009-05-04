@@ -67,6 +67,16 @@ u32int atoi(char *str, u8int base) {
 	return n;
 }
 
+int strcmp(char *s1, char *s2) {
+	while (*s1 == *s2 && *s1 && *s2) {
+		s1++;
+		s2++;
+	}
+	if (*s1 == *s2) return 0;
+	return 1;
+}
+	
+
 char *itoa(u32int n, char *buf, u8int base) {
 	char *p1, *p2;
 	static char digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
