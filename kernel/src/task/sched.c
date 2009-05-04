@@ -7,7 +7,7 @@
 struct sched_queue queue;
 
 void insert_sched(u16int pid) {
-	if (!queue.last) {
+	if (!queue.next) {
 		queue.next = pid;
 		queue.last = pid;
 		task_t *t = get_task(pid);
@@ -31,6 +31,7 @@ u16int next_task(u8int flags) {
 	task_t *t = get_task(pid);
 	queue.next = t->next_task;
 	t->next_task = 0;
+	insert_sched(pid);
 	return pid;
 }
 

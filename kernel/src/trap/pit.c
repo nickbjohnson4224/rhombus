@@ -12,11 +12,11 @@ void *pit_handler(image_t *state) {
 	task_t *t;
 	t = get_task(curr_pid);
 	t->image = state;
+	if (tick % 16 == 0) new_task(t);
 
 	u16int pid = next_task(0);
-	printk("%d\t", pid);
-
-	t = get_task(pid);
-	printk("%x\n", t->map);
-	return task_switch(pid);
+	if (pid) printk("%d\n", pid);
+	
+	state = task_switch(pid);
+	return state;
 }

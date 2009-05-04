@@ -18,10 +18,9 @@ void init_task() {
 	task_t *idle = get_task(0);
 	idle->user.id = 0;
 	idle->user.ring = 0;
-	map_load(map_clone(&idle->map, &kmap, MF_CLEAR_USER)); 
+	map_clone(&idle->map, &kmap, MF_CLEAR_USER);
 	idle->flags = TF_BLOCK;
 	idle->sigmask = 0x00000000;
-	insert_sched(0);
 	
 	cursek(36, -1);
 	printk("done\n");

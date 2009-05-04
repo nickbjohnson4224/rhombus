@@ -73,6 +73,7 @@ void init_mem() {
 }
 
 void init_free() {
+
 	colork(0xC);
 	printk("Freeing temporary memory");
 

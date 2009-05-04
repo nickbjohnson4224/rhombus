@@ -33,7 +33,6 @@ u32int rem_task(u16int pid) {
 }
 
 image_t *task_switch(u16int pid) {
-	if (!task[pid >> 7]) panic("no such task");
 	curr_pid = pid;
 	task_t *t = get_task(pid);
 	map_load(&t->map);
