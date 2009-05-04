@@ -19,11 +19,10 @@ init_mem,
 init_int,
 init_pit,
 init_task,
-//init_free,
+init_free,
 NULL
 };
 
-__attribute__ ((section(".ttext"))) 
 void init(void *mboot_ptr, u32int mboot_magic) {
 	u32int i;
 	cleark();

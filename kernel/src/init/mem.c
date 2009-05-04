@@ -84,7 +84,7 @@ void init_free() {
 	u32int limit = (u32int) &END_OF_TEMP;
 
 	u32int i;
-	for (i = base; i < limit; i += 0x1000) {
+	for (i = base; i < limit & ~0xFFF; i += 0x1000) {
 		frame_free(page_ufmt(page_get(&kmap, i)));
 		page_set(&kmap, i, 0x00000000);
 	}
