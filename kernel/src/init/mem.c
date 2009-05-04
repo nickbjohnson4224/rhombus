@@ -72,6 +72,7 @@ void init_free() {
 	colork(0xC);
 	printk("Freeing temporary memory");
 
+	// Free marked code and global data
 	extern u32int START_OF_TEMP;
 	u32int base = (u32int) &START_OF_TEMP;
 
@@ -82,6 +83,14 @@ void init_free() {
 	for (i = base; i < limit & ~0xFFF; i += 0x1000) {
 		frame_free(page_ufmt(page_get(&kmap, i)));
 		page_set(&kmap, i, 0x00000000);
+	}
+
+	// Free initrd image data
+	extern u32int end;
+	i = ((u32int) &end + 0x1000) & ~0xFFF;
+	for (; i < 0xF8400000; i += 0x1000) {
+		if (page_get(&kmap, i))
+			frame_free(page_ufmt(page_get(&kmap, i)));
 	}
 
 	cursek(36, -1);
