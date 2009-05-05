@@ -6,7 +6,7 @@
 __attribute__ ((section(".ttext"))) 
 void init_pit() {
 	colork(0x9);
-	printk("Starting system timer (256 Hz)");
+	printk("System timer (256 Hz)");
 
 	register_int(IRQ(0), pit_handler);
 
@@ -24,7 +24,7 @@ __attribute__ ((section(".ttext")))
 void init_int() {
 
 	colork(0x9);
-	printk("Creating interrupts");
+	printk("Interrupts");
 	init_idt();
 
 	// Complex remapping code - even I don't understand it well
@@ -43,7 +43,7 @@ void init_int() {
 	cursek(36, -1);
 	printk("done\n");
 
-	printk("Setting up fault handlers");
+	printk("Fault handlers");
 
 	// Clear the interrupt handler table
 	extern handler_t int_handlers[256];

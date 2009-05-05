@@ -7,7 +7,7 @@
  *	If I build the kernel right, this will suffice  */
 
 extern u32int end;
-u32int proto_base = 0xF8000000; // Use up the lower memory for allocation if possible
+u32int proto_base = 0xF8010000; // Use up the lower memory for allocation if possible
 
 void *kmalloc(u32int size) {
 	u32int i;

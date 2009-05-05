@@ -8,7 +8,7 @@
 
 __attribute__ ((section(".tdata"))) 
 char *stamp = "\
-Khaos - 0.0 build 009\n\
+Khaos - 0.0 build 010\n\
 Copyright 2009 Nick Johnson\n\n";
 
 typedef void (*init_t)(void);
@@ -17,8 +17,8 @@ init_t init_list[] = {
 init_detect,
 init_mem,
 init_int,
-init_pit,
 init_task,
+init_pit,
 init_free,
 NULL
 };

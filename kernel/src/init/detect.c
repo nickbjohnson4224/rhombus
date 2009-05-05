@@ -39,7 +39,7 @@ void init_detect() {
 	u32int i;
 
 	colork(0xC);
-	printk("Detecting memory: ");
+	printk("Memory: ");
 
 	// This is quite lazy - it finds the free block directly above 0x100000
 	struct memory_map *mem_map = (void*) mboot->mmap_addr;
@@ -55,7 +55,7 @@ void init_detect() {
 	printk("done\n");
 
 	colork(0x9);
-	printk("Detecting CPU: ");
+	printk("CPU: ");
 
 	extern void cpuid_name(char*);
 
@@ -68,7 +68,7 @@ void init_detect() {
 	printk("done\n");
 
 	colork(0xA);
-	printk("Detecting initrd: ");
+	printk("Initrd: ");
 
 	init_kload();
 	

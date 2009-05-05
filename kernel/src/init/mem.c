@@ -16,12 +16,10 @@ void init_mem() {
 	// Make a new and proper memory map for the kernel
 	map_alloc(&kmap);
 
-	printk("Frame allocator");
-	fpool = pool_new(memsize >> 12);
-	cursek(36, -1);
-	printk("done\n");
+	printk("Allocators");
 
-	printk("Kernel heap allocator");
+	// Initialize frame allocator
+	fpool = pool_new(memsize >> 12);
 
 	// Preallocate page tables for the allocator, to prevent infinte recursion
 	i = 0xF8400000;
@@ -36,7 +34,7 @@ void init_mem() {
 	cursek(36, -1);
 	printk("done\n");
 
-	printk("Kernel address space");
+	printk("Kernel map");
 
 	// Identity map necessary kernel memory (i.e. code)
 	i = 0xF8000000;
@@ -70,7 +68,7 @@ void init_mem() {
 void init_free() {
 
 	colork(0xC);
-	printk("Freeing temporary memory");
+	printk("Temporary memory");
 
 	// Free marked code and global data
 	extern u32int START_OF_TEMP;

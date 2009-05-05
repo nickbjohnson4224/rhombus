@@ -8,7 +8,7 @@ void init_task() {
 
 	colork(0xA);
 	
-	printk("Creating task system");
+	printk("Tasking system");
 
 	// Set up task table and allocator
 	memclr(task, sizeof(task_t*) * 64);
@@ -28,7 +28,7 @@ void init_task() {
 	cursek(36, -1);
 	printk("done\n");
 
-	printk("Loading system library");
+	printk("System library");
 
 	init_libsys();
 

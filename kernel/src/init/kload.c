@@ -3,6 +3,8 @@
 #include <lib.h>
 #include <init.h>
 #include <elf.h>
+#include <mem.h>
+#include <task.h>
 
 __attribute__ ((section(".tdata")))
 struct tar_header *header[256];
@@ -54,5 +56,10 @@ void init_libsys() {
 
 	// Load libsys image
 	if (elf_load(header_contents(header[n]))) panic("libsys is not valid ELF");
+
+	// Set up a stack for good measure
+	task_t *t = get_task(curr_pid);
+	p_alloc(&t->map, 0xF3FFF000, PF_USER | PF_PRES | PF_RW);
+	p_alloc(&t->map, 0xF3FFE000, PF_USER | PF_PRES | PF_RW);
 
 }

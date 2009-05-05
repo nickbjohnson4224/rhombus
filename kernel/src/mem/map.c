@@ -63,13 +63,6 @@ map_t *map_clone(map_t *dest, map_t *src, u8int flags) {
 	return dest;
 }
 
-map_t *map_enum(map_t *map) {
-	u32int i;
-	for (i = 0; i < 1024; i++) if (map->virt[i]) printk("%x: %x\t", i, map->virt[i]);
-	printk("\n");
-	return map;
-}
-
 map_t *map_load(map_t *map) {
 	asm volatile ("mov %0, %%cr3" :: "r" (phys_of(&kmap, map->pdir)));
 	return map;
