@@ -20,7 +20,8 @@ void init_task() {
 	idle->user.ring = 0;
 	map_clone(&idle->map, &kmap, MF_CLEAR_USER);
 	idle->flags = TF_BLOCK;
-	idle->sigmask = 0x00000000;
+	idle->sigmask[0] = 0x00000000;
+	idle->sigmask[1] = 0x00000000;
 
 	// Make sure the scheduler works
 	init_sched();

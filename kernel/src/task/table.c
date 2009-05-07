@@ -16,14 +16,20 @@ task_t *get_task(u16int pid) {
 	return &task[pid >> 7][pid & 0x7F];
 }
 
-u32int new_task(task_t *src) {
+u16int new_task(u16int src_pid) {
 	u32int new_pid = pool_alloc(tmap);
-	task_t *task_ptr = get_task(new_pid);
-	task_ptr->user = src->user;
-	map_clone(&task_ptr->map, &src->map, 0);
-	task_ptr->image = src->image;
-	task_ptr->flags = src->flags;
-	task_ptr->sigmask = src->sigmask;
+
+	task_t *new = get_task(new_pid);
+	task_t *src = get_task(src_pid);
+
+	new->user = src->user;
+	map_clone(&new->map, &src->map, 0);
+	new->image = src->image;
+	new->flags = src->flags;
+	new->sigmask[0] = src->sigmask[0];
+	new->sigmask[1] = src->sigmask[1];
+	new->parent = src_pid;
+
 	insert_sched(new_pid);
 	return new_pid;
 }

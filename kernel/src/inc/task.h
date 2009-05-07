@@ -35,10 +35,11 @@ typedef struct {
 	id_t user;
 	map_t map;
 	image_t *image;
-	u32int flags;
-	u32int sigmask;
+	u32int sigmask[2];
+	u16int flags;
 	u16int next_task;
 	u16int quanta;
+	u16int parent;
 	u32int reserved;
 } task_t;
 
@@ -46,7 +47,7 @@ typedef struct {
 #define TF_BLOCK 0x01
 
 task_t *get_task(u16int pid);
-u32int new_task(task_t *src);
+u16int new_task(u16int src_pid);
 u32int rem_task(u16int pid);
 image_t *task_switch(u16int pid);
 

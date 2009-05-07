@@ -33,6 +33,7 @@ align 0x1000
 	dd 0x0000FFFF, 0x00CF9200
 	dd 0x0000FFFF, 0x00CFFA00
 	dd 0x0000FFFF, 0x00CFF200
+	dd 0x00000000, 0x0000E900
 
 gdt_ptr:
 align 4
@@ -75,9 +76,44 @@ start:
 	push eax	; Push multiboot magic number
 	add ebx, 0xF8000000	; Make pointer virtual
 	push ebx	; Push multiboot pointer
+
 	call init
 	hlt			; Halt for now 
 	
+global usermode
+usermode:
+	; change to user data segments
+	mov ax, 0x23
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
+
+	; push user stack segment
+	push 0x23
+
+	; push user stack pointer
+	mov eax, 0xF0000000
+	push eax
+
+	; push EFLAGS (and turn on interrupts)
+	pushf
+	pop eax
+	or eax, 0x200
+	push eax
+
+	; push user code segment
+	mov eax, 0x1B
+	push eax
+
+	; push user start location
+	lea eax, [init]
+	push eax
+
+	iret
+
+section .ttext
+
 global redo_paging
 redo_paging :
 	mov eax, [esp+4]
@@ -92,7 +128,7 @@ redo_paging :
 	and ecx, 0xFFFFFFEF
 	mov cr4, ecx
 	mov cr3, eax
-    mov ecx, cr0
-    or ecx, 0x80000000
-    mov cr0, ecx
+	mov ecx, cr0
+	or  ecx, 0x80000000
+	mov cr0, ecx
 	ret

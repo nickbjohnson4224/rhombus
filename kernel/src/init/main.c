@@ -35,9 +35,7 @@ void init(void *mboot_ptr, u32int mboot_magic) {
 	for (i = 0; init_list[i]; i++) init_list[i]();
 	printk("Khaos booted\n\n");
 
-	register_int(IRQ(1), kb_handler);
-	asm volatile ("sti");
-	for(;;);
-
-	panic("loss of purpose");
+//	register_int(IRQ(1), kb_handler);
+//	extern void usermode();
+//	usermode();
 }
