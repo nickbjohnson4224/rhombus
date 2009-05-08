@@ -37,5 +37,5 @@ void init(void *mboot_ptr, u32int mboot_magic) {
 
 	register_int(IRQ(1), kb_handler);
 	asm volatile ("sti");
-	for(;;);
+	for(;;) i++;
 }
