@@ -54,12 +54,36 @@ void init_libsys() {
 	for (n = 0; n < 256; n++) if (header[n] && !strcmp(header[n]->name, "libsys")) break;
 	if (n == 256) panic("No system library found");
 
-	// Load libsys image
-	if (elf_load(header_contents(header[n]))) panic("libsys is not valid ELF");
-
-	// Set up a stack for good measure
+	// Set up a stack for the process image
 	task_t *t = get_task(curr_pid);
-	p_alloc(&t->map, 0xF3FFF000, PF_USER | PF_PRES | PF_RW);
+	map_load(&t->map);
 	p_alloc(&t->map, 0xF3FFE000, PF_USER | PF_PRES | PF_RW);
+	p_alloc(&t->map, 0xF3FFD000, PF_USER | PF_PRES | PF_RW);
+	t->image = (void*) (0xF3FFDFFC - sizeof(image_t));
+
+	// Set up space for the various system structures
+
+	// Signal handler table
+	p_alloc(&t->map, 0xF3FFF000, PF_USER | PF_PRES | PF_RW);
+	
+	// System map
+	p_alloc(&t->map, 0xF5FFF000, PF_USER | PF_PRES);
+	p_alloc(&t->map, 0xF5FFE000, PF_USER | PF_PRES);
+	p_alloc(&t->map, 0xF5FFD000, PF_USER | PF_PRES);
+	p_alloc(&t->map, 0xF5FFC000, PF_USER | PF_PRES);
+
+	// Load libsys image
+	if (elf_check(header_contents(header[n]))) panic("libsys is not valid ELF");
+
+	// Setup process image
+	t->image->useresp = 0xF3FFDFFC;
+	t->image->esp = 0xF3FFDFFC;
+	t->image->ebp = 0xF3FFDFFC;
+	t->image->ss = 0x23;
+	t->image->ds = 0x23;
+	t->image->eip = elf_load(header_contents(header[n]));
+	t->image->cs = 0x1B;
+	extern u32int get_eflags();
+	t->image->eflags = get_eflags() | 0x0200; // Turns on interrupts in eflags
 
 }

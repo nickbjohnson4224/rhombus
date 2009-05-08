@@ -41,9 +41,7 @@ void elf_load_segment(u8int *src, elf_ph_t *seg) {
 }
 
 __attribute__ ((section(".ttext")))
-int elf_load(u8int *src) {
-
-	// Check ELF header
+int elf_check(u8int *src) {
 	elf_t *elf_header = (elf_t*) src;
 	if (elf_header->e_ident[0] != 0x7F)return 1;
 	if (elf_header->e_ident[1] != 'E') return 1;
@@ -52,13 +50,19 @@ int elf_load(u8int *src) {
 	if (elf_header->e_type != ET_EXEC) return 1;
 	if (elf_header->e_machine != EM_386) return 1;
 	if (elf_header->e_version == 0) return 1;
+	return 0;
+}
+
+__attribute__ ((section(".ttext")))
+u32int elf_load(u8int *src) {
+	elf_t *elf_header = (elf_t*) src;
 
 	// Load all segments
 	elf_ph_t *program_header = (elf_ph_t*) &src[elf_header->e_phoff];
 	u32int n = elf_header->e_phnum;
-	if (!n) return 1;
+	if (!n) return (u32int) NULL;
 	u32int i;
 	for (i = 0; i < n; i++) elf_load_segment(src, &program_header[i]);
 	
-	return 0;
+	return elf_header->e_entry;
 }

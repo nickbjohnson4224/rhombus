@@ -79,40 +79,14 @@ start:
 
 	call init
 	hlt			; Halt for now 
-	
-global usermode
-usermode:
-	; change to user data segments
-	mov ax, 0x23
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
-
-	; push user stack segment
-	push 0x23
-
-	; push user stack pointer
-	mov eax, 0xF0000000
-	push eax
-
-	; push EFLAGS (and turn on interrupts)
-	pushf
-	pop eax
-	or eax, 0x200
-	push eax
-
-	; push user code segment
-	mov eax, 0x1B
-	push eax
-
-	; push user start location
-	lea eax, [init]
-	push eax
-
-	iret
 
 section .ttext
+
+global get_eflags
+get_eflags:
+	pushf
+	pop eax
+	ret
 
 global redo_paging
 redo_paging :

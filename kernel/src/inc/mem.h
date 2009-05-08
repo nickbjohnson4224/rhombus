@@ -3,6 +3,9 @@
 /* General virtual memory map:
 0x00000000 - 0xF3FFFFFF: userspace
 0xF4000000 - 0xF7FFFFFF: libspace
+	0xF4000000: reserved
+	0xF5FFC000: system map
+	0xF6000000: library image
 0xF8000000 - 0xFFFFFFFF: kernelspace
 	0xF8000000: lower memory
 	0xF807C000: BIOS

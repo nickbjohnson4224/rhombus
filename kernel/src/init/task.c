@@ -22,6 +22,7 @@ void init_task() {
 	idle->flags = TF_BLOCK;
 	idle->sigmask[0] = 0x00000000;
 	idle->sigmask[1] = 0x00000000;
+	curr_pid = 0;
 
 	// Make sure the scheduler works
 	init_sched();
@@ -31,6 +32,7 @@ void init_task() {
 
 	printk("System library");
 
+	// Load the system library from the initrd
 	init_libsys();
 
 	cursek(36, -1);
