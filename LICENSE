@@ -1,16 +1,21 @@
 Copyright (C) 2009 Nick Johnson
 
-A "section" is any file or directory containing a copyright notice that covers
-all of the work contained within it. The granularity of sections therefore
-may vary based on the organization of a program's source code.
+Khaos License v1.2
 
-Permission is hereby granted to use, copy, modify, merge, link, disassemble, 
-publish, and/or distribute this software and/or its source code, with or 
-without modification, in whole, in part, or as part of another work, for any 
-purpose, provided that if this software is distributed in any way or form, 
-this copyright notice, license, and disclaimer are preserved upon all 
-sections containing part of the original program, and the source code is 
-publicly available for all sections covered by this license.
+A "section" is any file or directory containing a copyright notice that covers
+all of the work contained within it. The smallest unit that may be considered
+to be a section is a single file.
+
+Permission is hereby granted to use, copy, modify, merge, link, disassemble,
+publish, and/or distribute this software and/or its source code, with or
+without modification, in whole, in part, or as part of another work, for any
+purpose, provided that if this software is distributed in any way or form,
+this copyright notice, license, and disclaimer are preserved upon all
+sections containing part of the original program, and the source code is
+publicly available for all sections of the program covered by this license.
+All executables containing any section covered by this license must have all
+sections licensed in such a way that the user is allowed to use and/or
+disassemble the executable, for any purpose.
 
 THIS SOFTWARE IS PROVIDED "AS IS" WITH NO WARRANTY OF ANY KIND, EITHER 
 EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF 

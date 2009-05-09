@@ -100,7 +100,6 @@ int_common:
 
 	push ebp
 	call int_handler
-	pop ebp
 	mov esp, eax
 
 	pop eax

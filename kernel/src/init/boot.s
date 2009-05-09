@@ -26,6 +26,7 @@ init_kmap:
 
 section .data
 
+global gdt
 gdt:
 align 0x1000
 	dd 0x00000000, 0x00000000
@@ -33,11 +34,11 @@ align 0x1000
 	dd 0x0000FFFF, 0x00CF9200
 	dd 0x0000FFFF, 0x00CFFA00
 	dd 0x0000FFFF, 0x00CFF200
-	dd 0x00000000, 0x0000E900
+	dd 0x00000000, 0x0000E900 ; This will become the TSS
 
 gdt_ptr:
 align 4
-	dw 0x0027	; 39 bytes limit
+	dw 0x002F	; 47 bytes limit
 	dd gdt 		; Points to physical GDT
 
 section .text
@@ -86,6 +87,12 @@ global get_eflags
 get_eflags:
 	pushf
 	pop eax
+	ret
+
+global tss_flush
+tss_flush:
+	mov ax, 0x2B
+	ltr ax
 	ret
 
 global redo_paging

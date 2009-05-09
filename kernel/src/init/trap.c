@@ -11,7 +11,7 @@ void init_pit() {
 	register_int(IRQ(0), pit_handler);
 
 	// Set the PIT to 256Hz
-	u16int divisor = 1193180 / 1024;
+	u16int divisor = 1193180 / 256;
 	outb(0x43, 0x36);
 	outb(0x40, divisor & 0xFF);
 	outb(0x40, divisor >> 8);
@@ -37,8 +37,8 @@ void init_int() {
 	outb(0xA1, 0x02);
 	outb(0x21, 0x01);
 	outb(0xA1, 0x01);
-	outb(0x21, 0x0);
-	outb(0xA1, 0x0);
+	outb(0x21, 0x00);
+	outb(0xA1, 0x00);
 
 	cursek(36, -1);
 	printk("done\n");
@@ -48,6 +48,9 @@ void init_int() {
 	// Clear the interrupt handler table
 	extern handler_t int_handlers[256];
 	memclr(int_handlers, sizeof(handler_t) * 256);
+
+	// Initialize the TSS
+	init_tss();
 
 	cursek(36, -1);
 	printk("done\n");

@@ -12,7 +12,7 @@
 typedef struct image {
 	u32int ds, edi, esi, ebp, esp, ebx, edx, ecx, eax;
 	u32int num, err, eip, cs, eflags, useresp, ss;
-} image_t;
+} __attribute__ ((packed)) image_t;
 
 typedef void* (*handler_t) (image_t*);
 
@@ -23,5 +23,7 @@ void *pit_handler(image_t *state);
 
 #define IRQ(n) (n + 32)
 void register_int(u8int n, handler_t handler);
+
+void init_tss();
 
 #endif /*SIG_H*/
