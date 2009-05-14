@@ -14,7 +14,8 @@ void *pit_handler(image_t *state) {
 		t->image = state;
 	
 	state = task_switch(next_task(0));
-	printk("%x %x %x %x\n", state, state->eip, state->cs, state->eax);
+	printk("%x %x %x (%x %x %x %x)\n", state, state->eip, state->cs, 
+		state->eax, state->ebx, state->ecx, state->edx);
 	return state;
 }
 

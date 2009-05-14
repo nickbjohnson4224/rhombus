@@ -1,5 +1,5 @@
 SOURCES=main.o
-CFLAGS=-nostdlib -nostdinc -fno-builtin -Iinc
+CFLAGS=-nostdlib -nostdinc -fno-builtin -Iinc -fomit-frame-pointer
 LDFLAGS=-Tlink.ld
 ASFLAGS=-felf
 

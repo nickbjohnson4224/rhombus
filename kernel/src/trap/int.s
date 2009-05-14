@@ -12,6 +12,10 @@ global stack
 stack:
     resb 0x4000      ; reserve 16k stack on a quadword boundary
 
+global cstack
+cstack:
+	resb 0x1000
+
 section .text
 align 4
 

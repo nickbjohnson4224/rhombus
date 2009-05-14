@@ -79,7 +79,11 @@ start:
 	push ebx	; Push multiboot pointer
 
 	call init
-	hlt			; Halt for now 
+	sti
+.loop:
+	inc eax
+	jmp .loop
+	hlt
 
 section .ttext
 
@@ -91,7 +95,7 @@ get_eflags:
 
 global tss_flush
 tss_flush:
-	mov ax, 0x2B
+	mov ax, 0x28
 	ltr ax
 	ret
 
