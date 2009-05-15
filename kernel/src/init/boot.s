@@ -10,6 +10,7 @@ CHECKSUM    equ  -(MAGIC + FLAGS)
 section .bss
 
 STACKSIZE equ 0x1000
+global init_stack
 init_stack:
 	resd STACKSIZE >> 2
 

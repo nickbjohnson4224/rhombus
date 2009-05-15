@@ -10,3 +10,6 @@ link:
 
 clean:
 	rm libsys
+
+.s.o:
+	nasm $(ASFLAGS) $<

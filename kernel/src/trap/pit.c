@@ -9,13 +9,17 @@ void *pit_handler(image_t *state) {
 	static u32int tick;
 	tick++;
 
-	task_t *t = get_task(curr_pid);
-	if (state < 0xF8000000) // Ignore stuff on the init stack
-		t->image = state;
+	if (tick % 40 == 0) {
+		printk("%x %x %x %x (%x %x %x %x)\n", state, state->magic, state->eip, state->cs, 
+			state->eax, state->ebx, state->ecx, state->edx);
+		task_t *t = get_task(0);
+		if (state->eip < 0xF8000000)
+			t->image = state;
 	
-	state = task_switch(next_task(0));
-	printk("%x %x %x (%x %x %x %x)\n", state, state->eip, state->cs, 
-		state->eax, state->ebx, state->ecx, state->edx);
+		state = task_switch(0);
+		printk("%x %x %x %x (%x %x %x %x)\n", state, state->magic, state->eip, state->cs, 
+			state->eax, state->ebx, state->ecx, state->edx);
+	}
 	return state;
 }
 

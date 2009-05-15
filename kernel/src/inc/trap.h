@@ -10,7 +10,7 @@
 #define S_KIL 0x00000008	// Kill signal
 
 typedef struct image {
-	u32int ds, edi, esi, ebp, esp, ebx, edx, ecx, eax;
+	u32int magic, ds, edi, esi, ebp, esp, ebx, edx, ecx, eax;
 	u32int num, err, eip, cs, eflags, useresp, ss;
 } __attribute__ ((packed)) image_t;
 
