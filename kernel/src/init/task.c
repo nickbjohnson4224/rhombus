@@ -7,7 +7,7 @@ __attribute__ ((section(".ttext")))
 void init_task() {
 
 	colork(0xA);
-	
+
 	printk("Tasking system");
 
 	// Set up task table and allocator

@@ -57,23 +57,23 @@ void init_libsys() {
 	// Set up a stack for the process image
 	task_t *t = get_task(curr_pid);
 	map_load(&t->map);
-	p_alloc(&t->map, 0xF3FFE000, PF_USER | PF_PRES | PF_RW); // This is for the system call stack
-	p_alloc(&t->map, 0xF3FFD000, PF_USER | PF_PRES | PF_RW);
-	p_alloc(&t->map, 0xF3FFC000, PF_USER | PF_PRES | PF_RW);
-	p_alloc(&t->map, 0xF3FFB000, PF_USER | PF_PRES | PF_RW);
-	p_alloc(&t->map, 0xF3FFA000, PF_USER | PF_PRES | PF_RW);
+	p_alloc(&t->map, 0xF3FFE000, PF_USER | PF_RW); // This is for the system call stack
+	p_alloc(&t->map, 0xF3FFD000, PF_USER | PF_RW);
+	p_alloc(&t->map, 0xF3FFC000, PF_USER | PF_RW);
+	p_alloc(&t->map, 0xF3FFB000, PF_USER | PF_RW);
+	p_alloc(&t->map, 0xF3FFA000, PF_USER | PF_RW);
 	t->image = (void*) (0xF3FFDFFC - sizeof(image_t));
 
 	// Set up space for the various system structures
 
 	// Signal handler table
-	p_alloc(&t->map, 0xF3FFF000, PF_USER | PF_PRES | PF_RW);
+	p_alloc(&t->map, 0xF3FFF000, PF_USER | PF_RW);
 	
 	// System map
-	p_alloc(&t->map, 0xF5FFF000, PF_USER | PF_PRES);
-	p_alloc(&t->map, 0xF5FFE000, PF_USER | PF_PRES);
-	p_alloc(&t->map, 0xF5FFD000, PF_USER | PF_PRES);
-	p_alloc(&t->map, 0xF5FFC000, PF_USER | PF_PRES);
+	p_alloc(&t->map, 0xF5FFF000, PF_USER);
+	p_alloc(&t->map, 0xF5FFE000, PF_USER);
+	p_alloc(&t->map, 0xF5FFD000, PF_USER);
+	p_alloc(&t->map, 0xF5FFC000, PF_USER);
 
 	// Load libsys image
 	if (elf_check(header_contents(header[n]))) panic("libsys is not valid ELF");

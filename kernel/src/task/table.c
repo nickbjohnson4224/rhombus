@@ -25,16 +25,7 @@ u16int new_task(u16int src_pid) {
 
 	new->user = src->user;
 	map_clone(&new->map, &src->map, 0);
-	image_t *tmp_img = kmalloc(0x1000);
-
 	new->image = src->image;
-	memcpy(tmp_img, src->image, sizeof(image_t));
-	map_load(&new->map);
-	memcpy(new->image, tmp_img, sizeof(image_t));
-	new->image->eax = 0;
-	map_load(&src->map);
-	src->image->eax = new_pid; 
-
 	new->flags = src->flags;
 	new->sigmask[0] = src->sigmask[0];
 	new->sigmask[1] = src->sigmask[1];

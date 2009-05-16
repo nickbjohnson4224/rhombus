@@ -2,6 +2,7 @@
 
 #include <lib.h>
 #include <trap.h>
+#include <task.h>
 
 void idt_set(u8int n, u32int base, u16int seg, u8int flags);
 
@@ -60,10 +61,11 @@ void *int_handler(image_t *state) {
 		if (state->num >= 40) outb(0xA0, 0x20);
 		outb(0x20, 0x20);
 	}
-	else {
-		printk("system call %x!\n", state->num);
-		u32int i;
-		for (i = 0; i < 1000000; i++);
+	else switch(state->num) {
+		case 0x40:
+			printk("fork()\n");
+			new_task(curr_pid);
+		break;
 	}
 
 	if (int_handlers[state->num])
