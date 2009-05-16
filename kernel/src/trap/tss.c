@@ -22,8 +22,7 @@ void init_tss() {
 
 	memclr(&tss, sizeof(struct tss));
 	tss.ss0 = 0x10;
-	extern u32int cstack;
-	tss.esp0 = (u32int) &cstack;
+	tss.esp0 = 0xF3FFEFFC;
 	tss.cs = 0x0B;
 	tss.es = tss.ds = tss.fs = tss.gs = 0x10;
 

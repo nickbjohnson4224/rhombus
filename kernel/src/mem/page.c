@@ -34,7 +34,7 @@ u32int phys_of(map_t *map, void *addr) {
 
 u32int p_alloc(map_t *map, u32int addr, u32int flags) {
 	if (page_get(map, addr) & PF_PRES) return 1;
-	page_set(map, addr, page_fmt(frame_new(), flags));
+	page_set(map, addr, page_fmt(frame_new(), flags | PF_PRES));
 	return 0;
 }
 

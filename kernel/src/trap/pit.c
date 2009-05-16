@@ -6,20 +6,16 @@
 
 // Handles IRQ 0, and advances a simple counter used as a clock
 void *pit_handler(image_t *state) {
-	static u32int tick;
+	static u32int tick = 0;
 	tick++;
 
-	if (tick % 40 == 0) {
-		printk("%x %x %x %x (%x %x %x %x)\n", state, state->magic, state->eip, state->cs, 
-			state->eax, state->ebx, state->ecx, state->edx);
-		task_t *t = get_task(0);
-		if (state->eip < 0xF8000000)
-			t->image = state;
-	
-		state = task_switch(0);
-		printk("%x %x %x %x (%x %x %x %x)\n", state, state->magic, state->eip, state->cs, 
-			state->eax, state->ebx, state->ecx, state->edx);
-	}
+	task_t *t = get_task(curr_pid);
+	if (state->eip < 0xF8000000) t->image = state;
+	state = task_switch(next_task(0));
+
+	if (tick == 1) new_task(0);
+	printk("%x\t%x %x %x (%x %x %x %x)\n", curr_pid, state, state->useresp, state->eip,
+		state->eax, state->ebx, state->ecx, state->edx);
 	return state;
 }
 

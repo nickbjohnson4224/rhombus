@@ -14,7 +14,7 @@ stack:
 
 global cstack
 cstack:
-	resb 0x1000
+	resb 0x200
 
 section .text
 align 4
@@ -79,6 +79,11 @@ INTN	44
 INTN	45
 INTN	46
 INTN	47
+
+; System calls
+INTN	64 ; memory
+INTN	65 ; tasks
+INTN	66 ; signals
 
 extern int_handler
 

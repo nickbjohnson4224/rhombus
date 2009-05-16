@@ -11,7 +11,7 @@ void init_pit() {
 	register_int(IRQ(0), pit_handler);
 
 	// Set the PIT to 256Hz
-	u16int divisor = 1193180 / 16;
+	u16int divisor = 1193180 / 256;
 	outb(0x43, 0x36);
 	outb(0x40, divisor & 0xFF);
 	outb(0x40, divisor >> 8);

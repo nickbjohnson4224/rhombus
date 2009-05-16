@@ -2,6 +2,9 @@
 
 /* General virtual memory map:
 0x00000000 - 0xF3FFFFFF: userspace
+	0xF3FF0000: standard stack
+	0xF3FFE000: system call stack
+	0xF3FFF000: signal handler table
 0xF4000000 - 0xF7FFFFFF: libspace
 	0xF4000000: reserved
 	0xF5FFC000: system map

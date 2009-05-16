@@ -51,7 +51,7 @@ map_t *map_clone(map_t *dest, map_t *src, u8int flags) {
 	}
 
 	// Link kernel/libspace
-	for (i = 976; i < 992; i++) if (src->virt[i]) {
+	for (i = 976; i < 992; i++) {
 		dest->virt[i] = src->virt[i];
 		dest->pdir[i] = src->pdir[i];
 	}
