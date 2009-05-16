@@ -42,6 +42,7 @@ void init_detect() {
 	printk("Memory: ");
 
 	// This is quite lazy - it finds the free block directly above 0x100000
+	// Only a prototype - *please refactor*
 	struct memory_map *mem_map = (void*) mboot->mmap_addr;
 	u32int nmem_map = mboot->mmap_length / sizeof(struct memory_map);
 	for (i = 0; i < nmem_map; i++) {

@@ -40,7 +40,7 @@ align 0x1000
 gdt_ptr:
 align 4
 	dw 0x002F	; 47 bytes limit
-	dd gdt 		; Points to physical GDT
+	dd gdt 		; Points to *virtual* GDT
 
 section .text
 
@@ -67,24 +67,29 @@ start:
 .upper:
 	mov ecx, gdt_ptr	; Load (real) GDT pointer
 	lgdt [ecx]			; Load new GDT
-	mov ecx, 0x10		; Load all kernel data segments
+
+	mov ecx, 0x10		; Reload all kernel data segments
 	mov ds, cx
 	mov es, cx
 	mov fs, cx
 	mov gs, cx
 	mov ss, cx
+
 	mov esp, (init_stack + STACKSIZE)	; Setup init stack
 	mov ebp, (init_stack + STACKSIZE)	; and base pointer
-	push eax	; Push multiboot magic number
-	add ebx, 0xF8000000	; Make pointer virtual
-	push ebx	; Push multiboot pointer
+
+	push eax	; Push multiboot magic number for identification
+
+	; Push *virtual* multiboot pointer
+	add ebx, 0xF8000000
+	push ebx
 
 	call init
 	sti
+
 .loop:
-	inc eax
-	jmp .loop
 	hlt
+	jmp .loop
 
 section .ttext
 
@@ -104,17 +109,21 @@ global redo_paging
 redo_paging :
 	mov eax, [esp+4]
 	lea ecx, [.lower-0xF8000000]
-	jmp ecx
+	jmp ecx	; Jump to lower memory copy of kernel
 
 .lower:
 	mov ecx, cr0
-	and ecx, 0x7FFFFFFF
+	and ecx, 0x7FFFFFFF	; Disable paging
 	mov cr0, ecx
+
 	mov ecx, cr4
-	and ecx, 0xFFFFFFEF
+	and ecx, 0xFFFFFFEF	; Disable 4 MB pages
 	mov cr4, ecx
-	mov cr3, eax
+
+	mov cr3, eax		; Load new page directory
+
 	mov ecx, cr0
-	or  ecx, 0x80000000
+	or  ecx, 0x80000000	; Re-enable paging
 	mov cr0, ecx
+	
 	ret

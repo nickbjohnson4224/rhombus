@@ -61,7 +61,7 @@ map_t *map_load(map_t *map);							// Activates a new map
 map_t *map_enum(map_t *map);							// Prints contents of a map (pdirs only)
 
 /***** PAGE.C *****/
-char mem_setup;
+u8int mem_setup;
 page_t page_touch(map_t *map, u32int page);				// Makes sure a page exists
 page_t page_set(map_t *map, u32int page, page_t value);	// Sets the value of a page
 page_t page_get(map_t *map, u32int page);				// Returns the value of a page

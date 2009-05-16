@@ -9,7 +9,7 @@ __attribute__ ((section(".ttext")))
 void elf_load_segment(u8int *src, elf_ph_t *seg) {
 
 	// Check if we can load this segment
-	if (seg->p_type != PT_LOAD) return; // No libraries or anything else!
+	if (seg->p_type != PT_LOAD) return; // No libraries or any other crap!
 
 	// Get pointer to source
 	u8int *src_base = &src[seg->p_offset];
@@ -23,9 +23,8 @@ void elf_load_segment(u8int *src, elf_ph_t *seg) {
 	task_t *t = get_task(curr_pid);
 	map_load(&t->map);
 	u32int i = ((u32int) dest_base) & ~0xFFF;
-	for (; i < dest_limit; i += 0x1000) {
-		p_alloc(&t->map, i, PF_USER | PF_RW | PF_PRES);
-	}
+	for (; i < dest_limit; i += 0x1000)
+		p_alloc(&t->map, i, PF_USER | PF_RW);
 
 	// Copy data
 	memcpy(dest_base, src_base, seg->p_memsz);
@@ -33,9 +32,8 @@ void elf_load_segment(u8int *src, elf_ph_t *seg) {
 	// Set proper flags (i.e. remove write flag if needed)
 	if (seg->p_flags & PF_W) {
 		i = ((u32int) dest_base) & ~0xFFF;
-		for (; i < dest_limit; i+= 0x1000) {
-			page_set(&t->map, i, page_fmt(page_get(&t->map, i), PF_USER | PF_PRES));
-		}
+		for (; i < dest_limit; i+= 0x1000)
+			page_set(&t->map, i, page_fmt(page_get(&t->map, i), PF_USER));
 	}
 
 }
@@ -55,14 +53,15 @@ int elf_check(u8int *src) {
 
 __attribute__ ((section(".ttext")))
 u32int elf_load(u8int *src) {
+	u32int i, n;
 	elf_t *elf_header = (elf_t*) src;
 
 	// Load all segments
 	elf_ph_t *program_header = (elf_ph_t*) &src[elf_header->e_phoff];
-	u32int n = elf_header->e_phnum;
+	n = elf_header->e_phnum; // Number of segments
 	if (!n) return (u32int) NULL;
-	u32int i;
+
 	for (i = 0; i < n; i++) elf_load_segment(src, &program_header[i]);
 	
-	return elf_header->e_entry;
+	return elf_header->e_entry; // Return entry point
 }

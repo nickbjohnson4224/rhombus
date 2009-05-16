@@ -10,10 +10,11 @@ extern u32int end;
 u32int proto_base = 0xF8010000; // Use up the lower memory for allocation if possible
 
 void *kmalloc(u32int size) {
-	u32int i;
+	u32int i, addr, temp;
+
 	if (!mem_setup) {
 		if (proto_base & 0xFFF) proto_base = (proto_base & ~0xFFF) + 0x1000;
-		u32int temp = proto_base;
+		temp = proto_base;
 		proto_base += size;
 		if (proto_base >= 0xF8080000) {
 			proto_base = (u32int) &end; // Don't overwrite EBDA!
@@ -22,7 +23,7 @@ void *kmalloc(u32int size) {
 		return (void*) temp;
 	}
 	else {
-		u32int addr = (pool_alloc(ppool) << 12) + 0xF8400000;
+		addr = (pool_alloc(ppool) << 12) + 0xF8400000;
 		page_set(&kmap, addr, page_fmt(frame_new(), PF_PRES | PF_RW));
 		return (void*) addr;
 	}
@@ -31,8 +32,6 @@ void *kmalloc(u32int size) {
 void kfree(void *addr) {
 	pool_free(ppool, ((u32int) addr - 0xF8400000) >> 12);
 }
-
-/***** PREVIOUSLY IN FRAME.C *****/
 
 u32int frame_new() {
 	return (pool_alloc(fpool) << 12);

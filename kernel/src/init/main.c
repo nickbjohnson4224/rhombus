@@ -25,6 +25,7 @@ NULL
 
 void init(void *mboot_ptr, u32int mboot_magic) {
 	u32int i;
+
 	cleark();
 	printk(stamp);
 
@@ -34,6 +35,4 @@ void init(void *mboot_ptr, u32int mboot_magic) {
 	printk("Booting Khaos\n");
 	for (i = 0; init_list[i]; i++) init_list[i]();
 	printk("Khaos booted\n\n");
-
-	asm volatile ("sti");
 }

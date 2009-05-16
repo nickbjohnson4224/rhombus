@@ -1,3 +1,5 @@
+; Copyright 2009 Nick Johnson
+
 section .ttext
 
 global cpuid_name

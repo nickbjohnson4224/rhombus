@@ -3,12 +3,12 @@
 #include <lib.h>
 #include <mem.h>
 
-char mem_setup = 0;
+u8int mem_setup = 0;
 
 page_t page_touch(map_t *map, u32int page) {
 	if (map->virt[page >> 22]) return map->virt[page >> 22][(page >> 12) % 1024];
 	map->virt[page >> 22] = kmalloc(0x1000);
-	map->pdir[page >> 22] = phys_of(&kmap, (void*) map->virt[page >> 22]) | PF_PRES | PF_RW | PF_USER;
+	map->pdir[page >> 22] = phys_of(&kmap, (void*) map->virt[page >> 22]) | 0x7;
 	pgclr(map->virt[page >> 22]);
 	return 0x00000000;
 }
@@ -24,9 +24,11 @@ page_t page_get(map_t *map, u32int page) {
 }
 
 u32int phys_of(map_t *map, void *addr) {
+	u32int temp;
+
 	if (!mem_setup) return (u32int) addr & ~0xF8000000;
 	if (!map->virt[(u32int) addr >> 22]) return 0x00000000;
-	u32int temp = map->virt[(u32int) addr >> 22][((u32int) addr >> 12) % 1024];
+	temp = map->virt[(u32int) addr >> 22][((u32int) addr >> 12) % 1024];
 	temp &= 0xFFFFF000;
 	temp |= ((u32int) addr & 0xFFF);
 	return temp;

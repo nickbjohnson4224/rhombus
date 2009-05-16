@@ -5,11 +5,12 @@
 
 pool_t *pool_new(u32int num) {
 	pool_t *pool;
-	u32int npool = (num - 1) / 1024 + 1; // 1024 entries per pool (and round up)
-	u32int extra = num - ((npool - 1) * 1024);
+	u32int i, npool, extra;
+
+	npool = (num - 1) / 1024 + 1; // 1024 entries per pool (and round up)
+	extra = num - ((npool - 1) * 1024);
 	pool = kmalloc(sizeof(pool_t) * npool);
 	
-	u32int i;
 	for (i = 0; i < npool; i++) {
 		memclr(pool[i].word, sizeof(u32int) * 32);
 		pool[i].first = 0x0000;
@@ -44,10 +45,14 @@ u32int pool_alloc(pool_t *pool) {
 }
 
 u32int pool_free(pool_t *pool, u32int pos) {
-	u32int p = pos >> 10;
-	u32int w = (pos >> 5) % 1024;
-	u32int b = pos % 32;
+	u32int p, w, b;
 
+	// Convert to bit coordinates
+	p = pos >> 10;
+	w = (pos >> 5) % 1024;
+	b = pos % 32;
+
+	// Clear bit and set metadata
 	pool[p].word[w] &= ~(0x1 << b);
 	pool[p].first = min(pool[p].first, (w << 5) | b);
 	pool[p].total ++;
