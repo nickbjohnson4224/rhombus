@@ -10,9 +10,30 @@
 /***** SYSTEM CALLS *****/
 
 u32int exit(u32int val);				// End current task
-u32int fork(u32int flags);				// Create new task as clone
+u32int fork();							// Create new task as clone
 u32int wait(u32int task);				// Wait for task to end
 u32int gpid(u32int flags);				// Get PID of relative task
+
+/***** SIGNALS *****/
+
+// Signals (system)
+#define S_ENT 0x00000001	// Reentrance
+#define S_PAG 0x00000002	// Page fault
+#define S_IRQ 0x00000004	// Registered IRQ
+#define S_KIL 0x00000008	// Kill signal
+
+#define ENOTASK (-1)
+
+/* This is the most complex, and most important, system call. It sends signal
+type to task task with various arguments and is controlled by flags. Arguments
+to this function are in the order shown as registers */
+
+image_t *ksignal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2);
+image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, u32int flags);
+image_t *sret();
+
+// The signal table is mapped in all address spaces
+u32int *signal_table;
 
 /***** PERMISSIONS *****/
 
@@ -40,11 +61,12 @@ typedef struct {
 	u16int next_task;
 	u16int quanta;
 	u16int parent;
-	u32int reserved;
+	u16int magic;
+	u16int reserved;
 } task_t;
 
-#define TF_READY 0x00
-#define TF_BLOCK 0x01
+#define TF_READY 0x0000
+#define TF_BLOCK 0x0001
 
 task_t *get_task(u16int pid);
 u16int new_task(u16int src_pid);

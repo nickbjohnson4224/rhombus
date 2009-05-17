@@ -30,6 +30,7 @@ u16int new_task(u16int src_pid) {
 	new->sigmask[0] = src->sigmask[0];
 	new->sigmask[1] = src->sigmask[1];
 	new->parent = src_pid;
+	new->magic = 0x4224;
 
 	insert_sched(new_pid);
 	return new_pid;

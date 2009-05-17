@@ -51,6 +51,9 @@ void register_int(u8int n, handler_t handler) {
 }
 
 void *int_handler(image_t *state) {
+	task_t *t = get_task(curr_pid);
+	if (state < 0xF8000000) t->image = state;
+
 	if (state->num < 32) {
 		u32int cr2;
 		asm volatile ("movl %%cr2, %0" : "=r" (cr2));
@@ -66,6 +69,12 @@ void *int_handler(image_t *state) {
 			printk("fork()\n");
 			new_task(curr_pid);
 		break;
+		case 0x42:
+			printk("signal()\n");
+			sleep(1000000);
+			return signal(state->eax, state->esi, state->ebx, state->ecx, state->edx, state->edi);
+		break;
+		default: panic("no such syscall");
 	}
 
 	if (int_handlers[state->num])

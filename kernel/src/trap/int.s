@@ -93,8 +93,6 @@ int_common:
 	mov eax, 0
 	mov ax, ds
 	push eax
-	mov eax, 0x42242442
-	push eax
 	
 	mov ax, 0x10
 	mov ds, ax
@@ -113,7 +111,6 @@ int_common:
 	call int_handler
 	mov esp, eax
 
-	pop eax
 	pop eax
 	mov ds, ax
 	mov es, ax

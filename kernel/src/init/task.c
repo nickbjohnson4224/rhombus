@@ -17,14 +17,17 @@ void init_task() {
 		idle->user.id = 0;
 		idle->user.ring = 0;
 		map_clone(&idle->map, &kmap, MF_CLEAR_USER);
-		idle->flags = TF_BLOCK;
+		idle->flags = TF_READY;
 		idle->sigmask[0] = 0x00000000;
 		idle->sigmask[1] = 0x00000000;
 		curr_pid = 0;
 
 		// Make sure the scheduler works
 		init_sched();
-	
+
+		// Set the signal table pointer
+		signal_table = (void*) 0xF3FFF000;
+
 	cursek(36, -1);
 	printk("done\n");
 	printk("System library");
