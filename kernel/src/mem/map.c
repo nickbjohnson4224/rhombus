@@ -43,7 +43,7 @@ map_t *map_clone(map_t *dest, map_t *src, u8int flags) {
 	// Clone/clear userspace
 	for (i = 0; i < 976; i++) if (src->virt[i]) {
 		for (j = 0; j < 1024; j++) if (src->virt[i][j] & PF_PRES) {
-			p_alloc(dest, ((i << 10) + j) << 12, src->virt[i][j] & PF_MASK);
+			p_alloc(dest, ((i << 10) + j) << 12, src->virt[i][j] & PF_MASK | PF_PRES);
 			page_set(&kmap, 0xFFFF0000, page_fmt( src->virt[i][j], PF_PRES | PF_RW));
 			page_set(&kmap, 0xFFFF1000, page_fmt(dest->virt[i][j], PF_PRES | PF_RW));
 			asm volatile ("invlpg 0xFFFF0000");
@@ -70,6 +70,12 @@ map_t *map_clone(map_t *dest, map_t *src, u8int flags) {
 }
 
 map_t *map_load(map_t *map) {
+	u32int cr3;
+	asm volatile ("mov %%cr3, %0" : "=r" (cr3));
+	if (phys_of(&kmap, map->pdir) == cr3) return;
+
+//	printk("\nMAP CHANGE: %x\n", map);
+
 	asm volatile ("mov %0, %%cr3" :: "r" (phys_of(&kmap, map->pdir)));
 	return map;
 }

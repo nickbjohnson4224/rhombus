@@ -58,6 +58,8 @@ void *int_handler(image_t *state) {
 		u32int cr2;
 		asm volatile ("movl %%cr2, %0" : "=r" (cr2));
 		printk("exception %d, 0x%x, 0x%x:%x\n", state->num, state->err, cr2 >> 12, cr2 & 0xFFF);
+		printk("state: %x %x %x %x\n", state, state->eip, state->useresp, state->eax);
+		if (state->num == 14) printk("page: %x\n", page_get(&t->map, cr2));
 		panic("exception");
 	}
 	else if (state->num >= 32 && state->num <= 47) {
@@ -71,7 +73,6 @@ void *int_handler(image_t *state) {
 		break;
 		case 0x42:
 			printk("signal()\n");
-			sleep(1000000);
 			return signal(state->eax, state->esi, state->ebx, state->ecx, state->edx, state->edi);
 		break;
 		default: panic("no such syscall");

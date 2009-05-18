@@ -6,7 +6,7 @@
 
 pool_t *tmap;		// Pool allocator for task structures
 task_t *task[128]; 	// 2D array (128*128) of task structures
-u16int curr_pid;
+u16int curr_pid = 0;
 
 task_t *get_task(u16int pid) {
 	if (!task[pid >> 7]) {
@@ -37,6 +37,9 @@ u16int new_task(u16int src_pid) {
 }
 
 u32int rem_task(u16int pid) {
+	task_t *t = get_task(pid);
+
+	t->magic = 0x0000;
 	return pool_free(tmap, pid);
 }
 
