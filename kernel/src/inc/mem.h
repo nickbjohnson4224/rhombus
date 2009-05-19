@@ -2,6 +2,7 @@
 
 /* General virtual memory map:
 0x00000000 - 0xF3FFFFFF: userspace
+	0xF0000000: usually libc
 	0xF3FF0000: standard stack
 	0xF3FFE000: state saving stack
 	0xF3FFF000: signal handler table
@@ -30,16 +31,14 @@ typedef page_t* ptbl_t;
 typedef struct map {
 	u32int *pdir;	// Physical addresses of tables
 	ptbl_t *virt;	// Virtual addresses of tables
+	u32int cache;	// Cached physical address of page directory
 } map_t;
 
 /****** SYSTEM CALLS *****/
 u32int mmap(u32int base, u32int flags);	// Map memory to a page
 u32int umap(u32int base);				// Unmap memory from a page
 u32int rmap(u32int base, u32int src);	// Move a mapped frame
-
-/***** PRIVILEDGED SYSTEM CALLS *****/
-u32int grab(u32int base, u32int src);	// Get a frame by force
-u32int phys(u32int base, u32int task);	// Get physical address
+u32int fmap(u16int task, u32int base);	// Force a remote remapping (task 0 == physical mem)
 
 /***** ALLOC.C *****/
 pool_t *ppool;
@@ -49,7 +48,7 @@ void *kmalloc(u32int size);	// Allocates one page
 void kfree(void *addr);		// Frees one page
 
 /***** MAP.C *****/
-#define MF_COPY_LIBOS 	0x01	// Copy libspace as well (recommended)
+#define MF_CPY_LIBSYS 	0x01	// Copy libsys as well (recommended)
 #define MF_CLEAR_USER 	0x02	// Do not copy userspace
 
 map_t kmap;

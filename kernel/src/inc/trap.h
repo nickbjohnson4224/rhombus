@@ -19,5 +19,6 @@ void *pit_handler(image_t *state);
 void register_int(u8int n, handler_t handler);
 
 void init_tss();
+void tss_set_esp();
 
 #endif /*SIG_H*/

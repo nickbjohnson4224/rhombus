@@ -38,11 +38,15 @@ u32int *signal_table;
 /***** PERMISSIONS *****/
 
 // Ring level provides general permissions
-// 0 = Hardware level (kernel, drivers) 	(can use ports / remap memory)
-// 1 = System level (filesystem, graphics) 	(can remap memory)
-// 2 = Superuser level (root) 				(can kill anything / etc.)
+// 0 = Hardware level (kernel, drivers) 	(can use ports)
+// 1 = System level (filesystem, graphics)
+// 2 = Superuser level (root)
 // 3+ = User level
+
 // Every level has override power over all greater levels
+// This means a program can access memory, send privileged
+// signals, etc. if it is at a higher level or has the same
+// user id as the target task.
 
 typedef struct {
 	u16int ring;
@@ -56,13 +60,13 @@ typedef struct {
 	id_t user;
 	map_t map;
 	image_t *image;
-	u32int sigmask[2];
-	u16int flags;
+	u8int flags;
+	u8int quanta;
 	u16int next_task;
-	u16int quanta;
 	u16int parent;
 	u16int magic;
-	u16int reserved;
+	u32int tss_esp;
+	u32int reserved;
 } task_t;
 
 #define TF_READY 0x0000

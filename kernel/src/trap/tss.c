@@ -36,3 +36,7 @@ void init_tss() {
 	extern void tss_flush();
 	tss_flush();
 }
+
+void tss_set_esp(u32int esp) {
+	tss.esp0 = esp;
+}

@@ -81,6 +81,7 @@ void init_libsys() {
 	if (elf_check(header_contents(header[n]))) panic("libsys is not valid ELF");
 
 	// Setup process image
+	t->tss_esp = 0xF3FFEFFC;
 	t->image->useresp = 0xF3FFDFFC;
 	t->image->esp = 0xF3FFDFFC;
 	t->image->ebp = 0xF3FFDFFC;

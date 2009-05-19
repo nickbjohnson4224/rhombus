@@ -7,6 +7,7 @@
 map_t *map_alloc(map_t *map) {
 	map->pdir = kmalloc(0x1000);
 	map->virt = kmalloc(0x1000);
+	map->cache = phys_of(&kmap, map->pdir);
 	memclr((u32int*) map->pdir, 0x1000);
 	memclr((u32int*) map->virt, 0x1000);
 	return map;
@@ -15,6 +16,7 @@ map_t *map_alloc(map_t *map) {
 map_t *map_free(map_t *map) {
 	kfree(map->pdir);
 	kfree(map->virt);
+	map->cache = 0;
 	return map;
 }
 
@@ -49,8 +51,6 @@ map_t *map_clone(map_t *dest, map_t *src, u8int flags) {
 			asm volatile ("invlpg 0xFFFF0000");
 			asm volatile ("invlpg 0xFFFF1000");
 			memcpy( (void*) 0xFFFF1000, (void*) 0xFFFF0000, 0x1000);
-			page_set(&kmap, 0xFFFF0000, 0x00000000);
-			page_set(&kmap, 0xFFFF1000, 0x00000000);
 		}
 	}
 
@@ -70,12 +70,10 @@ map_t *map_clone(map_t *dest, map_t *src, u8int flags) {
 }
 
 map_t *map_load(map_t *map) {
-	u32int cr3;
-	asm volatile ("mov %%cr3, %0" : "=r" (cr3));
-	if (phys_of(&kmap, map->pdir) == cr3) return;
+	u32int cr3; asm volatile ("mov %%cr3, %0" : "=r" (cr3));
+	if (!map->cache) panic("invalid map load");
+	if (map->cache == cr3) return; // No unnecessary context switches!
 
-//	printk("\nMAP CHANGE: %x\n", map);
-
-	asm volatile ("mov %0, %%cr3" :: "r" (phys_of(&kmap, map->pdir)));
+	asm volatile ("mov %0, %%cr3" :: "r" (map->cache));
 	return map;
 }

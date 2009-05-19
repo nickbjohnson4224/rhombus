@@ -10,6 +10,7 @@ image_t *ksignal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2)
 	// Create new image to return to
 	task_switch(task);
 	memcpy(t->image, (u8int*) ((u32int) t->image - sizeof(image_t)), sizeof(image_t));
+	t->tss_esp = (u32int) t->image; // Will now create images above old image
 	t->image = (void*) ((u32int) t->image - sizeof(image_t));
 
 	// Set registers to describe signal
@@ -42,6 +43,7 @@ image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, 
 	// Create new image to return to
 	task_switch(task);
 	memcpy((u8int*) ((u32int) t->image - sizeof(image_t)), t->image, sizeof(image_t));
+	t->tss_esp = (u32int) t->image; // Will now create images above old image
 	t->image = (void*) ((u32int) t->image - sizeof(image_t));
 
 	// Set registers to describe signal
@@ -61,6 +63,7 @@ image_t *sret() {
 
 	// Reset image stack
 	t->image = (void*) ((u32int) t->image + sizeof(image_t));
+	t->tss_esp = (u32int) t->image + sizeof(image_t);
 
 	// Bounds check image
 	// If this is false, we really should kill the process...

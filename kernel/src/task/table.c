@@ -27,8 +27,6 @@ u16int new_task(u16int src_pid) {
 	map_clone(&new->map, &src->map, 0);
 	new->image = src->image;
 	new->flags = src->flags;
-	new->sigmask[0] = src->sigmask[0];
-	new->sigmask[1] = src->sigmask[1];
 	new->parent = src_pid;
 	new->magic = 0x4224;
 
@@ -47,6 +45,7 @@ image_t *task_switch(u16int pid) {
 	curr_pid = pid;
 	task_t *t = get_task(pid);
 	map_load(&t->map);
+	tss_set_esp(t->tss_esp);
 	return t->image;
 }
 

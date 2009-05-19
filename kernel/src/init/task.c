@@ -18,8 +18,6 @@ void init_task() {
 		idle->user.ring = 0;
 		map_clone(&idle->map, &kmap, MF_CLEAR_USER);
 		idle->flags = TF_READY;
-		idle->sigmask[0] = 0x00000000;
-		idle->sigmask[1] = 0x00000000;
 		curr_pid = 0;
 
 		// Make sure the scheduler works
