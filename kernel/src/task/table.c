@@ -29,6 +29,7 @@ u16int new_task(u16int src_pid) {
 	new->flags = src->flags;
 	new->parent = src_pid;
 	new->magic = 0x4224;
+	new->tss_esp = src->tss_esp;
 
 	insert_sched(new_pid);
 	return new_pid;

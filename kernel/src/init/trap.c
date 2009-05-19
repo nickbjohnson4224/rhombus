@@ -2,6 +2,26 @@
 
 #include <lib.h>
 #include <trap.h>
+#include <task.h>
+
+image_t *fork_call(image_t *image) {
+	printk("fork()\n");
+	image->eax = 0;
+	u16int parent = curr_pid;
+	image = task_switch(new_task(curr_pid));
+	image->eax = parent;
+	return image;
+}
+
+image_t *sint_call(image_t *image) {
+	printk("sint()\n");
+	return signal(image->eax, image->esi, image->ebx, image->ecx, image->edx, image->edi);
+}
+
+image_t *sret_call(image_t *image) {
+	printk("sret()\n");
+	return sret();
+}
 
 __attribute__ ((section(".ttext"))) 
 void init_pit() {
@@ -53,6 +73,11 @@ void init_int() {
 
 		// Initialize the TSS
 		init_tss();
+
+		// Register system calls
+		register_int(0x40, fork_call);
+		register_int(0x42, sint_call);
+		register_int(0x43, sret_call);
 
 	cursek(36, -1);
 	printk("done\n");

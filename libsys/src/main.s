@@ -8,7 +8,6 @@ main:
 	xor ebx, ebx
 	xor edx, edx
 	int 0x40
-	nop
 	call setup
 
 .loop:
