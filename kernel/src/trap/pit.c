@@ -9,10 +9,6 @@ void *pit_handler(image_t *state) {
 	static u32int tick = 0;
 	tick++;
 
-	state = task_switch(next_task(0));
-
-	printk("%x\t%x %x %x (%x %x %x %x)\n", curr_pid, state, state->useresp, state->eip,
-		state->eax, state->ebx, state->ecx, state->edx);
-	return state;
+	return task_switch(next_task(0));
 }
 

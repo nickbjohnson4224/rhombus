@@ -14,7 +14,8 @@ image_t *fork_call(image_t *image) {
 }
 
 image_t *sint_call(image_t *image) {
-	printk("sint()\n");
+	printk("sint() to %d\n", image->eax);
+	sleep(1000000);
 	return signal(image->eax, image->esi, image->ebx, image->ecx, image->edx, image->edi);
 }
 

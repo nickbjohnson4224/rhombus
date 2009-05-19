@@ -40,12 +40,12 @@ fork:
 
 global sint
 sint:
-	mov eax, [esp+0]
-	mov esi, [esp+4]
-	mov ebx, [esp+8]
-	mov ecx, [esp+12]
-	mov edx, [esp+16]
-	mov edi, [esp+20]
+	mov eax, [esp+4]
+	mov esi, [esp+8]
+	mov ebx, [esp+12]
+	mov ecx, [esp+16]
+	mov edx, [esp+20]
+	mov edi, [esp+24]
 	int 0x42
 	ret
 
