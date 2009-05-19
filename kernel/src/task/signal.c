@@ -67,8 +67,8 @@ image_t *sret() {
 
 	// Bounds check image
 	// If this is false, we really should kill the process...
-	if ((u32int) t->image >= 0xF3FFEFFC - sizeof(image_t)) 
-		t->image = (void*) (0xF3FFEFFC - sizeof(image_t));
+	if ((u32int) t->tss_esp >= 0xF3FFF000) 
+		t->tss_esp = 0xF3FFEFFC;
 
 	return t->image;
 }
