@@ -5,7 +5,7 @@
 #include <task.h>
 
 image_t *fork_call(image_t *image) {
-	printk("fork()\n");
+//	printk("fork() from %d\n", curr_pid);
 	image->eax = 0;
 	u16int parent = curr_pid;
 	image = task_switch(new_task(curr_pid));
@@ -13,13 +13,28 @@ image_t *fork_call(image_t *image) {
 	return image;
 }
 
+image_t *exit_call(image_t *image) {
+//	printk("exit() %d\n", curr_pid);
+
+	u16int dead_task = curr_pid;
+	task_t *t = get_task(dead_task);
+	image_t *tmp = signal(t->parent, S_DTH, image->eax, 0, 0, 0);
+	printk("wise\n");
+	map_clean(&t->map);
+	printk("guise\n");
+	map_free(&t->map);
+	printk("pies\n");
+	rem_task(dead_task);
+	return tmp;
+}
+
 image_t *sint_call(image_t *image) {
-	printk("sint() to %d\n", image->eax);
+//	printk("sint() to %d\n", image->eax);
 	return signal(image->eax, image->esi, image->ebx, image->ecx, image->edx, image->edi);
 }
 
 image_t *sret_call(image_t *image) {
-	printk("sret()\n");
+//	printk("sret() %x\n", image);
 	return sret(image);
 }
 
@@ -84,6 +99,9 @@ void init_int() {
 		register_int(0x42, sint_call);
 		register_int(0x43, sret_call);
 		register_int(0x44, eout_call);
+
+		// Register fault handlers
+		init_fault();
 
 	cursek(36, -1);
 	printk("done\n");

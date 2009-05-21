@@ -29,6 +29,7 @@ idt_flush:
   global int%1
   int%1:
     cli
+	push byte 0
     push byte 0
     push byte %1
     jmp int_common
@@ -38,6 +39,7 @@ idt_flush:
   global int%1
   int%1:
     cli
+	push byte 0
     push byte %1
     jmp int_common
 %endmacro 
@@ -120,6 +122,6 @@ int_common:
 	mov gs, ax
 
 	popa
-	add esp, 8
+	add esp, 12
 	sti
 	iret

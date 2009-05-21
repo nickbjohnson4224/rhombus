@@ -16,13 +16,18 @@ u32int gpid(u32int flags);				// Get PID of relative task
 
 /***** SIGNALS *****/
 
-// Signals (system)
-#define S_ENT 0x00000001	// Reentrance
-#define S_PAG 0x00000002	// Page fault
-#define S_IRQ 0x00000004	// Registered IRQ
-#define S_KIL 0x00000008	// Kill signal
+// Signals (system) (sig < 16) (esi = sig #)
+#define S_GEN 0	// Generic fault 	(ebx = fault #, ecx = errcode)
+#define S_ENT 1	// Reentrance		(ebx = tick)
+#define S_PAG 2	// Page fault		(ebx = address, ecx = flags)
+#define S_IRQ 3	// Registered IRQ	()
+#define S_KIL 4	// Kill signal		(ebx = identifier)
+#define S_IMG 5	// Image overflow	()
+#define S_FPE 6 // FP exception		(ebx = eip)
+#define S_DTH 7 // Child death		(eax = child pid, ebx = exit value)
 
 #define ENOTASK (-1)
+#define ENOSIG (-2)
 
 /* This is the most complex, and most important, system call. It sends signal
 type to task task with various arguments and is controlled by flags. Arguments

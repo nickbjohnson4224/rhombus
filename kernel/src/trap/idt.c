@@ -59,15 +59,8 @@ void *int_handler(image_t *state) {
 	task_t *t = get_task(curr_pid);
 	u32int cr2; asm volatile ("movl %%cr2, %0" : "=r" (cr2));
 
-//	printk("%x\t%x %x %x (%x %x %x %x)\n", curr_pid, state, state->useresp, state->eip,
-//		state->eax, state->ebx, state->ecx, state->edx);
-
 	if ((u32int) state < 0xF8100000) t->image = state;
-	if (state->num < 32) {
-		printk("exception %d, 0x%x, 0x%x:%x\n", state->num, state->err, cr2 >> 12, cr2 & 0xFFF);
-		panic("exception");
-	}
-	else if (state->num >= 32 && state->num <= 47) {
+	if (state->num >= 32 && state->num <= 47) {
 		if (state->num >= 40) outb(0xA0, 0x20);
 		outb(0x20, 0x20);
 	}

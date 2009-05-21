@@ -37,7 +37,7 @@ u16int next_task(u8int flags) {
 	t = get_task(pid);
 	queue.next = t->next_task;
 	t->next_task = 0;
-	insert_sched(pid);
+	if (t->magic == 0x4224) insert_sched(pid);
 	if (t->flags & TF_BLOCK) return next_task(0);
 
 	return pid;

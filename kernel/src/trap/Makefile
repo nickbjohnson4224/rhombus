@@ -1,4 +1,4 @@
-SOURCES=idt.o int.o pit.o tss.o
+SOURCES=idt.o int.o pit.o tss.o fault.o
 CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc -fomit-frame-pointer
 LDFLAGS=-r
 ASFLAGS=-felf

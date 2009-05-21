@@ -4,7 +4,7 @@
 
 void panic(char *message) {
 	colork(0x7);
-	printk("\nKernel panic: %s\n", message);
+	printk("Kernel panic: %s\n", message);
 	asm volatile ("cli");
 	asm volatile ("hlt");
 }
