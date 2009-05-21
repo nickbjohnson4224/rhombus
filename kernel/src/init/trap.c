@@ -15,7 +15,6 @@ image_t *fork_call(image_t *image) {
 
 image_t *sint_call(image_t *image) {
 	printk("sint() to %d\n", image->eax);
-	sleep(1000000);
 	return signal(image->eax, image->esi, image->ebx, image->ecx, image->edx, image->edi);
 }
 
@@ -39,7 +38,7 @@ void init_pit() {
 		register_int(IRQ(0), pit_handler);
 
 		// Set the PIT frequency to 256Hz
-		divisor = 1193180 / 256;
+		divisor = 1193180 / 16;
 		outb(0x43, 0x36);
 		outb(0x40, divisor & 0xFF);
 		outb(0x40, divisor >> 8);

@@ -45,6 +45,8 @@ image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, 
 	memcpy((u8int*) ((u32int) t->image - sizeof(image_t)), t->image, sizeof(image_t));
 	t->tss_esp = (u32int) t->image; // Will now create images above old image
 	t->image = (void*) ((u32int) t->image - sizeof(image_t));
+	printk("%x\n", t->image);
+	if ((u32int) t->image < 0xF3FFE000) panic("task state stack overrun");
 
 	// Set registers to describe signal
 	t->image->eax = src;
@@ -55,23 +57,27 @@ image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, 
 	// Locate entry point
 	t->image->eip = signal_table[sig];
 
+	printk("%x %x\n", t->image, t->tss_esp); 
+
+	tss_set_esp(t->tss_esp);
 	return t->image;
 }
 
 image_t *sret(image_t *image) {
 	task_t *t, *src_t;
 
-	src_t = get_task(t->image->eax);
+	src_t = get_task(image->eax);
 
 	// Reset image stack
 	t = get_task(curr_pid);
-	t->image = (void*) ((u32int) t->image + sizeof(image_t));
-	t->tss_esp = (u32int) t->image + sizeof(image_t);
+	printk("%x %x\n", t->image, t->tss_esp); 
+	t->image = (u32int) t->tss_esp;
+	t->tss_esp += sizeof(image_t); 
+	printk("%x %x\n", t->image, t->tss_esp); 
 
 	// Bounds check image
 	// If this is false, we really should kill the process...
-	if ((u32int) t->tss_esp >= 0xF3FFF000) 
-		t->tss_esp = 0xF3FFEFFC;
+	if ((u32int) t->tss_esp >= 0xF3FFF000) panic("task state stack underrun");
 
 	// Make sure the caller is now unblocked
 	src_t->flags &= ~TF_BLOCK;

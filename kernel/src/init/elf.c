@@ -23,10 +23,8 @@ void elf_load_segment(u8int *src, elf_ph_t *seg) {
 	task_t *t = get_task(curr_pid);
 	map_load(&t->map);
 	u32int i = ((u32int) dest_base) & ~0xFFF;
-	for (; i < dest_limit; i += 0x1000) {
+	for (; i < dest_limit; i += 0x1000)
 		p_alloc(&t->map, i, PF_USER | PF_PRES);
-		printk("ELF allocating page %x\n", i);
-	}
 
 	// Copy data
 	memcpy(dest_base, src_base, seg->p_memsz);
