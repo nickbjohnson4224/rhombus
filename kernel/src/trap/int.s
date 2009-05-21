@@ -81,9 +81,11 @@ INTN	46
 INTN	47
 
 ; System calls
-INTN	64 ; memory
-INTN	65 ; tasks
-INTN	66 ; signals
+INTN	64 ; fork
+INTN	65 ; exit
+INTN	66 ; sint
+INTN	67 ; sret
+INTN	68 ; eout
 
 extern int_handler
 

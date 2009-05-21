@@ -6,6 +6,7 @@
 typedef unsigned int u32int;
 typedef unsigned short u16int;
 typedef unsigned char u8int;
+typedef unsigned int addr_t;
 
 /***** STANDARD FUNCTIONS *****/
 void outb(u16int port, u8int val);

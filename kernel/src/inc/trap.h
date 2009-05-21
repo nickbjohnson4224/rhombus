@@ -8,12 +8,11 @@ typedef struct image {
 	u32int num, err, eip, cs, eflags, useresp, ss;
 } __attribute__ ((packed)) image_t;
 
-typedef void* (*handler_t) (image_t*);
+typedef image_t* (*handler_t) (image_t*);
 
 void init_idt();
 void init_pit();
-void *kb_handler(image_t *state);
-void *pit_handler(image_t *state);
+image_t *pit_handler(image_t *state);
 
 #define IRQ(n) (n + 32)
 void register_int(u8int n, handler_t handler);

@@ -5,7 +5,7 @@
 #include <task.h>
 
 // Handles IRQ 0, and advances a simple counter used as a clock
-void *pit_handler(image_t *state) {
+image_t *pit_handler(image_t *state) {
 	static u32int tick = 0;
 	tick++;
 

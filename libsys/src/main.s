@@ -4,34 +4,8 @@ extern setup
 
 global main
 main:
-	call setup_sig
-	xor ebx, ebx
-	xor edx, edx
 	int 0x40
 	call setup
-
-.loop:
-	call increment
-	int 0x40
-	jmp .loop
-
-increment:
-	call increment2
-	ret
-
-increment2:
-	inc ebx
-	ret
-
-signal_handler:
-	jmp signal_handler
-	int 0x43
-
-setup_sig:
-	mov eax, 0xF3FFF000
-	lea ebx, [signal_handler]
-	mov [eax], ebx
-	ret
 
 global fork
 fork:
@@ -51,5 +25,12 @@ sint:
 
 global sret
 sret:
+	mov eax, [esp+4]
 	int 0x43
+	ret
+
+global eout
+eout:
+	mov eax, [esp+4]
+	int 0x44
 	ret

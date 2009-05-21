@@ -58,10 +58,13 @@ image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, 
 	return t->image;
 }
 
-image_t *sret() {
-	task_t *t;
+image_t *sret(image_t *image) {
+	task_t *t, *src_t;
+
+	src_t = get_task(t->image->eax);
 
 	// Reset image stack
+	t = get_task(curr_pid);
 	t->image = (void*) ((u32int) t->image + sizeof(image_t));
 	t->tss_esp = (u32int) t->image + sizeof(image_t);
 
@@ -69,6 +72,9 @@ image_t *sret() {
 	// If this is false, we really should kill the process...
 	if ((u32int) t->tss_esp >= 0xF3FFF000) 
 		t->tss_esp = 0xF3FFEFFC;
+
+	// Make sure the caller is now unblocked
+	src_t->flags &= ~TF_BLOCK;
 
 	return t->image;
 }

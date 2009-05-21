@@ -21,7 +21,12 @@ image_t *sint_call(image_t *image) {
 
 image_t *sret_call(image_t *image) {
 	printk("sret()\n");
-	return sret();
+	return sret(image);
+}
+
+image_t *eout_call(image_t *image) {
+	printk("%s", image->eax);
+	return image;
 }
 
 __attribute__ ((section(".ttext"))) 
@@ -79,6 +84,7 @@ void init_int() {
 		register_int(0x40, fork_call);
 		register_int(0x42, sint_call);
 		register_int(0x43, sret_call);
+		register_int(0x44, eout_call);
 
 	cursek(36, -1);
 	printk("done\n");
