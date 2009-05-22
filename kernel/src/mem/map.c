@@ -37,9 +37,9 @@ map_t *map_clean(map_t *map) {
 
 map_t *map_clone(map_t *dest, map_t *src, u8int flags) {
 	u32int i, j;
-	map_load(&kmap);
 
 	// Create new map
+	map_load(&kmap);
 	dest = map_alloc(dest);
 
 	// Clone/clear userspace
@@ -70,8 +70,8 @@ map_t *map_clone(map_t *dest, map_t *src, u8int flags) {
 }
 
 map_t *map_load(map_t *map) {
-	u32int cr3; asm volatile ("mov %%cr3, %0" : "=r" (cr3));
 	if (!map->cache) map->cache = phys_of(&kmap, map->pdir);
+	u32int cr3; asm volatile ("mov %%cr3, %0" : "=r" (cr3));
 	if (map->cache == cr3) return; // No unnecessary context switches!
 
 	asm volatile ("mov %0, %%cr3" :: "r" (map->cache));

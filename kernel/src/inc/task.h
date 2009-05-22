@@ -7,13 +7,6 @@
 #include <trap.h>
 #include <mem.h>
 
-/***** SYSTEM CALLS *****/
-
-u32int exit(u32int val);				// End current task
-u32int fork();							// Create new task as clone
-u32int wait(u32int task);				// Wait for task to end
-u32int gpid(u32int flags);				// Get PID of relative task
-
 /***** SIGNALS *****/
 
 // Signals (system) (sig < 16) (esi = sig #)
@@ -28,12 +21,13 @@ u32int gpid(u32int flags);				// Get PID of relative task
 
 #define ENOTASK (-1)
 #define ENOSIG (-2)
+#define EPERMIT (-3)
 
 /* This is the most complex, and most important, system call. It sends signal
 type to task task with various arguments and is controlled by flags. Arguments
 to this function are in the order shown as registers */
 
-image_t *ksignal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2);
+image_t *ksignal(u32int sender, u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2);
 image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, u32int flags);
 image_t *sret();
 

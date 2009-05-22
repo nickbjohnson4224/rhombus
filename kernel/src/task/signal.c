@@ -4,11 +4,12 @@
 #include <task.h>
 #include <trap.h>
 
-image_t *ksignal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2) {
+image_t *ksignal(u32int sender, u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2) {
 	task_t *t = get_task(task);
 	
 	// Check existence of signal handler
 	if (!signal_table[sig]) {
+		printk("no signal handler for %d!\n", sig);
 		return exit_call(t->image);
 	}
 
@@ -17,10 +18,10 @@ image_t *ksignal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2)
 	memcpy(t->image, (u8int*) ((u32int) t->image - sizeof(image_t)), sizeof(image_t));
 	t->tss_esp = (u32int) t->image; // Will now create images above old image
 	t->image = (void*) ((u32int) t->image - sizeof(image_t));
-	if ((u32int) t->image < 0xF3FFE100 && sig != S_IMG) return ksignal(curr_pid, S_IMG, 0, 0, 0);
+	if ((u32int) t->image < 0xF3FFE100 && sig != S_IMG) return ksignal(0, curr_pid, S_IMG, 0, 0, 0);
 
 	// Set registers to describe signal
-	t->image->eax = 0; // Idle doesn't send signals, so 0 is free for "kernel signals"
+	t->image->eax = sender; // Idle doesn't send signals, so 0 is free for "kernel signals"
 	t->image->ebx = arg0;
 	t->image->ecx = arg1;
 	t->image->edx = arg2;
@@ -44,6 +45,12 @@ image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, 
 		return src_t->image;
 	}
 
+	// Check permissions
+	if (t->user.id != src_t->user.id && t->user.ring >= src_t->user.ring) {
+		src_t->image->eax = EPERMIT;
+		return src_t->image;
+	}
+
 	// Check existence of signal handler
 	if (!signal_table[sig]) {
 		src_t->image->eax = ENOSIG;
@@ -58,7 +65,7 @@ image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, 
 	memcpy((u8int*) ((u32int) t->image - sizeof(image_t)), t->image, sizeof(image_t));
 	t->tss_esp = (u32int) t->image; // Will now create images above old image
 	t->image = (void*) ((u32int) t->image - sizeof(image_t));
-	if ((u32int) t->image < 0xF3FFE100) return ksignal(curr_pid, S_IMG, 0, 0, 0);
+	if ((u32int) t->image < 0xF3FFE100) return ksignal(0, curr_pid, S_IMG, 0, 0, 0);
 
 	// Set registers to describe signal
 	t->image->caller = curr_pid;

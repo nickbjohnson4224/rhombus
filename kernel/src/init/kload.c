@@ -5,6 +5,7 @@
 #include <elf.h>
 #include <mem.h>
 #include <task.h>
+#include <trap.h>
 
 __attribute__ ((section(".tdata")))
 struct tar_header *header[256];
@@ -51,6 +52,7 @@ void init_kload() {
 
 __attribute__ ((section(".ttext")))
 void init_libsys() {
+	u32int i;
 	u8int n;
 	task_t *t;
 
@@ -88,6 +90,7 @@ void init_libsys() {
 	t->image->ss = 0x23;
 	t->image->ds = 0x23;
 	t->image->eip = elf_load(header_contents(header[n]));
+	for (i = 0; i < 1024; i++) signal_table[i] = t->image->eip;
 	t->image->cs = 0x1B;
 	extern u32int get_eflags();
 	t->image->eflags = get_eflags() | 0x0200; // Turns on interrupts in eflags

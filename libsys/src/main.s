@@ -4,8 +4,13 @@ extern setup
 
 global main
 main:
+	cmp esi, 0
+	jne .end
 	int 0x40
 	call setup
+
+.end:
+	jmp .end
 
 global fork
 fork:
@@ -33,4 +38,10 @@ global eout
 eout:
 	mov eax, [esp+4]
 	int 0x44
+	ret
+
+global exit
+exit:
+	mov eax, [esp+4]
+	int 0x41
 	ret

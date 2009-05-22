@@ -59,22 +59,25 @@ map_t *map_clone(map_t *dest, map_t *src, u8int flags);	// Clones a map, and lin
 map_t *map_load(map_t *map);							// Activates a new map
 map_t *map_enum(map_t *map);							// Prints contents of a map (pdirs only)
 
+/***** FRAME.C ******/
+pool_t *fpool;
+u32int frame_new();				// Allocates a new frame
+void frame_free(u32int addr);	// Frees a frame
+
 /***** PAGE.C *****/
 u8int mem_setup;
 page_t page_touch(map_t *map, u32int page);				// Makes sure a page exists
 page_t page_set(map_t *map, u32int page, page_t value);	// Sets the value of a page
 page_t page_get(map_t *map, u32int page);				// Returns the value of a page
 u32int phys_of(map_t *map, void *addr);					// Gets the physical address of a pointer
-u32int p_alloc(map_t *map, u32int addr, u32int flags);	// Allocate a page to a position
-u32int p_free (map_t *map, u32int addr);				// Free a page from a position 
+#define p_alloc(map, addr, flags) (page_set(map, addr, page_fmt(frame_new(), flags | PF_PRES)))
+#define p_free(map, addr) do { \
+frame_free(page_ufmt(page_get(map, addr))); \
+page_set(map, addr, 0); \
+} while(0);
 #define PF_MASK 0x0C67									// Page flags that can be used
 #define page_fmt(base,flags) ((base&0xFFFFF000)|(flags&PF_MASK))
 #define page_ufmt(page) (page&0xFFFFF000)
-
-/***** FRAME.C ******/
-pool_t *fpool;
-u32int frame_new();				// Allocates a new frame
-void frame_free(u32int addr);	// Frees a frame
 
 /***** FLAGS *****/
 

@@ -22,4 +22,10 @@ void tss_set_esp();
 
 void init_fault();
 
+image_t *fork_call(image_t *image);
+image_t *exit_call(image_t *image);
+image_t *sint_call(image_t *image);
+image_t *sret_call(image_t *image);
+image_t *eout_call(image_t *image);
+
 #endif /*SIG_H*/
