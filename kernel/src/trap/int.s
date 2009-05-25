@@ -87,7 +87,12 @@ INTN	64 ; fork
 INTN	65 ; exit
 INTN	66 ; sint
 INTN	67 ; sret
-INTN	68 ; eout
+INTN	68 ; mmap
+INTN	69 ; umap
+INTN	70 ; rmap
+INTN	71 ; fmap
+
+INTN	80 ; eout
 
 extern int_handler
 

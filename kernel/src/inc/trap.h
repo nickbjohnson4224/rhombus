@@ -20,6 +20,15 @@ image_t *fork_call(image_t *image);
 image_t *exit_call(image_t *image);
 image_t *sint_call(image_t *image);
 image_t *sret_call(image_t *image);
+image_t *mmap_call(image_t *image);
+image_t *umap_call(image_t *image);
+
 image_t *eout_call(image_t *image);
+
+/***** FAULT HANDLERS *****/
+image_t *fault_generic(image_t *image);
+image_t *fault_page(image_t *image);
+image_t *fault_float(image_t *image);
+image_t *fault_double(image_t *image);
 
 #endif /*TRAP_H*/

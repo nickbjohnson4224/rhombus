@@ -27,7 +27,7 @@ static void cwrite(char c) {
 }
 
 static void swrite(char *s) {
-	while (*s) cwrite(*s++);
+	while (*s != '\0') cwrite(*s++);
 }
 
 void cleark() {

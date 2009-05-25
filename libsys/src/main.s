@@ -37,7 +37,7 @@ sret:
 global eout
 eout:
 	mov eax, [esp+4]
-	int 0x44
+	int 0x50
 	ret
 
 global exit

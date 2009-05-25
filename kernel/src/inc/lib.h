@@ -33,8 +33,13 @@ void printk(char *fmt, ...);
 void colork(u8int color);
 void cursek(u8int x, u8int y);
 
-/***** PANIC FUNCTIONS *****/
+/***** ERROR FUNCTIONS *****/
 void panic(char *message);		// Panic with a message
+
+#define ENOTASK (-1)
+#define ENOSIG (-2)
+#define EPERMIT (-3)
+#define EREPEAT (-4)
 
 /***** POOL ALLOCATOR *****/
 

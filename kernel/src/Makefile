@@ -1,5 +1,5 @@
 SOURCES=init/init.o lib/lib.o mem/mem.o trap/trap.o task/task.o
-CFLAGS=-nostdlib -nostdinc -fno-builtin -Iinc
+export CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc $(OPTS)
 LDFLAGS=-Tlink.ld
 ASFLAGS=-felf
 

@@ -19,10 +19,6 @@
 #define S_FPE 6 // FP exception		(ebx = eip)
 #define S_DTH 7 // Child death		(eax = child pid, ebx = exit value)
 
-#define ENOTASK (-1)
-#define ENOSIG (-2)
-#define EPERMIT (-3)
-
 /* This is the most complex, and most important, system call. It sends signal
 type to task task with various arguments and is controlled by flags. Arguments
 to this function are in the order shown as registers */

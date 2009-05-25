@@ -5,37 +5,29 @@
 #include <task.h>
 #include <init.h>
 
-image_t *fork_call(image_t *image) {
-	image->eax = 0;
-	u16int parent = curr_pid;
-	image = task_switch(new_task(get_task(curr_pid)));
-	image->eax = parent;
-	return image;
-}
+__attribute__ ((section(".ttext"))) 
+void init_fault() {
 
-image_t *exit_call(image_t *image) {
-	printk("exit() %d\n", curr_pid);
+	register_int(0,  fault_float);
+	register_int(1,  fault_generic);
+	register_int(2,  fault_generic);
+	register_int(3,  fault_generic);
+	register_int(4,  fault_generic);
+	register_int(5,  fault_generic);
+	register_int(6,  fault_generic);
+	register_int(7,  fault_float);
+	register_int(8,  fault_double);
+	register_int(9,  fault_float);
+	register_int(10, fault_generic);
+	register_int(11, fault_generic);
+	register_int(12, fault_generic);
+	register_int(13, fault_generic);
+	register_int(14, fault_page);
+	register_int(15, fault_generic);
+	register_int(16, fault_float);
+	register_int(17, fault_generic);
+	register_int(18, fault_generic);
 
-	u16int dead_task = curr_pid;
-	task_t *t = get_task(dead_task);
-	image_t *tmp = ksignal(dead_task, t->parent, S_DTH, image->eax, 0, 0);
-	map_clean(&t->map);
-	map_free(&t->map);
-	rem_task(get_task(dead_task));
-	return tmp;
-}
-
-image_t *sint_call(image_t *image) {
-	return signal(image->eax, image->esi, image->ebx, image->ecx, image->edx, image->edi);
-}
-
-image_t *sret_call(image_t *image) {
-	return sret(image);
-}
-
-image_t *eout_call(image_t *image) {
-	printk("%s", image->eax);
-	return image;
 }
 
 __attribute__ ((section(".ttext"))) 
@@ -90,11 +82,17 @@ void init_int() {
 		init_tss();
 
 		// Register system calls
-		register_int(0x40, fork_call);
-		register_int(0x41, exit_call);
-		register_int(0x42, sint_call);
-		register_int(0x43, sret_call);
-		register_int(0x44, eout_call);
+		register_int(0x40, fork_call);	// Fork current task
+		register_int(0x41, exit_call);	// End current task
+		register_int(0x42, sint_call);	// Send signal to task
+		register_int(0x43, sret_call);	// Return from signal handler
+		register_int(0x44, mmap_call);	// Allocate memory to a page
+		register_int(0x45, umap_call);	// Free memory from a page
+//		register_int(0x46, rmap_call);	// Move memory from one page to another
+//		register_int(0x47, fmap_call);	// Forcefully map a page
+
+		// Emergency output call
+		register_int(0x50, eout_call);
 
 		// Register fault handlers
 		init_fault();
