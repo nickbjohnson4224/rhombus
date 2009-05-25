@@ -1,0 +1,86 @@
+Aether VM Bytecode Specification
+
+Instruction Layout
+==================
+Every basic instruction is only one byte (eight bits) in length. From 
+the little end, the first two bits are the register selector, the 
+second two bits are the magnitude selector, the next three bits are the 
+opcode, and the last bit is the extension opcode flag.
+
+8	7	6	5	4	3	2	1	0
+|       |       |       |       |       |       |       |       |
+|  ext  |        opcode	        |   magnitude   |   register    |
+
+Magnitude Selector
+==================
+The magnitude selector determines the number of bytes that an 
+instruction operates upon. It is the power of two number of bytes. On 
+machines that are unable to operate upon specific magnitudes, a bignum 
+library must be proveded to do the operations
+
+
+Register Selector
+==================
+The register selector chooses which register the instruction operates 
+using. This does not necessarily mean it modifies or directly reads from 
+this register; most things are done using the register as a pointer. The 
+SP register is usually the implied target to push to.
+
+00 - SP - Stack Pointer
+01 - BP - Base Pointer
+10 - DP - Data Pointer
+11 - IP - Instruction Pointer
+
+Opcode
+==================
+There are but eight basic opcodes, which are enough to do basic 
+manipulation of data and branching. All arithmetic and logical 
+operations are implemented as extensions (see extensions.txt). In 
+general, operations take their arguments from and output their results 
+to the stack pointed to by SP. 
+
+000: 
+	- "push"
+	- pushes a number (stored after the instruction)
+	- takes no arguments
+
+001: 
+	- "pull"
+	- pushes data from an offset from a register
+	- takes the offset as an argument
+
+010:
+	- "set"
+	- sets a register to a value
+	- takes the new value as an argument
+
+011:
+	- "get"
+	- pushes value of a register
+	- takes no arguments
+
+100:
+	- "end"
+	- acts as a marker for the next three opcodes
+	- also works as a "nop" instruction
+
+101:
+	- "equ"
+	- if the two arguments are equal, continue until "end"
+	- takes two arguments
+
+110:
+	- "lss"
+	- if the bottom argument is lesser, continue until "end"
+	- takes two arguments
+
+111:
+	- "gtr"
+	- if the bottom argument is greater, continue until "end"
+	- takes two arguments
+
+Extension Opcode
+================
+If the extension bit is set, the opcode is read from the following byte. 
+The other information is retained. A full listing of standard opcodes 
+for the extension byte is in the "extension.txt" documentation file.

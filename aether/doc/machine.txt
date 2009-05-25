@@ -1,0 +1,37 @@
+Aether Virtual Machine Specification
+
+Memory
+================
+The Aether VM uses a simple and mostly flat memory model. It is able to 
+do direct memory access to everything that normal machine code is. The 
+various register pointers are freely modifiable as well. However, the 
+hidden CO and DO registers determine offsets automatically added to all 
+registers when they are set. This gives a rudimentary segment-like 
+relocation mechanism, controlled exclusively by real code. If CO and DO 
+are 0, the memory is flat. All other memory management (i.e. paging) is 
+done by the real machine.
+
+The Stack
+================
+Being a stack based architecture, the Aether VM stack is very important. 
+The stack grows downward, just like in the x86. The SP register is a 
+pointer to the top of that stack, and the BP register is used to keep 
+track of the last stack frame. The stack is put at an undefined position 
+to start, but is guaranteed to have a reasonable amount of memory 
+allocated below it.
+
+Arithmetic
+================
+The Aether VM is always a two's complement, little endian architecture.
+Arithmetic is at least emulated to be up to 64 bit. There is no explicit 
+implementation of floating point arithmetic, but such a thing can be 
+done with runtime extensions.
+
+Interoperability
+================
+Functions and other real code segments can be called from within the 
+Aether VM using the "ecall" instruction. A table of 256 different call 
+handlers may be provided by the real program, all of which can be called 
+with an argument by "ecall". The stack, because it is the same as the C 
+stack, is used for the called function. The return value is pushed back 
+onto the stack after the function completes.

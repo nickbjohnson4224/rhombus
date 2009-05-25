@@ -1,0 +1,9 @@
+The Aether Virtual Machine
+
+Aether is a virtual machine bytecode specification, used frequently 
+within the Khaos operating system's utilities. It is intended to work 
+closely with real machine code, and even act as an abstract machine code 
+intermediate in compilation. One of the goals is to allow a platform 
+independent way to write self modifying and dynamic code. Another is as 
+a common, fast extension format for various tools, after being compiled 
+from a human readable language.
