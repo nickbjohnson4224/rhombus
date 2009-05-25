@@ -15,11 +15,3 @@ void *kmalloc(u32int size) {
 void kfree(void *addr) {
 	pool_free(ppool, ((u32int) addr - 0xF8400000) >> 12);
 }
-
-inline u32int frame_new() {
-	return (pool_alloc(fpool) << 12);
-}
-
-inline void frame_free(u32int addr) {
-	pool_free(fpool, addr >> 12);
-}

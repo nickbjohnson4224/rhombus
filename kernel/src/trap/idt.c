@@ -60,6 +60,7 @@ void *int_handler(image_t *state) {
 	u32int cr2; asm volatile ("movl %%cr2, %0" : "=r" (cr2));
 
 	if ((u32int) state < 0xF8100000) t->image = state;
+	if (state->num < 32) panic("exception");
 	if (state->num >= 32 && state->num <= 47) {
 		if (state->num >= 40) outb(0xA0, 0x20);
 		outb(0x20, 0x20);

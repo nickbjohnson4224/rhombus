@@ -21,13 +21,24 @@
 #ifndef MEM_H
 #define MEM_H
 
-// Page
+/***** PAGE FLAGS *****/
+
+// Normal page flags
+#define PF_PRES 0x1		// Is present
+#define PF_RW   0x2		// Is writeable
+#define PF_USER 0x4		// Is user-mode
+#define PF_DIRT 0x20	// Is dirty
+#define PF_ACCS 0x40	// Has been accessed
+
+// Special page flags
+#define PF_LINK 0x200	// Is linked from elsewhere (do not free frame)
+#define PF_REAL 0x400	// Is linked to elsewhere (do not free at all)
+#define PF_SWAP 0x800	// Is swapped out
+
+/***** DATA TYPES *****/
+
 typedef u32int page_t;
-
-// Page table
 typedef page_t* ptbl_t;
-
-// Page directory / "map"
 typedef struct map {
 	u32int *pdir;	// Physical addresses of tables
 	ptbl_t *virt;	// Virtual addresses of tables
@@ -61,8 +72,8 @@ map_t *map_enum(map_t *map);							// Prints contents of a map (pdirs only)
 
 /***** FRAME.C ******/
 pool_t *fpool;
-u32int frame_new();				// Allocates a new frame
-void frame_free(u32int addr);	// Frees a frame
+#define frame_new() (pool_alloc(fpool) << 12)			// Allocates a new frame	
+#define frame_free(addr) (pool_free(fpool, addr >> 12))	// Frees a frame
 
 /***** PAGE.C *****/
 u8int mem_setup;
@@ -70,27 +81,13 @@ page_t page_touch(map_t *map, u32int page);				// Makes sure a page exists
 page_t page_set(map_t *map, u32int page, page_t value);	// Sets the value of a page
 page_t page_get(map_t *map, u32int page);				// Returns the value of a page
 u32int phys_of(map_t *map, void *addr);					// Gets the physical address of a pointer
+#define PF_MASK 0x0C67									// Page flags that can be used
+#define page_fmt(base,flags) ((base&0xFFFFF000)|(flags&PF_MASK))
+#define page_ufmt(page) (page&0xFFFFF000)
 #define p_alloc(map, addr, flags) (page_set(map, addr, page_fmt(frame_new(), flags | PF_PRES)))
 #define p_free(map, addr) do { \
 frame_free(page_ufmt(page_get(map, addr))); \
 page_set(map, addr, 0); \
 } while(0);
-#define PF_MASK 0x0C67									// Page flags that can be used
-#define page_fmt(base,flags) ((base&0xFFFFF000)|(flags&PF_MASK))
-#define page_ufmt(page) (page&0xFFFFF000)
-
-/***** FLAGS *****/
-
-// Normal page flags
-#define PF_PRES 0x1		// Is present
-#define PF_RW   0x2		// Is writeable
-#define PF_USER 0x4		// Is user-mode
-#define PF_DIRT 0x20	// Is dirty
-#define PF_ACCS 0x40	// Has been accessed
-
-// Special page flags
-#define PF_LINK 0x200	// Is linked from elsewhere (do not free frame)
-#define PF_REAL 0x400	// Is linked to elsewhere (do not free at all)
-#define PF_SWAP 0x800	// Is swapped out
 
 #endif /*MEM_H*/
