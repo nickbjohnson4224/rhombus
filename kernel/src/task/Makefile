@@ -1,5 +1,5 @@
 SOURCES=table.o signal.o sysmap.o sched.o
-CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc -fomit-frame-pointer
+CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc -Wall -march=i386 -fomit-frame-pointer
 LDFLAGS=-r
 ASFLAGS=-felf
 

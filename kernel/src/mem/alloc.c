@@ -8,7 +8,7 @@
 
 void *kmalloc(u32int size) {
 	u32int addr = (pool_alloc(ppool) << 12) + 0xF8400000;
-	page_set(&kmap, addr, page_fmt(frame_new(), PF_PRES | PF_RW));
+	page_set(&kmap, addr, page_fmt(frame_new(), (PF_PRES | PF_RW)));
 	return (void*) addr;
 }
 

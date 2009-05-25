@@ -5,18 +5,18 @@
 #include <task.h>
 
 image_t *fault_generic(image_t *image) {
-	if (image->cs & 0x3 == 0) panic("unknown exception");
+	/*if (image->cs & 0x3 == 0)*/ panic("unknown exception");
 	return ksignal(0, curr_pid, S_GEN, image->num, image->err, 0);
 }
 
 image_t *fault_page(image_t *image) {
-	if (image->cs & 0x3 == 0) panic("page fault exception");
+	/*if (image->cs & 0x3 == 0)*/ panic("page fault exception");
 	u32int cr2; asm volatile ("movl %%cr2, %0" : "=r" (cr2));
 	return ksignal(0, curr_pid, S_PAG, cr2, image->err, 0);
 }
 
 image_t *fault_float(image_t *image) {
-	if (image->cs & 0x3 == 0) panic("floating point exception");
+	/*if (image->cs & 0x3 == 0)*/ panic("floating point exception");
 	return ksignal(0, curr_pid, S_FPE, image->eip, 0, 0);
 }
 

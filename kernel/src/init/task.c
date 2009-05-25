@@ -2,6 +2,13 @@
 
 #include <lib.h>
 #include <task.h>
+#include <init.h>
+
+__attribute__ ((section(".ttext")))
+static void init_sched() {
+	queue.next = 0;
+	queue.last = 0;
+}
 
 __attribute__ ((section(".ttext"))) 
 void init_task() {
@@ -16,6 +23,9 @@ void init_task() {
 		task_t *idle = get_task(0);
 		idle->user.id = 0;
 		idle->user.ring = 0;
+		idle->parent = 0;
+		idle->pid = 0;
+		idle->magic = 0x4224;
 		map_clone(&idle->map, &kmap, MF_CLEAR_USER);
 		idle->flags = TF_READY;
 		curr_pid = 0;

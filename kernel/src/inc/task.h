@@ -52,8 +52,6 @@ typedef struct {
 	u16int id;
 } id_t;
 
-void init_task();
-
 /***** TASK TABLE *****/
 typedef struct {
 	id_t user;
@@ -63,18 +61,19 @@ typedef struct {
 	u8int quanta;
 	u16int next_task;
 	u16int parent;
+	u16int pid;
 	u16int magic;
 	u32int tss_esp;
-	u32int reserved;
+	u16int reserved;
 } task_t;
 
 #define TF_READY 0x0000
 #define TF_BLOCK 0x0001
 
 task_t *get_task(u16int pid);
-u16int new_task(u16int src_pid);
-u32int rem_task(u16int pid);
-image_t *task_switch(u16int pid);
+task_t *new_task(task_t *src);
+u32int rem_task(task_t *t);
+image_t *task_switch(task_t *t);
 
 pool_t *tmap;		// Pool allocator for task structures
 task_t *task[128]; 	// 2D array (128*128) of task structures
@@ -109,19 +108,16 @@ struct sysmap {
 	struct device device[256];
 	struct driv_id driver[256];
 } *sysmap;
-	
-void init_sysmap();
 
 /***** SCHEDULER *****/
 
 struct sched_queue {
 	u16int next;
 	u16int last;
-};
+} queue;
 
-void init_sched();
 void insert_sched(u16int pid);
-u16int next_task(u8int flags);
+task_t *next_task(u8int flags);
 
 #define SF_FORCED 0x00
 #define SF_VOLUNT 0x01

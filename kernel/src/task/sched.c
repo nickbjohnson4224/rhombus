@@ -22,24 +22,19 @@ void insert_sched(u16int pid) {
 	}
 }
 
-__attribute__ ((section(".ttext")))
-void init_sched() {
-	queue.next = 0;
-	queue.last = 0;
-}
-
-u16int next_task(u8int flags) {
+task_t *next_task(u8int flags) {
 	u32int pid;
 	task_t *t;
 
-	if (!queue.next) return 0;
+	retry:
+	if (!queue.next) return get_task(0);
 	pid = queue.next;
 	t = get_task(pid);
 	queue.next = t->next_task;
 	t->next_task = 0;
 	if (t->magic == 0x4224) insert_sched(pid);
 	if (t->flags & TF_BLOCK || t->magic != 0x4224)
-		return next_task(0); // If an error occurs, recurse
+		goto retry; // If an error occurs, recurse
 
-	return pid;
+	return t;
 }

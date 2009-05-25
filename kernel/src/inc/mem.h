@@ -82,9 +82,9 @@ page_t page_set(map_t *map, u32int page, page_t value);	// Sets the value of a p
 page_t page_get(map_t *map, u32int page);				// Returns the value of a page
 u32int phys_of(map_t *map, void *addr);					// Gets the physical address of a pointer
 #define PF_MASK 0x0C67									// Page flags that can be used
-#define page_fmt(base,flags) ((base&0xFFFFF000)|(flags&PF_MASK))
-#define page_ufmt(page) (page&0xFFFFF000)
-#define p_alloc(map, addr, flags) (page_set(map, addr, page_fmt(frame_new(), flags | PF_PRES)))
+#define page_fmt(base,flags) (((base)&0xFFFFF000)|((flags)&PF_MASK))
+#define page_ufmt(page) ((page)&0xFFFFF000)
+#define p_alloc(map, addr, flags) (page_set(map, addr, page_fmt(frame_new(), (flags) | PF_PRES)))
 #define p_free(map, addr) do { \
 frame_free(page_ufmt(page_get(map, addr))); \
 page_set(map, addr, 0); \

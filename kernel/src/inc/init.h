@@ -64,5 +64,11 @@ void init_free();
 void init_int();
 void init_kload();
 void init_libsys();
+void init_sysmap();
+void init_task();
+void init_fault();
+void init_tss();
+void init_idt();
+void init_pit();
 
 #endif /*INIT_H*/

@@ -1,5 +1,5 @@
-SOURCES=idt.o int.o pit.o tss.o fault.o
-CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc -fomit-frame-pointer
+SOURCES=idt.o int.o pit.o tss.o syscall.o
+CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc -Wall -march=i386 -fomit-frame-pointer
 LDFLAGS=-r
 ASFLAGS=-felf
 

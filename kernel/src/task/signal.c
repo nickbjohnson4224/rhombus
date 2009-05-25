@@ -4,6 +4,8 @@
 #include <task.h>
 #include <trap.h>
 
+/* note to self - make a common subroutine for these two functions */
+
 image_t *ksignal(u32int sender, u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2) {
 	task_t *t = get_task(task);
 	
@@ -14,7 +16,7 @@ image_t *ksignal(u32int sender, u32int task, u32int sig, u32int arg0, u32int arg
 	}
 
 	// Create new image to return to
-	task_switch(task);
+	task_switch(t);
 	memcpy(t->image, (u8int*) ((u32int) t->image - sizeof(image_t)), sizeof(image_t));
 	t->tss_esp = (u32int) t->image; // Will now create images above old image
 	t->image = (void*) ((u32int) t->image - sizeof(image_t));
@@ -61,7 +63,7 @@ image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, 
 	if (flags & TF_BLOCK) src_t->flags |= TF_BLOCK;
 	
 	// Create new image to return to
-	task_switch(task);
+	task_switch(t);
 	memcpy((u8int*) ((u32int) t->image - sizeof(image_t)), t->image, sizeof(image_t));
 	t->tss_esp = (u32int) t->image; // Will now create images above old image
 	t->image = (void*) ((u32int) t->image - sizeof(image_t));

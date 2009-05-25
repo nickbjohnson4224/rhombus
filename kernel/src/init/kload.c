@@ -25,8 +25,8 @@ static int tar_header_check(struct tar_header *t) {
 }
 
 __attribute__ ((section(".ttext")))
-static char *header_contents(struct tar_header *t) {
-	return (char*) ((u32int) t + sizeof(struct tar_header));
+static u8int *header_contents(struct tar_header *t) {
+	return (u8int*) ((u32int) t + sizeof(struct tar_header));
 }
 
 __attribute__ ((section(".ttext")))
@@ -63,15 +63,15 @@ void init_libsys() {
 	// Set up a stack for the process image
 	t = get_task(curr_pid);
 	map_load(&t->map);
-	p_alloc(&t->map, 0xF3FFE000, PF_USER | PF_RW); // This is for the system call stack
-	p_alloc(&t->map, 0xF3FFD000, PF_USER | PF_RW);
-	p_alloc(&t->map, 0xF3FFC000, PF_USER | PF_RW);
+	p_alloc(&t->map, 0xF3FFE000, (PF_USER | PF_RW)); // This is for the system call stack
+	p_alloc(&t->map, 0xF3FFD000, (PF_USER | PF_RW));
+	p_alloc(&t->map, 0xF3FFC000, (PF_USER | PF_RW));
 	t->image = (void*) (0xF3FFEFFC - sizeof(image_t));
 
 	// Set up space for the various system structures
 
 	// Signal handler table
-	p_alloc(&t->map, 0xF3FFF000, PF_USER | PF_RW);
+	p_alloc(&t->map, 0xF3FFF000, (PF_USER | PF_RW));
 	
 	// System map
 	p_alloc(&t->map, 0xF5FFF000, PF_USER);

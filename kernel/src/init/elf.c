@@ -13,7 +13,6 @@ void elf_load_segment(u8int *src, elf_ph_t *seg) {
 
 	// Get pointer to source
 	u8int *src_base = &src[seg->p_offset];
-	u32int src_limit = (u32int) src_base + seg->p_filesz;
 
 	// Get pointer to destination
 	u8int *dest_base = (u8int*) seg->p_vaddr;
@@ -24,7 +23,7 @@ void elf_load_segment(u8int *src, elf_ph_t *seg) {
 	map_load(&t->map);
 	u32int i = ((u32int) dest_base) & ~0xFFF;
 	for (; i < dest_limit; i += 0x1000)
-		p_alloc(&t->map, i, PF_USER | PF_PRES);
+		p_alloc(&t->map, i, PF_USER);
 
 	// Copy data
 	memcpy(dest_base, src_base, seg->p_memsz);

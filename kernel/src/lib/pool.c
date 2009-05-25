@@ -40,8 +40,8 @@ u32int pool_alloc(pool_t *pool) {
 
 	pool[p].word[w] |= (0x1 << b);
 	pool[p].total --;
-	if (pool[p].first == (w << 5) | b) pool[p].first++;
-	return ((p << 10) | (w << 5) | b);
+	if (pool[p].first == ((w << 5) | b)) pool[p].first++;
+	return ((p << 10) | ((w << 5) | b));
 }
 
 u32int pool_free(pool_t *pool, u32int pos) {
@@ -54,7 +54,7 @@ u32int pool_free(pool_t *pool, u32int pos) {
 
 	// Clear bit and set metadata
 	pool[p].word[w] &= ~(0x1 << b);
-	pool[p].first = min(pool[p].first, (w << 5) | b);
+	pool[p].first = min(pool[p].first, ((w << 5) | b));
 	pool[p].total ++;
 
 	return 0;

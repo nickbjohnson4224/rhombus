@@ -10,7 +10,7 @@ u32int proto_base = 0xF8010000; // Use up the lower memory for allocation if pos
 
 __attribute__ ((section(".ttext"))) 
 static void *init_kmalloc(u32int size) {
-	u32int i, addr, temp;
+	u32int temp;
 	if (proto_base & 0xFFF) proto_base = (proto_base & ~0xFFF) + 0x1000;
 	temp = proto_base;
 	proto_base += size;
@@ -81,16 +81,16 @@ void init_mem() {
 
 		// Identity map necessary kernel memory (i.e. code and initrd)
 		i = 0xF8000000;
-		extern u32int end;
 		while (i < (u32int) 0xF8400000) {
 			page_touch_init(&kmap, i);
-			page_t new_page = page_fmt(frame_new(), PF_PRES | PF_RW);
+			page_t new_page = page_fmt(frame_new(), (PF_PRES | PF_RW));
 			page_set(&kmap, i, new_page);
 			i += 0x1000;
 		}
 
 		// Reload the new map by going through physical memory
 		kmap.pdir[0] = kmap.pdir[0xF8000000 >> 22];
+		extern void redo_paging(u32int);
 		redo_paging(phys_of(&kmap, kmap.pdir));
 		kmap.pdir[0] = 0x00000000;
 
@@ -112,7 +112,7 @@ void init_free() {
 		base = (u32int) &START_OF_TEMP;
 		extern u32int END_OF_TEMP;
 		limit = (u32int) &END_OF_TEMP;
-		for (i = base; i < limit & ~0xFFF; i += 0x1000) p_free(&kmap, i);
+		for (i = base; i < (limit & ~0xFFF); i += 0x1000) p_free(&kmap, i);
 
 		// Free initrd image data
 		extern u32int end;

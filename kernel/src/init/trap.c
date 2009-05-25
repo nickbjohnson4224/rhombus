@@ -3,11 +3,12 @@
 #include <lib.h>
 #include <trap.h>
 #include <task.h>
+#include <init.h>
 
 image_t *fork_call(image_t *image) {
 	image->eax = 0;
 	u16int parent = curr_pid;
-	image = task_switch(new_task(curr_pid));
+	image = task_switch(new_task(get_task(curr_pid)));
 	image->eax = parent;
 	return image;
 }
@@ -20,7 +21,7 @@ image_t *exit_call(image_t *image) {
 	image_t *tmp = ksignal(dead_task, t->parent, S_DTH, image->eax, 0, 0);
 	map_clean(&t->map);
 	map_free(&t->map);
-	rem_task(dead_task);
+	rem_task(get_task(dead_task));
 	return tmp;
 }
 

@@ -1,7 +1,7 @@
 // Copyright 2009 Nick Johnson
 
-#ifndef SIG_H
-#define SIG_H
+#ifndef TRAP_H
+#define TRAP_H
 
 typedef struct image {
 	u32int ds, edi, esi, ebp, esp, ebx, edx, ecx, eax;
@@ -9,23 +9,17 @@ typedef struct image {
 } __attribute__ ((packed)) image_t;
 
 typedef image_t* (*handler_t) (image_t*);
-
-void init_idt();
-void init_pit();
 image_t *pit_handler(image_t *state);
 
 #define IRQ(n) (n + 32)
 void register_int(u8int n, handler_t handler);
-
-void init_tss();
 void tss_set_esp();
 
-void init_fault();
-
+/***** SYSTEM CALLS *****/
 image_t *fork_call(image_t *image);
 image_t *exit_call(image_t *image);
 image_t *sint_call(image_t *image);
 image_t *sret_call(image_t *image);
 image_t *eout_call(image_t *image);
 
-#endif /*SIG_H*/
+#endif /*TRAP_H*/
