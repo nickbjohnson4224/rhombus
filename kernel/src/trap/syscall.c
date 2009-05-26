@@ -62,8 +62,6 @@ image_t *eout_call(image_t *image) {
 }
 
 image_t *mmap_call(image_t *image) {
-	printk("mmap(%x, %x)\n", image->eax, image->ebx);
-
 	u32int page = image->eax;
 	u32int flags = image->ebx;
 	task_t *t = get_task(curr_pid);
@@ -88,8 +86,6 @@ image_t *mmap_call(image_t *image) {
 }
 
 image_t *umap_call(image_t *image) {
-	printk("umap(%x)\n", image->eax);
-
 	u32int page = image->eax;
 	task_t *t = get_task(curr_pid);
 
@@ -106,8 +102,10 @@ image_t *umap_call(image_t *image) {
 	}
 
 	// Free page
+	printk("freeing %x ", page_get(&t->map, page));
 	frame_free(page_ufmt(page_get(&t->map, page)));
 	page_set(&t->map, page, 0x00000000);
+	printk("%x\n", page_get(&t->map, page));
 
 	image->eax = 0;
 	return image;
@@ -141,6 +139,42 @@ image_t *rmap_call(image_t *image) {
 	page_set(&t->map, dest, page_get(&t->map, src));
 	page_set(&t->map, src, 0x00000000);
 	
+	image->eax = 0;
+	return image;
+}
+
+image_t *fmap_call(image_t *image) {
+	u32int src = image->ebx;
+	u32int dest = image->ecx;
+	task_t *t = get_task(curr_pid);
+	task_t *src_t = get_task(image->eax);
+
+	// Bounds check both addresses
+	if (src < 0xF6000000 && t->user.ring > 0) {
+		image->eax = EPERMIT;
+		return image;
+	}
+	if (dest > 0xF6000000) {
+		image->eax = EPERMIT;
+		return image;
+	}
+
+	// Check source
+	if ((page_get(&src_t->map, src) & 0x1) == 0) {
+		image->eax = EREPEAT;
+		return image;
+	}
+
+	// Check destination
+	if (page_get(&t->map, dest) & 0x1) {
+		image->eax = EREPEAT;
+		return image;
+	}
+
+	// Move page
+	page_set(&t->map, dest, (page_get(&src_t->map, src) | PF_LINK));
+	page_set(&src_t->map, src, (page_get(&src_t->map, src) | PF_REAL));
+
 	image->eax = 0;
 	return image;
 }

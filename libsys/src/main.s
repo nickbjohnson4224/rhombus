@@ -47,6 +47,14 @@ umap:
 	int 0x45
 	ret
 
+global rmap
+rmap:
+	mov eax, [esp+4]
+	mov ebx, [esp+8]
+	mov ecx, [esp+12]
+	int 0x46
+	ret
+
 global eout
 eout:
 	mov eax, [esp+4]

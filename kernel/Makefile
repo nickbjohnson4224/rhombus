@@ -10,6 +10,7 @@ install: all
 	./install.sh
 
 test: all
+	make -C ../libsys
 	./test.sh
 
 clean:

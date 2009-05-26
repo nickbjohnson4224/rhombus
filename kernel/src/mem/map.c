@@ -71,9 +71,6 @@ map_t *map_clone(map_t *dest, map_t *src, u8int flags) {
 
 map_t *map_load(map_t *map) {
 	if (!map->cache) map->cache = phys_of(&kmap, map->pdir);
-	u32int cr3; asm volatile ("mov %%cr3, %0" : "=r" (cr3));
-	if (map->cache == cr3) return map; // No unnecessary context switches!
-
 	asm volatile ("mov %0, %%cr3" :: "r" (map->cache));
 	return map;
 }
