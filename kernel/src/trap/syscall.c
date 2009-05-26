@@ -62,6 +62,8 @@ image_t *eout_call(image_t *image) {
 }
 
 image_t *mmap_call(image_t *image) {
+	printk("mmap(%x, %x)\n", image->eax, image->ebx);
+
 	u32int page = image->eax;
 	u32int flags = image->ebx;
 	task_t *t = get_task(curr_pid);
@@ -80,13 +82,14 @@ image_t *mmap_call(image_t *image) {
 
 	// Allocate page with flags
 	page_set(&t->map, page, page_fmt(frame_new(), flags | PF_PRES));
-//	asm volatile ("invlpg %0" :: "r" (page));
 
 	image->eax = 0;
 	return image;
 }
 
 image_t *umap_call(image_t *image) {
+	printk("umap(%x)\n", image->eax);
+
 	u32int page = image->eax;
 	task_t *t = get_task(curr_pid);
 
@@ -105,7 +108,6 @@ image_t *umap_call(image_t *image) {
 	// Free page
 	frame_free(page_ufmt(page_get(&t->map, page)));
 	page_set(&t->map, page, 0x00000000);
-//	asm volatile ("invlpg %0" :: "r" (page));
 
 	image->eax = 0;
 	return image;
@@ -138,8 +140,6 @@ image_t *rmap_call(image_t *image) {
 	// Move page
 	page_set(&t->map, dest, page_get(&t->map, src));
 	page_set(&t->map, src, 0x00000000);
-//	asm volatile ("invlpg %0" :: "r" (src));
-//	asm volatile ("invlpg %0" :: "r" (dest));
 	
 	image->eax = 0;
 	return image;

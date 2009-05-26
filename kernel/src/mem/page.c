@@ -16,7 +16,7 @@ page_t page_touch(map_t *map, u32int page) {
 page_t page_set(map_t *map, u32int page, page_t value) {
 	if (!map->virt[page >> 22]) page_touch(map, page);
 	map->virt[page >> 22][(page >> 12) % 1024] = value;
-//	asm volatile ("invlpg %0" :: "r" (page));
+	asm volatile ("invlpg %0" :: "m" (page));
 	return value;
 }
 

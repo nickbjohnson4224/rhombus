@@ -34,6 +34,19 @@ sret:
 	int 0x43
 	ret
 
+global mmap
+mmap:
+	mov eax, [esp+4]
+	mov ebx, [esp+8]
+	int 0x44
+	ret
+
+global umap
+umap:
+	mov eax, [esp+4]
+	int 0x45
+	ret
+
 global eout
 eout:
 	mov eax, [esp+4]
