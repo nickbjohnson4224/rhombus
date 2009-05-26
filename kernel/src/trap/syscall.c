@@ -110,3 +110,37 @@ image_t *umap_call(image_t *image) {
 	image->eax = 0;
 	return image;
 }
+
+image_t *rmap_call(image_t *image) {
+	u32int src = image->eax;
+	u32int dest = image->ebx;
+	u32int flags = image->ecx;
+	task_t *t = get_task(curr_pid);
+
+	// Bounds check both addresses
+	if (src > 0xF6000000 || dest > 0xF6000000) {
+		image->eax = EPERMIT;
+		return image;
+	}
+
+	// Check source
+	if ((page_get(&t->map, src) & 0x1) == 0) {
+		image->eax = EREPEAT;
+		return image;
+	}
+
+	// Check destination
+	if (page_get(&t->map, dest) & 0x1) {
+		image->eax = EREPEAT;
+		return image;
+	}
+
+	// Move page
+	page_set(&t->map, dest, page_get(&t->map, src));
+	page_set(&t->map, src, 0x00000000);
+//	asm volatile ("invlpg %0" :: "r" (src));
+//	asm volatile ("invlpg %0" :: "r" (dest));
+	
+	image->eax = 0;
+	return image;
+}

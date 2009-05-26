@@ -16,12 +16,13 @@ void register_int(u8int n, handler_t handler);
 void tss_set_esp();
 
 /***** SYSTEM CALLS *****/
-image_t *fork_call(image_t *image);
-image_t *exit_call(image_t *image);
-image_t *sint_call(image_t *image);
-image_t *sret_call(image_t *image);
-image_t *mmap_call(image_t *image);
-image_t *umap_call(image_t *image);
+image_t *fork_call(image_t *image);	//0x40
+image_t *exit_call(image_t *image);	//0x41
+image_t *sint_call(image_t *image);	//0x42
+image_t *sret_call(image_t *image);	//0x43
+image_t *mmap_call(image_t *image);	//0x44
+image_t *umap_call(image_t *image);	//0x45
+image_t *rmap_call(image_t *image);	//0x46
 
 image_t *eout_call(image_t *image);
 
