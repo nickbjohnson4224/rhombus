@@ -67,7 +67,9 @@ image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, 
 	memcpy((u8int*) ((u32int) t->image - sizeof(image_t)), t->image, sizeof(image_t));
 	t->tss_esp = (u32int) t->image; // Will now create images above old image
 	t->image = (void*) ((u32int) t->image - sizeof(image_t));
-	if ((u32int) t->image < 0xF3FFE100) return ksignal(0, curr_pid, S_IMG, 0, 0, 0);
+	if ((u32int) t->image < 0xF3FFE100) 
+		panic("task state stack overflow");
+	//	return ksignal(0, curr_pid, S_IMG, 0, 0, 0);
 
 	// Set registers to describe signal
 	t->image->caller = curr_pid;
@@ -95,7 +97,9 @@ image_t *sret(image_t *image) {
 	t->tss_esp += sizeof(image_t); 
 
 	// Bounds check image
-	if ((u32int) t->tss_esp >= 0xF3FFF000) return exit_call(t->image);
+	if ((u32int) t->tss_esp >= 0xF3FFF000) 
+		panic("task state stack underflow");
+		//return exit_call(t->image);
 
 	// Make sure the caller is now unblocked
 	src_t->flags &= ~TF_BLOCK;
