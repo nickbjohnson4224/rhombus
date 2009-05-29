@@ -32,6 +32,7 @@ image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, 
 
 	// Block if set to block
 	if (flags & TF_BLOCK) src_t->flags |= TF_BLOCK;
+	if (flags & TF_UNBLK) t->flags &= ~TF_BLOCK;
 	
 	// Create new image to return to
 	task_switch(t);
@@ -42,7 +43,7 @@ image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, 
 		panic("task state stack overflow");
 
 	// Set registers to describe signal
-	t->image->caller = curr_pid;
+	t->image->caller = src;
 	t->image->eax = src;
 	t->image->ebx = arg0;
 	t->image->ecx = arg1;
@@ -71,8 +72,12 @@ image_t *sret(image_t *image) {
 		panic("task state stack underflow");
 		//return exit_call(t->image);
 
-	// Make sure the caller is now unblocked
-	src_t->flags &= ~TF_BLOCK;
+	// Unlock the caller
+	printk("sint %x\n", image->eax);
+	if (image->eax & TF_UNBLK) {
+		printk("unblocking %d\n", image->caller);
+		src_t->flags &= ~TF_BLOCK;
+	}
 
 	return t->image;
 }

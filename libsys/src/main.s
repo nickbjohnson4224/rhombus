@@ -30,6 +30,7 @@ sint:
 
 global sret
 sret:
+	mov eax, [esp+4]
 	int 0x43
 	ret
 
