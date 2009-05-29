@@ -84,6 +84,13 @@ start:
 	add ebx, 0xF8000000
 	push ebx
 
+	; Set IOPL to 3 - it will be reduced to 0 on a process-by-process basis
+	pushf
+	pop eax
+	or eax, 0x00001800
+	push eax
+	popf
+
 	call init
 	sti
 

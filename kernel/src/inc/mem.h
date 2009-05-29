@@ -1,19 +1,20 @@
 // Copyright 2009 Nick Johnson
 
 /* General virtual memory map:
-0x00000000 - 0xF3FFFFFF: userspace
+0x00000000 - 0xF3FFFFFF: userspace 		(user, read-write, cloned)
 	0xF0000000: usually libc
 	0xF3FF0000: standard stack
 	0xF3FFE000: state saving stack
 	0xF3FFF000: signal handler table
-0xF4000000 - 0xF7FFFFFF: libspace
-	0xF4000000: reserved
+0xF4000000 - 0xF7FFFFFF: libspace 		(user, readonly, linked)
+	0xF4000000: libsys code
 	0xF5FF0000: system map
 	0xF6000000: library image
-0xF8000000 - 0xFFFFFFFF: kernelspace
+0xF8000000 - 0xFFFFFFFF: kernelspace 	(kernel, linked)
 	0xF8000000: lower memory (DMA)
 	0xF807C000: BIOS
 	0xF8100000: kernel image
+    0xF8110000: initrd (temp)
 	0xF8400000: kernel heap
 	0xFFFF0000: temporary
 */

@@ -82,9 +82,12 @@ void *int_handler(image_t *state) {
 	}
 
 	if (int_handlers[state->num])
-		return int_handlers[state->num](state);
+		state = int_handlers[state->num](state);
 
-	if (!state) panic("image is null");
+	if (!state->cs) {
+		printk("%x\n", state);
+		panic("return image is null");
+	}
 
 	return state;
 }

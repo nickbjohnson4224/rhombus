@@ -13,7 +13,7 @@
 #define S_GEN 0	// Generic fault 	(ebx = fault #, ecx = errcode)
 #define S_ENT 1	// Reentrance		(ebx = tick)
 #define S_PAG 2	// Page fault		(ebx = address, ecx = flags)
-#define S_IRQ 3	// Registered IRQ	()
+#define S_IRQ 3	// Registered IRQ	(IRQ number)
 #define S_KIL 4	// Kill signal		(ebx = identifier)
 #define S_IMG 5	// Image overflow	()
 #define S_FPE 6 // FP exception		(ebx = eip)
@@ -23,7 +23,6 @@
 type to task task with various arguments and is controlled by flags. Arguments
 to this function are in the order shown as registers */
 
-image_t *ksignal(u32int sender, u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2);
 image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, u32int flags);
 image_t *sret();
 
@@ -79,18 +78,16 @@ u16int curr_pid;	// Currently loaded task ID
 
 // Information about a driver task
 struct driv_id {
-	u32int magic;
+	u8int magic;
+	u8int device;
 	u16int pid;
-	u16int device;
-	u16int creator;
-	u16int model;
 	u16int type;
 	u16int version;
 };
 
 // Information about a device
 struct device {
-	u16int num;
+	u16int magic;
 	u16int irq;
 	u16int port_base;
 	u16int port_limit;
