@@ -142,9 +142,17 @@ image_t *fmap_call(image_t *image) {
 	task_t *t = get_task(curr_pid);
 	task_t *src_t = get_task(image->eax);
 
-	// Bounds check both addresses
-	if (src < 0xF6000000 && t->user.ring > 0) ret(image, EPERMIT);
+	// Bounds check destination
 	if (dest > 0xF6000000) ret(image, EPERMIT);
+
+	// Set physical address if chosen (eax == 0)
+	if (image->eax == 0) {
+		page_set(&t->map, dest, src | PF_PRES | PF_USER | PF_RW);
+		ret(image, 0);
+	}
+
+	// Bounds check source
+	if (src < 0xF6000000 && t->user.ring > 0) ret(image, EPERMIT);
 
 	// Check source
 	if ((page_get(&src_t->map, src) & 0x1) == 0) ret(image, EREPEAT);
