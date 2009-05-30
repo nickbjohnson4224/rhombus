@@ -20,7 +20,8 @@ extern void int0(),  int1(),  int2(),  int3(),  int4(),  int5(),  int6(),  int7(
 extern void int10(), int11(), int12(), int13(), int14(), int15(), int16(), int17(), int18();
 extern void int32(), int33(), int34(), int35(), int36(), int37(), int38(), int39(), int40();
 extern void int41(), int42(), int43(), int44(), int45(), int46(), int47();
-extern void int64(), int65(), int66(), int67(), int68(), int69(), int70(), int71(), int80();
+extern void int64(), int65(), int66(), int67(), int68(), int69(), int70(), int71();
+extern void int80(), int81();
 
 typedef void (*int_handler_t) (void);
 __attribute__ ((section(".tdata")))
@@ -42,8 +43,8 @@ NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL,
 int64, 	int65, 	int66, 	int67, 	int68, 	int69, 	int70, 	int71,
 NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
 
-// Administrative
-int80, 	NULL, 	NULL, 	NULL,	NULL,	NULL,	NULL,	NULL
+// Administrative System Calls
+int80, 	int81, 	NULL, 	NULL,	NULL,	NULL,	NULL,	NULL
 
 };
 
@@ -52,7 +53,7 @@ void init_idt() {
 	u32int i;
 	memset((u8int*) &idt[0], 0, sizeof(struct idt_entry) * 256);
 	for (i = 0; i <= 47; i++) if (idt_raw[i]) idt_set(i, (u32int) idt_raw[i], 0x08, 0x8E);
-	for (i = 64;i <= 80; i++) if (idt_raw[i]) idt_set(i, (u32int) idt_raw[i], 0x08, 0xEE);
+	for (i = 64;i <= 87; i++) if (idt_raw[i]) idt_set(i, (u32int) idt_raw[i], 0x08, 0xEE);
 	extern void idt_flush();
 	idt_flush();
 }

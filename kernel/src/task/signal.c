@@ -50,7 +50,12 @@ image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, 
 image_t *sret(image_t *image) {
 	task_t *t, *src_t;
 
+	// Unblock the caller
 	src_t = get_task(image->caller);
+	if (image->eax & TF_UNBLK) {
+		printk("unblocking %d\n", image->caller);
+		src_t->flags &= ~TF_BLOCK;
+	}
 
 	// Reset image stack
 	t = get_task(curr_pid);
@@ -60,9 +65,6 @@ image_t *sret(image_t *image) {
 	// Bounds check image
 	if ((u32int) t->tss_esp >= 0xF3FFF000) 
 		panic("task state stack underflow");
-
-	// Unblock the caller
-	if (image->eax & TF_UNBLK) src_t->flags &= ~TF_BLOCK;
 
 	tss_set_esp(t->tss_esp);
 	return t->image;

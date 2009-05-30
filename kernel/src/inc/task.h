@@ -98,6 +98,8 @@ struct device {
 #define DRV_TYPE_CHAR 2
 #define DRV_TYPE_FS 3
 
+u16int irq_holder[15];
+
 struct sysmap {
 	struct device device[256];
 	struct driv_id driver[256];

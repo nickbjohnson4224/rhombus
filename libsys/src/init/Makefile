@@ -1,15 +1,15 @@
-SOURCES=
+SOURCES=main.o setup.o
 CFLAGS=-nostdlib -nostdinc -fno-builtin -Iinc -fomit-frame-pointer
-LDFLAGS=-Tlink.ld
+LDFLAGS=-r
 ASFLAGS=-felf
 
 all: $(SOURCES) link
 
 link:
-	ld $(LDFLAGS) -o libsys $(SOURCES)
+	ld $(LDFLAGS) -o init.o $(SOURCES)
 
 clean:
-	rm libsys
+	rm init.o
 
 .s.o:
 	nasm $(ASFLAGS) $<

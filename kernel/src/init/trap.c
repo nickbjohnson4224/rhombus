@@ -89,10 +89,11 @@ void init_int() {
 		register_int(0x44, mmap_call);	// Allocate memory to a page
 		register_int(0x45, umap_call);	// Free memory from a page
 		register_int(0x46, rmap_call);	// Move memory from one page to another
-//		register_int(0x47, fmap_call);	// Forcefully map a page
+		register_int(0x47, fmap_call);	// Forcefully map a page
 
-		// Emergency output call
-		register_int(0x50, eout_call);
+		// Administrative system calls
+		register_int(0x50, eout_call);	// Emergency output
+		register_int(0x51, rirq_call);	// Register IRQ
 
 		// Register fault handlers
 		init_fault();
