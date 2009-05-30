@@ -61,8 +61,7 @@ image_t *sret(image_t *image) {
 	if ((u32int) t->tss_esp >= 0xF3FFF000) 
 		panic("task state stack underflow");
 
-	// Unlock the caller
-	printk("sret %x\n", image);
+	// Unblock the caller
 	if (image->eax & TF_UNBLK) src_t->flags &= ~TF_BLOCK;
 
 	tss_set_esp(t->tss_esp);
