@@ -28,17 +28,21 @@ image_t *fault_double(image_t *image) {
 	return NULL;
 }
 
+// Note - different than UNIX / POSIX fork() -
+// parent gets child PID, child gets *negative* parent PID, 0 is error
+// I think it's much more useful, but the libc can convert it easily
+
 image_t *fork_call(image_t *image) {
-	image->eax = 0;
 	u16int parent = curr_pid;
-	image = task_switch(new_task(get_task(curr_pid)));
-	image->eax = parent;
+	task_t *child = new_task(get_task(curr_pid));
+	if (child->magic != 0x4224) ret(image, 0);
+	image->eax = child->pid;
+	image = task_switch(child);
+	child->image->eax = -parent;
 	return image;
 }
 
 image_t *exit_call(image_t *image) {
-	printk("exit() %d\n", curr_pid);
-
 	u16int dead_task = curr_pid;
 	task_t *t = get_task(dead_task);
 	image_t *tmp = signal(t->parent, S_DTH, image->eax, 0, 0, 0);

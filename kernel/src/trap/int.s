@@ -10,11 +10,7 @@ section .bss
 align 32
 global stack
 stack:
-    resb 0x4000      ; reserve 16k stack on a quadword boundary
-
-global cstack
-cstack:
-	resb 0x200
+    resb 0x4000	; reserve 16k stack
 
 section .text
 align 4
@@ -29,7 +25,7 @@ idt_flush:
   global int%1
   int%1:
     cli
-	push byte 0
+	sub esp, 4	; Reserve space for caller
     push byte 0
     push byte %1
     jmp int_common
@@ -39,7 +35,7 @@ idt_flush:
   global int%1
   int%1:
     cli
-	push byte 0
+	sub esp, 4	; Reserve space for caller
     push byte %1
     jmp int_common
 %endmacro 

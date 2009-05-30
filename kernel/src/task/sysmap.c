@@ -10,7 +10,8 @@ struct sysmap *sysmap;
 u16int irq_holder[15] = {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 static image_t *irq_redirect(image_t *image) {
-	return signal(irq_holder[IRQ(image->num)], S_IRQ, IRQ(image->num), 0, 0, 0);
+//	printk("redirecting IRQ %d to task %d\n", DEIRQ(image->num), irq_holder[DEIRQ(image->num)]);
+	return signal(irq_holder[DEIRQ(image->num)], S_IRQ, DEIRQ(image->num), 0, 0, 0);
 }
 
 void init_sysmap() {

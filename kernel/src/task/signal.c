@@ -11,31 +11,21 @@ image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, 
 	// Check existence of target
 	src_t = get_task(src);
 	t = get_task(task);
-	if (t->magic != 0x4224) {
-		printk("no such task\n");
-		src_t->image->eax = ENOTASK;
-		return src_t->image;
-	}
+	if (t->magic != 0x4224) ret(src_t->image, ENOTASK);
 
 	// Check permissions
-//	if (t->user.id != src_t->user.id && t->user.ring >= src_t->user.ring) {
-//		src_t->image->eax = EPERMIT;
-//		return src_t->image;
-//	}
-
+	if (t->user.id != src_t->user.id && t->user.ring >= src_t->user.ring) 
+		ret(src_t->image, EPERMIT);
+	tss_set_esp(t->tss_esp);
 	// Check existence of signal handler
-	if (!signal_table[sig]) {
-		printk("no signal handler\n");
-		src_t->image->eax = ENOSIG;
-		return src_t->image;
-	}
+	if (!signal_table[sig]) ret(src_t->image, ENOSIG);
 
 	// Block if set to block
 	if (flags & TF_BLOCK) src_t->flags |= TF_BLOCK;
 	if (flags & TF_UNBLK) t->flags &= ~TF_BLOCK;
 	
 	// Create new image to return to
-	task_switch(t);
+	if (t->pid != curr_pid) task_switch(t);
 	memcpy((u8int*) ((u32int) t->image - sizeof(image_t)), t->image, sizeof(image_t));
 	t->tss_esp = (u32int) t->image; // Will now create images above old image
 	t->image = (void*) ((u32int) t->image - sizeof(image_t));
@@ -70,14 +60,11 @@ image_t *sret(image_t *image) {
 	// Bounds check image
 	if ((u32int) t->tss_esp >= 0xF3FFF000) 
 		panic("task state stack underflow");
-		//return exit_call(t->image);
 
 	// Unlock the caller
-	printk("sint %x\n", image->eax);
-	if (image->eax & TF_UNBLK) {
-		printk("unblocking %d\n", image->caller);
-		src_t->flags &= ~TF_BLOCK;
-	}
+	printk("sret %x\n", image);
+	if (image->eax & TF_UNBLK) src_t->flags &= ~TF_BLOCK;
 
+	tss_set_esp(t->tss_esp);
 	return t->image;
 }
