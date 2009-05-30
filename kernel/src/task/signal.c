@@ -23,6 +23,8 @@ image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, 
 	// Block if set to block
 	if (flags & TF_BLOCK) src_t->flags |= TF_BLOCK;
 	if (flags & TF_UNBLK) t->flags &= ~TF_BLOCK;
+
+	t->image->caller = src;
 	
 	// Create new image to return to
 	if (t->pid != curr_pid) task_switch(t);
@@ -33,7 +35,7 @@ image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, 
 		panic("task state stack overflow");
 
 	// Set registers to describe signal
-	t->image->caller = src;
+	t->caller = src;
 	t->image->eax = src;
 	t->image->ebx = arg0;
 	t->image->ecx = arg1;
@@ -51,16 +53,14 @@ image_t *sret(image_t *image) {
 	task_t *t, *src_t;
 
 	// Unblock the caller
-	src_t = get_task(image->caller);
-	if (image->eax & TF_UNBLK) {
-		printk("unblocking %d\n", image->caller);
-		src_t->flags &= ~TF_BLOCK;
-	}
+	t = get_task(curr_pid);
+	src_t = get_task(t->caller);
+	if (image->eax & TF_UNBLK) src_t->flags &= ~TF_BLOCK;
 
 	// Reset image stack
-	t = get_task(curr_pid);
 	t->image = (void*) t->tss_esp;
 	t->tss_esp += sizeof(image_t); 
+	t->caller = t->image->caller;
 
 	// Bounds check image
 	if ((u32int) t->tss_esp >= 0xF3FFF000) 

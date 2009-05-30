@@ -59,7 +59,7 @@ typedef struct {
 	u16int pid;
 	u16int magic;
 	u32int tss_esp;
-	u16int reserved;
+	u16int caller;
 } task_t;
 
 #define TF_READY 0x0000
