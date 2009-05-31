@@ -1,5 +1,5 @@
-SOURCES=
-CFLAGS=-nostdlib -nostdinc -fno-builtin -Iinc -fomit-frame-pointer
+SOURCES=stubs.o table.o
+CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc -fomit-frame-pointer
 LDFLAGS=-r
 ASFLAGS=-felf
 

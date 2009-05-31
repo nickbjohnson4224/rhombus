@@ -3,6 +3,7 @@
 /* General virtual memory map:
 0x00000000 - 0xF3FFFFFF: userspace 		(user, read-write, cloned)
 	0xF0000000: usually libc
+	0xF3FEF000: library call table
 	0xF3FF0000: standard stack
 	0xF3FFE000: state saving stack
 	0xF3FFF000: signal handler table

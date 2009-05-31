@@ -1,4 +1,4 @@
-SOURCES=init/init.o lib/lib.o #call/call.o event/event.o exec/exec.o info/info.o
+SOURCES=init/init.o lib/lib.o call/call.o #event/event.o exec/exec.o info/info.o
 export CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc $(OPTS)
 LDFLAGS=-Tlink.ld
 ASFLAGS=-felf
@@ -11,7 +11,7 @@ lib/lib.o: lib/*.c inc/lib.h
 init/init.o: init/*.c init/*.s inc/init.h
 	make -C init
 
-call/call.o: call/*.c inc/call.h
+call/call.o: call/*.s inc/call.h
 	make -C call
 
 event/event.o: event/*.c inc/event.h
@@ -29,7 +29,7 @@ link:
 clean:
 	make -C init clean
 	make -C lib clean
-#	make -C call clean
+	make -C call clean
 #	make -C event clean
 #	make -C exec clean
 #	make -C info clean
