@@ -1,4 +1,4 @@
-megs: 8
+megs: 16
 romimage: file=/usr/share/bochs/BIOS-bochs-latest, address=0xf0000
 vgaromimage: file=/usr/share/bochs/VGABIOS-elpin-2.40
 floppya: 1_44=/dev/loop4, status=inserted

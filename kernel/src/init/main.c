@@ -8,7 +8,7 @@
 
 __attribute__ ((section(".tdata"))) 
 char *stamp = "\
-Khaos - 0.1 build 001\n\
+Khaos kernel - 0.1 build 001\n\
 Copyright 2009 Nick Johnson\n\n";
 
 typedef void (*init_t)(void);

@@ -28,22 +28,6 @@ void *memclr(void *dest, u32int size) {
 	return dest;
 }
 
-// Extremely fast memory clearing for page aligned things
-void *pgclr(register u32int *base) {
-	register u32int i;
-	for (i = 0; i < 1024; i += 32) {
-		base[i+0x00] = base[i+0x01] = base[i+0x02] = base[i+0x03] = 0;
-		base[i+0x04] = base[i+0x05] = base[i+0x06] = base[i+0x07] = 0;
-		base[i+0x08] = base[i+0x09] = base[i+0x0A] = base[i+0x0B] = 0;
-		base[i+0x0C] = base[i+0x0D] = base[i+0x0E] = base[i+0x0F] = 0;
-		base[i+0x10] = base[i+0x11] = base[i+0x12] = base[i+0x13] = 0;
-		base[i+0x14] = base[i+0x15] = base[i+0x16] = base[i+0x17] = 0;
-		base[i+0x18] = base[i+0x19] = base[i+0x1A] = base[i+0x1B] = 0;
-		base[i+0x1C] = base[i+0x1D] = base[i+0x1E] = base[i+0x1F] = 0;
-	}
-	return base;
-}
-
 char *strcpy(char *dest, char *src) {
 	u32int i;
 	for (i = 0; src[i]; i++) dest[i] = src[i];
