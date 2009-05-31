@@ -7,7 +7,7 @@ the little end, the first two bits are the register selector, the
 second two bits are the magnitude selector, the next three bits are the 
 opcode, and the last bit is the extension opcode flag.
 
-8	7	6	5	4	3	2	1	0
+8       7       6       5       4       3       2       1       0
 |       |       |       |       |       |       |       |       |
 |  ext  |        opcode	        |   magnitude   |   register    |
 
@@ -27,7 +27,7 @@ this register; most things are done using the register as a pointer. The
 SP register is usually the implied target to push to.
 
 00 - SP - Stack Pointer
-01 - BP - Base Pointer
+01 - VP - Variable (frame) Pointer
 10 - DP - Data Pointer
 11 - IP - Instruction Pointer
 
