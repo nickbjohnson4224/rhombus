@@ -70,5 +70,6 @@ void init_fault();
 void init_tss();
 void init_idt();
 void init_pit();
+void init_initrd_rmap();
 
 #endif /*INIT_H*/

@@ -13,6 +13,8 @@ struct tar_header *header[256];
 __attribute__ ((section(".tdata")))
 struct tar_header *initrd;
 
+static u32int size;
+
 __attribute__ ((section(".ttext")))
 static int tar_header_check(struct tar_header *t) {
 	u32int i, sum = 0;
@@ -31,7 +33,7 @@ static u8int *header_contents(struct tar_header *t) {
 
 __attribute__ ((section(".ttext")))
 void init_kload() {
-	u32int i, n, size;
+	u32int i, n;
 
 	// Check for initrd (it's really a tape archive)
 	if (!mboot->mods_count) panic("No libsys/driver file found!");
@@ -94,4 +96,18 @@ void init_libsys() {
 	t->image->cs = 0x1B;
 	extern u32int get_eflags();
 	t->image->eflags = get_eflags() | 0x0200; // Turns on interrupts in eflags
+}
+
+void init_initrd_rmap() {
+	u32int i;
+	task_t *t = get_task(curr_pid);
+
+	for (i = (u32int) initrd; i < (u32int) initrd + size; i += 0x1000) {
+		page_set(&t->map, (i - (u32int) initrd) + 0x10000000, page_get(&t->map, i));
+		page_set(&t->map, i, 0x00000000);
+	}
+
+	extern u32int end;
+	for (i = ((u32int) &end + 0x1000) & ~0xFFF; i < 0xF8400000; i += 0x1000)
+		p_free(&t->map, i);
 }

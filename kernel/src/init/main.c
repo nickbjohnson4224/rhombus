@@ -20,6 +20,7 @@ init_int,
 init_task,
 init_pit,
 init_sysmap,
+init_initrd_rmap,
 init_free,
 NULL
 };
