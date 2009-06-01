@@ -1,0 +1,62 @@
+Khaos Operating System v0.0
+Build Instructions
+===========================
+
+Toolchain Dependencies:
+
+Bourne shell compatible shell
+	- tested: GNU Bash 3.2.39(1)-release
+
+C99 compliant C compiler
+	- tested: GCC 4.3.2
+	- tested: TCC 0.9.4
+
+The Netwide Assembler (NASM)
+	- tested: NASM 2.05.01
+
+ELF based linker
+	- tested: GNU binutils 2.18
+
+GNU Make or equivalent
+	- tested: GNU Make 3.81
+
+===========================
+
+Testing Dependencies:
+
+Linux 2.4 or greater with loopback support
+	- tested: Zen 2.6.29-3
+
+Bochs x86 emulator (or other VM - scripts will have to be modified)
+	- tested: Bochs 2.3, i586 emulation level
+	- tested: VirtualBox OSE 2.2.2, on Celeron-M (PIII clone)
+
+===========================
+
+Build Instructions:
+
+To make each piece of the operating system, simply type "make -C 
+<subproject>". The kernel, libsys, init, libc, and at least basic 
+drivers must be built for the system to boot correctly. Aether and 
+coreutils are required for normal operation. Libc and aether contain 
+headers linked to by coreutils, so coreutils must be updated after both 
+of them are rebuilt. "make -C <subproject> clean" will remove all object 
+files from the subprojects' directories.
+
+Test Instructions:
+
+To test the operating system, use "make -C kernel test". This will make 
+it run in a virtual machine, namely Bochs. run/bochsrc.txt is the 
+configuration file for Bochs - modify it to your liking.
+
+===========================
+
+Tested Machines and Virtual Machines
+Please make sure all builds continue to work on this list!
+
+Virtual Machines:
+Bochs 2.3 i586
+VirtualBox OSE 2.2.2
+
+Actual Machines:
+Asus Eee 900 - 900MHz Celeron M, 1024MB RAM

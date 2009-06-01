@@ -9,7 +9,7 @@ link:
 	ld $(LDFLAGS) -o exec.o $(SOURCES)
 
 clean:
-	rm exec.o
+	rm $(SOURCES) exec.o
 
 .s.o:
 	nasm $(ASFLAGS) $<

@@ -9,7 +9,7 @@ link:
 	ld $(LDFLAGS) -o event.o $(SOURCES)
 
 clean:
-	rm event.o
+	rm $(SOURCES) event.o
 
 .s.o:
 	nasm $(ASFLAGS) $<
