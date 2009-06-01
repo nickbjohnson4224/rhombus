@@ -46,4 +46,8 @@ typedef struct {
 	addr_t entry;
 } load_image_t;
 
+int elf_load(elf_t *header, load_image_t *image);
+int elf_header_check(elf_t *header);
+int elf_segment_load(elf_t *header, elf_ph_t *segment);
+
 #endif/*EXEC_H*/
