@@ -50,4 +50,9 @@ int elf_load(elf_t *header, load_image_t *image);
 int elf_header_check(elf_t *header);
 int elf_segment_load(elf_t *header, elf_ph_t *segment);
 
+// Segment error codes
+#define ENULLSEG (1)
+#define ESUPPORT (2)
+#define ENMEMORY (3)
+
 #endif/*EXEC_H*/
