@@ -36,7 +36,7 @@ void init_kload() {
 	u32int i, n;
 
 	// Check for initrd (it's really a tape archive)
-	if (!mboot->mods_count) panic("No libsys/driver file found!");
+	if (!mboot->mods_count) panic("No initrd found!");
 	initrd = (void*) *(u32int*) (mboot->mods_addr + 0xF8000000) + 0xF8000000;
 	size = *(u32int*) (mboot->mods_addr + 0xF8000004) + 0xF8000000;
 	size -= (u32int) initrd;
@@ -47,8 +47,10 @@ void init_kload() {
 	if (tar_header_check(initrd) == -1) panic("Tar checksum error");
 
 	// Index initrd for later use
-	for (i = 0, n = 0; i < size; i++) if (tar_header_check(&initrd[i]) != -1)
+	for (i = 0, n = 0; i < size; i++) if (tar_header_check(&initrd[i]) != -1) {
 		header[n++] = &initrd[i];
+		printk("\nfile: %s", initrd[i].name);
+	}
 	header[n] = NULL;
 }
 
@@ -102,12 +104,13 @@ void init_initrd_rmap() {
 	u32int i;
 	task_t *t = get_task(curr_pid);
 
-	for (i = (u32int) initrd; i < (u32int) initrd + size; i += 0x1000) {
-		page_set(&t->map, (i - (u32int) initrd) + 0x10000000, page_get(&t->map, i));
+	for (i = (u32int) initrd; i < (u32int) initrd + (size * 512); i += 0x1000) {
+		page_set(&t->map, (i - (u32int) initrd) + 0x10000000, page_get(&t->map, i) | 0x7);
 		page_set(&t->map, i, 0x00000000);
 	}
 
 	extern u32int end;
 	for (i = ((u32int) &end + 0x1000) & ~0xFFF; i < 0xF8400000; i += 0x1000)
-		p_free(&t->map, i);
+		if (i < (u32int) initrd || i > (u32int) initrd + (size * 512))
+			p_free(&t->map, i);
 }
