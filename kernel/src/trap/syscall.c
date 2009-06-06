@@ -87,7 +87,8 @@ image_t *mmap_call(image_t *image) {
 	if (page_get(&t->map, page) & 0x1) ret(image, EREPEAT);
 
 	// Allocate page with flags
-	page_set(&t->map, page, page_fmt(frame_new(), image->ebx | PF_PRES));
+	p_alloc(t->map, page, image->ebx | PF_PRES | PF_USER);
+//	page_set(&t->map, page, page_fmt(frame_new(), image->ebx | PF_PRES));
 
 	map_load(&t->map);
 	ret(image, 0);
