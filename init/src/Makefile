@@ -1,4 +1,4 @@
-SOURCES=main.o
+SOURCES=test.o
 CFLAGS=-nostdlib -nostdinc -fno-builtin -Iinc -fomit-frame-pointer
 LDFLAGS=
 ASFLAGS=-felf

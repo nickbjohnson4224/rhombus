@@ -57,11 +57,14 @@ void init_load_init() {
 	eout("Found init\n");
 
 	// Load init
-	init_base = ((u32int) header[i] + 512);
+	init_base = (elf_t*) ((u32int) header[i] + 512);
 	elf_load(init_base, &image);
 	eout("Loaded init; entry point is 0x");
 	eout(itoa(image.entry, buffer, 16));
 	eout("\n");
+
+	entry_t entry = (entry_t) image.entry;
+	entry();
 
 	for(;;);
 }
