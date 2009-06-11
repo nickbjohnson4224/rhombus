@@ -75,8 +75,8 @@ void init_int() {
 	printk("System calls");
 
 		// Clear the interrupt handler table
-		extern handler_t int_handlers[256];
-		memclr(int_handlers, sizeof(handler_t) * 256);
+		extern handler_t int_handlers[96];
+		memclr(int_handlers, sizeof(handler_t) * 96);
 
 		// Initialize the TSS
 		init_tss();

@@ -3,7 +3,7 @@
 section .data
 extern idt
 idt_ptr:
-	dw 0x7FF
+	dw 0x2FF
 	dd idt
 
 section .bss

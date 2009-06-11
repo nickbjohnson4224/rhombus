@@ -46,7 +46,7 @@ typedef struct {
 	addr_t entry;
 } load_image_t;
 
-typedef void (*entry_t)();
+typedef int (*entry_t)();
 
 int elf_load(elf_t *header, load_image_t *image);
 int elf_header_check(elf_t *header);

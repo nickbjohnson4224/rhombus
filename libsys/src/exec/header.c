@@ -11,8 +11,6 @@ int elf_load(elf_t *header, load_image_t *image) {
 	if (!image) return 2;
 
 	seg_base = (void*) ((addr_t) header + (addr_t) header->e_phoff);
-
-	eout("ELF header confirmed\n");
 	for (i = 0; i < header->e_phnum; i++)
 		elf_segment_load(header, &seg_base[i]);
 

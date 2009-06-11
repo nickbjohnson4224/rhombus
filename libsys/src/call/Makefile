@@ -1,4 +1,4 @@
-SOURCES=stubs.o table.o
+SOURCES=stubs.o
 CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc -fomit-frame-pointer
 LDFLAGS=-r
 ASFLAGS=-felf
