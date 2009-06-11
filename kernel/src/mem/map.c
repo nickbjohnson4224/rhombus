@@ -4,6 +4,8 @@
 #include <mem.h>
 #include <task.h>
 
+map_t kmap;
+
 map_t *map_alloc(map_t *map) {
 	map->pdir = kmalloc(0x1000);
 	map->virt = kmalloc(0x1000);

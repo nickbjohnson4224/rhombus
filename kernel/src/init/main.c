@@ -8,7 +8,7 @@
 
 __attribute__ ((section(".tdata"))) 
 char *stamp = "\
-Khaos kernel - 0.1 build 001\n\
+Khaos kernel - 0.1 build 002\n\
 Copyright 2009 Nick Johnson\n\n";
 
 typedef void (*init_t)(void);
@@ -24,6 +24,8 @@ init_initrd_rmap,
 init_free,
 NULL
 };
+
+struct multiboot *mboot;
 
 void init(void *mboot_ptr, u32int mboot_magic) {
 	u32int i;

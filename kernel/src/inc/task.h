@@ -27,7 +27,7 @@ image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, 
 image_t *sret();
 
 // The signal table is mapped in all address spaces
-u32int *signal_table;
+extern u32int *signal_table;
 
 /***** PERMISSIONS *****/
 
@@ -71,43 +71,17 @@ task_t *new_task(task_t *src);
 u32int rem_task(task_t *t);
 image_t *task_switch(task_t *t);
 
-pool_t *tmap;		// Pool allocator for task structures
-task_t *task[128]; 	// 2D array (128*128) of task structures
-u16int curr_pid;	// Currently loaded task ID
+extern pool_t *tmap;		// Pool allocator for task structures
+extern task_t *task[128]; 	// 2D array (128*128) of task structures
+extern u16int curr_pid;	// Currently loaded task ID
 
 /***** SYSTEM MAP *****/
 
-// Information about a driver task
-struct driv_id {
-	u8int magic;
-	u8int device;
-	u16int pid;
-	u16int type;
-	u16int version;
-};
-
-// Information about a device
-struct device {
-	u16int magic;
-	u16int irq;
-	u16int port_base;
-	u16int port_limit;
-};
-
-#define DRV_TYPE_BLOCK 1
-#define DRV_TYPE_CHAR 2
-#define DRV_TYPE_FS 3
-
-u16int irq_holder[15];
-
-struct sysmap {
-	struct device device[256];
-	struct driv_id driver[256];
-} *sysmap;
+extern u16int irq_holder[15];
 
 /***** SCHEDULER *****/
 
-struct sched_queue {
+extern struct sched_queue {
 	u16int next;
 	u16int last;
 } queue;

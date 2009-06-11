@@ -66,23 +66,15 @@ void init_libsys() {
 
 	// Set up a stack for the process image
 	t = get_task(curr_pid);
-	map_load(&t->map);
 	p_alloc(&t->map, 0xF3FFE000, (PF_USER | PF_RW)); // This is for the system call stack
 	p_alloc(&t->map, 0xF3FFD000, (PF_USER | PF_RW));
 	p_alloc(&t->map, 0xF3FFC000, (PF_USER | PF_RW));
+	map_load(&t->map);
 	t->image = (void*) (0xF3FFEFFC - sizeof(image_t));
 
-	// Set up space for the various system structures
-
-	// Signal handler table
+	// Set up space for the signal handler table
 	p_alloc(&t->map, 0xF3FFF000, (PF_USER | PF_RW));
 	
-	// System map
-	p_alloc(&t->map, 0xF5FFF000, PF_USER);
-	p_alloc(&t->map, 0xF5FFE000, PF_USER);
-	p_alloc(&t->map, 0xF5FFD000, PF_USER);
-	p_alloc(&t->map, 0xF5FFC000, PF_USER);
-
 	// Load libsys image
 	if (elf_check(header_contents(header[n]))) panic("libsys is not valid ELF");
 
@@ -101,16 +93,18 @@ void init_libsys() {
 }
 
 void init_initrd_rmap() {
-	u32int i;
+	u32int i, base, limit, new_base;
 	task_t *t = get_task(curr_pid);
+	base = (u32int) initrd;
+	limit = base + (size * 512);
+#define	new_base 0x10000000
 
-	for (i = (u32int) initrd; i < (u32int) initrd + (size * 512); i += 0x1000) {
-		page_set(&t->map, (i - (u32int) initrd) + 0x10000000, page_get(&t->map, i) | 0x7);
+	for (i = base; i < limit; i += 0x1000) {
+		page_set(&t->map, ((i - base) + new_base), page_get(&t->map, i) | 0x7);
 		page_set(&t->map, i, 0x00000000);
 	}
 
 	extern u32int end;
 	for (i = ((u32int) &end + 0x1000) & ~0xFFF; i < 0xF8400000; i += 0x1000)
-		if (i < (u32int) initrd || i > (u32int) initrd + (size * 512))
-			p_free(&t->map, i);
+		if (i < base || i > limit) p_free(&t->map, i);
 }

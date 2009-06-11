@@ -2,15 +2,16 @@
 
 /* General virtual memory map:
 0x00000000 - 0xF3FFFFFF: userspace 		(user, read-write, cloned)
-	0xF0000000: usually libc
+	0x00001000: process image
+	0x10000000: remapped initrd
+	0xF0000000: libc image
 	0xF3FEF000: library call table
 	0xF3FF0000: standard stack
 	0xF3FFE000: state saving stack
 	0xF3FFF000: signal handler table
 0xF4000000 - 0xF7FFFFFF: libspace 		(user, readonly, linked)
-	0xF4000000: libsys code
-	0xF5FF0000: system map
-	0xF6000000: library image
+	0xF4000000: static libsys data
+	0xF6000000: libsys image
 0xF8000000 - 0xFFFFFFFF: kernelspace 	(kernel, linked)
 	0xF8000000: lower memory (DMA)
 	0xF807C000: BIOS
@@ -54,8 +55,8 @@ u32int rmap(u32int base, u32int src);	// Move a mapped frame
 u32int fmap(u16int task, u32int base);	// Force a remote remapping (task 0 == physical mem)
 
 /***** ALLOC.C *****/
-pool_t *ppool;
-u32int proto_base;
+extern pool_t *ppool;
+extern u32int proto_base;
 // These are PAGE ALIGNED ALLOCATORS ONLY!
 void *kmalloc(u32int size);	// Allocates one page
 void kfree(void *addr);		// Frees one page
@@ -64,7 +65,7 @@ void kfree(void *addr);		// Frees one page
 #define MF_CPY_LIBSYS 	0x01	// Copy libsys as well (recommended)
 #define MF_CLEAR_USER 	0x02	// Do not copy userspace
 
-map_t kmap;
+extern map_t kmap;
 map_t *map_alloc(map_t *map);							// Allocates a new map
 map_t *map_free(map_t *map);							// Frees a map (does not clean)
 map_t *map_clean(map_t *map);							// Cleans a map (frees all *user* memory)
@@ -73,12 +74,12 @@ map_t *map_load(map_t *map);							// Activates a new map
 map_t *map_enum(map_t *map);							// Prints contents of a map (pdirs only)
 
 /***** FRAME.C ******/
-pool_t *fpool;
+extern pool_t *fpool;
 #define frame_new() (pool_alloc(fpool) << 12)			// Allocates a new frame	
 #define frame_free(addr) (pool_free(fpool, addr >> 12))	// Frees a frame
 
 /***** PAGE.C *****/
-u8int mem_setup;
+extern u8int mem_setup;
 page_t page_touch(map_t *map, u32int page);				// Makes sure a page exists
 page_t page_set(map_t *map, u32int page, page_t value);	// Sets the value of a page
 page_t page_get(map_t *map, u32int page);				// Returns the value of a page

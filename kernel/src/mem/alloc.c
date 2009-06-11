@@ -3,6 +3,8 @@
 #include <lib.h>
 #include <mem.h>
 
+pool_t *fpool, *ppool;
+
 /* 	This allocator can only allocate single pages
  *	If I build the kernel right, this will suffice  */
 

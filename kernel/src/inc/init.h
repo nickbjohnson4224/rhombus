@@ -40,9 +40,8 @@ struct memory_map {
 	u32int type;
 } __attribute__ ((packed));
 
-struct multiboot *mboot;
-
-u32int memsize;
+extern struct multiboot *mboot;
+extern u32int memsize;
 
 // Standard V7 TAR header
 struct tar_header {

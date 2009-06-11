@@ -4,6 +4,8 @@
 #include <task.h>
 #include <trap.h>
 
+u32int *signal_table;
+
 image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, u32int flags) {
 	task_t *t, *src_t;
 	u32int src = curr_pid;

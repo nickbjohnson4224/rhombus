@@ -13,8 +13,11 @@ image_t *fault_generic(image_t *image) {
 }
 
 image_t *fault_page(image_t *image) {
-	if ((image->cs & 0x3) == 0) panic("page fault exception");
 	u32int cr2; asm volatile ("movl %%cr2, %0" : "=r" (cr2));
+	if ((image->cs & 0x3) == 0) {
+		printk("page fault at %x\n", cr2);
+		panic("page fault exception");
+	}
 	return signal(curr_pid, S_PAG, cr2, image->err, 0, 0);
 }
 
@@ -88,8 +91,8 @@ image_t *mmap_call(image_t *image) {
 
 	// Allocate page with flags
 	p_alloc(&t->map, page, image->ebx | PF_PRES | PF_USER);
-	u8int *test = (void*) page;
-	*test = 0x42242442;
+//	u8int *test = (void*) page;
+//	*test = (void*) 0x42242442;
 //	page_set(&t->map, page, page_fmt(frame_new(), image->ebx | PF_PRES));
 
 	map_load(&t->map);
