@@ -47,10 +47,8 @@ void init_kload() {
 	if (tar_header_check(initrd) == -1) panic("Tar checksum error");
 
 	// Index initrd for later use
-	for (i = 0, n = 0; i < size; i++) if (tar_header_check(&initrd[i]) != -1) {
+	for (i = 0, n = 0; i < size; i++) if (tar_header_check(&initrd[i]) != -1)
 		header[n++] = &initrd[i];
-		printk("\nfile: %s", initrd[i].name);
-	}
 	header[n] = NULL;
 }
 
@@ -92,6 +90,7 @@ void init_libsys() {
 	t->image->eflags = get_eflags() | 0x0200; // Turns on interrupts in eflags
 }
 
+// Note - this function breaks on all GCC optimizations and normal TCC - try and fix ASAP
 void init_initrd_rmap() {
 	u32int i, base, limit, new_base;
 	task_t *t = get_task(curr_pid);
@@ -100,7 +99,7 @@ void init_initrd_rmap() {
 #define	new_base 0x10000000
 
 	for (i = base; i < limit; i += 0x1000) {
-		page_set(&t->map, ((i - base) + new_base), page_get(&t->map, i) | 0x7);
+		page_set(&t->map, ((i - base) + new_base), (page_get(&t->map, i) | 0x7));
 		page_set(&t->map, i, 0x00000000);
 	}
 

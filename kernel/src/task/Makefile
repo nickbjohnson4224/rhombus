@@ -1,4 +1,4 @@
-SOURCES=table.o signal.o sysmap.o sched.o
+SOURCES=table.o signal.o sched.o
 #CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc -Wall -march=i386
 LDFLAGS=-r
 ASFLAGS=-felf

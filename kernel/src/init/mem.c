@@ -60,7 +60,6 @@ static pool_t *pool_new_init(u32int num) {
 __attribute__ ((section(".ttext"))) 
 void init_mem() {
 	u32int i;
-	colork(0xC);
 	printk("Allocators");
 
 		// Make a new and proper memory map for the kernel
@@ -75,8 +74,8 @@ void init_mem() {
 		// Preallocate page tables for the address space allocator
 		for (i = 0xF8400000; i; i += 0x400000) page_touch_init(&kmap, i);
 
-	cursek(36, -1);
-	printk("done\n");
+	cursek(74, -1);
+	printk("[done]");
 	printk("Kernel map");
 
 		// Identity map necessary kernel memory (i.e. code and initrd)
@@ -97,14 +96,12 @@ void init_mem() {
 		// Mark memory as set up, so the new allocator is used
 		mem_setup = 1;
 
-	cursek(36, -1);
-	printk("done\n");
-	colork(0xF);
+	cursek(74, -1);
+	printk("[done]");
 }
 
 void init_free() {
 	u32int i, base, limit;
-	colork(0xC);
 	printk("Temporary memory");
 
 		// Free marked code and global data
@@ -120,7 +117,6 @@ void init_free() {
 		for (; i < 0xF8400000; i += 0x1000)
 			if (page_get(&kmap, i)) frame_free(page_ufmt(page_get(&kmap, i)));
 
-	cursek(36, -1);
-	printk("done\n");
-	colork(0xF);
+	cursek(74, -1);
+	printk("[done]");
 }

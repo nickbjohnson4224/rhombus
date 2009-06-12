@@ -11,6 +11,7 @@ install: all
 
 test: all
 	make -C ../libsys
+	make -C ../init
 	./test.sh
 
 clean:

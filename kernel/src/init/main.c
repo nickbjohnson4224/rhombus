@@ -6,10 +6,14 @@
 #include <task.h>
 #include <init.h>
 
+#define KHAOS_VERSION_MAJOR 0
+#define KHAOS_VERSION_MINOR 1
+
 __attribute__ ((section(".tdata"))) 
 char *stamp = "\
-Khaos kernel - 0.1 build 002\n\
-Copyright 2009 Nick Johnson\n\n";
+Khaos Operating System v%d.%d\n\
+Copyright 2009 Nick Johnson\n\
+===========================\n\n";
 
 typedef void (*init_t)(void);
 __attribute__ ((section(".tdata")))
@@ -19,7 +23,6 @@ init_mem,
 init_int,
 init_task,
 init_pit,
-init_sysmap,
 init_initrd_rmap,
 init_free,
 NULL
@@ -31,12 +34,11 @@ void init(void *mboot_ptr, u32int mboot_magic) {
 	u32int i;
 
 	cleark();
-	printk(stamp);
+	printk(stamp, KHAOS_VERSION_MAJOR, KHAOS_VERSION_MINOR);
 
 	if (mboot_magic != 0x2BADB002) panic("Bootloader is not multiboot compliant");
 	else mboot = mboot_ptr;
 
-	printk("Booting Khaos\n");
 	for (i = 0; init_list[i]; i++) init_list[i]();
-	printk("Khaos booted\n\n");
+	printk("\n");
 }

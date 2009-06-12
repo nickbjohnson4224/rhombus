@@ -12,7 +12,6 @@ static void init_sched() {
 
 __attribute__ ((section(".ttext"))) 
 void init_task() {
-	colork(0xA);
 	printk("Tasking system");
 
 		// Set up task table and allocator
@@ -39,14 +38,13 @@ void init_task() {
 		// Fork task 1
 		task_switch(new_task(get_task(curr_pid)));
 
-	cursek(36, -1);
-	printk("done\n");
+	cursek(74, -1);
+	printk("[done]");
 	printk("System library");
 
 		// Load the system library from the initrd
 		init_libsys();
 
-	cursek(36, -1);
-	printk("done\n");
-	colork(0xF);
+	cursek(74, -1);
+	printk("[done]");
 }

@@ -33,7 +33,6 @@ void init_fault() {
 __attribute__ ((section(".ttext"))) 
 void init_pit() {
 	u16int divisor;
-	colork(0x9);
 	printk("System timer (256 Hz)");
 
 		// Register IRQ handler (PIT == IRQ 0)
@@ -45,13 +44,14 @@ void init_pit() {
 		outb(0x40, divisor & 0xFF);
 		outb(0x40, divisor >> 8);
 
-	cursek(36, -1);
-	printk("done\n");
+	cursek(74, -1);
+	printk("[done]");
 }
+
+u16int irq_holder[15];
 
 __attribute__ ((section(".ttext"))) 
 void init_int() {
-	colork(0x9);
 	printk("Interrupts");
 
 		// Set up interupt descriptor table
@@ -70,8 +70,11 @@ void init_int() {
 		outb(0x21, 0x00);
 		outb(0xA1, 0x00);
 
-	cursek(36, -1);
-	printk("done\n");
+		// Clear IRQ redirection table
+		memclr(irq_holder, sizeof(u16int) * 15);
+
+	cursek(74, -1);
+	printk("[done]");
 	printk("System calls");
 
 		// Clear the interrupt handler table
@@ -98,7 +101,6 @@ void init_int() {
 		// Register fault handlers
 		init_fault();
 
-	cursek(36, -1);
-	printk("done\n");
-	colork(0xF);
+	cursek(74, -1);
+	printk("[done]");
 }
