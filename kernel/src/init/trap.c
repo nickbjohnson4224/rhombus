@@ -33,7 +33,7 @@ void init_fault() {
 __attribute__ ((section(".ttext"))) 
 void init_pit() {
 	u16int divisor;
-	printk("System timer (256 Hz)");
+	printk("  Kernel: system timer @ 256Hz");
 
 		// Register IRQ handler (PIT == IRQ 0)
 		register_int(IRQ(0), pit_handler);
@@ -52,7 +52,7 @@ u16int irq_holder[15];
 
 __attribute__ ((section(".ttext"))) 
 void init_int() {
-	printk("Interrupts");
+	printk("  Kernel: interrupts");
 
 		// Set up interupt descriptor table
 		init_idt();
@@ -75,7 +75,7 @@ void init_int() {
 
 	cursek(74, -1);
 	printk("[done]");
-	printk("System calls");
+	printk("  Kernel: system calls");
 
 		// Clear the interrupt handler table
 		extern handler_t int_handlers[96];

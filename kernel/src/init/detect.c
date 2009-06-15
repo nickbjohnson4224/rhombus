@@ -37,7 +37,7 @@
 __attribute__ ((section(".ttext"))) 
 void init_detect() {
 	u32int i;
-	printk("Memory: ");
+	printk("Detected: memory: ");
 
 		// This is quite lazy - it finds the free block directly above 0x100000
 		// Only a prototype - *please refactor*
@@ -53,7 +53,7 @@ void init_detect() {
 
 	cursek(74, -1);
 	printk("[done]");
-	printk("CPU: ");
+	printk("Detected: CPU: ");
 
 		extern void cpuid_name(char*);
 
@@ -64,7 +64,7 @@ void init_detect() {
 
 	cursek(74, -1);
 	printk("[done]");
-	printk("Initrd: ");
+	printk("Detected: initrd: ");
 
 		init_kload();
 	

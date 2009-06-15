@@ -1,5 +1,6 @@
-Khaos Design Overview - Version 7.1
-Copyright 2009 Nick Johnson
+Khaos Operating System v0.0
+Design Overview
+===========================
 
 The goal of the Khaos project is to produce an operating system: 
 one capable of great flexibilty. It's basic design philosophy follows but 
@@ -30,5 +31,3 @@ there is a critical error. It's small amount of power is used to fix errors,
 execute new programs, and if needed, terminate the current task. It is mapped
 in all address spaces, and is read only, but can be changed to a different
 version dynamically, to support multiple execution environments.
-
-

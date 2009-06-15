@@ -18,7 +18,7 @@ static void scroll() {
 static void cwrite(char c) {
 	if (cursor >= 1999) scroll();
 	switch (c) {
-		case '\t': cursor = (cursor + 8) - (cursor % 8); break;
+		case '\t': cursor = (cursor + 4) - (cursor % 4); break;
 		case '\n': c_base = cursor = (cursor - cursor % 80) + 80; if (cursor>1920) scroll(); break;
 		case '\r': cursor = (cursor - cursor % 80); c_base = cursor; break;
 		case '\b': if (c_base < cursor) cursor--; video_mem[cursor] = 0x0000; break;

@@ -102,8 +102,4 @@ void init_initrd_rmap() {
 		page_set(&t->map, ((i - base) + new_base), (page_get(&t->map, i) | 0x7));
 		page_set(&t->map, i, 0x00000000);
 	}
-
-	extern u32int end;
-	for (i = ((u32int) &end + 0x1000) & ~0xFFF; i < 0xF8400000; i += 0x1000)
-		if (i < base || i > limit) p_free(&t->map, i);
 }

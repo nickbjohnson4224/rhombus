@@ -39,6 +39,7 @@ map_t *map_clean(map_t *map) {
 
 map_t *map_clone(map_t *dest, map_t *src, u8int flags) {
 	u32int i, j;
+	task_t *t;
 
 	// Create new map
 	map_load(&kmap);
@@ -66,7 +67,7 @@ map_t *map_clone(map_t *dest, map_t *src, u8int flags) {
 		dest->pdir[i] = kmap.pdir[i];
 	}
 
-	task_t *t = get_task(curr_pid);
+	t = get_task(curr_pid);
 	map_load(&t->map);
 	return dest;
 }

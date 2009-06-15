@@ -10,7 +10,7 @@ section .bss
 align 32
 global stack
 stack:
-    resb 0x4000	; reserve 16k stack
+    resb 0x2000	; reserve 16k stack
 
 section .text
 align 4

@@ -34,7 +34,7 @@ task_t *next_task(u8int flags) {
 	t->next_task = 0;
 	if (t->magic == 0x4224) insert_sched(pid);
 	if (t->flags & TF_BLOCK || t->magic != 0x4224)
-		goto retry; // If an error occurs, recurse
+		goto retry; // If errors occur, redo 
 
 	return t;
 }

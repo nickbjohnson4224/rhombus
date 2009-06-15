@@ -60,7 +60,7 @@ static pool_t *pool_new_init(u32int num) {
 __attribute__ ((section(".ttext"))) 
 void init_mem() {
 	u32int i;
-	printk("Allocators");
+	printk("  Kernel: allocators");
 
 		// Make a new and proper memory map for the kernel
 		map_alloc_init(&kmap);
@@ -76,7 +76,7 @@ void init_mem() {
 
 	cursek(74, -1);
 	printk("[done]");
-	printk("Kernel map");
+	printk("  Kernel: memory map");
 
 		// Identity map necessary kernel memory (i.e. code and initrd)
 		i = 0xF8000000;
@@ -101,21 +101,30 @@ void init_mem() {
 }
 
 void init_free() {
-	u32int i, base, limit;
-	printk("Temporary memory");
+	u32int i, base, limit, freed = 0;
+	printk("  Kernel: GC: ");
 
 		// Free marked code and global data
 		extern u32int START_OF_TEMP;
 		base = (u32int) &START_OF_TEMP;
 		extern u32int END_OF_TEMP;
 		limit = (u32int) &END_OF_TEMP;
-		for (i = base; i < (limit & ~0xFFF); i += 0x1000) p_free(&kmap, i);
-
+		for (i = base; i < (limit & ~0xFFF); i += 0x1000) {
+			p_free(&kmap, i);
+			freed++;
+		}
+		
 		// Free initrd image data
 		extern u32int end;
 		i = ((u32int) &end + 0x1000) & ~0xFFF;
-		for (; i < 0xF8400000; i += 0x1000)
-			if (page_get(&kmap, i)) frame_free(page_ufmt(page_get(&kmap, i)));
+		for (; i < 0xF8400000; i += 0x1000) {
+			if (page_get(&kmap, i)) {
+				frame_free(page_ufmt(page_get(&kmap, i)));
+				freed++;
+			}
+		}
+		
+		printk("%d KB freed", freed * 4);
 
 	cursek(74, -1);
 	printk("[done]");

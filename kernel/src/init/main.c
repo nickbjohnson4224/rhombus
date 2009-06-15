@@ -40,5 +40,7 @@ void init(void *mboot_ptr, u32int mboot_magic) {
 	else mboot = mboot_ptr;
 
 	for (i = 0; init_list[i]; i++) init_list[i]();
-	printk("\n");
+	printk("  Kernel: dropping to usermode");
+	cursek(74, -1);
+	printk("[done]");
 }

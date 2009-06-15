@@ -12,7 +12,7 @@ static void init_sched() {
 
 __attribute__ ((section(".ttext"))) 
 void init_task() {
-	printk("Tasking system");
+	printk("  Kernel: tasking system");
 
 		// Set up task table and allocator
 		memclr(task, sizeof(task_t*) * 64);
@@ -40,7 +40,7 @@ void init_task() {
 
 	cursek(74, -1);
 	printk("[done]");
-	printk("System library");
+	printk("  Kernel: loading libsys");
 
 		// Load the system library from the initrd
 		init_libsys();
