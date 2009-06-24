@@ -20,7 +20,7 @@ elf_phdr_segment
 };
 
 int elf_segment_load(elf_t *header, elf_ph_t *segment) {
-	if (segment->p_type > 256) return ESUPPORT;
+	if (segment->p_type > 7) return ESUPPORT;
 	if (elf_segment_handler[segment->p_type])
 		return elf_segment_handler[segment->p_type](header, segment);
 	else

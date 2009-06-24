@@ -1,4 +1,4 @@
-SOURCES=init/init.o lib/lib.o call/call.o exec/exec.o #event/event.o info/info.o
+SOURCES=init/init.o lib/lib.o call/call.o exec/exec.o event/event.o #info/info.o
 export CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc $(OPTS)
 LDFLAGS=-Tlink.ld
 ASFLAGS=-felf
@@ -22,6 +22,8 @@ exec/exec.o: exec/*.c inc/exec.h
 
 info/info.o: info/*.c inc/info.h
 	make -C info
+
+event/event.o: event/*.c inc/event.h
 
 link:
 	ld $(LDFLAGS) -o libsys $(SOURCES)

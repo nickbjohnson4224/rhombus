@@ -1,6 +1,6 @@
-SOURCES=test.o
+SOURCES=test.o main.o
 CFLAGS=-nostdlib -nostdinc -fno-builtin -Iinc -fomit-frame-pointer
-LDFLAGS=
+LDFLAGS=-R ../../libsys/src/libsys
 ASFLAGS=-felf
 
 all: $(SOURCES) link

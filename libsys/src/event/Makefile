@@ -1,4 +1,4 @@
-SOURCES=
+SOURCES=segfault.o
 CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc -fomit-frame-pointer
 LDFLAGS=-r
 ASFLAGS=-felf
