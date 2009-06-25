@@ -52,7 +52,7 @@ void init_load_init() {
 	// Find "init"
 	for (i = 0; i < n; i++) if (!strcmp(header[i]->name, "init")) break;
 	if (i == n) {
-		eout("no init found - aborting boot\n");
+		eout("\t\t\t\t\t\t\t\t\t\t\t\t\t  [fail]");
 		for(;;);
 	}
 

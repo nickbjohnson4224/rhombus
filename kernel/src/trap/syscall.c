@@ -91,9 +91,6 @@ image_t *mmap_call(image_t *image) {
 
 	// Allocate page with flags
 	p_alloc(&t->map, page, image->ebx | PF_PRES | PF_USER);
-//	u8int *test = (void*) page;
-//	*test = (void*) 0x42242442;
-//	page_set(&t->map, page, page_fmt(frame_new(), image->ebx | PF_PRES));
 
 	map_load(&t->map);
 	ret(image, 0);

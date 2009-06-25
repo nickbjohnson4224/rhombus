@@ -4,7 +4,7 @@
 #include <task.h>
 #include <trap.h>
 
-u32int *signal_table;
+u32int *signal_table = (void*) 0xF3FFF000;
 
 image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, u32int flags) {
 	task_t *t, *src_t;
@@ -19,6 +19,7 @@ image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, 
 	if (t->user.id != src_t->user.id && t->user.ring >= src_t->user.ring) 
 		ret(src_t->image, EPERMIT);
 	tss_set_esp(t->tss_esp);
+
 	// Check existence of signal handler
 	if (!signal_table[sig]) ret(src_t->image, ENOSIG);
 
@@ -31,9 +32,9 @@ image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, 
 	// Create new image to return to
 	if (t->pid != curr_pid) task_switch(t);
 	memcpy((u8int*) ((u32int) t->image - sizeof(image_t)), t->image, sizeof(image_t));
-	t->tss_esp = (u32int) t->image; // Will now create images above old image
+	tss_set_esp(t->tss_esp = (u32int) t->image); // Will now create images above old image
 	t->image = (void*) ((u32int) t->image - sizeof(image_t));
-	if ((u32int) t->image < 0xF3FFE100) 
+	if ((u32int) t->image < 0xF3FFEC00 + sizeof(image_t)) 
 		panic("task state stack overflow");
 
 	// Set registers to describe signal
@@ -44,10 +45,10 @@ image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, 
 	t->image->edx = arg2;
 	t->image->esi = sig;
 
-	// Locate entry point
+	// Set reentry point
 	t->image->eip = signal_table[sig];
 
-	tss_set_esp(t->tss_esp);
+	printk("%d sending signal %d to %d handler %x\n", src, sig, task, signal_table[sig]);
 	return t->image;
 }
 
