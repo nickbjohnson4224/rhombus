@@ -2,6 +2,7 @@
 #include <event.h>
 
 void segfault() {
-	eout("Segmentation fault\n");
+	eout("\nSegmentation fault\n");
+	for(;;);
 	exit_call(0);
 }

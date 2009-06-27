@@ -77,3 +77,13 @@ rirq:
 	mov eax, [esp+4]
 	int 0x51
 	ret
+
+global inb
+global outb
+global inw
+
+inb:
+	mov dx, [esp+4]
+	mov eax, 0
+	in al, dx
+	ret

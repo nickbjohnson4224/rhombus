@@ -48,7 +48,6 @@ image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, 
 	// Set reentry point
 	t->image->eip = signal_table[sig];
 
-	printk("%d sending signal %d to %d handler %x\n", src, sig, task, signal_table[sig]);
 	return t->image;
 }
 

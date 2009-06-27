@@ -27,7 +27,10 @@ task_t *next_task(u8int flags) {
 	task_t *t;
 
 	retry:
-	if (!queue.next) return get_task(0);
+	if (!queue.next) {
+		asm volatile ("sti");
+		for(;;) asm volatile ("hlt");
+	}
 	pid = queue.next;
 	t = get_task(pid);
 	queue.next = t->next_task;

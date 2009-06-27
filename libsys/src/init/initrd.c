@@ -46,7 +46,7 @@ void init_load_init() {
 	
 	// Index tar file
 	for (i = 0, n = 0; tar_end_check((void*) &initrd[i]) == 0; i++)
-		if (tar_header_check(&initrd[i]) != -1)
+		if (tar_header_check(&initrd[i]) > 0)
 			header[n++] = &initrd[i];
 
 	// Find "init"
@@ -58,7 +58,10 @@ void init_load_init() {
 
 	// Load init
 	init_base = (elf_t*) ((u32int) header[i] + 512);
-	elf_load(init_base, &image);
+	if (elf_load(init_base, &image)) {
+		eout("\t\t\t\t\t\t\t\t\t\t\t\t\t  [fail]");
+		for(;;);
+	}
 	entry_t entry = (entry_t) image.entry;
 
 	eout("\t\t\t\t\t\t\t\t\t\t\t\t\t  [done]");

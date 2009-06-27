@@ -31,7 +31,7 @@ static int elf_null_segment(elf_t *header, elf_ph_t *segment) {
 	return ENULLSEG;
 }
 
-static int elf_load_segment(elf_t *header, elf_ph_t *segment) {
+static int elf_load_segment(elf_t *header, elf_ph_t *segment) {	
 	u8int *mem_base = (void*) segment->p_vaddr;
 	u32int file_off = segment->p_offset;
 	u8int *file_base = (u8int*) header;
