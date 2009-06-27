@@ -32,7 +32,7 @@ clean:
 	make -C init clean
 	make -C lib clean
 	make -C call clean
-#	make -C event clean
+	make -C event clean
 	make -C exec clean
 #	make -C info clean
 	rm libsys
