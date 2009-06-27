@@ -1,27 +1,13 @@
 Copyright (C) 2009 Nick Johnson
 
-Khaos License v1.3
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
 
-A "section" is any file or directory containing a copyright notice that covers
-all of the work contained within it. The smallest unit that may be considered
-to be a section is a single file.
-
-Permission is hereby granted to use, copy, modify, merge, link, disassemble,
-publish, and/or distribute this software and/or its source code, with or
-without modification, in whole, in part, or as part of another work, for any
-purpose, provided that if this software is distributed in any way or form,
-this copyright notice, license, and disclaimer are preserved upon all
-sections containing part of the original program, and the source code is
-publicly available for all sections of the program covered by this license.
-Any binary file produced with any section covered by this license must 
-be licensed in such a way that the user is allowed to use and/or disassemble 
-the binary file, for any purpose.
-
-THIS SOFTWARE IS PROVIDED "AS IS" WITH NO WARRANTY OF ANY KIND, EITHER 
-EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF 
-MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL THE 
-COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, 
-OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, 
-DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS 
-ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
-SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
