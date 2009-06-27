@@ -64,14 +64,13 @@ void init_libsys() {
 
 	// Set up a stack for the process image
 	t = get_task(curr_pid);
-	p_alloc(&t->map, 0xF3FFE000, (PF_USER | PF_RW)); // This is for the system call stack
-	p_alloc(&t->map, 0xF3FFD000, (PF_USER | PF_RW));
-	p_alloc(&t->map, 0xF3FFC000, (PF_USER | PF_RW));
-	map_load(&t->map);
+	p_alloc(0xF3FFE000, (PF_USER | PF_RW)); // This is for the system call stack
+	p_alloc(0xF3FFD000, (PF_USER | PF_RW));
+	p_alloc(0xF3FFC000, (PF_USER | PF_RW));
 	t->image = (void*) (0xF3FFEFFC - sizeof(image_t));
 
 	// Set up space for the signal handler table
-	p_alloc(&t->map, 0xF3FFF000, (PF_USER | PF_RW));
+	p_alloc(0xF3FFF000, (PF_USER | PF_RW));
 	
 	// Load libsys image
 	if (elf_check(header_contents(header[n]))) panic("libsys is not valid ELF");
@@ -93,13 +92,12 @@ void init_libsys() {
 // Note - this function breaks on all GCC optimizations and normal TCC - try and fix ASAP
 void init_initrd_rmap() {
 	u32int i, base, limit, new_base;
-	task_t *t = get_task(curr_pid);
 	base = (u32int) initrd;
 	limit = base + (size * 512);
 #define	new_base 0x10000000
 
 	for (i = base; i < limit; i += 0x1000) {
-		page_set(&t->map, ((i - base) + new_base), (page_get(&t->map, i) | 0x7));
-		page_set(&t->map, i, 0x00000000);
+		page_set(((i - base) + new_base), (page_get(i) | 0x7));
+		page_set(i, 0x00000000);
 	}
 }

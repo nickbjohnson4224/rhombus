@@ -21,9 +21,9 @@ global init_kmap
 align 0x1000
 init_kmap:
     dd 0x00000083	; Identity map first 4 MB
-	times 991 dd 0	; Fill until 0xF8000000
+	times 1019 dd 0	; Fill until 0xFF000000
 	dd 0x00000083	; Map first 4 MB again in higher mem
-	times 31 dd 0	; Fill remainder of map
+	times 4 dd 0	; Fill remainder of map
 
 section .data
 
@@ -81,7 +81,7 @@ start:
 	push eax	; Push multiboot magic number for identification
 
 	; Push *virtual* multiboot pointer
-	add ebx, 0xF8000000
+	add ebx, 0xFF000000
 	push ebx
 
 	; Set IOPL to 3 - it will be reduced to 0 on a process-by-process basis

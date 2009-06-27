@@ -3,13 +3,12 @@
 #include <lib.h>
 #include <mem.h>
 
-pool_t *pool_new(u32int num) {
-	pool_t *pool;
+__attribute__ ((section(".ttext"))) 
+pool_t *pool_new(u32int size, pool_t *pool) {
 	u32int i, npool, extra;
 
-	npool = (num - 1) / 1024 + 1; // 1024 entries per pool (and round up)
-	extra = num - ((npool - 1) * 1024);
-	pool = kmalloc(sizeof(pool_t) * npool);
+	npool = (size - 1) / 1024 + 1; // 1024 entries per pool (and round up)
+	extra = size - ((npool - 1) * 1024);
 	
 	for (i = 0; i < npool; i++) {
 		memclr(pool[i].word, sizeof(u32int) * 32);

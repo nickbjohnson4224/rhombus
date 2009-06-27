@@ -2,7 +2,7 @@
 
 #include <lib.h>
 
-static u16int *video_mem = (void*) 0xF80B8000;
+static u16int *video_mem = (void*) 0xFF0B8000;
 static u16int c_base = 0;
 static u16int cursor = 0;
 static u8int attr = 0x0F;

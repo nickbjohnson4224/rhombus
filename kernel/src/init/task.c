@@ -16,16 +16,16 @@ void init_task() {
 
 		// Set up task table and allocator
 		memclr(task, sizeof(task_t*) * 64);
-		tmap = pool_new(128*128);
+		pool_new(65536, tpool);
 
 		// Bootstrap task 0, because there is nothing to fork from
 		task_t *idle = get_task(0);
 		idle->user.id = 0;
 		idle->user.ring = 0;
-		idle->parent = 0;
+		idle->dlist[0] = 0;
 		idle->pid = 0;
 		idle->magic = 0x4224;
-		map_clone(&idle->map, &kmap, MF_CLEAR_USER);
+		idle->map = map_clone();
 		idle->flags = TF_READY;
 		curr_pid = 0;
 

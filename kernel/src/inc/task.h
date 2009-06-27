@@ -55,11 +55,11 @@ typedef struct {
 	u8int flags;
 	u8int quanta;
 	u16int next_task;
-	u16int parent;
-	u16int pid;
 	u16int magic;
+	u16int pid;
 	u32int tss_esp;
 	u16int caller;
+	u16int dlist[20];
 } task_t;
 
 #define TF_READY 0x0000
@@ -71,11 +71,11 @@ task_t *new_task(task_t *src);
 u32int rem_task(task_t *t);
 image_t *task_switch(task_t *t);
 
-extern pool_t *tpool;		// Pool allocator for task structures
-extern task_t *task[128]; 	// 2D array (128*128) of task structures
-extern u16int curr_pid;	// Currently loaded task ID
+extern pool_t tpool[8];		// Pool allocator for task structures (65536 max)
+extern task_t *task; 		// Array of task structures
+extern u16int curr_pid;		// Currently loaded task ID
 
-/***** SYSTEM MAP *****/
+/***** IRQ REDIRECTION *****/
 
 extern u16int irq_holder[15];
 

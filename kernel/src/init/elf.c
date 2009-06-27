@@ -19,11 +19,9 @@ void elf_load_segment(u8int *src, elf_ph_t *seg) {
 	u32int dest_limit = ((u32int) dest_base + seg->p_memsz + 0x1000) & ~0xFFF;
 
 	// Allocate adequate memory
-	task_t *t = get_task(curr_pid);
-	map_load(&t->map);
 	u32int i = ((u32int) dest_base) & ~0xFFF;
 	for (; i < dest_limit; i += 0x1000)
-		p_alloc(&t->map, i, PF_USER);
+		p_alloc(i, PF_USER);
 
 	// Copy data
 	memcpy(dest_base, src_base, seg->p_memsz);
@@ -32,7 +30,7 @@ void elf_load_segment(u8int *src, elf_ph_t *seg) {
 	if (seg->p_flags & PF_W) {
 		i = ((u32int) dest_base) & ~0xFFF;
 		for (; i < dest_limit; i+= 0x1000)
-			page_set(&t->map, i, page_fmt(page_get(&t->map, i), PF_USER | PF_PRES));
+			page_set(i, page_fmt(page_get(i), PF_USER | PF_PRES));
 	}
 
 }

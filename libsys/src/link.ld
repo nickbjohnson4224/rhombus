@@ -2,10 +2,10 @@ ENTRY(main)
 OUTPUT_FORMAT(elf32-i386)
 
 SECTIONS {
-  . = 0xF6000000;
+  . = 0xF8000000;
   .data : { *(.data) }
   .bss : { *(.bss) }
-  . = 0xF6001000;
+  . = 0xFC000000;
   .text : { *(.text) }
 }
 

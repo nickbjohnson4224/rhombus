@@ -3,22 +3,21 @@
 #include <lib.h>
 #include <trap.h>
 #include <task.h>
+#include <mem.h>
 
-pool_t *tmap;		// Pool allocator for task structures
-task_t *task[128]; 	// 2D array (128*128) of task structures
+pool_t tpool[8];						// Pool allocator for task structures
+task_t *task = (void*) 0xFF400000; 		// Array of task structures (max 8192)
 u16int curr_pid = 0;
 
 task_t *get_task(u16int pid) {
-	if (!task[pid >> 7]) {
-		task[pid >> 7] = kmalloc(0x1000);
-		memclr(task[pid >> 7], 0x1000);
-	}
-	return &task[pid >> 7][pid & 0x7F];
+	if ((page_get((u32int) &task[pid]) & 0x1) == 0) 
+		p_alloc((u32int) &task[pid], PF_PRES | PF_RW);
+	return &task[pid];
 }
 
 task_t *new_task(task_t *src) {
-	u32int new_pid = pool_alloc(tmap);
-	if (new_pid == 0) new_pid = pool_alloc(tmap);
+	u32int new_pid = pool_alloc(tpool);
+	if (new_pid == 0) new_pid = pool_alloc(tpool);
 
 	task_t *new = get_task(new_pid);
 
@@ -26,7 +25,7 @@ task_t *new_task(task_t *src) {
 	map_clone(&new->map, &src->map, 0);
 	new->image = src->image;
 	new->flags = src->flags;
-	new->parent = src->pid;
+	new->dlist[0] = src->pid;
 	new->pid = new_pid;
 	new->magic = 0x4224;
 	new->tss_esp = src->tss_esp;
@@ -37,12 +36,12 @@ task_t *new_task(task_t *src) {
 
 u32int rem_task(task_t *t) {
 	t->magic = 0x0000;
-	return pool_free(tmap, t->pid);
+	return pool_free(tpool, t->pid);
 }
 
 image_t *task_switch(task_t *t) {
 	curr_pid = t->pid;
-	map_load(&t->map);
+	map_load(t->map);
 	tss_set_esp(t->tss_esp);
 	return t->image;
 }

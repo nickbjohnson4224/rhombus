@@ -3,7 +3,6 @@
 /* General virtual memory map:
 0x00000000 - 0xF3FFFFFF: userspace 		(user, read-write, cloned)
 	0x00001000: process image
-	0x10000000: remapped initrd (init only)
 	0xF0000000: libc image
 	0xF3FF0000: standard stack
 	0xF5FFE000: state saving stack
@@ -14,7 +13,9 @@
 	0xFC000000: libsys image
 0xFF000000 - 0xFFFFFFFF: kernelspace 	(kernel, linked)
 	0xFF000000: remapped lower memory
-	0xFF100000: kernel image
+	0xFF100000: kernel image 
+	0xFF400000: task table
+	0xFF500000: none/various
 	0xFF800000: temporary map
 	0xFFC00000: resident map
 */
@@ -48,22 +49,22 @@ u32int rmap(u32int base, u32int src);	// Move a mapped frame
 u32int fmap(u16int task, u32int base);	// Force a remote remapping (task 0 == physical mem)
 
 extern map_t kmap;
-map_t map_alloc(map_t map);							// Allocates a new map
-map_t map_free(map_t map);							// Frees a map (does not clean)
-map_t map_clean(map_t map);							// Cleans a map (frees all *user* memory)
-map_t map_clone(u8int flags);						// Clones a map, and links
-map_t map_load(map_t map);							// Activates a new map
+void  map_temp(map_t map);				// Puts a map in temporary space
+map_t map_alloc(map_t map);				// Allocates a new map
+map_t map_free(map_t map);				// Frees a map (does not clean)
+map_t map_clean(map_t map);				// Cleans a map (frees all *user* memory)
+map_t map_clone();						// Clones the current map
+map_t map_load(map_t map);				// Activates a new map
 
 /***** FRAME.C ******/
-extern pool_t *fpool;
+extern pool_t fpool[1024];
 #define frame_new() (pool_alloc(fpool) << 12)			// Allocates a new frame	
 #define frame_free(addr) (pool_free(fpool, addr >> 12))	// Frees a frame
 
 /***** PAGE.C *****/
-ptbl_t *cmap;								// Address of current page directory
-page_t *ctbl;								// Base of current page tables
+ptbl_t *cmap, *tmap;						// Address of current page directory
+page_t *ctbl, *ttbl;						// Base of current page tables
 
-extern u8int mem_setup;
 void   page_touch(u32int page);				// Makes sure a page exists
 void   page_set(u32int page, page_t value);	// Sets the value of a page
 page_t page_get(u32int page);				// Returns the value of a page
@@ -73,7 +74,7 @@ page_t page_get(u32int page);				// Returns the value of a page
 #define p_alloc(addr, flags) (page_set(addr, page_fmt(frame_new(), (flags) | PF_PRES)))
 #define p_free(addr) do { \
 frame_free(page_ufmt(page_get(addr))); \
-page_set(map, addr, 0); \
+page_set(addr, 0); \
 } while(0);
 
 #endif /*MEM_H*/

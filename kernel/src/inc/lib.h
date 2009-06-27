@@ -51,7 +51,7 @@ typedef struct pool {
 	u16int upper;	// Highest actual bit in pool
 } pool_t;
 
-pool_t *pool_new(u32int num);				// Allocate a new pool
+pool_t *pool_new(u32int num, pool_t *pool);	// Allocate a new pool
 u32int pool_alloc(pool_t *pool);			// Allocate from a pool
 u32int pool_free(pool_t *pool, u32int pos);	// Free back to a pool
 

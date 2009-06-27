@@ -8,7 +8,7 @@ page_t *ttbl = (void*) 0xFF800000;
 u32int *tsrc = (void*) 0xFF7FF000;
 u32int *tdst = (void*) 0xFF7FE000;
 
-static void map_temp(map_t map) {
+void map_temp(map_t map) {
 	u32int i, t;
 
 	cmap[0x7FE] = map | (PF_PRES | PF_RW);
@@ -19,7 +19,7 @@ static void map_temp(map_t map) {
 }
 
 map_t map_alloc(map_t map) {
-	map = frame_alloc();
+	map = frame_new();
 	map_temp(map);
 	pgclr(tmap);
 	return map;
@@ -46,8 +46,8 @@ map_t map_clean(map_t map) {
 	return map;
 }
 
-map_t map_clone(u8int flags) {
-	u32int i, j;
+map_t map_clone() {
+	u32int i;
 	map_t dest;
 
 	// Create new map
@@ -56,10 +56,10 @@ map_t map_clone(u8int flags) {
 
 	// Clone/clear userspace
 	for (i = 0; i < 0xF8000; i++) if (cmap[i >> 10] & PF_PRES && ctbl[i] & PF_PRES) {
-		if (tmap[i >> 10] & PF_PRES == 0) tmap[i >> 10] = frame_new() | 0x7;
+		if ((tmap[i >> 10] & PF_PRES) == 0) tmap[i >> 10] = frame_new() | 0x7;
 		ttbl[i] = frame_new() | (ctbl[i] & PF_MASK);
-		page_set(tsrc, page_fmt(ctbl[i], PF_PRES | PF_RW));
-		page_set(tdst, page_fmt(ttbl[i], PF_PRES | PF_RW));
+		page_set((u32int) tsrc, page_fmt(ctbl[i], PF_PRES | PF_RW));
+		page_set((u32int) tdst, page_fmt(ttbl[i], PF_PRES | PF_RW));
 		memcpy(tdst, tsrc, 0x1000);
 	}
 
