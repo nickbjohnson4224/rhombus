@@ -71,7 +71,7 @@ task_t *new_task(task_t *src);
 u32int rem_task(task_t *t);
 image_t *task_switch(task_t *t);
 
-extern pool_t *tmap;		// Pool allocator for task structures
+extern pool_t *tpool;		// Pool allocator for task structures
 extern task_t *task[128]; 	// 2D array (128*128) of task structures
 extern u16int curr_pid;	// Currently loaded task ID
 

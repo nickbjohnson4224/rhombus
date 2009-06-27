@@ -4,34 +4,21 @@
 #include <mem.h>
 
 u8int mem_setup = 0;
+ptbl_t *cmap = (void*) 0xFFFFF000;
+page_t *ctbl = (void*) 0xFFC00000;
 
-page_t page_touch(map_t *map, u32int page) {
-	if (map->virt[page >> 22]) return map->virt[page >> 22][(page >> 12) % 1024];
-	map->virt[page >> 22] = kmalloc(0x1000);
-	map->pdir[page >> 22] = phys_of(&kmap, (void*) map->virt[page >> 22]) | 0x7;
-	pgclr(map->virt[page >> 22]);
-	return 0x00000000;
+void page_touch(u32int page) {
+	if (cmap[page >> 22] & PF_PRES) return;
+	cmap[page >> 22] = frame_new() | (PF_PRES | PF_RW);
+	pgclr(&ctbl[(page &~ 0xFFF) >> 12]);
 }
 
-page_t page_set(map_t *map, u32int page, page_t value) {
-	if (!map->virt[page >> 22]) page_touch(map, page);
-	map->virt[page >> 22][(page >> 12) % 1024] = value;
+void page_set(u32int page, page_t value) {
+	if (cmap[page >> 22] & PF_PRES == 0) page_touch(page);
+	ctbl[page >> 12] = value;
 	asm volatile ("invlpg %0" :: "m" (page));
-	return value;
 }
 
-page_t page_get(map_t *map, u32int page) {
-	if (!map->virt[page >> 22]) return 0x00000000;
-	return map->virt[page >> 22][(page >> 12) % 1024];
-}
-
-u32int phys_of(map_t *map, void *addr) {
-	u32int temp;
-
-	if (!mem_setup) return (u32int) addr & ~0xF8000000;
-	if (!map->virt[(u32int) addr >> 22]) return 0x00000000;
-	temp = map->virt[(u32int) addr >> 22][((u32int) addr >> 12) % 1024];
-	temp &= 0xFFFFF000;
-	temp |= ((u32int) addr & 0xFFF);
-	return temp;
+page_t page_get(u32int page) {
+	return (cmap[page >> 22] & 0x1 == 0) ? 0 : ctbl[page >> 12];
 }
