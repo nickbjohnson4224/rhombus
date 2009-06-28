@@ -8,6 +8,7 @@
 
 #define KHAOS_VERSION_MAJOR 0
 #define KHAOS_VERSION_MINOR 1
+#define KHAOS_KERNEL_REVISN 1
 
 __attribute__ ((section(".tdata"))) 
 char *stamp = "\

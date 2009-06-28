@@ -1,7 +1,7 @@
 #!/bin/bash
 # updates the image and runs bochs
 
-cp ../kernel/src/khaos .
+cp ../kernel/src/kernel .
 cp ../libsys/src/libsys .
 cp ../init/src/init .
 /sbin/losetup /dev/loop4 floppy.img
@@ -9,7 +9,7 @@ mount /dev/loop4 mnt
 tar -cvf initrd_old.tar libsys init
 cat initrd_old.tar null.tar > initrd.tar
 cp initrd.tar mnt/initrd.tar
-cp khaos mnt/kernel
+cp kernel mnt/kernel
 umount /dev/loop4
 bochs -f bochsrc.txt -q
 /sbin/losetup -d /dev/loop4

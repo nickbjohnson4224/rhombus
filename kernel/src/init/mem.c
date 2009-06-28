@@ -10,7 +10,7 @@ u32int proto_base = 0xFF400000;
 
 __attribute__ ((section(".ttext"))) 
 void init_mem() {
-	u32int i;
+	u32int i, *temp, cr3;
 	printk("  Kernel: allocators");
 
 		// Initialize frame allocator
@@ -21,18 +21,21 @@ void init_mem() {
 	printk("  Kernel: memory map");
 
 		// Make a new and proper memory map for the kernel in the init map
-		extern u32int *init_kmap;
-		init_kmap[1023] = frame_new() | (PF_PRES | PF_RW);
+		extern u32int init_kmap;
+		u32int *kmap = &init_kmap;
+		temp = (void*) 0xFF000000;
+		pgclr(temp);
+		temp[1023] = 0 | (PF_PRES | PF_RW);
+		kmap[1022] = 0 | (PF_PRES | PF_RW);
 
 		// Identity map necessary kernel memory (i.e. code and initrd)
+		extern u32int init_ktbl;
+		tmap[0xFF000000 >> 22] = ((u32int) &init_ktbl - 0xFF000000) | (PF_PRES | PF_RW);
 		for (i = 0xFF000000; i < 0xFF400000; i += 0x1000)
-			page_set(i, frame_new() | (PF_PRES | PF_RW));
+			ttbl[i >> 12] = frame_new() | (PF_PRES | PF_RW);
 
-		// Reload the new map by going through physical memory
-		extern void redo_paging(u32int);
-		cmap[0] = cmap[0xFF000000 >> 22];
-		redo_paging(init_kmap[1023]);
-		cmap[0] = 0;
+		// Reload the new map
+		map_load(0);
 
 	cursek(74, -1);
 	printk("[done]");

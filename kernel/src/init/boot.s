@@ -23,7 +23,13 @@ init_kmap:
     dd 0x00000083	; Identity map first 4 MB
 	times 1019 dd 0	; Fill until 0xFF000000
 	dd 0x00000083	; Map first 4 MB again in higher mem
-	times 4 dd 0	; Fill remainder of map
+	times 2 dd 0	; Fill remainder of map
+	dd (init_kmap - 0xFF000000)
+
+global init_ktbl
+align 0x1000
+init_ktbl:
+	resd 1024
 
 section .data
 
@@ -54,7 +60,7 @@ align 4
 extern init
 global start
 start:
-	mov ecx, init_kmap - 0xF8000000	; Get physical address of the kernel address space
+	mov ecx, init_kmap - 0xFF000000	; Get physical address of the kernel address space
 	mov cr3, ecx	; Load address into CR3
 	mov ecx, cr4
 	mov edx, cr0
@@ -110,27 +116,4 @@ global tss_flush
 tss_flush:
 	mov ax, 0x28
 	ltr ax
-	ret
-
-global redo_paging
-redo_paging :
-	mov eax, [esp+4]
-	lea ecx, [.lower-0xF8000000]
-	jmp ecx	; Jump to lower memory copy of kernel
-
-.lower:
-	mov ecx, cr0
-	and ecx, 0x7FFFFFFF	; Disable paging
-	mov cr0, ecx
-
-	mov ecx, cr4
-	and ecx, 0xFFFFFFEF	; Disable 4 MB pages
-	mov cr4, ecx
-
-	mov cr3, eax		; Load new page directory
-
-	mov ecx, cr0
-	or  ecx, 0x80000000	; Re-enable paging
-	mov cr0, ecx
-	
 	ret

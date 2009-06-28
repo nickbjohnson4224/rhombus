@@ -21,7 +21,7 @@ task/task.o: task/*.c inc/task.h
 	make -C task
 
 link:
-	ld $(LDFLAGS) -o khaos $(SOURCES)
+	ld $(LDFLAGS) -o kernel $(SOURCES)
 
 clean:
 	make -C lib clean
@@ -29,4 +29,4 @@ clean:
 	make -C mem clean
 	make -C trap clean
 	make -C task clean
-	rm khaos
+	rm kernel
