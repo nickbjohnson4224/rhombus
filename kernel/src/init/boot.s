@@ -26,6 +26,8 @@ init_kmap:
 	times 2 dd 0	; Fill remainder of map
 	dd (init_kmap - 0xFF000000)
 
+section .pdata
+
 global init_ktbl
 align 0x1000
 init_ktbl:

@@ -3,6 +3,8 @@
 #include <lib.h>
 #include <mem.h>
 
+ptbl_t *cmap = (void*) 0xFFFFF000;
+page_t *ctbl = (void*) 0xFFC00000;
 ptbl_t *tmap = (void*) 0xFFBFF000;
 page_t *ttbl = (void*) 0xFF800000;
 u32int *tsrc = (void*) 0xFF7FF000;
@@ -10,8 +12,7 @@ u32int *tdst = (void*) 0xFF7FE000;
 
 void map_temp(map_t map) {
 	u32int i, t;
-
-	cmap[0x7FE] = map | (PF_PRES | PF_RW);
+	cmap[1022] = page_fmt(map, (PF_PRES | PF_RW));
 	for (i = 0; i < 1024; i++) {
 		t = (u32int) ttbl + i;
 		asm volatile ("invlpg %0" :: "m" (t));
@@ -20,8 +21,10 @@ void map_temp(map_t map) {
 
 map_t map_alloc(map_t map) {
 	map = frame_new();
+	page_set((u32int) tsrc, page_fmt(map, (PF_PRES | PF_RW)));
+	pgclr(tsrc);
+	tsrc[1023] = page_fmt(map, (PF_PRES | PF_RW));
 	map_temp(map);
-	pgclr(tmap);
 	return map;
 }
 
@@ -47,24 +50,25 @@ map_t map_clean(map_t map) {
 }
 
 map_t map_clone() {
-	u32int i;
+	u32int i, j;
 	map_t dest;
 
 	// Create new map
 	dest = map_alloc(dest);
-	map_temp(dest);
 
 	// Clone/clear userspace
-	for (i = 0; i < 0xF8000; i++) if (cmap[i >> 10] & PF_PRES && ctbl[i] & PF_PRES) {
-		if ((tmap[i >> 10] & PF_PRES) == 0) tmap[i >> 10] = frame_new() | 0x7;
-		ttbl[i] = frame_new() | (ctbl[i] & PF_MASK);
-		page_set((u32int) tsrc, page_fmt(ctbl[i], PF_PRES | PF_RW));
-		page_set((u32int) tdst, page_fmt(ttbl[i], PF_PRES | PF_RW));
-		memcpy(tdst, tsrc, 0x1000);
+	for (i = 0; i < 0xF8000000; i += 0x400000) if (cmap[i >> 22] & PF_PRES) {
+		tmap[i >> 22] = frame_new() | 0x7;
+		for (j = i; j < i + 0x400000; j += 0x1000) if (ctbl[j >> 12] & PF_PRES) {
+			ttbl[j >> 12] = frame_new() | (ctbl[j >> 12] & PF_MASK);
+			page_set((u32int) tsrc, page_fmt(ctbl[j >> 12], PF_PRES | PF_RW));
+			page_set((u32int) tdst, page_fmt(ttbl[j >> 12], PF_PRES | PF_RW));
+			memcpy(tdst, tsrc, 0x1000);
+		}
 	}
 
-	// Link kernel/libspace
-	for (i = 992; i < 1024; i++) if (cmap[i] & PF_PRES)
+	// Link kernel/libspace (except for recursive mapping)
+	for (i = 992; i < 1022; i++) if (cmap[i] & PF_PRES)
 		tmap[i] = cmap[i];
 
 	return dest;

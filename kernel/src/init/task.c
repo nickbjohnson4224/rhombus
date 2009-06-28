@@ -15,7 +15,6 @@ void init_task() {
 	printk("  Kernel: tasking system");
 
 		// Set up task table and allocator
-		memclr(task, sizeof(task_t*) * 64);
 		pool_new(65536, tpool);
 
 		// Bootstrap task 0, because there is nothing to fork from

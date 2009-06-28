@@ -58,8 +58,8 @@ void init_free() {
 		// Free initrd image data
 		extern u32int end;
 		i = ((u32int) &end + 0x1000) & ~0xFFF;
-		for (; i < 0xF8400000; i += 0x1000) {
-			if (page_get(i)) {
+		for (; i < 0xFF400000; i += 0x1000) {
+			if (page_get(i) & PF_PRES) {
 				frame_free(page_ufmt(page_get(i)));
 				freed++;
 			}

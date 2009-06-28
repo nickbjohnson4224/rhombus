@@ -48,7 +48,7 @@ u32int umap(u32int base);				// Unmap memory from a page
 u32int rmap(u32int base, u32int src);	// Move a mapped frame
 u32int fmap(u16int task, u32int base);	// Force a remote remapping (task 0 == physical mem)
 
-extern map_t kmap;
+//extern map_t kmap;
 void  map_temp(map_t map);				// Puts a map in temporary space
 map_t map_alloc(map_t map);				// Allocates a new map
 map_t map_free(map_t map);				// Frees a map (does not clean)
@@ -62,8 +62,8 @@ extern pool_t fpool[1024];
 #define frame_free(addr) (pool_free(fpool, addr >> 12))	// Frees a frame
 
 /***** PAGE.C *****/
-ptbl_t *cmap, *tmap;						// Address of current page directory
-page_t *ctbl, *ttbl;						// Base of current page tables
+extern ptbl_t *cmap, *tmap;					// Address of current page directory
+extern page_t *ctbl, *ttbl;					// Base of current page tables
 
 void   page_touch(u32int page);				// Makes sure a page exists
 void   page_set(u32int page, page_t value);	// Sets the value of a page
