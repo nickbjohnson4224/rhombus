@@ -14,10 +14,10 @@ image_t *fault_generic(image_t *image) {
 
 image_t *fault_page(image_t *image) {
 	u32int cr2; asm volatile ("movl %%cr2, %0" : "=r" (cr2));
-//	if ((image->cs & 0x3) == 0) { // i.e. if it was kernelmode
-		printk("page fault at %x, frame %x, table %x, ip = %x\n", cr2, ctbl[cr2 >> 12], cmap[cr2 >> 22], image->eip);
+	if ((image->cs & 0x3) == 0) { // i.e. if it was kernelmode
+		printk("page fault at %x, ip = %x\n", cr2, image->eip);
 		panic("page fault exception");
-//	}
+	}
 	return signal(curr_pid, S_PAG, cr2, image->err, 0, 0);
 }
 
