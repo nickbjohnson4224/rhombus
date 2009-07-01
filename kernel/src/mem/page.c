@@ -9,7 +9,7 @@ void page_touch(u32int page) {
 	page &= ~0x3FFFFF;
 	if (cmap[page >> 22] & PF_PRES) return;
 //	printk("page_touch %x", page);
-	cmap[page >> 22] = frame_new() | (PF_PRES | PF_RW);
+	cmap[page >> 22] = frame_new() | (PF_PRES | PF_RW | PF_USER);
 	pgclr(&ctbl[page >> 12]);
 }
 

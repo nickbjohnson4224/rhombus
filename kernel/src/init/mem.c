@@ -50,10 +50,7 @@ void init_free() {
 		base = (u32int) &START_OF_TEMP;
 		extern u32int END_OF_TEMP;
 		limit = (u32int) &END_OF_TEMP;
-		for (i = base; i < (limit & ~0xFFF); i += 0x1000) {
-			p_free(i);
-			freed++;
-		}
+		for (i = base; i < (limit & ~0xFFF); i += 0x1000, freed++) p_free(i);
 		
 		// Free initrd image data
 		extern u32int end;

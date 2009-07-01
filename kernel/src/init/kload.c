@@ -82,7 +82,6 @@ void init_libsys() {
 	t->image->ebp = 0xF3FFDFFC;
 	t->image->ss = 0x23;
 	t->image->ds = 0x23;
-	printk("\n");
 	t->image->eip = elf_load(header_contents(header[n]));
 	for (i = 0; i < 1024; i++) signal_table[i] = t->image->eip;
 	t->image->cs = 0x1B;

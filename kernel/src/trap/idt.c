@@ -3,6 +3,7 @@
 #include <lib.h>
 #include <trap.h>
 #include <task.h>
+#include <mem.h>
 
 void idt_set(u8int n, u32int base, u16int seg, u8int flags);
 
@@ -85,6 +86,8 @@ void *int_handler(image_t *state) {
 
 	if (int_handlers[state->num])
 		state = int_handlers[state->num](state);
+
+//	printk("returning from %d to ip = %x, frame@ip = %x\n", state->num, state->eip, ctbl[state->eip >> 12]);
 
 	return state;
 }

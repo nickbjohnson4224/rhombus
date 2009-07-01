@@ -13,7 +13,7 @@ main:
 ;	cmp esi, 0
 ;	jne .end
 ;	call setup
-	
+
 	mov eax, helloworld
 	int 0x50
 	cmp esi, 0

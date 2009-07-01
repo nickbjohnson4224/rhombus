@@ -18,17 +18,22 @@ void elf_load_segment(u8int *src, elf_ph_t *seg) {
 	u8int *dest_base = (u8int*) seg->p_vaddr;
 	u32int dest_limit = ((u32int) dest_base + seg->p_memsz + 0x1000) & ~0xFFF;
 
-	printk("ELF loading segment %x at %x size %x\n", (u32int) seg, dest_base, seg->p_memsz);
-
 	// Allocate adequate memory
+	task_t *t = get_task(curr_pid);
 	u32int i = ((u32int) dest_base) & ~0xFFF;
-	for (; i < dest_limit; i += 0x1000) {
+	for (; i < dest_limit; i += 0x1000)
 		p_alloc(i, PF_USER);
-		printk("ELF allocating page %x frame %x\n", i, page_get(i));
-	}
 
 	// Copy data
 	memcpy(dest_base, src_base, seg->p_memsz);
+
+	// Set proper flags (i.e. remove write flag if needed)
+	if (seg->p_flags & PF_W) {
+		i = ((u32int) dest_base) & ~0xFFF;
+		for (; i < dest_limit; i+= 0x1000)
+			page_set(i, page_fmt(page_get(i), PF_USER | PF_PRES));
+	}
+
 }
 
 __attribute__ ((section(".ttext")))
