@@ -15,7 +15,5 @@ main:
 ;	call setup
 
 	mov eax, helloworld
-	int 0x50
-	cmp esi, 0
-	je setup
-	jmp $
+	int 0x52
+	jmp setup

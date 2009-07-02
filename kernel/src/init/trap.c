@@ -95,8 +95,8 @@ void init_int() {
 		register_int(0x47, fmap_call);	// Forcefully map a page
 
 		// Administrative system calls
-		register_int(0x50, eout_call);	// Emergency output
-		register_int(0x51, rirq_call);	// Register IRQ
+		register_int(0x50, rirq_call);	// Register IRQ
+		register_int(0x52, eout_call);	// Emergency output
 
 		// Register fault handlers
 		init_fault();

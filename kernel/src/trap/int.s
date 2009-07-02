@@ -88,8 +88,9 @@ INTN	69 ; umap
 INTN	70 ; rmap
 INTN	71 ; fmap
 
-INTN	80 ; eout
-INTN	81 ; rirq
+INTN	80 ; rirq
+INTN	81 ; lirq
+INTN	82 ; eout
 
 extern int_handler
 

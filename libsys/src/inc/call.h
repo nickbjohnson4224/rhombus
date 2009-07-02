@@ -6,12 +6,12 @@
 /***** INTERNAL CALLS *****/
 extern int fork_call();
 extern void exit_call(int value);
-extern int sint_call(int task, u32int sig, u32int argv[3], u32int flags);
+extern int sint_call(int task, u32int sig, u32int argv[4], u32int flags);
 extern void sret_call(u32int flags);
-extern int mmap_call(addr_t addr, u32int flags);
-extern int umap_call(addr_t addr);
-extern int rmap_call(addr_t src, addr_t dest, u32int flags);
-extern int fmap_call(int target, addr_t src, addr_t dest);
+extern int mmap_call(addr_t addr, u32int size, u32int flags);
+extern int umap_call(addr_t addr, u32int size);
+extern int rmap_call(addr_t dest, addr_t src, u32int size, u32int flags);
+extern int fmap_call(int target, addr_t dest, addr_t src, u32int size, u32int flags);
 
 extern void eout(char *message);
 extern void rirq(u32int irq);

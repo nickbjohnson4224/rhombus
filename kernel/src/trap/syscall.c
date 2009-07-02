@@ -81,71 +81,65 @@ image_t *rirq_call(image_t *image) {
 }
 
 image_t *mmap_call(image_t *image) {
-	u32int page = image->eax;
+	u32int dst = image->edi;
 	task_t *t = get_task(curr_pid);
 
 	// Bounds check page address
-	if (page > 0xF8000000) ret(image, EPERMIT);
+	if (dst + image->ecx > 0xF8000000) ret(image, EPERMIT);
 
-	// Check for already allocated page
-	if (page_get(page) & 0x1) ret(image, EREPEAT);
-
-	// Allocate page with flags
-	p_alloc(page, image->ebx | PF_PRES | PF_USER);
+	// Allocate pages with flags
+	for (dst &= ~0xFFF; dst < (image->edi + image->ecx); dst += 0x1000)
+		if (page_get(dst) & 0x1 == 0) p_alloc(dst, image->ebx | PF_PRES | PF_USER);
 
 	ret(image, 0);
 }
 
 image_t *umap_call(image_t *image) {
-	u32int page = image->eax;
+	u32int dst = image->edi;
 
 	// Bounds check page address
-	if (page > 0xF8000000) ret(image, EPERMIT);
+	if (dst + image->ecx > 0xF8000000) ret(image, EPERMIT);
 
-	// Check for already freed page
-	if ((page_get(page) & 0x1) == 0) ret(image, EREPEAT);
-
-	// Free page
-	frame_free(page_ufmt(page_get(page)));
-	page_set(page, 0x00000000);
+	// Free pages
+	for (dst &= ~0xFFF; dst < (image->edi + image->ecx); dst += 0x1000)
+		if (page_get(dst) & 0x1) p_free(dst);
 
 	ret(image, 0);
 }
 
 image_t *rmap_call(image_t *image) {
-	u32int src = image->eax;
-	u32int dest = image->ebx;
-	u32int flags = image->ecx;
+	u32int src = image->esi;
+	u32int dst = image->edi;
+	u32int flags = image->ebx;
 
 	// Bounds check both addresses
-	if (src > 0xF8000000 || dest > 0xF8000000) ret(image, EPERMIT);
+	if (src + image->ecx > 0xF8000000 || dst + image->ecx > 0xF8000000) ret(image, EPERMIT);
+	if (src & 0xFFF || dst & 0xFFF) ret(image, EPERMIT);
 
-	// Check source
-	if ((page_get(src) & 0x1) == 0) ret(image, EREPEAT);
-
-	// Check destination
-	if (page_get(dest) & 0x1) ret(image, EREPEAT);
-
-	// Move page
-	page_set(dest, page_get(src));
-	page_set(src, 0x00000000);
+	// Move pages
+	for (; dst < dst + image->ecx, src < src + image->ecx; dst += 0x1000, src += 0x1000) {
+		if (page_get(src) & 0x1 && page_get(dst) & 0x1 == 0) {
+			page_set(dst, page_fmt(page_get(src), flags));
+			page_set(src, 0);
+		}
+	}
 	
 	ret(image, 0);
 }
 
 image_t *fmap_call(image_t *image) {
-	u32int src = image->ebx;
-	u32int dest = image->ecx;
-	u32int flags = image->edx;
+	u32int src = image->esi;
+	u32int dst = image->edi;
+	u32int flags = image->ebx;
 	task_t *t = get_task(curr_pid);
 	task_t *src_t;
 
 	// Bounds check destination
-	if (dest > 0xF8000000) ret(image, EPERMIT);
+	if (dst > 0xF8000000) ret(image, EPERMIT);
 
 	// Set physical address if chosen (eax == 0)
 	if (image->eax == 0) {
-		page_set(dest, src | (flags & PF_MASK));
+		page_set(dst, src | (flags & PF_MASK));
 		ret(image, 0);
 	}
 
@@ -160,10 +154,10 @@ image_t *fmap_call(image_t *image) {
 	if ((ttbl[src >> 22] & 0x1) == 0) ret(image, EREPEAT);
 
 	// Check destination
-	if (ctbl[dest >> 22] & 0x1) ret(image, EREPEAT);
+	if (ctbl[dst >> 22] & 0x1) ret(image, EREPEAT);
 
 	// Move page
-	page_set(dest, ttbl[src >> 22] | PF_LINK);
+	page_set(dst, ttbl[src >> 22] | PF_LINK);
 	ttbl[src >> 22] |= PF_REAL;
 
 	ret(image, 0);
