@@ -87,3 +87,9 @@ inb:
 	mov eax, 0
 	in al, dx
 	ret
+
+outb:
+	mov dx, [esp+4]
+	mov al, [esp+6]
+	out dx, al
+	ret

@@ -1,6 +1,6 @@
-SOURCES=main.o stubs.o
-CFLAGS=-nostdlib -nostdinc -fno-builtin -Iinc -fomit-frame-pointer
-LDFLAGS=
+SOURCES=lib/lib.o setup/setup.o
+export CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc $(OPTS)
+LDFLAGS=-r
 ASFLAGS=-felf
 
 all: $(SOURCES) link
@@ -8,8 +8,13 @@ all: $(SOURCES) link
 link:
 	ld $(LDFLAGS) -o init $(SOURCES)
 
-clean:
-	rm $(SOURCES) init
+lib/lib.o:
+	make -C lib
 
-.s.o:
-	nasm $(ASFLAGS) $<
+setup/setup.o:
+	make -C setup
+
+clean:
+	make -C lib clean
+	make -C setup clean
+	rm $(SOURCES) init
