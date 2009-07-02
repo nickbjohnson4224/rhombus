@@ -6,7 +6,8 @@
 
 u32int *signal_table = (void*) 0xF3FFF000;
 
-image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, u32int flags) {
+image_t *signal(u16int task, u8int sig, 
+	u32int arg0, u32int arg1, u32int arg2, u32int arg3, u8int flags) {
 	task_t *t, *src_t;
 	u32int src = curr_pid;
 
@@ -39,11 +40,12 @@ image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, 
 
 	// Set registers to describe signal
 	t->caller = src;
-	t->image->eax = src;
-	t->image->ebx = arg0;
-	t->image->ecx = arg1;
-	t->image->edx = arg2;
-	t->image->esi = sig;
+	t->image->eax = arg0;
+	t->image->ebx = arg1;
+	t->image->ecx = arg2;
+	t->image->edx = arg3;
+	t->image->esi = src;
+	t->image->edi = sig;
 
 	// Set reentry point
 	t->image->eip = signal_table[sig];

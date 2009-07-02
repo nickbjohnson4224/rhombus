@@ -23,7 +23,8 @@
 type to task task with various arguments and is controlled by flags. Arguments
 to this function are in the order shown as registers */
 
-image_t *signal(u32int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, u32int flags);
+image_t *signal(u16int task, u8int sig, 
+	u32int arg0, u32int arg1, u32int arg2, u32int arg3, u8int flags);
 image_t *sret();
 
 // The signal table is mapped in all address spaces
