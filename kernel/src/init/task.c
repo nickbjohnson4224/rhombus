@@ -21,7 +21,7 @@ void init_task() {
 		task_t *idle = get_task(0);
 		idle->user.id = 0;
 		idle->user.ring = 0;
-		idle->dlist[0] = 0;
+		idle->parent = 0;
 		idle->pid = 0;
 		idle->magic = 0x4224;
 		idle->map = map_clone();

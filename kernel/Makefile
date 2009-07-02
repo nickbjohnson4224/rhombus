@@ -1,5 +1,5 @@
 # Optimization flags
-export CC=gcc
+export CC=/usr/khaos/bin/i586-elf-gcc
 export OPTS=-march=i586 -fomit-frame-pointer
 
 all:

@@ -1,6 +1,6 @@
 SOURCES=lib/lib.o setup/setup.o
 export CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc $(OPTS)
-LDFLAGS=-r
+LDFLAGS=
 ASFLAGS=-felf
 
 all: $(SOURCES) link

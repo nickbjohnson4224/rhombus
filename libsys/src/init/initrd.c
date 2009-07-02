@@ -30,7 +30,7 @@ static int tar_header_check(struct tar_header *t) {
 
 static int tar_end_check(u8int *block) {
 	u32int i;
-	for (i = 0; i < 0x1000; i++) if (block[i]) return 0; // Terminator is one page of zeroes
+	for (i = 0; i < 0x4000; i++) if (block[i]) return 0; // Terminator is one page of zeroes
 	return 1;
 }
 
@@ -45,9 +45,14 @@ void init_load_init() {
 	char buffer[10];
 	
 	// Index tar file
-	for (i = 0, n = 0; tar_end_check((void*) &initrd[i]) == 0; i++)
-		if (tar_header_check(&initrd[i]) > 0)
+	i = n = 0;
+	while (1) {
+		if (tar_header_check(&initrd[i]) > 0) {
 			header[n++] = &initrd[i];
+			i += atoi(initrd[i].name, 10) + 2;
+			if (atoi(initrd[i].name, 10) == 0) break;
+		}
+	}
 
 	// Find "init"
 	for (i = 0; i < n; i++) if (!strcmp(header[i]->name, "init")) break;
@@ -59,7 +64,7 @@ void init_load_init() {
 	// Load init
 	init_base = (elf_t*) ((u32int) header[i] + 512);
 	if (elf_load(init_base, &image)) {
-		eout("\t\t\t\t\t\t\t\t\t\t\t\t\t  [fail]");
+		eout("\t\t\t\t\t\t\t\t\t\t\t\t\t  [felf]");
 		for(;;);
 	}
 	entry_t entry = (entry_t) image.entry;

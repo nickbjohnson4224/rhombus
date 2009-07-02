@@ -6,7 +6,7 @@
 #include <mem.h>
 
 pool_t tpool[64];						// Pool allocator for task structures
-task_t *task = (void*) 0xFF400000; 		// Array of task structures (max 8192)
+task_t *task = (void*) 0xFF400000; 		// Array of task structures (max 65536)
 u16int curr_pid = 0;
 
 task_t *get_task(u16int pid) {
@@ -27,7 +27,7 @@ task_t *new_task(task_t *src) {
 	new->map = map_clone();
 	new->image = src->image;
 	new->flags = src->flags;
-	new->dlist[0] = src->pid;
+	new->parent = src->pid;
 	new->pid = new_pid;
 	new->magic = 0x4224;
 	new->tss_esp = src->tss_esp;

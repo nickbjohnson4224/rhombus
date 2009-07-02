@@ -52,14 +52,15 @@ typedef struct {
 	id_t user;
 	map_t map;
 	image_t *image;
+	u32int tss_esp;
 	u8int flags;
 	u8int quanta;
-	u16int next_task;
 	u16int magic;
 	u16int pid;
-	u32int tss_esp;
+	u16int next_task;
+	u16int parent;
 	u16int caller;
-	u16int dlist[20];
+	u32int reserved;
 } task_t;
 
 #define TF_READY 0x0000
