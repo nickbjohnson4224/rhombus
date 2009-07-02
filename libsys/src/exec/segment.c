@@ -35,12 +35,10 @@ static int elf_load_segment(elf_t *header, elf_ph_t *segment) {
 	u8int *mem_base = (void*) segment->p_vaddr;
 	u32int file_off = segment->p_offset;
 	u8int *file_base = (u8int*) header;
-	u32int i;
 	char buffer[10];
 
 	// Allocate memory
-	for (i = (u32int) mem_base & ~0xFFF; i < (u32int) mem_base + segment->p_memsz; i += 0x1000)
-		mmap_call(i, 0x7);
+	mmap_call(mem_base, segment->p_memsz, 0x7);
 
 	// Copy data
 	memcpy(mem_base, &file_base[file_off], segment->p_filesz);

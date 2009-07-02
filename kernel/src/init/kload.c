@@ -13,7 +13,8 @@ struct tar_header *header[256];
 __attribute__ ((section(".tdata")))
 struct tar_header *initrd;
 
-static u32int size;
+__attribute__ ((section(".tdata")))
+u32int initrd_size;
 
 __attribute__ ((section(".ttext")))
 static int tar_header_check(struct tar_header *t) {
@@ -38,16 +39,16 @@ void init_kload() {
 	// Check for initrd (it's really a tape archive)
 	if (!mboot->mods_count) panic("No initrd found!");
 	initrd = (void*) *(u32int*) (mboot->mods_addr + 0xFF000000) + 0xFF000000;
-	size = *(u32int*) (mboot->mods_addr + 0xFF000004) + 0xFF000000;
-	size -= (u32int) initrd;
-	size /= 512; // In 512 byte blocks
-	printk("%d blocks", size);
+	initrd_size = *(u32int*) (mboot->mods_addr + 0xFF000004) + 0xFF000000;
+	initrd_size -= (u32int) initrd;
+	initrd_size /= 512; // In 512 byte blocks
+	printk("%d blocks", initrd_size);
 
 	// Check validity of tarball
 	if (tar_header_check(initrd) == -1) panic("Tar checksum error");
 
 	// Index initrd for later use
-	for (i = 0, n = 0; i < size; i++) if (tar_header_check(&initrd[i]) != -1)
+	for (i = 0, n = 0; i < initrd_size; i++) if (tar_header_check(&initrd[i]) != -1)
 		header[n++] = &initrd[i];
 	header[n] = NULL;
 }
@@ -90,10 +91,11 @@ void init_libsys() {
 }
 
 // Note - this function breaks on all GCC optimizations and normal TCC - try and fix ASAP
+__attribute__ ((section(".ttext")))
 void init_initrd_rmap() {
-	u32int i, base, limit, new_base;
+	u32int i, base, limit;
 	base = (u32int) initrd;
-	limit = base + (size * 512);
+	limit = base + (initrd_size * 512);
 #define	new_base 0x10000000
 
 	for (i = base; i < limit; i += 0x1000) {

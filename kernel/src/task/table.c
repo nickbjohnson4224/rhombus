@@ -12,7 +12,7 @@ u16int curr_pid = 0;
 task_t *get_task(u16int pid) {
 	if ((page_get((u32int) &task[pid]) & 0x1) == 0) {
 		p_alloc((u32int) &task[pid], PF_PRES | PF_RW);
-		pgclr(&task[pid]);
+		pgclr((void*) &task[pid]);
 	}
 	return &task[pid];
 }
