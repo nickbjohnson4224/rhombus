@@ -13,10 +13,6 @@ SECTIONS {
 		*(.data)
 	}
 
-	.pdata ALIGN (0x1000) : AT(ADDR(.pdata) - 0xFF000000) {
-		*(.pdata)
-	}
-
 	.tdata ALIGN (0x1000) : AT(ADDR(.tdata) - 0xFF000000) {
 		START_OF_TEMP = .;
 		*(.tdata)
@@ -33,6 +29,8 @@ SECTIONS {
 		*(COMMON)
 		*(.bss)
 		_ebss = .;
+		init_kmap = ALIGN(0x1000);
+		*(.pbss)
 	}
 
 	end = .; _end = .; __end = .;
