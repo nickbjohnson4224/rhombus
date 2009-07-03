@@ -3,6 +3,8 @@
 #ifndef LIB_H
 #define LIB_H
 
+#include <config.h>
+
 typedef unsigned int u32int;
 typedef unsigned short u16int;
 typedef unsigned char u8int;

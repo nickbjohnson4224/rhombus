@@ -17,4 +17,4 @@ setup/setup.o:
 clean:
 	make -C lib clean
 	make -C setup clean
-	rm $(SOURCES) init
+	rm init

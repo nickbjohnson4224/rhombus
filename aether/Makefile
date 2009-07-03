@@ -1,6 +1,6 @@
 # Optimization flags
-export CC=gcc
-export OPTS=-march=i586 -fomit-frame-pointer
+#export CC=tcc
+#export OPTS=-march=i586 -fomit-frame-pointer
 
 all:
 	export CFLAGS

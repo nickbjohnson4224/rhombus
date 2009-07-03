@@ -5,7 +5,7 @@
 #include <task.h>
 #include <mem.h>
 
-pool_t tpool[64];						// Pool allocator for task structures
+pool_t tpool[(MAX_TASKS/1024) + 1];		// Pool allocator for task structures
 task_t *task = (void*) 0xFF400000; 		// Array of task structures (max 65536)
 u16int curr_pid = 0;
 
