@@ -15,7 +15,9 @@ void init_task() {
 	printk("  Kernel: tasking system");
 
 		// Set up task table and allocator
-		pool_new(65536, tpool);
+		pool_new(MAX_TASKS, tpool);
+
+		printk("lies");
 
 		// Bootstrap task 0, because there is nothing to fork from
 		task_t *idle = get_task(0);
