@@ -1,4 +1,4 @@
-SOURCES=boot.o main.o mem.o detect.o trap.o task.o cpuid.o kload.o elf.o
+SOURCES=boot.o main.o mem.o detect.o trap.o task.o kload.o elf.o
 #CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc -Wall -march=i386 -fomit-frame-pointer
 LDFLAGS=-r
 ASFLAGS=-felf
