@@ -58,7 +58,7 @@ map_t map_clone() {
 
 	// Clone/clear userspace
 	for (i = 0; i < 0xF8000000; i += 0x400000) if (cmap[i >> 22] & PF_PRES) {
-		tmap[i >> 22] = frame_new() | 0x7;
+		tmap[i >> 22] = frame_new() | PF_PRES | PF_USER | PF_RW;
 		for (j = i; j < i + 0x400000; j += 0x1000) if (ctbl[j >> 12] & PF_PRES) {
 			ttbl[j >> 12] = frame_new() | (ctbl[j >> 12] & PF_MASK);
 			page_set((u32int) tsrc, page_fmt(ctbl[j >> 12], PF_PRES | PF_RW));

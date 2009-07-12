@@ -30,8 +30,6 @@ done with runtime extensions.
 Interoperability
 ================
 Functions and other real code segments can be called from within the 
-Aether VM using the "ecall" instruction. A table of 256 different call 
-handlers may be provided by the real program, all of which can be called 
-with an argument by "ecall". The stack, because it is the same as the C 
-stack, is used for the called function. The return value is pushed back 
-onto the stack after the function completes.
+Aether VM using the "ecl" instruction. The stack, because it is the same 
+as the C  stack, is used for the called function. The return value is 
+pushed back onto the stack after the function completes.

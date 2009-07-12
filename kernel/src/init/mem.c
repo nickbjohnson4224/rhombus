@@ -34,6 +34,8 @@ void init_mem() {
 		for (i = 0xFF000000; i < 0xFF400000; i += 0x1000)
 			ttbl[i >> 12] = frame_new() | (PF_PRES | PF_RW);
 
+		for(;;);
+
 		// Reload the new map
 		map_load(0);
 

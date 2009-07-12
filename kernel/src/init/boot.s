@@ -14,11 +14,6 @@ global init_stack
 init_stack:
 	resd STACKSIZE >> 2
 
-global init_ktbl
-align 0x1000
-init_ktbl:
-	resd 1024
-
 section .tdata
 
 ; Initial kernel address space
@@ -30,6 +25,11 @@ init_kmap:
 	dd 0x00000083	; Map first 4 MB again in higher mem
 	times 2 dd 0	; Fill remainder of map
 	dd (init_kmap - 0xFF000000)
+
+global init_ktbl
+align 0x1000
+init_ktbl:
+	resd 1024
 
 section .data
 
