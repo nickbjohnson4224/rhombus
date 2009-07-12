@@ -5,7 +5,7 @@ export OPTS=-march=i586 -fomit-frame-pointer -pipe -Werror -O3
 all:
 	make -C kernel
 	make -C libsys
-#	make -C init
+	make -C init
 
 kernel:
 	make -C kernel
@@ -14,12 +14,12 @@ libsys:
 	make -C libsys
 
 init:
-#	make -C init
+	make -C init
 
 clean:
 	make -C kernel clean
 	make -C libsys clean
-#	make -C init clean
+	make -C init clean
 
 test:
 	make -C kernel test
