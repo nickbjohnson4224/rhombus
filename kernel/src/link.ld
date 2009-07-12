@@ -29,8 +29,6 @@ SECTIONS {
 		*(COMMON)
 		*(.bss)
 		_ebss = .;
-		init_kmap = ALIGN(0x1000);
-		*(.pbss)
 	}
 
 	end = .; _end = .; __end = .;
