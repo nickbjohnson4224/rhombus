@@ -53,17 +53,17 @@ void init_detect() {
 
 	cursek(74, -1);
 	printk("[done]");
-	printk("Detected: CPU: ");
+/*	printk("Detected: CPU: ");
 
 		extern void cpuid_name(char*);
 
 		char manufacturer[13];
-		cpuid_name(manufacturer);
+//		cpuid_name(manufacturer);
 		manufacturer[12] = '\0';
 		printk("%s ", manufacturer);
 
 	cursek(74, -1);
-	printk("[done]");
+	printk("[done]");*/
 	printk("Detected: initrd: ");
 
 		init_kload();
