@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # runs bochs
 
 /sbin/losetup /dev/loop4 temp.img

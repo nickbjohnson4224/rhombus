@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # updates the image and runs bochs
 
 cp ../kernel/src/kernel .

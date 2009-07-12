@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 mount /dev/sda1 /boot
 cp src/khaos /boot/khaos-0.1
