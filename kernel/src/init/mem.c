@@ -10,7 +10,7 @@ u32int proto_base = 0xFF400000;
 
 __attribute__ ((section(".ttext"))) 
 void init_mem() {
-	u32int i, *temp, cr3;
+	u32int i, *temp, cr3, initrd_end;
 	printk("  Kernel: allocators");
 
 		// Initialize frame allocator
@@ -31,7 +31,8 @@ void init_mem() {
 		// Identity map necessary kernel memory (i.e. code and initrd)
 		extern u32int init_ktbl;
 		tmap[0xFF000000 >> 22] = ((u32int) &init_ktbl - 0xFF000000) | (PF_PRES | PF_RW);
-		for (i = 0xFF000000; i < 0xFF400000; i += 0x1000)
+		initrd_end = *(u32int*) (mboot->mods_addr + 0xFF000004) + 0xFF000000;
+		for (i = 0xFF000000; i < initrd_end; i += 0x1000)
 			ttbl[i >> 12] = frame_new() | (PF_PRES | PF_RW);
 
 		// Reload the new map
