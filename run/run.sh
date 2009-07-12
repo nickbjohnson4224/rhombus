@@ -4,6 +4,7 @@
 cp ../kernel/src/kernel .
 cp ../libsys/src/libsys .
 cp ../init/src/init .
+cp source_floppy.img floppy.img
 /sbin/losetup /dev/loop4 floppy.img
 mount /dev/loop4 mnt
 tar -cvf initrd_old.tar init libsys
