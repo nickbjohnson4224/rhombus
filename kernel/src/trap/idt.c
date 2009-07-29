@@ -75,6 +75,8 @@ void register_int(u8int n, handler_t handler) {
 }
 
 void *int_handler(image_t *state) {
+//	if (state->num > 63 || state->num < 32) 
+//		printk("\n%x ", state->num);
 	task_t *t = get_task(curr_pid);
 
 	if (state->cs & 0x3) t->image = state;
@@ -84,8 +86,11 @@ void *int_handler(image_t *state) {
 		outb(0x20, 0x20);
 	}
 
-	if (int_handlers[state->num])
+	if (int_handlers[state->num]) {
+//		if (state->num > 63 || state->num < 32)  
+//			printk("calling handler %x\n", int_handlers[state->num]);
 		state = int_handlers[state->num](state);
+	}
 
 	return state;
 }

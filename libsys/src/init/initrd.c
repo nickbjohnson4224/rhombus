@@ -44,6 +44,8 @@ void init_load_init() {
 	int i, n;
 	char buffer[10];
 	
+	eout("pies\n");
+
 	// Index tar file
 	i = n = 0;
 	while (1) {
@@ -54,12 +56,16 @@ void init_load_init() {
 		}
 	}
 
+	eout("wise\n");
+
 	// Find "init"
 	for (i = 0; i < n; i++) if (!strcmp(header[i]->name, "init")) break;
 	if (i == n) {
 		eout("\t\t\t\t\t\t\t\t\t\t\t\t\t  [fail]");
 		for(;;);
 	}
+
+	eout("size\n");
 
 	// Load init
 	init_base = (elf_t*) ((u32int) header[i] + 512);
@@ -70,6 +76,8 @@ void init_load_init() {
 	entry_t entry = (entry_t) image.entry;
 
 	eout("\t\t\t\t\t\t\t\t\t\t\t\t\t  [done]");
+
+	eout("lies\n");
 
 	entry();
 	for(;;);

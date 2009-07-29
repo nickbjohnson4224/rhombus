@@ -71,7 +71,7 @@ page_t page_get(u32int page);				// Returns the value of a page
 #define PF_MASK 0x0C67						// Page flags that can be used
 #define page_fmt(base,flags) (((base)&0xFFFFF000)|((flags)&PF_MASK))
 #define page_ufmt(page) ((page)&0xFFFFF000)
-#define p_alloc(addr, flags) (page_set(addr, page_fmt(frame_new(), (flags) | PF_PRES)))
+#define p_alloc(addr, flags) (page_set(addr, page_fmt(frame_new(), (flags & PF_MASK) | PF_PRES)))
 #define p_free(addr) do { \
 frame_free(page_ufmt(page_get(addr))); \
 page_set(addr, 0); \

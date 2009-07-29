@@ -10,9 +10,17 @@ CHECKSUM    equ  -(MAGIC + FLAGS)
 section .bss
 
 STACKSIZE equ 0x1000
-global init_stack
-init_stack:
+global stack
+stack:
 	resd STACKSIZE >> 2
+	resd 10 ; extra buffer just in case
+
+section .pdata
+
+global init_ktbl
+align 0x1000
+init_ktbl:
+	resd 1024
 
 section .tdata
 
@@ -25,11 +33,6 @@ init_kmap:
 	dd 0x00000083	; Map first 4 MB again in higher mem
 	times 2 dd 0	; Fill remainder of map
 	dd (init_kmap - 0xFF000000)
-
-global init_ktbl
-align 0x1000
-init_ktbl:
-	resd 1024
 
 section .data
 
@@ -81,8 +84,8 @@ start:
 	mov gs, cx
 	mov ss, cx
 
-	mov esp, (init_stack + STACKSIZE)	; Setup init stack
-	mov ebp, (init_stack + STACKSIZE)	; and base pointer
+	mov esp, (stack + STACKSIZE)	; Setup init stack
+	mov ebp, (stack + STACKSIZE)	; and base pointer
 
 	push eax	; Push multiboot magic number for identification
 

@@ -4,5 +4,5 @@
 void segfault() {
 	eout("\nSegmentation fault\n");
 	for(;;);
-	exit_call(0);
+	exit(0);
 }

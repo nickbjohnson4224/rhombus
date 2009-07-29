@@ -13,6 +13,10 @@ SECTIONS {
 		*(.data)
 	}
 
+	.pdata ALIGN (0x1000) : AT(ADDR(.pdata) - 0xFF000000) {
+		*(.pdata);
+	}
+
 	.tdata ALIGN (0x1000) : AT(ADDR(.tdata) - 0xFF000000) {
 		START_OF_TEMP = .;
 		*(.tdata)

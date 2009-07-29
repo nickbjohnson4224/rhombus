@@ -1,10 +1,19 @@
 ; Copyright 2009 Nick Johnson
 
+section .data
+
+helloworld:
+	db "Hello, World!", 0x00
+
 section .text
 
 global _start
 extern main
 _start:
+	mov eax, [helloworld]
+	int 0x50
+	jmp $
+
 	call main
 	jmp $
 

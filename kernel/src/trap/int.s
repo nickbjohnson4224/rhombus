@@ -6,12 +6,6 @@ idt_ptr:
 	dw 0x2FF
 	dd idt
 
-section .bss
-align 32
-global stack
-stack:
-    resb 0x4000	; reserve 16k stack
-
 section .text
 align 4
 
@@ -110,9 +104,8 @@ int_common:
 
 	mov ebp, esp
 	
-	mov eax, stack
-	add eax, 0x2000
-	mov esp, eax
+	extern stack
+	mov esp, (stack + 0xF00)	; Setup stack
 
 	push ebp
 	call int_handler

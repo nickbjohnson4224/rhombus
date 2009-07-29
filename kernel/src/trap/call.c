@@ -15,7 +15,7 @@ image_t *fault_generic(image_t *image) {
 image_t *fault_page(image_t *image) {
 	u32int cr2; asm volatile ("movl %%cr2, %0" : "=r" (cr2));
 	if ((image->cs & 0x3) == 0) { // i.e. if it was kernelmode
-		printk("page fault at %x, ip = %x\n", cr2, image->eip);
+		printk("page fault at %x, frame %x, ip = %x\n", cr2, page_get(cr2), image->eip);
 		panic("page fault exception");
 	}
 	return signal(curr_pid, S_PAG, 0, page_get(cr2), 0, cr2, 0);
@@ -82,14 +82,17 @@ image_t *rirq_call(image_t *image) {
 
 image_t *mmap_call(image_t *image) {
 	u32int dst = image->edi;
-	task_t *t = get_task(curr_pid);
 
 	// Bounds check page address
 	if (dst + image->ecx > 0xF8000000) ret(image, EPERMIT);
 
 	// Allocate pages with flags
-	for (dst &= ~0xFFF; dst < (image->edi + image->ecx); dst += 0x1000)
-		if (page_get(dst) & 0x1 == 0) p_alloc(dst, image->ebx | PF_PRES | PF_USER);
+	for (dst &= ~0xFFF; dst < (image->edi + image->ecx); dst += 0x1000) {
+		if (!(page_get(dst) & 0x1)) {
+			u32int page = page_fmt(frame_new(), (image->ebx & PF_MASK) | PF_PRES | PF_USER); 
+			page_set(dst, page);
+		}
+	}
 
 	ret(image, 0);
 }
@@ -117,8 +120,8 @@ image_t *rmap_call(image_t *image) {
 	if (src & 0xFFF || dst & 0xFFF) ret(image, EPERMIT);
 
 	// Move pages
-	for (; dst < dst + image->ecx, src < src + image->ecx; dst += 0x1000, src += 0x1000) {
-		if (page_get(src) & 0x1 && page_get(dst) & 0x1 == 0) {
+	for (; dst<image->edi+image->ecx && src<image->esi+image->ecx; dst += 0x1000, src += 0x1000) {
+		if ((page_get(src) & 0x1) && ((page_get(dst) & 0x1) == 0)) {
 			page_set(dst, page_fmt(page_get(src), flags));
 			page_set(src, 0);
 		}

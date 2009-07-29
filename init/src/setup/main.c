@@ -15,7 +15,7 @@ void kb_handler() {
 		up = 0;
 		sret(3);
 	}
-	c = (up) ? upkmap[c] : keymap[c];
+	c = (up) ? upkmap[(int) c] : keymap[(int) c];
 	if (c == '\0') up = 1;
 	printk("%c", c);
 
@@ -26,9 +26,7 @@ int pid;
 int main() {
 	eout("Hello, World\n");
 
-	unsigned int src, dest;
-	for (src = 0xB8000, dest = 0x20000000; src < 0xC0000; src += 0x1000, dest += 0x1000)
-		fmap(0, src, dest);
+	for(;;);
 
 	cleark();
 
