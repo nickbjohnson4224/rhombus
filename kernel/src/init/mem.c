@@ -23,10 +23,10 @@ void init_mem() {
 		// Make a new and proper memory map for the kernel in the init map
 		extern u32int init_kmap;
 		u32int *kmap = &init_kmap;
-		temp = (void*) 0xFF000000;
+		temp = (void*) 0xFF001000;
 		pgclr(temp);
-		temp[1023] = 0 | (PF_PRES | PF_RW);
-		kmap[1022] = 0 | (PF_PRES | PF_RW);
+		temp[1023] = 0x1000 | (PF_PRES | PF_RW);
+		kmap[1022] = 0x1000 | (PF_PRES | PF_RW);
 		map_load((u32int) kmap - 0xFF000000);
 
 		// Identity map necessary kernel memory (i.e. code and initrd)
@@ -37,7 +37,7 @@ void init_mem() {
 			ttbl[i >> 12] = frame_new() | (PF_PRES | PF_RW);
 
 		// Reload the new map
-		map_load(0);
+		map_load(0x1000);
 
 	cursek(74, -1);
 	printk("[done]");
