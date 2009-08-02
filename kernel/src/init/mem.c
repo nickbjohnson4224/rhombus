@@ -64,7 +64,7 @@ void init_free() {
 			}
 		}
 		
-		printk("%d KB freed", freed * 4);
+		printk("%d KB freed; %d KB used", freed * 4, pool_query(fpool) * 4 - 1024);
 
 	cursek(74, -1);
 	printk("[done]");

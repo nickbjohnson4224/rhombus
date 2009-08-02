@@ -56,5 +56,6 @@ typedef struct pool {
 pool_t *pool_new(u32int num, pool_t *pool);	// Allocate a new pool
 u32int pool_alloc(pool_t *pool);			// Allocate from a pool
 u32int pool_free(pool_t *pool, u32int pos);	// Free back to a pool
+u32int pool_query(pool_t *pool);			// Find how many elementa are allocated in a pool
 
 #endif

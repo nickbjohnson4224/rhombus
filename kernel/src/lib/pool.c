@@ -58,3 +58,14 @@ u32int pool_free(pool_t *pool, u32int pos) {
 
 	return 0;
 }
+
+u32int pool_query(pool_t *pool) {
+	u32int total, p;
+	
+	// Tally usage of all pools
+	total = 0;
+	for (p = 0; pool[p].setup; p++)
+		total += (pool[p].upper - pool[p].total);
+
+	return total;
+}

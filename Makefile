@@ -1,6 +1,6 @@
 export CC=/usr/khaos/bin/i586-elf-gcc
 #export CC=tcc
-export OPTS=-march=i586 -fomit-frame-pointer -pipe -Wall
+export OPTS=-march=i586 -fomit-frame-pointer -pipe -Os -Wall
 
 all:
 	make -C kernel

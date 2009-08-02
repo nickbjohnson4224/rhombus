@@ -77,7 +77,11 @@ void init_load_init() {
 
 	eout("\t\t\t\t\t\t\t\t\t\t\t\t\t  [done]");
 
-	eout("lies\n");
+	eout("lies ");
+	eout(itoa(image.entry, buffer, 16));
+	eout(" ");
+	eout(itoa(*((u32int*) image.entry), buffer, 16));
+	eout("\n");
 
 	entry();
 	for(;;);
