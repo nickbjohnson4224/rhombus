@@ -2,7 +2,7 @@
 #include <call.h>
 #include <event.h>
 
-u32int *signal_table = (void*) 0xF3FFF000;
+u32int *signal_table = (void*) 0xF7FFF000;
 
 char keymap[128] = "\0\0331234567890-=\b\tqwertyuiop[]\n\0asdfghjkl;\'`\0\\zxcvbnm,./\0*\0 ";
 char upkmap[128] = "\0\033!@#$%^&*()_+\b\0QWERTYUIOP{}\n\0ASDFGHJKL:\"~\0|ZXCVBNM<>?\0*\0 ";

@@ -29,6 +29,7 @@ image_t *sret();
 
 // The signal table is mapped in all address spaces
 extern u32int *signal_table;
+extern u32int *sigovr_table;
 
 /***** PERMISSIONS *****/
 

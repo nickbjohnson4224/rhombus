@@ -22,9 +22,6 @@ void init_task() {
 		queue.next = 0;
 		queue.last = 0;
 
-		// Set the signal table pointer
-		signal_table = (void*) 0xF3FFF000;
-
 		// Fork task 1
 		task_switch(new_task(get_task(curr_pid)));
 

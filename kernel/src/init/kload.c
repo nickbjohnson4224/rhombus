@@ -67,13 +67,11 @@ void init_libsys() {
 
 	for (i = USTACK_BSE; i < USTACK_TOP; i += 0x1000) p_alloc(i, (PF_USER | PF_RW));
 	for (i = SSTACK_BSE; i < SSTACK_TOP; i += 0x1000) p_alloc(i, (PF_USER | PF_RW));
-//	p_alloc(0xF3FFE000, (PF_USER | PF_RW)); // This is for the system call stack
-//	p_alloc(0xF3FFD000, (PF_USER | PF_RW));
-//	p_alloc(0xF3FFC000, (PF_USER | PF_RW));
 	t->image = (void*) (SSTACK_INI - sizeof(image_t));
 
 	// Set up space for the signal handler table
-	p_alloc(0xF3FFF000, (PF_USER | PF_RW));
+	p_alloc(SIG_TBL, (PF_USER | PF_RW));
+	p_alloc(SOV_TBL, (PF_USER | PF_RW));
 
 	// Load libsys image
 	if (elf_check(header_contents(header[n]))) panic("libsys is not valid ELF");
@@ -86,7 +84,8 @@ void init_libsys() {
 	t->image->ss = 0x23;
 	t->image->ds = 0x23;
 	t->image->eip = elf_load(header_contents(header[n]));
-	for (i = 0; i < 1024; i++) signal_table[i] = t->image->eip;
+	for (i = 0; i < 1024; i++) sigovr_table[i] = 0;
+	for (i = 0; i < 1024; i++) signal_table[i] = 0;
 	t->image->cs = 0x1B;
 	extern u32int get_eflags();
 	t->image->eflags = get_eflags() | 0x0200; // Turns on interrupts in eflags
