@@ -7,9 +7,9 @@ u32int *signal_table = (void*) 0xF3FFF000;
 char keymap[128] = "\0\0331234567890-=\b\tqwertyuiop[]\n\0asdfghjkl;\'`\0\\zxcvbnm,./\0*\0 ";
 char upkmap[128] = "\0\033!@#$%^&*()_+\b\0QWERTYUIOP{}\n\0ASDFGHJKL:\"~\0|ZXCVBNM<>?\0*\0 ";
 
-int *up = 0x200000;
-int *top = 0x200004;
-short int *vmem = 0x300000;
+int *up = (void*) 0x200000;
+int *top = (void*) 0x200004;
+short int *vmem = (void*) 0x300000;
 
 void kb_handler() {
 	char c = inb(0x60);
@@ -39,8 +39,7 @@ void setup() {
 
 	fmap(0, vmem, 0xB8000, 0x1000, 0x7);
 	mmap(up, sizeof(int) * 2, 0x7);
-	*up = 0;
-	*top = 0;
+	*up = *top = 0;
 
 	rirq(1);
 

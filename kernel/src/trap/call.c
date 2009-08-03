@@ -84,7 +84,7 @@ image_t *mmap_call(image_t *image) {
 	u32int dst = image->edi;
 
 	// Bounds check page address
-	if (dst + image->ecx > 0xF8000000) ret(image, EPERMIT);
+	if (dst + image->ecx > LSPACE) ret(image, EPERMIT);
 
 	// Allocate pages with flags
 	for (dst &= ~0xFFF; dst < (image->edi + image->ecx); dst += 0x1000) {
@@ -101,7 +101,7 @@ image_t *umap_call(image_t *image) {
 	u32int dst = image->edi;
 
 	// Bounds check page address
-	if (dst + image->ecx > 0xF8000000) ret(image, EPERMIT);
+	if (dst + image->ecx > LSPACE) ret(image, EPERMIT);
 
 	// Free pages
 	for (dst &= ~0xFFF; dst < (image->edi + image->ecx); dst += 0x1000)
@@ -116,7 +116,7 @@ image_t *rmap_call(image_t *image) {
 	u32int flags = image->ebx;
 
 	// Bounds check both addresses
-	if (src + image->ecx > 0xF8000000 || dst + image->ecx > 0xF8000000) ret(image, EPERMIT);
+	if (src + image->ecx > LSPACE || dst + image->ecx > LSPACE) ret(image, EPERMIT);
 	if (src & 0xFFF || dst & 0xFFF) ret(image, EPERMIT);
 
 	// Move pages
@@ -138,7 +138,7 @@ image_t *fmap_call(image_t *image) {
 	task_t *src_t;
 
 	// Bounds check destination
-	if (dst > 0xF8000000) ret(image, EPERMIT);
+	if (dst > LSPACE) ret(image, EPERMIT);
 
 	// Set physical address if chosen (eax == 0)
 	if (image->eax == 0) {
@@ -147,7 +147,7 @@ image_t *fmap_call(image_t *image) {
 	}
 
 	// Bounds check source
-	if (src < 0xF8000000 && t->user.ring > 0) ret(image, EPERMIT);
+	if (src < LSPACE && t->user.ring > 0) ret(image, EPERMIT);
 
 	// Map source map
 	src_t = get_task(image->eax);

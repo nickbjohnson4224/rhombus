@@ -39,7 +39,7 @@ static int elf_load_segment(elf_t *header, elf_ph_t *segment) {
 
 	// Allocate memory
 	eout("ELF loading segment ");
-	eout(itoa(mem_base, buffer, 16)); 
+	eout(itoa((u32int) mem_base, buffer, 16)); 
 	eout(" size ");
 	eout(itoa(segment->p_memsz, buffer, 16));
 	eout("\n");

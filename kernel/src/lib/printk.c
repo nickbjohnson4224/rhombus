@@ -1,8 +1,9 @@
 // Copyright 2009 Nick Johnson
 
 #include <lib.h>
+#include <mem.h>
 
-static u16int *video_mem = (void*) 0xFF0B8000;
+static u16int *video_mem = (void*) (KSPACE + 0xB8000);
 static u16int c_base = 0;
 static u16int cursor = 0;
 static u8int attr = 0x0F;
@@ -47,6 +48,7 @@ void printk_list(char *fmt, u32int *argv) {
 				case 'x': swrite(itoa(argv[n++], buffer, 16)); break;
 				case 'c': cwrite((char) argv[n++]); break;
 				case 's': swrite((char*) argv[n++]); break;
+				case '%': cwrite('%'); break;
 			}
 			i++;
 		}

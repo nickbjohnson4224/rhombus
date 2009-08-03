@@ -6,7 +6,7 @@
 
 // Assume at least 4MB of memory, because we can (it's a 386+)
 u32int memsize = 0x400000;
-u32int proto_base = 0xFF400000;
+u32int proto_base = KSPACE + 0x400000;
 
 __attribute__ ((section(".ttext"))) 
 void init_mem() {
@@ -23,17 +23,17 @@ void init_mem() {
 		// Make a new and proper memory map for the kernel in the init map
 		extern u32int init_kmap;
 		u32int *kmap = &init_kmap;
-		temp = (void*) 0xFF001000;
+		temp = (void*) (KSPACE + 0x1000);
 		pgclr(temp);
 		temp[1023] = 0x1000 | (PF_PRES | PF_RW);
 		kmap[1022] = 0x1000 | (PF_PRES | PF_RW);
-		map_load((u32int) kmap - 0xFF000000);
+		map_load((u32int) kmap - KSPACE);
 
 		// Identity map necessary kernel memory (i.e. code and initrd)
 		extern u32int init_ktbl;
-		tmap[0xFF000000 >> 22] = ((u32int) &init_ktbl - 0xFF000000) | (PF_PRES | PF_RW);
-		initrd_end = *(u32int*) (mboot->mods_addr + 0xFF000004) + 0xFF000000;
-		for (i = 0xFF000000; i < initrd_end; i += 0x1000)
+		tmap[KSPACE >> 22] = ((u32int) &init_ktbl - KSPACE) | (PF_PRES | PF_RW);
+		initrd_end = *(u32int*) (mboot->mods_addr + KSPACE + 4) + KSPACE;
+		for (i = KSPACE; i < initrd_end; i += 0x1000)
 			ttbl[i >> 12] = frame_new() | (PF_PRES | PF_RW);
 
 		// Reload the new map
@@ -57,14 +57,18 @@ void init_free() {
 		// Free initrd image data
 		extern u32int end;
 		i = ((u32int) &end + 0x1000) & ~0xFFF;
-		for (; i < 0xFF400000; i += 0x1000) {
+		for (; i < KSPACE + 0x400000; i += 0x1000) {
 			if (page_get(i) & PF_PRES) {
 				frame_free(page_ufmt(page_get(i)));
 				freed++;
 			}
 		}
+
+		// Free unused (by BIOS) lower memory
+		for (i = KSPACE + 0x1000; i < KSPACE + 0x80000; i += 0x1000, freed++) p_free(i);
 		
-		printk("%d KB freed; %d KB used", freed * 4, pool_query(fpool) * 4 - 1024);
+		u32int percent_used = (pool_query(fpool) * 40000) / (memsize >> 10);
+		printk("%d KB freed; %d.%d%% used", freed * 4, percent_used / 100, percent_used % 100);
 
 	cursek(74, -1);
 	printk("[done]");

@@ -15,7 +15,7 @@ void init_detect() {
 		for (i = 0; i < nmem_map; i++) {
 			if (mem_map[i].base_addr_low == 0x100000) {
 				memsize = mem_map[i].length_low + 0x100000;
-				printk("%d KB", (memsize - 0x100000) >> 10);
+				printk("%d KB", memsize >> 10);
 				break;
 			}
 		}

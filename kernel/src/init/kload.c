@@ -38,8 +38,8 @@ void init_kload() {
 
 	// Check for initrd (it's really a tape archive)
 	if (!mboot->mods_count) panic("No initrd found!");
-	initrd = (void*) *(u32int*) (mboot->mods_addr + 0xFF000000) + 0xFF000000;
-	initrd_size = *(u32int*) (mboot->mods_addr + 0xFF000004) + 0xFF000000;
+	initrd = (void*) *(u32int*) (mboot->mods_addr + KSPACE) + KSPACE;
+	initrd_size = *(u32int*) (mboot->mods_addr + KSPACE + 4) + KSPACE;
 	initrd_size -= (u32int) initrd;
 	initrd_size /= 512; // In 512 byte blocks
 	printk("%d blocks", initrd_size);
@@ -55,8 +55,7 @@ void init_kload() {
 
 __attribute__ ((section(".ttext")))
 void init_libsys() {
-	u32int i;
-	u8int n;
+	u32int i, n;
 	task_t *t;
 
 	// Check for libsys header
@@ -65,10 +64,13 @@ void init_libsys() {
 
 	// Set up a stack for the process image
 	t = get_task(curr_pid);
-	p_alloc(0xF3FFE000, (PF_USER | PF_RW)); // This is for the system call stack
-	p_alloc(0xF3FFD000, (PF_USER | PF_RW));
-	p_alloc(0xF3FFC000, (PF_USER | PF_RW));
-	t->image = (void*) (0xF3FFEFFC - sizeof(image_t));
+
+	for (i = USTACK_BSE; i < USTACK_TOP; i += 0x1000) p_alloc(i, (PF_USER | PF_RW));
+	for (i = SSTACK_BSE; i < SSTACK_TOP; i += 0x1000) p_alloc(i, (PF_USER | PF_RW));
+//	p_alloc(0xF3FFE000, (PF_USER | PF_RW)); // This is for the system call stack
+//	p_alloc(0xF3FFD000, (PF_USER | PF_RW));
+//	p_alloc(0xF3FFC000, (PF_USER | PF_RW));
+	t->image = (void*) (SSTACK_INI - sizeof(image_t));
 
 	// Set up space for the signal handler table
 	p_alloc(0xF3FFF000, (PF_USER | PF_RW));
@@ -77,10 +79,10 @@ void init_libsys() {
 	if (elf_check(header_contents(header[n]))) panic("libsys is not valid ELF");
 
 	// Setup process image
-	t->tss_esp = 0xF3FFEFFC;
-	t->image->useresp = 0xF3FFDFFC;
-	t->image->esp = 0xF3FFDFFC;
-	t->image->ebp = 0xF3FFDFFC;
+	t->tss_esp = SSTACK_INI;
+	t->image->useresp = USTACK_INI;
+	t->image->esp = USTACK_INI;
+	t->image->ebp = USTACK_INI;
 	t->image->ss = 0x23;
 	t->image->ds = 0x23;
 	t->image->eip = elf_load(header_contents(header[n]));

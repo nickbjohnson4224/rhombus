@@ -4,7 +4,10 @@
 #include <task.h>
 #include <trap.h>
 
-u32int *signal_table = (void*) 0xF3FFF000;
+u32int *signal_table = (void*) SIG_TBL; // User signal table
+u32int *sigovr_table = (void*) SOV_TBL; // Libsys signal override table
+
+/***** THIS IS *ALL* CRAP! ONLY WORKS FOR ONE PROCESS! FIX ASAP! *****/
 
 image_t *signal(u16int task, u8int sig, 
 	u32int arg0, u32int arg1, u32int arg2, u32int arg3, u8int flags) {
@@ -22,20 +25,20 @@ image_t *signal(u16int task, u8int sig,
 	tss_set_esp(t->tss_esp);
 
 	// Check existence of signal handler
-	if (!signal_table[sig]) ret(src_t->image, ENOSIG);
+	if (!sigovr_table[sig] || !signal_table[sig]) ret(src_t->image, ENOSIG);
 
 	// Block if set to block
 	if (flags & TF_BLOCK) src_t->flags |= TF_BLOCK;
 	if (flags & TF_UNBLK) t->flags &= ~TF_BLOCK;
 
-	t->image->caller = src;
+//	t->image->caller = src;
 	
 	// Create new image to return to
 	if (t->pid != curr_pid) task_switch(t);
 	memcpy((u8int*) ((u32int) t->image - sizeof(image_t)), t->image, sizeof(image_t));
 	tss_set_esp(t->tss_esp = (u32int) t->image); // Will now create images above old image
 	t->image = (void*) ((u32int) t->image - sizeof(image_t));
-	if ((u32int) t->image < 0xF3FFEC00 + sizeof(image_t)) 
+	if ((u32int) t->image < SSTACK_BSE + sizeof(image_t)) 
 		panic("task state stack overflow");
 
 	// Set registers to describe signal
@@ -67,7 +70,7 @@ image_t *sret(image_t *image) {
 	t->caller = t->image->caller;
 
 	// Bounds check image
-	if ((u32int) t->tss_esp >= 0xF3FFF000) 
+	if ((u32int) t->tss_esp >= SSTACK_TOP) 
 		panic("task state stack underflow");
 
 	tss_set_esp(t->tss_esp);

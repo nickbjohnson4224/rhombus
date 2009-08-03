@@ -1,11 +1,14 @@
 // Copyright 2009 Nick Johnson
 
+#ifndef MEM_H
+#define MEM_H
+
 /* General virtual memory map:
 0x00000000 - 0xF3FFFFFF: userspace 		(user, read-write, cloned)
 	0x00001000: process image
 	0xF0000000: libc image
-	0xF3FF0000: standard stack
-	0xF5FFE000: state saving stack
+	0xF7FF0000: standard stack
+	0xF7FFC000: state saving stack
 	0xF7FFF000: signal handler table
 0xF8000000 - 0xFEFFFFFF: libspace 		(user, readonly, linked)
 	0xF8000000: signal override table
@@ -20,8 +23,19 @@
 	0xFFC00000: resident map
 */
 
-#ifndef MEM_H
-#define MEM_H
+#define LSPACE	0xF8000000
+#define KSPACE 	0xFF000000
+#define TMP_MAP	0xFF800000
+#define PGE_MAP	0xFFC00000
+
+#define SIG_TBL (LSPACE - 0x1000)
+#define SOV_TBL (LSPACE + 0x0000)
+#define SSTACK_BSE	(LSPACE - 0x4000)
+#define SSTACK_INI	(LSPACE - 0x2004)
+#define SSTACK_TOP	(LSPACE - 0x2000)
+#define USTACK_BSE	(LSPACE - 0x10000)
+#define USTACK_INI	(LSPACE - 0x5004)
+#define USTACK_TOP	(LSPACE - 0x5000)
 
 /***** PAGE FLAGS *****/
 
