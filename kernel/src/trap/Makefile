@@ -1,4 +1,4 @@
-SOURCES=idt.o int.o tss.o call.o
+SOURCES=idt.o int.o call.o
 #CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc -Wall -march=i386
 LDFLAGS=-r
 ASFLAGS=-felf
