@@ -7,22 +7,23 @@ ptbl_t *cmap = (void*) PGE_MAP + 0x3FF000;
 page_t *ctbl = (void*) PGE_MAP;
 ptbl_t *tmap = (void*) TMP_MAP + 0x3FF000;
 page_t *ttbl = (void*) TMP_MAP;
-u32int *tsrc = (void*) KSPACE + 0x3FF000;
-u32int *tdst = (void*) KSPACE + 0x3FE000;
+u32int *tsrc = (void*) KSPACE + 0x7FF000;
+u32int *tdst = (void*) KSPACE + 0x7FE000;
 
 void map_temp(map_t map) {
-	u32int i, t;
 	cmap[TMP_MAP >> 22] = page_fmt(map, (PF_PRES | PF_RW));
 	page_flush();
 }
 
 map_t map_alloc(map_t map) {
 	map = frame_new();
-	page_set((u32int) tsrc, page_fmt(map, (PF_PRES | PF_RW))); 
-	page_flush();
+
+	// Allocate and clear new map
+	page_set((u32int) tsrc, page_fmt(map, (PF_PRES | PF_RW)));
 	pgclr(tsrc);
+
+	// Set PGE_MAP table recursively
 	tsrc[PGE_MAP >> 22] = page_fmt(map, (PF_PRES | PF_RW));
-	page_flush();
 	return map;
 }
 

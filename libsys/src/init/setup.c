@@ -2,6 +2,8 @@
 #include <call.h>
 #include <event.h>
 
+extern int fork();
+
 u32int *signal_table = (void*) 0xF7FFF000;
 
 char keymap[128] = "\0\0331234567890-=\b\tqwertyuiop[]\n\0asdfghjkl;\'`\0\\zxcvbnm,./\0*\0 ";
@@ -22,7 +24,7 @@ void kb_handler() {
 		sret(3);
 	}
 	c = (*up) ? upkmap[(int) c] : keymap[(int) c];
-	vmem[(*top)++] ^= c | 0x0C00;
+	vmem[(*top)++] = c | 0x0F00;
 
 	if (*top >= 25*80) *top = 0;
 
@@ -47,10 +49,10 @@ void setup() {
 
 	rirq(1);
 
+	char c[2] = {'0', '\0'};
 	while(1) {
-		eout(".");
-		for (i = 0; i < 500000; i++);
-		fork();
+		if (fork() < 0) while(1) eout(c);
+		else c[0]++;
 	}
 
 //	init_load_init();
