@@ -36,9 +36,8 @@ image_t *signal(u16int task, u8int sig,
 	if (flags & TF_UNBLK) t->flags &= ~TF_BLOCK;
 
 	// Create new image structure
-	printk("%x\n", t->image);
 	memcpy((u8int*) ((u32int) t->image - sizeof(image_t)), t->image, sizeof(image_t));
-	tss_set_esp(t->tss_esp = (u32int) t->image); // Will now create image below old image
+	t->tss_esp = (u32int) t->image; // Will now create image below old image
 	t->image = (void*) ((u32int) t->image - sizeof(image_t));
 	if ((u32int) t->image < SSTACK_BSE + sizeof(image_t)) {
 		printk("%x\n", t->image);
@@ -57,6 +56,7 @@ image_t *signal(u16int task, u8int sig,
 
 	// Set reentry point
 	t->image->eip = (sigovr_table[sig]) ? sigovr_table[sig] : signal_table[sig];
+	tss_set_esp(t->tss_esp);
 	return t->image;
 }
 

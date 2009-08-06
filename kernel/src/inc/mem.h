@@ -4,7 +4,7 @@
 #define MEM_H
 
 /* General virtual memory map:
-0x00000000 - 0xF3FFFFFF: userspace 		(user, read-write, cloned)
+0x00000000 - 0xF7FFFFFF: userspace 		(user, read-write, cloned)
 	0x00001000: process image
 	0xF0000000: libc image
 	0xF7FF0000: standard stack
@@ -23,19 +23,7 @@
 	0xFFC00000: resident map
 */
 
-#define LSPACE	0xF8000000
-#define KSPACE 	0xFF000000
-#define TMP_MAP	0xFF800000
-#define PGE_MAP	0xFFC00000
-
-#define SIG_TBL (LSPACE - 0x1000)
-#define SOV_TBL (LSPACE + 0x0000)
-#define SSTACK_BSE	(LSPACE - 0x4000)
-#define SSTACK_INI	(LSPACE - 0x2004)
-#define SSTACK_TOP	(LSPACE - 0x2000)
-#define USTACK_BSE	(LSPACE - 0x10000)
-#define USTACK_INI	(LSPACE - 0x5004)
-#define USTACK_TOP	(LSPACE - 0x5000)
+#include <config.h> // Contains macros for VM layout
 
 /***** PAGE FLAGS *****/
 
@@ -56,13 +44,7 @@ typedef u32int page_t;
 typedef u32int ptbl_t;
 typedef u32int map_t;
 
-/****** SYSTEM CALLS *****/
-u32int mmap(u32int base, u32int flags);	// Map memory to a page
-u32int umap(u32int base);				// Unmap memory from a page
-u32int rmap(u32int base, u32int src);	// Move a mapped frame
-u32int fmap(u16int task, u32int base);	// Force a remote remapping (task 0 == physical mem)
-
-//extern map_t kmap;
+/****** MAP.C *****/
 void  map_temp(map_t map);				// Puts a map in temporary space
 map_t map_alloc(map_t map);				// Allocates a new map
 map_t map_free(map_t map);				// Frees a map (does not clean)
@@ -79,6 +61,7 @@ extern pool_t fpool[MAX_PHMEM / 4];
 extern ptbl_t *cmap, *tmap;					// Address of current page directory
 extern page_t *ctbl, *ttbl;					// Base of current page tables
 
+void   page_flush();						// Flushes all paging
 void   page_touch(u32int page);				// Makes sure a page exists
 void   page_set(u32int page, page_t value);	// Sets the value of a page
 page_t page_get(u32int page);				// Returns the value of a page
@@ -86,9 +69,6 @@ page_t page_get(u32int page);				// Returns the value of a page
 #define page_fmt(base,flags) (((base)&0xFFFFF000)|((flags)&PF_MASK))
 #define page_ufmt(page) ((page)&0xFFFFF000)
 #define p_alloc(addr, flags) (page_set(addr, page_fmt(frame_new(), (flags & PF_MASK) | PF_PRES)))
-#define p_free(addr) do { \
-frame_free(page_ufmt(page_get(addr))); \
-page_set(addr, 0); \
-} while(0);
+#define p_free(addr) do { frame_free(page_ufmt(page_get(addr))); page_set(addr, 0); } while(0);
 
 #endif /*MEM_H*/

@@ -21,10 +21,8 @@ void init_tss() {
 	u16int limit = base + sizeof(struct tss);
 
 	memclr(&tss, sizeof(struct tss));
-	tss.ss0 = 0x10;
-	tss.esp0 = 0xF3FFEFFC;
 	tss.cs = 0x0B;
-	tss.es = tss.ds = tss.fs = tss.gs = 0x10;
+	tss.ss0 = tss.es = tss.ds = tss.fs = tss.gs = 0x10;
 
 	gdt[41] = (limit >> 8) & 0xFF;
 	gdt[40] = (limit) & 0xFF;

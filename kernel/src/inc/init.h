@@ -31,6 +31,7 @@ struct multiboot {
 	u32int vbe_interface_len;
 }  __attribute__((packed));
 
+// Multiboot memory map
 struct memory_map {
 	u32int size;
 	u32int base_addr_low;

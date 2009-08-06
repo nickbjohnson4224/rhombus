@@ -15,7 +15,7 @@ stack:
 	resd STACKSIZE >> 2
 	resd 10 ; extra buffer just in case
 
-section .pdata
+section .pbss
 
 global init_ktbl
 align 0x1000

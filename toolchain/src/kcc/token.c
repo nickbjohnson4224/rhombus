@@ -18,7 +18,7 @@ static const char *token_list[] = {
 static const char token_order[] = {
 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 4, 4, 0, 4, 4,
 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-0, 2, 5, 4, 2, 2, 5, 1, 3, 3, 2, 2, 0, 2, 0, 2,
+0, 2, 5, 4, 2, 2, 5, 1, 3, 3, 2, 2, 3, 2, 0, 2,
 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2,
 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 3, 2, 1,
@@ -30,14 +30,15 @@ int main() {
 	char *buffer = malloc(sizeof(char)*4096);
 	while(1) {
 		if (fgets(buffer, 4096, stdin) == NULL) return 0;
-		if (tokenize_line(buffer, tokens)) return 1;
+		if (tokenize_line(buffer, tokens)) continue;
 		int i;
 		for (i = 0; tokens[i].type != T_EOL; i++) {
 			if (tokens[i].type < 0xC0)
-				printf("%s \n", token_list[tokens[i].type]);
+				printf("%s ", token_list[tokens[i].type]);
 			else
-				printf("%s \n", tokens[i].symbol);
+				printf("%s ", tokens[i].symbol);
 		}
+//		if (i) printf("\n");
 	}
 	return 0;
 }
@@ -64,8 +65,11 @@ int tokenize_line(char *line, token_t *tokens) {
 	token_t *token_top = &tokens[0];
 
 	for (focus = line; *focus != '\0'; focus++) {
-		if (token_order[*focus] == 5) instring = (instring) ? 0 : 1;
-		if (instring == 0 && (token_order[*focus] != order || token_order[*focus] == 3)) {
+		if (instring) order = token_order[*focus];
+		if (token_order[*focus] == 5) {
+			instring = !instring;
+		}
+		if (token_order[*focus] != order || (token_order[*focus] == 3 && !instring)) {
 			buffer[bufftop] = '\0';
 			if (order != 0) tokenize(buffer, token_top++);
 			if (token_order[*focus] == 4) return -1;

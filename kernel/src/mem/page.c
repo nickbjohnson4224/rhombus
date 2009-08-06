@@ -24,3 +24,9 @@ void page_set(u32int page, page_t value) {
 page_t page_get(u32int page) {
 	return (cmap[page >> 22] & PF_PRES) ? ctbl[page >> 12] : 0;
 }
+
+void page_flush() {
+	u32int cr3;
+	asm volatile("mov %%cr3, %0" : "=r" (cr3));
+	asm volatile("mov %0, %%cr3" : : "r" (cr3));
+}

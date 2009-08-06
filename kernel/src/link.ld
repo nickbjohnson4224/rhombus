@@ -13,8 +13,8 @@ SECTIONS {
 		*(.data)
 	}
 
-	.pdata ALIGN (0x1000) : AT(ADDR(.pdata) - 0xFF000000) {
-		*(.pdata);
+	.pbss ALIGN (0x1000) : AT(ADDR(.pbss) - 0xFF000000) {
+		*(.pbss);
 	}
 
 	.tdata ALIGN (0x1000) : AT(ADDR(.tdata) - 0xFF000000) {

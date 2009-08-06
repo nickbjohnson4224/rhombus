@@ -22,7 +22,9 @@ void kb_handler() {
 		sret(3);
 	}
 	c = (*up) ? upkmap[(int) c] : keymap[(int) c];
-	vmem[(*top)++] = c | 0x0C00;
+	vmem[(*top)++] ^= c | 0x0C00;
+
+	if (*top >= 25*80) *top = 0;
 
 	sret(3);
 }
@@ -40,8 +42,16 @@ void setup() {
 	fmap(0, vmem, 0xB8000, 0x1000, 0x7);
 	mmap(up, sizeof(int) * 2, 0x7);
 	*up = *top = 0;
+	char buffer[10];
+	int cpid;
 
 	rirq(1);
+
+	cpid = fork();
+	eout(itoa(cpid, buffer, 10));
+	eout("\n");
+
+	if (cpid > 0) rirq(0);
 
 //	init_load_init();
 	for(;;);

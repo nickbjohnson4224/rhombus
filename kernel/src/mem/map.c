@@ -7,8 +7,8 @@ ptbl_t *cmap = (void*) PGE_MAP + 0x3FF000;
 page_t *ctbl = (void*) PGE_MAP;
 ptbl_t *tmap = (void*) TMP_MAP + 0x3FF000;
 page_t *ttbl = (void*) TMP_MAP;
-u32int *tsrc = (void*) KSPACE + 0x7FF000;
-u32int *tdst = (void*) KSPACE + 0x7FE000;
+u32int *tsrc = (void*) KSPACE + 0x3FF000;
+u32int *tdst = (void*) KSPACE + 0x3FE000;
 
 void map_temp(map_t map) {
 	u32int i, t;
@@ -21,7 +21,7 @@ void map_temp(map_t map) {
 
 map_t map_alloc(map_t map) {
 	map = frame_new();
-	page_set((u32int) tsrc, page_fmt(map, (PF_PRES | PF_RW)));
+	page_set((u32int) tsrc, page_fmt(map, (PF_PRES | PF_RW))); 
 	pgclr(tsrc);
 	tsrc[PGE_MAP >> 22] = page_fmt(map, (PF_PRES | PF_RW));
 	map_temp(map);
@@ -56,20 +56,22 @@ map_t map_clone() {
 	// Create new map
 	dest = map_alloc(dest);
 
+	// Link kernel/libspace (except for recursive mapping)
+	for (i = LSPACE >> 22; i < TMP_MAP >> 22; i++) if (cmap[i] & PF_PRES)
+		tmap[i] = cmap[i];
+
 	// Clone/clear userspace
 	for (i = 0; i < LSPACE; i += 0x400000) if (cmap[i >> 22] & PF_PRES) {
 		tmap[i >> 22] = frame_new() | PF_PRES | PF_USER | PF_RW;
+		pgclr(&ttbl[i >> 12]);
 		for (j = i; j < i + 0x400000; j += 0x1000) if (ctbl[j >> 12] & PF_PRES) {
-			ttbl[j >> 12] = frame_new() | (ctbl[j >> 12] & PF_MASK);
+			ttbl[j >> 12] = frame_new() | (ctbl[j >> 12] & (PF_MASK &~ 0x60));
+			page_flush(); // Figure out WHY this is needed ASAP (probably last line changing pages)
 			page_set((u32int) tsrc, page_fmt(ctbl[j >> 12], PF_PRES | PF_RW));
 			page_set((u32int) tdst, page_fmt(ttbl[j >> 12], PF_PRES | PF_RW));
 			memcpy(tdst, tsrc, 0x1000);
 		}
 	}
-
-	// Link kernel/libspace (except for recursive mapping)
-	for (i = LSPACE >> 22; i < TMP_MAP >> 22; i++) if (cmap[i] & PF_PRES)
-		tmap[i] = cmap[i];
 
 	return dest;
 }
