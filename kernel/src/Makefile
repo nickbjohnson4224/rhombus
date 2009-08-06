@@ -3,7 +3,7 @@ export CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc $(OPTS)
 LDFLAGS=-Tlink.ld
 ASFLAGS=-felf
 
-all: $(SOURCES) link
+all: inc/config.h $(SOURCES) link
 
 lib/lib.o: lib/*.c inc/lib.h
 	make -C lib

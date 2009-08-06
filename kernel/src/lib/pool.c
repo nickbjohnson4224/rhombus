@@ -25,11 +25,9 @@ u32int pool_alloc(pool_t *pool) {
 	u32int p, w, b;	// pool, word, bit
 
 	// Find suitable pool
-	for (p = 0; !pool[p].total; p++) 
-		if (pool[p].setup != 0x4224)
-			panic("pool allocator full");
-	if (pool[p].setup != 0x4224)
-		panic("pool allocator full");
+	for (p = 0; pool[p].total == 0; p++) 
+		if (pool[p].setup != 0x4224) goto full;
+	if (pool[p].setup != 0x4224) goto full;
 
 	// Find suitable word within pool
 	for (w = pool[p].first / 32; w < pool[p].upper / 32; w++)
@@ -37,12 +35,17 @@ u32int pool_alloc(pool_t *pool) {
 
 	// Find open bit within word
 	for (b = 0; pool[p].word[w] & (0x1 << b); b++);
-	if (b == 32) panic("pool allocator full");
+	if (b == 32) goto full;
 
 	pool[p].word[w] |= (0x1 << b);
 	pool[p].total --;
 	if (pool[p].first == ((w << 5) | b)) pool[p].first++;
 	return ((p << 10) | ((w << 5) | b));
+
+	full:
+	printk("%x\n", pool_query(pool));
+	panic("pool allocator full");
+	return 0;
 }
 
 u32int pool_free(pool_t *pool, u32int pos) {

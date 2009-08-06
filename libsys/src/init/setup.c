@@ -47,7 +47,11 @@ void setup() {
 
 	rirq(1);
 
-	fork();
+	while(1) {
+		eout(".");
+		for (i = 0; i < 500000; i++);
+		fork();
+	}
 
 //	init_load_init();
 	for(;;);
