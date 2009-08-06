@@ -22,7 +22,7 @@ align 0x1000
 init_ktbl:
 	resd 1024
 
-section .tdata
+section .pdata
 
 ; Initial kernel address space
 global init_kmap

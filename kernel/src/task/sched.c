@@ -25,6 +25,7 @@ void insert_sched(u16int pid) {
 task_t *next_task(u8int flags) {
 	u32int pid;
 	task_t *t;
+	flags = 0;
 
 	retry:
 	if (!queue.next) {

@@ -29,6 +29,13 @@ init_free,
 NULL
 };
 
+#ifdef TEST
+init_t test_list[] = {
+test_mem,
+NULL
+};
+#endif
+
 struct multiboot *mboot;
 
 typedef void (*entry_t)();
@@ -43,6 +50,12 @@ void init(void *mboot_ptr, u32int mboot_magic) {
 	else mboot = mboot_ptr;
 
 	for (i = 0; init_list[i]; i++) init_list[i]();
+
+	#ifdef TEST
+	for (i = 0; test_list[i]; i++) test_list[i]();	
+	for(;;);
+	#endif
+
 	printk("  Kernel: dropping to usermode");
 	cursek(74, -1);
 	printk("[done]");

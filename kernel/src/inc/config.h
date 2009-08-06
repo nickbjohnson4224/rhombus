@@ -21,6 +21,8 @@
 #define TMP_MAP	0xFF800000
 #define PGE_MAP	0xFFC00000
 
+#define TASK_TBL (KSPACE + 0x400000)
+
 #define SIG_TBL (LSPACE - 0x1000)
 #define SOV_TBL (LSPACE + 0x0000)
 #define SSTACK_BSE	(LSPACE - 0x4000)

@@ -8,7 +8,7 @@
 // Handles IRQ 0, and advances a simple counter used as a clock
 image_t *pit_handler(image_t *state) {
 	static u32int tick = 0;
-	tick++;
+	if (state->cs & 0x3) tick++;
 
 	return task_switch(next_task(0));
 }
@@ -36,6 +36,7 @@ image_t *fault_float(image_t *image) {
 }
 
 image_t *fault_double(image_t *image) {
+	printk("DS:%x CS:%x\n", image->ds, image->cs);
 	panic("double fault exception");
 	return NULL;
 }

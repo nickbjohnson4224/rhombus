@@ -6,4 +6,4 @@ boot: a
 log: /dev/stdout
 mouse: enabled=0
 clock: sync=realtime
-cpu: ips=10000000
+cpu: ips=1000000

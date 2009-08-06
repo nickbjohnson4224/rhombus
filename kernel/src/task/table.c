@@ -5,8 +5,8 @@
 #include <task.h>
 #include <mem.h>
 
-pool_t tpool[(MAX_TASKS/1024) + 1];			// Pool allocator for task structures
-task_t *task = (void*) (KSPACE + 0x400000); // Array of task structures (max 65536)
+pool_t tpool[(MAX_TASKS/1024) + 1];	// Pool allocator for task structures
+task_t *task = (void*) TASK_TBL; 	// Array of task structures (max 65536)
 u16int curr_pid = 0;
 
 task_t *get_task(u16int pid) {
@@ -43,6 +43,13 @@ u32int rem_task(task_t *t) {
 
 image_t *task_switch(task_t *t) {
 	curr_pid = t->pid;
+
+	map_temp(t->map);
+	if ((tmap[KSPACE >> 22] & PF_PRES) == 0) {
+		printk("%d: %x\n", t->pid, t->map);
+		panic("bad page dir");
+	}
+
 	map_load(t->map);
 	tss_set_esp(t->tss_esp);
 	return t->image;

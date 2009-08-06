@@ -47,11 +47,7 @@ void setup() {
 
 	rirq(1);
 
-	cpid = fork();
-	eout(itoa(cpid, buffer, 10));
-	eout("\n");
-
-	if (cpid > 0) rirq(0);
+	fork();
 
 //	init_load_init();
 	for(;;);

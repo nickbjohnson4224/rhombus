@@ -26,8 +26,10 @@ u32int pool_alloc(pool_t *pool) {
 
 	// Find suitable pool
 	for (p = 0; !pool[p].total; p++) 
-		if (pool[p].setup != 0x4224) 
+		if (pool[p].setup != 0x4224)
 			panic("pool allocator full");
+	if (pool[p].setup != 0x4224)
+		panic("pool allocator full");
 
 	// Find suitable word within pool
 	for (w = pool[p].first / 32; w < pool[p].upper / 32; w++)
