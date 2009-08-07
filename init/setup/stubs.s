@@ -10,9 +10,9 @@ section .text
 global _start
 extern main
 _start:
-	mov eax, [helloworld]
-	int 0x50
-	jmp $
+;	mov eax, [helloworld]
+;	int 0x52
+;	jmp $
 
 	call main
 	jmp $
@@ -79,12 +79,12 @@ fmap:
 
 eout:
 	mov eax, [esp+4]
-	int 0x50
+	int 0x52
 	ret
 
 rirq:
 	mov eax, [esp+4]
-	int 0x51
+	int 0x50
 	ret
 
 global inb

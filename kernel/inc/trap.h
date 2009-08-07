@@ -34,8 +34,8 @@ image_t *umap_call(image_t *image);	//0x45
 image_t *rmap_call(image_t *image);	//0x46
 image_t *fmap_call(image_t *image); //0x47
 
-image_t *eout_call(image_t *image); //0x50
-image_t *rirq_call(image_t *image); //0x51
+image_t *eout_call(image_t *image); //0x52
+image_t *rirq_call(image_t *image); //0x50
 
 #define ret(image, value) do { \
 image->eax = value; \

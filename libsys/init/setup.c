@@ -54,8 +54,6 @@ void setup() {
 
 	rirq(1);
 
-	if (fork() < 0) exit(0);
-
-//	init_load_init();
+	init_load_init();
 	for(;;);
 }
