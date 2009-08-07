@@ -1,5 +1,0 @@
-Signals and Signal Handlers
-
-Signals are the basic element of interprocess communication in a Khaos system. A signal is a very small synchronous message sent to another process. They work similarly to UNIX signals, and their handlers can be modified at runtime based on a simple table. However, unlike UNIX signals, there are no priviledged signals, such as SIGKILL or SIGINT that must do a certain operation. The "priviledged" signals are hard coded to the libsys, which then has ultimate control over what happens (i.e. whether the process is killed or some other action happens.) Signals do not have to be produced by another process however - many signals, such as those that represent page faults, are produced by the kernel and sent to userspace. The use of signals provides a uniform, powerful, and efficient way of handling events.
-
-The signal handlers are stored in a special page aligned position, namely 0xF3FFF000. Each dword in that page is a pointer to a function that returns no value and reads 

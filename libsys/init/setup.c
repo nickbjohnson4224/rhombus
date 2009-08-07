@@ -49,12 +49,12 @@ void setup() {
 
 	rirq(1);
 
-	char c[2] = {'0', '\0'};
-	while(1) {
-		if (fork() < 0) while(1) eout(c);
-		else c[0]++;
-	}
+//	char c[2] = {'0', '\0'};
+//	while(1) {
+//		if (fork() < 0) while(1) eout(c);
+//		else c[0]++;
+//	}
 
-//	init_load_init();
+	init_load_init();
 	for(;;);
 }

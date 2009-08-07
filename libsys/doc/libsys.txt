@@ -1,9 +1,0 @@
-The System Library (libsys)
-
-The purpose of the system library is to provide a default set of signal handlers, and to act as an operating system-like wrapper for user programs. It also contains the code for executing binaries. It is essentially an unpriviledged (but fully trusted and protected) extension to the kernel.
-
-The libsys is loaded read only, and is linked between address spaces rather than copied. Calls to it are done just like with a normal library - unpriviledged jumps are permitted. Nearly all libsys functions may be bypassed by remapping signal handlers and doing direct system calls. However, the libsys is maintained across exec() calls, and has exclusive rights to certain signals that permit it to regain control at any point, such as after exec() or after a double signal fault.
-
-The libsys occupies the address space from 0xF4000000 to 0xF8000000, and no other memory may be mapped there.
-
-In the future, the libsys will be able to be replaced for any set of processes at runtime, but as of now this feature is not implemented. When this is implemented, it will allow the system to act as a wrapper for any executable format that runs on the same architecture.

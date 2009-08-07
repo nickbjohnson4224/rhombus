@@ -22,4 +22,4 @@ clean:
 	make -C init clean
 
 test:
-	make -C kernel test
+	sudo run/test.sh

@@ -3,10 +3,18 @@
 #ifndef TRAP_H
 #define TRAP_H
 
+#ifdef ENABLE_FXSAVE
+typedef struct image {
+	u16int fximage[256];
+	u32int ds, edi, esi, ebp, esp, ebx, edx, ecx, eax;
+	u32int num, caller, err, eip, cs, eflags, useresp, ss;
+} __attribute__ ((packed)) image_t;
+#else
 typedef struct image {
 	u32int ds, edi, esi, ebp, esp, ebx, edx, ecx, eax;
 	u32int num, caller, err, eip, cs, eflags, useresp, ss;
 } __attribute__ ((packed)) image_t;
+#endif
 
 typedef image_t* (*handler_t) (image_t*);
 image_t *pit_handler(image_t *state);

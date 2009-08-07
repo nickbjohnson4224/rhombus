@@ -35,8 +35,11 @@
 /***** INTERRUPT SUBSYSTEM *****/
 
 // Processor features
-//#define SAVE_MMX
-//#define SAVE_SSE
-//#define SAVE_FPU
+
+//*	// Erase first slash to toggle
+//#define ENABLE_FXSAVE
+///*/
+//#define ENABLE_FSAVE
+//*/
 
 #endif

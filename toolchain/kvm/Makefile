@@ -1,4 +1,4 @@
-SOURCES=init/init.o lib/lib.o call/call.o exec/exec.o event/event.o
+SOURCES=
 export CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc $(OPTS)
 LDFLAGS=-Tlink.ld
 ASFLAGS=-felf
@@ -20,7 +20,8 @@ event/event.o: event/*.c inc/event.h
 exec/exec.o: exec/*.c inc/exec.h
 	make -C exec
 
-event/event.o: event/*.c inc/event.h
+info/info.o: info/*.c inc/info.h
+	make -C info
 
 link:
 	ld $(LDFLAGS) -o libsys $(SOURCES)
@@ -29,7 +30,7 @@ clean:
 	make -C init clean
 	make -C lib clean
 	make -C call clean
-	make -C event clean
+#	make -C event clean
 	make -C exec clean
 #	make -C info clean
 	rm libsys

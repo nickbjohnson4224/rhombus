@@ -1,9 +1,10 @@
 #!/bin/sh
 # updates the image and runs bochs
 
-cp ../kernel/src/kernel .
-cp ../libsys/src/libsys .
-cp ../init/src/init .
+cd run
+cp ../kernel/kernel .
+cp ../libsys/libsys .
+cp ../init/init .
 cp source_floppy.img floppy.img
 /sbin/losetup /dev/loop4 floppy.img
 mount /dev/loop4 mnt
