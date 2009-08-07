@@ -20,6 +20,7 @@ typedef void (*init_t)(void);
 __attribute__ ((section(".tdata")))
 init_t init_list[] = {
 init_detect,
+init_kload,
 init_mem,
 init_int,
 init_task,

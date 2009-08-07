@@ -44,16 +44,11 @@ void setup() {
 	fmap(0, vmem, 0xB8000, 0x1000, 0x7);
 	mmap(up, sizeof(int) * 2, 0x7);
 	*up = *top = 0;
-	char buffer[10];
 	int cpid;
 
 	rirq(1);
 
-//	char c[2] = {'0', '\0'};
-//	while(1) {
-//		if (fork() < 0) while(1) eout(c);
-//		else c[0]++;
-//	}
+	if (fork() > 0) exit(0);
 
 	init_load_init();
 	for(;;);

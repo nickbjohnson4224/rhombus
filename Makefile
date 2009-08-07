@@ -1,6 +1,6 @@
 export CC=/usr/khaos/bin/i586-elf-gcc
 #export CC=tcc
-export OPTS=-march=i586 -fomit-frame-pointer -pipe -Wall -Werror -Wextra -Os
+export OPTS=-march=i586 -fomit-frame-pointer -pipe -Wall -Werror -Wextra -O3
 
 all:
 	make -C kernel
@@ -21,5 +21,5 @@ clean:
 	make -C libsys clean
 	make -C init clean
 
-test:
+test:	all
 	sudo run/test.sh

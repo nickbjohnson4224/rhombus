@@ -36,21 +36,26 @@ __attribute__ ((section(".ttext")))
 void init_kload() {
 	u32int i, n;
 
-	// Check for initrd (it's really a tape archive)
-	if (!mboot->mods_count) panic("No initrd found!");
-	initrd = (void*) *(u32int*) (mboot->mods_addr + KSPACE) + KSPACE;
-	initrd_size = *(u32int*) (mboot->mods_addr + KSPACE + 4) + KSPACE;
-	initrd_size -= (u32int) initrd;
-	initrd_size /= 512; // In 512 byte blocks
-	printk("%d blocks", initrd_size);
+	printk("Detected: initrd: ");
 
-	// Check validity of tarball
-	if (tar_header_check(initrd) == -1) panic("Tar checksum error");
+		// Check for initrd (it's really a tape archive)
+		if (!mboot->mods_count) panic("No initrd found!");
+		initrd = (void*) *(u32int*) (mboot->mods_addr + KSPACE) + KSPACE;
+		initrd_size = *(u32int*) (mboot->mods_addr + KSPACE + 4) + KSPACE;
+		initrd_size -= (u32int) initrd;
+		initrd_size /= 512; // In 512 byte blocks
+		printk("%d blocks", initrd_size);
 
-	// Index initrd for later use
-	for (i = 0, n = 0; i < initrd_size; i++) if (tar_header_check(&initrd[i]) != -1)
-		header[n++] = &initrd[i];
-	header[n] = NULL;
+		// Check validity of tarball
+		if (tar_header_check(initrd) == -1) panic("Tar checksum error");
+
+		// Index initrd for later use
+		for (i = 0, n = 0; i < initrd_size; i++) if (tar_header_check(&initrd[i]) != -1)
+			header[n++] = &initrd[i];
+		header[n] = NULL;
+
+	cursek(74, -1);
+	printk("[done]");
 }
 
 __attribute__ ((section(".ttext")))

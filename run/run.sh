@@ -1,7 +1,6 @@
 #!/bin/sh
 # updates the image and runs bochs
 
-cd run
 cp ../kernel/kernel .
 cp ../libsys/libsys .
 cp ../init/init .

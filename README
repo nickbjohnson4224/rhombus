@@ -13,7 +13,7 @@ C99 compliant C compiler
 	- tested: GCC 4.3.2 
 		- i586 cross compiler or -march=i586
 		- any optimizations (including -O3!)
-	- tested: TCC 0.9.4
+	- tested: TCC 0.9.4, 0.9.23
 
 The Netwide Assembler (NASM)
 	- tested: NASM 2.05.01
@@ -33,6 +33,7 @@ Linux 2.4 or greater with loopback support
 
 Bochs x86 emulator (or other VM - scripts will have to be modified)
 	- tested: Bochs 2.3, i586 emulation level
+	- tested: Bochs 2.3.7, i586 emulation level
 	- tested: VirtualBox OSE 2.2.2, on Celeron-M (PIII clone)
 
 ===========================
@@ -59,7 +60,7 @@ Tested Machines and Virtual Machines
 Please make sure all builds continue to work on this list!
 
 Virtual Machines:
-Bochs 2.3 i586
+Bochs 2.3.7 i586
 VirtualBox OSE 2.2.2
 
 Actual Machines:

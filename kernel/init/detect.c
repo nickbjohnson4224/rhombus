@@ -23,11 +23,5 @@ void init_detect() {
 		}
 
 	cursek(74, -1);
-	printk("[done]");
-	printk("Detected: initrd: ");
-
-		init_kload();
-	
-	cursek(74, -1);
-	printk("[done]");
+	printk("[done]");	
 }
