@@ -38,6 +38,7 @@ task_t *new_task(task_t *src) {
 
 u32int rem_task(task_t *t) {
 	t->magic = 0x0000;
+	remove_sched(t->pid);
 	return pool_free(tpool, t->pid);
 }
 

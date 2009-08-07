@@ -90,6 +90,7 @@ extern struct sched_queue {
 } queue;
 
 void insert_sched(u16int pid);
+void remove_sched(u16int pid);
 task_t *next_task(u8int flags);
 
 #define SF_FORCED 0x00

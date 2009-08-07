@@ -31,6 +31,11 @@ void kb_handler() {
 	sret(3);
 }
 
+void death() {
+	eout("child died ;-(\n");
+	sret(3);
+}
+
 void setup() {
 	eout("  Libsys: registering handlers");
 	eout("\t\t\t\t\t\t\t\t\t\t\t  [done]");
@@ -40,6 +45,7 @@ void setup() {
 	signal_table[0] = (u32int) segfault;
 	signal_table[2] = (u32int) segfault;
 	signal_table[3] = (u32int) kb_handler;
+	signal_table[7] = (u32int) death;
 
 	fmap(0, vmem, 0xB8000, 0x1000, 0x7);
 	mmap(up, sizeof(int) * 2, 0x7);
@@ -48,8 +54,8 @@ void setup() {
 
 	rirq(1);
 
-	if (fork() > 0) exit(0);
+	if (fork() < 0) exit(0);
 
-	init_load_init();
+//	init_load_init();
 	for(;;);
 }

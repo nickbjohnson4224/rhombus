@@ -56,12 +56,16 @@ image_t *fork_call(image_t *image) {
 
 image_t *exit_call(image_t *image) {
 	u16int dead_task = curr_pid;
+	u32int ret_val = image->eax;
+	if (dead_task == 1) {
+		asm volatile ("sti");
+		asm volatile ("hlt");
+	}
 	task_t *t = get_task(dead_task);
-	image_t *tmp = signal(t->parent, S_DTH, image->eax, 0, 0, 0, 0);
 	map_clean(t->map);
 	map_free(t->map);
 	rem_task(get_task(dead_task));
-	return tmp;
+	return signal(t->parent, S_DTH, ret_val, 0, 0, 0, 0);
 }
 
 image_t *sint_call(image_t *image) {

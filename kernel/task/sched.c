@@ -22,6 +22,18 @@ void insert_sched(u16int pid) {
 	}
 }
 
+void remove_sched(u16int pid) {
+	task_t *t, *t2;
+
+	if (queue.next) {
+		t = get_task(queue.next);
+		while (t->next_task != pid && t->next_task) 
+			t = get_task(t->next_task);
+		t2 = get_task(t->next_task);
+		t->next_task = t2->next_task;
+	}
+}
+
 task_t *next_task(u8int flags) {
 	u32int pid;
 	task_t *t;
