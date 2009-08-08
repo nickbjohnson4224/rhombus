@@ -3,18 +3,17 @@
 section .data
 
 helloworld:
-	db "Hello, World!", 0x00
+	db "Hello, World!", 0x0A, 0x00
 
 section .text
 
 global _start
-extern main
+extern init
 _start:
 	mov eax, helloworld
 	int 0x52
-	jmp $
 
-	call main
+	call init
 	jmp $
 
 global fork

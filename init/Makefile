@@ -8,10 +8,10 @@ all: $(SOURCES) link
 link:
 	ld $(LDFLAGS) -o init $(SOURCES)
 
-lib/lib.o:
+lib/lib.o: lib/*.c
 	make -C lib
 
-setup/setup.o:
+setup/setup.o: setup/*.c setup/*.s
 	make -C setup
 
 clean:

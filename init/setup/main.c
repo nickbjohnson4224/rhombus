@@ -23,7 +23,7 @@ void kb_handler() {
 }
 
 int pid;
-int main() {
+int init() {
 	eout("Wello, Horld!\n");
 
 	for(;;);
