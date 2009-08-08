@@ -12,14 +12,19 @@ image_t *signal(u16int task, u8int sig,
 	task_t *t, *src_t;
 	u32int caller = curr_pid;
 
-	// Check existence of target	
+	// Check existence of target
 	t = get_task(task);
 	src_t = get_task(caller);
-	if (t->magic != 0x4224) ret(src_t->image, ENOTASK);
+	if (t->magic != 0x4224) {
+		if (flags & TF_NOERR) return src_t->image;
+		else ret(src_t->image, ENOTASK);
+	}
 
 	// Check permissions
-	if (t->user.id != src_t->user.id && t->user.ring >= src_t->user.ring) 
-		ret(src_t->image, EPERMIT);
+	if (t->user.id != src_t->user.id && t->user.ring >= src_t->user.ring) {
+		if (flags & TF_NOERR) return src_t->image;
+		else ret(src_t->image, EPERMIT);
+	}
 
 	// Switch to target task
 	tss_set_esp(t->tss_esp);

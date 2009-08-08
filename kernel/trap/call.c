@@ -18,7 +18,7 @@ image_t *fault_generic(image_t *image) {
 		printk("EIP:%x NUM:%d ERR:%x\n", image->eip, image->num, image->err);
 		panic("unknown exception");
 	}
-	return signal(curr_pid, S_GEN, image->num | (image->err << 16), 0, 0, 0, 0);
+	return signal(curr_pid, S_GEN, image->num | (image->err << 16), 0, 0, 0, TF_NOERR);
 }
 
 image_t *fault_page(image_t *image) {
@@ -27,12 +27,12 @@ image_t *fault_page(image_t *image) {
 		printk("page fault at %x, frame %x, ip = %x\n", cr2, page_get(cr2), image->eip);
 		panic("page fault exception");
 	}
-	return signal(curr_pid, S_PAG, 0, page_get(cr2), 0, cr2, 0);
+	return signal(curr_pid, S_PAG, 0, page_get(cr2), 0, cr2, TF_NOERR);
 }
 
 image_t *fault_float(image_t *image) {
 	if ((image->cs & 0x3) == 0) panic("floating point exception");
-	return signal(curr_pid, S_FPE, image->eip, 0, 0, 0, 0);
+	return signal(curr_pid, S_FPE, image->eip, 0, 0, 0, TF_NOERR);
 }
 
 image_t *fault_double(image_t *image) {
@@ -65,7 +65,7 @@ image_t *exit_call(image_t *image) {
 	map_clean(t->map);
 	map_free(t->map);
 	rem_task(get_task(dead_task));
-	return signal(t->parent, S_DTH, ret_val, 0, 0, 0, 0);
+	return signal(t->parent, S_DTH, ret_val, 0, 0, 0, TF_NOERR);
 }
 
 image_t *sint_call(image_t *image) {
@@ -83,7 +83,7 @@ image_t *eout_call(image_t *image) {
 }
 
 image_t *irq_redirect(image_t *image) {
-	return signal(irq_holder[DEIRQ(image->num)], S_IRQ, DEIRQ(image->num), 0, 0, 0, 0);
+	return signal(irq_holder[DEIRQ(image->num)], S_IRQ, DEIRQ(image->num), 0, 0, 0, TF_NOERR);
 }
 
 image_t *rirq_call(image_t *image) {
