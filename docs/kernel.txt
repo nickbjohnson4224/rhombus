@@ -64,6 +64,6 @@ init_mem:
 ------------------------------
 Frankly, this is the function in the kernel that has caused the most debugging trouble. This is because the memory subsystem affects every other piece of the system, and an improper initialization can cause surprisingly subtle problems that can be mistaken for other issues easily. Before trying to understand this function, read the memory subsystem chapter.
 
-First, it creates a pool allocator (see lib/pool.c) for the physical memory allocation functions. A pool allocator is a type of optimized bitmap that is used in multiple situations. Although asymptotically only linear, it guarantees very low constants for allocation and is very simple to implement.
+First, it creates a pool allocator (see lib/pool.c) for the physical memory allocation functions. A pool allocator is a type of optimized bitmap that is used in multiple situations. Although asymptotically only linear, it guarantees very low constants for allocation time and is very simple to implement.
 
 

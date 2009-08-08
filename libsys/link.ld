@@ -9,4 +9,3 @@ SECTIONS {
   .data : { *(.data) }
   .bss : { *(.bss) }
 }
-

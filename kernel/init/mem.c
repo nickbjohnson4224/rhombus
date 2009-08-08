@@ -94,9 +94,8 @@ void init_free() {
 
 		// Free unused (by BIOS) lower memory
 		for (i = KSPACE + 0x1000; i < KSPACE + 0x80000; i += 0x1000, freed++) p_free(i);
-		
-		u32int percent_used = (pool_query(fpool) * 40000) / (memsize >> 10);
-		printk("%d KB freed; %d.%d%% used", freed * 4, percent_used / 100, percent_used % 100);
+
+		printk("%d KB freed; %d KB used", freed * 4, pool_query(fpool) * 4);
 
 	cursek(74, -1);
 	printk("[done]");

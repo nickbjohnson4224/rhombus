@@ -10,9 +10,9 @@ section .text
 global _start
 extern main
 _start:
-;	mov eax, [helloworld]
-;	int 0x52
-;	jmp $
+	mov eax, helloworld
+	int 0x52
+	jmp $
 
 	call main
 	jmp $

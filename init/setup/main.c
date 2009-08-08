@@ -24,7 +24,7 @@ void kb_handler() {
 
 int pid;
 int main() {
-	eout("Hello, World\n");
+	eout("Wello, Horld!\n");
 
 	for(;;);
 

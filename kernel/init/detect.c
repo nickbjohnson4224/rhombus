@@ -16,7 +16,7 @@ void init_detect() {
 			if (mem_map[i].base_addr_low == 0x100000) {
 				memsize = mem_map[i].length_low + 0x100000;
 				if (memsize < 0x400000) memsize = 0x400000;
-				if (memsize > MAX_PHMEM * 0x100000) memsize = MAX_PHMEM * 0x100000;
+				if (memsize > (MAX_PHMEM << 20)) memsize = (MAX_PHMEM << 20);
 				printk("%d KB", memsize >> 10);
 				break;
 			}
