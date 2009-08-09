@@ -24,17 +24,21 @@ void cleark();
 void printk(char *fmt, ...);
 void colork(u8int color);
 void cursek(u8int x, u8int y);
+#define printf printk
+#define colorf colork
+#define curse cursek
 
 /***** SYSCALL STUBS *****/
 extern int fork();
 extern void exit(int value);
-extern int sint(u32int target, int argv[3], u32int sig, u32int flags);
+extern int sint(int task, u32int sig, u32int argv[4], u32int flags);
 extern void sret(u32int flags);
-extern int mmap(u32int addr, u32int flags);
-extern int umap(u32int addr);
-extern int rmap(u32int src, u32int dest, u32int flags);
-extern int fmap(u32int target, u32int src, u32int dest);
-extern int rirq(u32int irq);
+extern int mmap(addr_t addr, u32int size, u32int flags);
+extern int umap(addr_t addr, u32int size);
+extern int rmap(addr_t dest, addr_t src, u32int size, u32int flags);
+extern int fmap(int target, addr_t dest, addr_t src, u32int size, u32int flags);
+extern void eout(char *message);
+extern void rirq(u32int irq);
 
 extern u8int inb(u16int port);
 extern void outb(u16int port, u8int value);

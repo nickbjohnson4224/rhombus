@@ -93,7 +93,7 @@ void init_libsys() {
 	for (i = 0; i < 1024; i++) signal_table[i] = 0;
 	t->image->cs = 0x1B;
 	extern u32int get_eflags();
-	t->image->eflags = get_eflags() | 0x0200; // Turns on interrupts in eflags
+	t->image->eflags = get_eflags() | 0x3200; // Turns on interrupts, IOPL=3 in eflags
 }
 
 // Note - this function breaks on all GCC optimizations and normal TCC - try and fix ASAP

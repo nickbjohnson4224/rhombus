@@ -21,7 +21,7 @@ static void cwrite(char c) {
 		case '\t': cursor = (cursor + 4) - (cursor % 4); break;
 		case '\n': c_base = cursor = (cursor - cursor % 80) + 80; if (cursor>1920) scroll(); break;
 		case '\r': cursor = (cursor - cursor % 80); c_base = cursor; break;
-		case '\b': if (c_base < cursor) cursor--; video_mem[cursor] = 0x0000; break;
+		case '\b': if (c_base < cursor) cursor--; video_mem[cursor] = 0x0F00; break;
 		default: video_mem[cursor++] = (attr << 8) | c; break;
 	}
 }
@@ -52,10 +52,10 @@ void printk_list(char *fmt, u32int *argv) {
 		}
 		else cwrite(fmt[i]);
 	}
-	outb(0x3D4, 14);
-	outb(0x3D5, cursor >> 8);
 	outb(0x3D4, 15);
 	outb(0x3D5, cursor & 0xFF);
+	outb(0x3D4, 14);
+	outb(0x3D5, cursor >> 8);
 }
 
 void printk(char *fmt, ...) {

@@ -2,17 +2,12 @@
 
 section .data
 
-helloworld:
-	db "Hello, World!", 0x0A, 0x00
-
 section .text
 
 global _start
 extern init
 _start:
-	mov eax, helloworld
-	int 0x52
-
+	pushf
 	call init
 	jmp $
 
@@ -28,6 +23,7 @@ global eout
 global rirq
 
 fork:
+	mov ebx, 0
 	int 0x40
 	ret
 
@@ -37,42 +33,51 @@ exit:
 	ret
 
 sint:
-	mov eax, [esp+4]
+	mov edi, [esp+4]
 	mov esi, [esp+8]
-	mov ebx, [esp+12]
-	mov ecx, [esp+16]
-	mov edx, [esp+20]
-	mov edi, [esp+24]
+	mov ebx, [esp+16]
+	mov ecx, [esp+20]
+	mov edx, [esp+24]
+	mov eax, [esp+8]
+	shl eax, 8
+	or esi, eax
+	mov eax, [esp+12]
 	int 0x42
 	ret
 
 sret:
-	mov eax, [esp+4]
+	mov ebx, [esp+4]
 	int 0x43
 	ret
 
 mmap:
-	mov eax, [esp+4]
-	mov ebx, [esp+8]
+	mov edi, [esp+4]
+	mov ecx, [esp+8]
+	mov ebx, [esp+12]
 	int 0x44
 	ret
 
 umap:
-	mov eax, [esp+4]
+	mov esi, [esp+4]
+	mov ecx, [esp+8]
+	mov ebx, 0
 	int 0x45
 	ret
 
 rmap:
-	mov eax, [esp+4]
-	mov ebx, [esp+8]
+	mov edi, [esp+4]
+	mov esi, [esp+8]
 	mov ecx, [esp+12]
+	mov ebx, [esp+16]
 	int 0x46
 	ret
 
 fmap:
 	mov eax, [esp+4]
-	mov ebx, [esp+8]
-	mov ecx, [esp+12]
+	mov edi, [esp+8]
+	mov esi, [esp+12]
+	mov ecx, [esp+16]
+	mov ebx, [esp+20]
 	int 0x47
 	ret
 
@@ -85,7 +90,6 @@ rirq:
 	mov eax, [esp+4]
 	int 0x50
 	ret
-
 global inb
 global outb
 global inw
