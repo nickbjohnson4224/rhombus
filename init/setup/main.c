@@ -6,6 +6,7 @@ char keymap[128] = "\0\0331234567890-=\b\tqwertyuiop[]\n\0asdfghjkl;\'`\0\\zxcvb
 char upkmap[128] = "\0\033!@#$%^&*()_+\b\0QWERTYUIOP{}\n\0ASDFGHJKL:\"~\0|ZXCVBNM<>?\0*\0 ";
 short int *vmem = (void*) 0x20000000;
 
+
 int up;
 void kb_handler() {
 	char c = inb(0x60);
@@ -29,10 +30,9 @@ void kb_handler() {
 }
 
 int pid;
-int init(u32int eflags) {
+int init() {
 	fmap(0, (addr_t) vmem, 0xB8000, 4000, 0x7);
 	curse(0, 17);
-	printf("0x%x\n", eflags);
 
 	rirq(1);
 	signal_table[3] = (int) kb_handler;

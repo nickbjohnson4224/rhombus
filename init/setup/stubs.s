@@ -7,7 +7,6 @@ section .text
 global _start
 extern init
 _start:
-	pushf
 	call init
 	jmp $
 
@@ -102,6 +101,6 @@ inb:
 
 outb:
 	mov dx, [esp+4]
-	mov al, [esp+6]
+	mov al, [esp+8]
 	out dx, al
 	ret

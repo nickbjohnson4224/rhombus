@@ -41,6 +41,6 @@ extern void eout(char *message);
 extern void rirq(u32int irq);
 
 extern u8int inb(u16int port);
-extern void outb(u16int port, u8int value);
+extern void outb(u16int port, u8int val);
 
 #endif
