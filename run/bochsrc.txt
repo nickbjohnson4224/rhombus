@@ -1,4 +1,4 @@
-megs: 64
+megs: 128
 romimage: file=/usr/share/bochs/BIOS-bochs-latest, address=0xe0000
 vgaromimage: file=/usr/share/bochs/VGABIOS-lgpl-latest
 vga: extension=vbe

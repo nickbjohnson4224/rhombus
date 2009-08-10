@@ -3,7 +3,11 @@
 #include <lib.h>
 #include <mem.h>
 
-pool_t fpool[MAX_PHMEM / 4];
+#ifndef MAX_PHMEM_MAX
+pool_t fpool[MAX_PHMEM/4];
+#else
+pool_t fpool[0x1000];
+#endif
 
 void page_touch(u32int page) {
 	page &= ~0x3FFFFF;

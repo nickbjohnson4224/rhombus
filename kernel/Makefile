@@ -8,13 +8,13 @@ all: inc/config.h $(SOURCES) link
 lib/lib.o: lib/*.c inc/lib.h
 	make -C lib
 
-init/init.o: init/*.c init/*.s inc/init.h
+init/init.o: init/*.c init/*.s
 	make -C init
 
 mem/mem.o: mem/*.c inc/mem.h
 	make -C mem
 
-trap/trap.o: trap/*.c trap/*.s inc/trap.h
+trap/trap.o: trap/*.c trap/*.s
 	make -C trap
 
 task/task.o: task/*.c inc/task.h

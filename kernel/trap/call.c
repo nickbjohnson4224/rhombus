@@ -168,14 +168,14 @@ image_t *fmap_call(image_t *image) {
 	map_temp(src_t->map);
 
 	// Check source
-	if ((ttbl[src >> 22] & 0x1) == 0) ret(image, EREPEAT);
+	if ((tmap[src >> 22] & 0x1) == 0) ret(image, EREPEAT);
 
 	// Check destination
-	if (ctbl[dst >> 22] & 0x1) ret(image, EREPEAT);
+	if (cmap[dst >> 22] & 0x1) ret(image, EREPEAT);
 
 	// Move page
-	page_set(dst, ttbl[src >> 22] | PF_LINK);
-	ttbl[src >> 22] |= PF_REAL;
+	page_set(dst, ttbl[src >> 12] | PF_LINK);
+	ttbl[src >> 12] |= PF_REAL;
 
 	ret(image, 0);
 }

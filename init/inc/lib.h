@@ -31,7 +31,7 @@ void cursek(u8int x, u8int y);
 /***** SYSCALL STUBS *****/
 extern int fork();
 extern void exit(int value);
-extern int sint(int task, u32int sig, u32int argv[4], u32int flags);
+extern int sint(int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, u32int arg3, u32int flags);
 extern void sret(u32int flags);
 extern int mmap(addr_t addr, u32int size, u32int flags);
 extern int umap(addr_t addr, u32int size);

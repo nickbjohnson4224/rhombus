@@ -53,7 +53,12 @@ map_t map_clone();						// Clones the current map
 map_t map_load(map_t map);				// Activates a new map
 
 /***** FRAME.C ******/
-extern pool_t fpool[MAX_PHMEM / 4];
+#ifndef MAX_PHMEM_MAX
+extern pool_t fpool[MAX_PHMEM/4];
+#else
+extern pool_t fpool[0x1000];
+#endif
+
 #define frame_new() (pool_alloc(fpool) << 12)			// Allocates a new frame	
 #define frame_free(addr) (pool_free(fpool, addr >> 12))	// Frees a frame
 

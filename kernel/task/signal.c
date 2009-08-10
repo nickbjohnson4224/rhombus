@@ -33,7 +33,8 @@ image_t *signal(u16int task, u8int sig,
 	// Check existence of signal handler
 	if (!sigovr_table[sig] && !signal_table[sig]) {
 		task_switch(get_task(caller));
-		ret(src_t->image, ENOSIG);
+		if (flags & TF_NOERR) return src_t->image;
+		else ret(src_t->image, ENOSIG);
 	}
 
 	// Block if set to block
