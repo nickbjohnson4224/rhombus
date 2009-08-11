@@ -8,6 +8,11 @@ typedef unsigned short u16int;
 typedef unsigned char u8int;
 typedef unsigned int addr_t;
 
+#define PAGESZ 0x1000
+
+int *signal_table;
+char *wrtbuffer;
+
 /***** STRING FUNCTIONS *****/
 void *memcpy(void *dest, void *src, u32int size);
 void *memset(void *dest, u8int src, u32int size);
@@ -22,6 +27,7 @@ char *itoa(u32int n, char *buf, u8int base);
 /***** OUTPUT FUNCTIONS *****/
 void cleark();
 void printk(char *fmt, ...);
+void cwrite(char c);
 void colork(u8int color);
 void cursek(u8int x, u8int y);
 #define printf printk
@@ -42,5 +48,8 @@ extern void rirq(u32int irq);
 
 extern u8int inb(u16int port);
 extern void outb(u16int port, u8int val);
+
+/***** DRIVERS *****/
+void init_cdrv();
 
 #endif

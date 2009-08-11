@@ -1,4 +1,4 @@
-SOURCES=lib/lib.o setup/setup.o
+SOURCES=lib/lib.o setup/setup.o cdrv/cdrv.o
 export CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc $(OPTS)
 LDFLAGS=
 ASFLAGS=-felf
@@ -13,6 +13,9 @@ lib/lib.o: lib/*.c
 
 setup/setup.o: setup/*.c setup/*.s
 	make -C setup
+
+cdrv/cdrv.o: cdrv/*.c
+	make -C cdrv
 
 clean:
 	make -C lib clean

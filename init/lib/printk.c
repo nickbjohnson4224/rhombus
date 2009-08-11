@@ -15,7 +15,7 @@ static void scroll() {
 	cursor -= 80;
 }
 
-static void cwrite(char c) {
+void cwrite(char c) {
 	if (cursor >= 1999) scroll();
 	switch (c) {
 		case '\t': cursor = (cursor + 4) - (cursor % 4); break;

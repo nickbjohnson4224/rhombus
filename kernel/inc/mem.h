@@ -31,6 +31,8 @@
 #define PF_PRES 0x1		// Is present
 #define PF_RW   0x2		// Is writeable
 #define PF_USER 0x4		// Is user-mode
+#define PF_WRTT 0x8		// Write-through enabled
+#define PF_DISC 0x10	// Cache disabled
 #define PF_DIRT 0x20	// Is dirty
 #define PF_ACCS 0x40	// Has been accessed
 
@@ -38,6 +40,8 @@
 #define PF_LINK 0x200	// Is linked from elsewhere (do not free frame)
 #define PF_REAL 0x400	// Is linked to elsewhere (do not free at all)
 #define PF_SWAP 0x800	// Is swapped out
+
+#define PF_MASK 0x0E7F	// Page flags that can be used
 
 /***** DATA TYPES *****/
 typedef u32int page_t;
@@ -70,7 +74,6 @@ void   page_flush();						// Flushes all paging
 void   page_touch(u32int page);				// Makes sure a page exists
 void   page_set(u32int page, page_t value);	// Sets the value of a page
 page_t page_get(u32int page);				// Returns the value of a page
-#define PF_MASK 0x0C67						// Page flags that can be used
 #define page_fmt(base,flags) (((base)&0xFFFFF000)|((flags)&PF_MASK))
 #define page_ufmt(page) ((page)&0xFFFFF000)
 #define p_alloc(addr, flags) (page_set(addr, page_fmt(frame_new(), (flags & PF_MASK) | PF_PRES)))

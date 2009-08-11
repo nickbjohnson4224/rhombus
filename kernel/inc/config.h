@@ -15,7 +15,7 @@
 
 // Maximum physical memory size in megabytes (2^20 bytes)
 #define MAX_PHMEM 64
-#define MAX_PHMEM_MAX
+//#define MAX_PHMEM_MAX
 
 #define LSPACE	0xF8000000
 #define KSPACE 	0xFF000000

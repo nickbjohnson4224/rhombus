@@ -62,7 +62,7 @@ void init_mem() {
 		tmap[KSPACE >> 22] = ((u32int) &init_ktbl - KSPACE) | (PF_PRES | PF_RW);
 		initrd_end = *(u32int*) (mboot->mods_addr + KSPACE + 4) + KSPACE;
 		for (i = KSPACE; i < initrd_end; i += 0x1000)
-			ttbl[i >> 12] = frame_new() | (PF_PRES | PF_RW);
+			ttbl[i >> 12] = page_fmt(frame_new(), (PF_PRES | PF_RW));
 
 		// Reload the new map
 		map_load(0x1000);

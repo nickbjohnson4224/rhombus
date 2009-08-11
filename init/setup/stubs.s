@@ -104,16 +104,3 @@ outb:
 	mov al, [esp+8]
 	out dx, al
 	ret
-
-global write_handler_stub
-extern write_handler
-write_handler_stub:
-	push ecx
-	push edx
-	push esi
-	call write_handler
-	add esp, 16
-	
-	mov eax, 3
-	push eax
-	call sret

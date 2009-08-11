@@ -118,8 +118,12 @@ image_t *umap_call(image_t *image) {
 	if (dst + image->ecx > LSPACE) ret(image, EPERMIT);
 
 	// Free pages
-	for (dst &= ~0xFFF; dst < (image->edi + image->ecx); dst += 0x1000)
-		if (page_get(dst) & 0x1) p_free(dst);
+	for (dst &= ~0xFFF; dst < (image->edi + image->ecx); dst += 0x1000) {
+		if (page_get(dst) & PF_PRES) {
+			if (page_get(dst) & PF_LINK) page_set(dst, 0);
+			else p_free(dst);
+		}
+	}
 
 	ret(image, 0);
 }
@@ -161,21 +165,23 @@ image_t *fmap_call(image_t *image) {
 	}
 
 	// Bounds check source
-	if (src < LSPACE && t->user.ring > 0) ret(image, EPERMIT);
+	if (src > LSPACE || t->user.ring > 0) ret(image, EPERMIT);
 
 	// Map source map
 	src_t = get_task(image->eax);
 	map_temp(src_t->map);
 
 	// Check source
-	if ((tmap[src >> 22] & 0x1) == 0) ret(image, EREPEAT);
+	if ((tmap[src >> 22] & 0x1) == 0 || ttbl[src >> 12] & 0x1 == 0) ret(image, EREPEAT);
 
 	// Check destination
-	if (cmap[dst >> 22] & 0x1) ret(image, EREPEAT);
+	if (cmap[dst >> 22] & 0x1 || ctbl[src >> 12] & 0x1) ret(image, EREPEAT);
 
 	// Move page
-	page_set(dst, ttbl[src >> 12] | PF_LINK);
-	ttbl[src >> 12] |= PF_REAL;
+	page_set(dst, ttbl[src >> 12] | PF_LINK | PF_WRTT | PF_DISC);
+	ttbl[src >> 12] |= PF_WRTT | PF_DISC;
+
+	page_flush();
 
 	ret(image, 0);
 }

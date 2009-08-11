@@ -41,6 +41,10 @@ image_t *signal(u16int task, u8int sig,
 	if (flags & TF_BLOCK) src_t->flags |= TF_BLOCK;
 	if (flags & TF_UNBLK) t->flags &= ~TF_BLOCK;
 
+	// Save caller
+	t->image->caller = t->caller;
+	t->caller = caller;
+
 	// Create new image structure
 	memcpy((u8int*) ((u32int) t->image - sizeof(image_t)), t->image, sizeof(image_t));
 	t->tss_esp = (u32int) t->image; // Will now create image below old image
@@ -51,8 +55,6 @@ image_t *signal(u16int task, u8int sig,
 	}
 
 	// Set registers to describe signal
-	t->image->caller = caller;
-	t->caller = caller;
 	t->image->eax = arg0;
 	t->image->ebx = arg1;
 	t->image->ecx = arg2;
@@ -72,7 +74,10 @@ image_t *sret(image_t *image) {
 	// Unblock the caller
 	t = get_task(curr_pid);
 	src_t = get_task(t->caller);
-	if (image->eax & TF_UNBLK) src_t->flags &= ~TF_BLOCK;
+	if (image->eax & TF_UNBLK) {
+//		printk("SRET: unblocking %d\n", t->caller);
+		src_t->flags &= ~TF_BLOCK;
+	}
 
 	// Reset image stack
 	t->image = (void*) t->tss_esp;
