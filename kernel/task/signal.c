@@ -27,12 +27,16 @@ image_t *signal(u16int task, u8int sig,
 	}
 
 	// Switch to target task
-	tss_set_esp(t->tss_esp);
 	if (t->pid != curr_pid) task_switch(t);
+	tss_set_esp(t->tss_esp);
 
 	// Check existence of signal handler
 	if (!sigovr_table[sig] && !signal_table[sig]) {
-		task_switch(get_task(caller));
+		if (flags & TF_EKILL) return exit_call(t->image);
+
+		task_switch(src_t);
+		tss_set_esp(src_t->tss_esp);
+
 		if (flags & TF_NOERR) return src_t->image;
 		else ret(src_t->image, ENOSIG);
 	}
@@ -74,14 +78,11 @@ image_t *sret(image_t *image) {
 	// Unblock the caller
 	t = get_task(curr_pid);
 	src_t = get_task(t->caller);
-	if (image->eax & TF_UNBLK) {
-//		printk("SRET: unblocking %d\n", t->caller);
-		src_t->flags &= ~TF_BLOCK;
-	}
+	if (image->eax & TF_UNBLK) src_t->flags &= ~TF_BLOCK;
 
 	// Reset image stack
 	t->image = (void*) t->tss_esp;
-	t->tss_esp += sizeof(image_t); 
+	t->tss_esp += sizeof(image_t);
 	t->caller = t->image->caller;
 
 	// Bounds check image

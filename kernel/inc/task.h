@@ -69,6 +69,7 @@ typedef struct {
 #define TF_BLOCK 0x0001
 #define TF_UNBLK 0x0002
 #define TF_NOERR 0x0004
+#define TF_EKILL 0x0008
 
 task_t *get_task(u16int pid);
 task_t *new_task(task_t *src);

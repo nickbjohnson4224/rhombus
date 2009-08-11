@@ -45,6 +45,8 @@ u32int rem_task(task_t *t) {
 image_t *task_switch(task_t *t) {
 	curr_pid = t->pid;
 
+	if (curr_pid == 0) panic("Switched to idle");
+
 	map_temp(t->map);
 	if ((tmap[KSPACE >> 22] & PF_PRES) == 0) {
 		printk("%d: %x\n", t->pid, t->map);

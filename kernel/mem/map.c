@@ -62,13 +62,13 @@ map_t map_clone() {
 
 	// Clone/clear userspace
 	for (i = 0; i < LSPACE; i += 0x400000) if (cmap[i >> 22] & PF_PRES) {
-		tmap[i >> 22] = frame_new() | PF_PRES | PF_USER | PF_RW;
+		tmap[i >> 22] = frame_new() | PF_PRES | PF_USER | PF_RW | PF_WRTT;
 		pgclr(&ttbl[i >> 12]);
 		for (j = i; j < i + 0x400000; j += 0x1000) if (ctbl[j >> 12] & PF_PRES) {
 			page_flush();
 			ttbl[j >> 12] = frame_new() | (ctbl[j >> 12] & PF_MASK);
-			page_set((u32int) tsrc, page_fmt(ctbl[j >> 12], PF_PRES | PF_RW));
-			page_set((u32int) tdst, page_fmt(ttbl[j >> 12], PF_PRES | PF_RW));
+			page_set((u32int) tsrc, page_fmt(ctbl[j >> 12], PF_PRES | PF_RW | PF_DISC));
+			page_set((u32int) tdst, page_fmt(ttbl[j >> 12], PF_PRES | PF_RW | PF_DISC));
 			memcpy(tdst, tsrc, 0x1000);
 		}
 	}

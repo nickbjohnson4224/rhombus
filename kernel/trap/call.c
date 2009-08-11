@@ -18,7 +18,7 @@ image_t *fault_generic(image_t *image) {
 		printk("EIP:%x NUM:%d ERR:%x\n", image->eip, image->num, image->err);
 		panic("unknown exception");
 	}
-	return signal(curr_pid, S_GEN, image->num | (image->err << 16), 0, 0, 0, TF_NOERR);
+	return signal(curr_pid, S_GEN, image->num | (image->err << 16), 0, 0, 0, TF_NOERR | TF_EKILL);
 }
 
 image_t *fault_page(image_t *image) {
@@ -27,12 +27,12 @@ image_t *fault_page(image_t *image) {
 		printk("page fault at %x, frame %x, ip = %x\n", cr2, page_get(cr2), image->eip);
 		panic("page fault exception");
 	}
-	return signal(curr_pid, S_PAG, 0, page_get(cr2), 0, cr2, TF_NOERR);
+	return signal(curr_pid, S_PAG, 0, page_get(cr2), 0, cr2, TF_NOERR | TF_EKILL);
 }
 
 image_t *fault_float(image_t *image) {
 	if ((image->cs & 0x3) == 0) panic("floating point exception");
-	return signal(curr_pid, S_FPE, image->eip, 0, 0, 0, TF_NOERR);
+	return signal(curr_pid, S_FPE, image->eip, 0, 0, 0, TF_NOERR | TF_EKILL);
 }
 
 image_t *fault_double(image_t *image) {
@@ -172,7 +172,7 @@ image_t *fmap_call(image_t *image) {
 	map_temp(src_t->map);
 
 	// Check source
-	if ((tmap[src >> 22] & 0x1) == 0 || ttbl[src >> 12] & 0x1 == 0) ret(image, EREPEAT);
+	if ((tmap[src >> 22] & 0x1) == 0 || (ttbl[src >> 12] & 0x1) == 0) ret(image, EREPEAT);
 
 	// Check destination
 	if (cmap[dst >> 22] & 0x1 || ctbl[src >> 12] & 0x1) ret(image, EREPEAT);
@@ -180,8 +180,6 @@ image_t *fmap_call(image_t *image) {
 	// Move page
 	page_set(dst, ttbl[src >> 12] | PF_LINK | PF_WRTT | PF_DISC);
 	ttbl[src >> 12] |= PF_WRTT | PF_DISC;
-
-	page_flush();
 
 	ret(image, 0);
 }
