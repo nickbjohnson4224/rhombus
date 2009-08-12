@@ -79,8 +79,8 @@ INTN	66 ; sint
 INTN	67 ; sret
 INTN	68 ; mmap
 INTN	69 ; umap
-INTN	70 ; rmap
-INTN	71 ; fmap
+INTN	70 ; push
+INTN	71 ; pull
 
 INTN	80 ; rirq
 INTN	81 ; lirq

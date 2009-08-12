@@ -35,22 +35,26 @@ void remove_sched(u16int pid) {
 }
 
 task_t *next_task(u8int flags) {
-	u32int pid;
+	u32int pid, wasblocked = 0;
 	task_t *t;
 	flags = 0;
 
 	retry:
-	if (!queue.next) {
-		asm volatile ("sti");
-		for(;;) asm volatile ("hlt");
-	}
+	if (!queue.next) goto idle;
 	pid = queue.next;
 	t = get_task(pid);
 	queue.next = t->next_task;
 	t->next_task = 0;
 	if (t->magic == 0x4224) insert_sched(pid);
-	if (t->flags & TF_BLOCK || t->magic != 0x4224)
-		goto retry; // If errors occur, redo 
+	if (t->flags & TF_BLOCK || t->magic != 0x4224) {
+		if (queue.next == queue.last) goto idle; // If the only task left is blocked, idle
+		goto retry; // If errors occur, redo
+	}
+
+	idle:
+	printk("IDLE\n");
+	asm volatile ("sti");
+	for(;;) asm volatile ("hlt");
 
 	return t;
 }
