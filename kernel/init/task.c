@@ -16,7 +16,7 @@ void init_task() {
 		memclr(idle, sizeof(task_t));
 		idle->magic = 0x4224;
 		idle->map = map_clone();
-		idle->flags = TF_READY;
+		idle->flags = TF_READY | TF_SUPER;
 
 		// Make sure the scheduler works
 		queue.next = 0;

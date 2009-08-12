@@ -20,6 +20,8 @@ global push
 global pull
 global eout
 global rirq
+global rsig
+global lsig
 
 fork:
 	mov ebx, 0
@@ -88,6 +90,18 @@ rirq:
 	mov eax, [esp+4]
 	int 0x50
 	ret
+
+rsig:
+	mov edi, [esp+4]
+	mov eax, [esp+8]
+	int 0x48
+	ret
+
+lsig:
+	mov edi, [esp+4]
+	int 0x49
+	ret
+
 global inb
 global outb
 global inw

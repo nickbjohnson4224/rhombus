@@ -12,6 +12,7 @@ global rmap
 global fmap
 global eout
 global rirq
+global rsig
 
 fork:
 	mov ebx, 0
@@ -80,4 +81,10 @@ eout:
 rirq:
 	mov eax, [esp+4]
 	int 0x50
+	ret
+
+rsig:
+	mov edi, [esp+4]
+	mov eax, [esp+8]
+	int 0x48
 	ret

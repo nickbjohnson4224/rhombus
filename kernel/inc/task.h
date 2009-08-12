@@ -29,47 +29,31 @@ image_t *sret();
 
 // The signal table is mapped in all address spaces
 extern u32int *signal_table;
-extern u32int *sigovr_table;
-
-/***** PERMISSIONS *****/
-
-// Ring level provides general permissions
-// 0 = Hardware level (kernel, drivers) 	(can use ports)
-// 1 = System level (filesystem, graphics)	(can map user memory)
-// 2 = Superuser level (root)				(can access all files)
-// 3+ = User level
-
-// Every level has override power over all greater levels
-// This means a program can access memory, send privileged
-// signals, etc. if it is at a higher level or has the same
-// user id as the target task.
-
-typedef struct {
-	u16int ring;
-	u16int id;
-} id_t;
+extern u32int *signal_map;
+#define SF_SYS 2
+#define SF_USE 1
+#define SF_NIL 0
 
 /***** TASK TABLE *****/
 typedef struct {
-	id_t user;
 	map_t map;
 	image_t *image;
 	u32int tss_esp;
 	u8int flags;
 	u8int quanta;
 	u16int magic;
-	u16int pid;
-	u16int next_task;
-	u16int parent;
-	u16int caller;
-	u32int reserved;
+	u32int pid;
+	u32int next_task;
+	u32int parent;
+	u32int caller;
 } task_t;
 
-#define TF_READY 0x0000
-#define TF_BLOCK 0x0001
-#define TF_UNBLK 0x0002
-#define TF_NOERR 0x0004
-#define TF_EKILL 0x0008
+#define TF_READY 0x00
+#define TF_BLOCK 0x01
+#define TF_UNBLK 0x02
+#define TF_NOERR 0x04
+#define TF_EKILL 0x08
+#define TF_SUPER 0x10
 
 task_t *get_task(u16int pid);
 task_t *new_task(task_t *src);

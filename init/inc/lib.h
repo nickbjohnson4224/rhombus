@@ -45,6 +45,8 @@ extern int push(int target, addr_t dest, addr_t src, u32int size);
 extern int pull(int target, addr_t src, addr_t dest, u32int size);
 extern void eout(char *message);
 extern void rirq(u32int irq);
+extern int rsig(u32int sig, u32int handler);
+extern int lsig(u32int sig);
 
 extern u8int inb(u16int port);
 extern void outb(u16int port, u8int val);

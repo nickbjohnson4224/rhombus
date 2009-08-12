@@ -23,7 +23,6 @@ task_t *new_task(task_t *src) {
 
 	task_t *new = get_task(new_pid);
 
-	new->user = src->user;
 	new->map = map_clone();
 	new->image = src->image;
 	new->flags = src->flags;

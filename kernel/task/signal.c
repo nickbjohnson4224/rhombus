@@ -4,8 +4,8 @@
 #include <task.h>
 #include <trap.h>
 
-u32int *signal_table = (void*) SIG_TBL; // User signal table
-u32int *sigovr_table = (void*) SOV_TBL; // Libsys signal override table
+u32int *signal_table = (void*) SIG_TBL;
+u32int *signal_map = (void*) SIG_MAP;
 
 image_t *signal(u16int task, u8int sig, 
 	u32int arg0, u32int arg1, u32int arg2, u32int arg3, u8int flags) {
@@ -20,18 +20,12 @@ image_t *signal(u16int task, u8int sig,
 		else ret(src_t->image, ENOTASK);
 	}
 
-	// Check permissions
-	if (t->user.id != src_t->user.id && t->user.ring >= src_t->user.ring) {
-		if (flags & TF_NOERR) return src_t->image;
-		else ret(src_t->image, EPERMIT);
-	}
-
 	// Switch to target task
 	if (t->pid != curr_pid) task_switch(t);
 	tss_set_esp(t->tss_esp);
 
 	// Check existence of signal handler
-	if (!sigovr_table[sig] && !signal_table[sig]) {
+	if (signal_map[sig] == SF_NIL) {
 		if (flags & TF_EKILL) return exit_call(t->image);
 
 		task_switch(src_t);
@@ -53,10 +47,8 @@ image_t *signal(u16int task, u8int sig,
 	memcpy((u8int*) ((u32int) t->image - sizeof(image_t)), t->image, sizeof(image_t));
 	t->tss_esp = (u32int) t->image; // Will now create image below old image
 	t->image = (void*) ((u32int) t->image - sizeof(image_t));
-	if ((u32int) t->image < SSTACK_BSE + sizeof(image_t)) {
-		printk("%x\n", t->image);
+	if ((u32int) t->image < SSTACK_BSE + sizeof(image_t)) 
 		panic("task state stack overflow");	
-	}
 
 	// Set registers to describe signal
 	t->image->eax = arg0;
@@ -67,8 +59,8 @@ image_t *signal(u16int task, u8int sig,
 	t->image->edi = sig;
 
 	// Set reentry point
-	t->image->eip = (sigovr_table[sig]) ? sigovr_table[sig] : signal_table[sig];
 	tss_set_esp(t->tss_esp);
+	t->image->eip = signal_table[sig];
 	return t->image;
 }
 
@@ -78,7 +70,8 @@ image_t *sret(image_t *image) {
 	// Unblock the caller
 	t = get_task(curr_pid);
 	src_t = get_task(t->caller);
-	if (image->eax & TF_UNBLK) src_t->flags &= ~TF_BLOCK;
+	if (image->eax & TF_UNBLK) 
+		src_t->flags &= ~TF_BLOCK;
 
 	// Reset image stack
 	t->image = (void*) t->tss_esp;

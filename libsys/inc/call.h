@@ -12,6 +12,7 @@ extern int mmap_call(addr_t addr, u32int size, u32int flags);
 extern int umap_call(addr_t addr, u32int size);
 extern int rmap_call(addr_t dest, addr_t src, u32int size, u32int flags);
 extern int fmap_call(int target, addr_t dest, addr_t src, u32int size, u32int flags);
+extern int rsig_call(u32int sig, addr_t value);
 
 extern void eout(char *message);
 extern void rirq(u32int irq);

@@ -35,7 +35,7 @@ void remove_sched(u16int pid) {
 }
 
 task_t *next_task(u8int flags) {
-	u32int pid, wasblocked = 0;
+	u32int pid;
 	task_t *t;
 	flags = 0;
 
@@ -51,10 +51,10 @@ task_t *next_task(u8int flags) {
 		goto retry; // If errors occur, redo
 	}
 
+	return t;
+
 	idle:
 	printk("IDLE\n");
 	asm volatile ("sti");
 	for(;;) asm volatile ("hlt");
-
-	return t;
 }

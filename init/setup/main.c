@@ -1,7 +1,5 @@
 #include <lib.h>
 
-int *signal_table = (void*) 0xF7FFF000;
-
 char keymap[128] = "\0\0331234567890-=\b\tqwertyuiop[]\n\0asdfghjkl;\'`\001\\zxcvbnm,./\001*\0 ";
 char upkmap[128] = "\0\033!@#$%^&*()_+\b\0QWERTYUIOP{}\n\0ASDFGHJKL:\"~\001|ZXCVBNM<>?\001*\0 ";
 
@@ -11,6 +9,9 @@ void kb_handler() {
 	if (keymap[c & 0x7F] == '\001') up ^= 1;
 	if (c & 0x80 || keymap[(int) c] == '\001') sret(0);
 	c = (up) ? upkmap[(int) c] : keymap[(int) c];
+
+//	char m[] = {c, '\0'};
+//	eout(m);
 	if (c) printf("%c", c);
 	sret(0);
 }
@@ -25,8 +26,8 @@ int init() {
 	cleark();
 	curse(0, 0);
 
-	signal_table[3] = (int) kb_handler;
-	signal_table[7] = (int) death;
+	rsig(3, (u32int) kb_handler);
+	rsig(7, (u32int) death);
 	rirq(1);
 
 	for(;;);

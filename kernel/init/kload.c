@@ -76,7 +76,7 @@ void init_libsys() {
 
 	// Set up space for the signal handler table
 	p_alloc(SIG_TBL, (PF_USER | PF_RW));
-	p_alloc(SOV_TBL, (PF_USER | PF_RW));
+	pgclr((void*) SIG_TBL);
 
 	// Load libsys image
 	if (elf_check(header_contents(header[n]))) panic("libsys is not valid ELF");
@@ -89,7 +89,6 @@ void init_libsys() {
 	t->image->ss = 0x23;
 	t->image->ds = 0x23;
 	t->image->eip = elf_load(header_contents(header[n]));
-	for (i = 0; i < 1024; i++) sigovr_table[i] = 0;
 	for (i = 0; i < 1024; i++) signal_table[i] = 0;
 	t->image->cs = 0x1B;
 	extern u32int get_eflags();

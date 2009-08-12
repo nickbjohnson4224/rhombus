@@ -55,7 +55,7 @@ image_t *fork_call(image_t *image) {
 }
 
 image_t *exit_call(image_t *image) {
-	u16int dead_task = curr_pid;
+	u32int dead_task = curr_pid;
 	u32int ret_val = image->eax;
 	if (dead_task == 1) {
 		asm volatile ("sti");
@@ -88,10 +88,46 @@ image_t *irq_redirect(image_t *image) {
 
 image_t *rirq_call(image_t *image) {
 	task_t *t = get_task(curr_pid);
-	if (t->user.ring > 1) ret(image, EPERMIT);
+	if (!(t->flags & TF_SUPER)) ret(image, EPERMIT);
 	irq_holder[image->eax % 15] = curr_pid;
 	register_int(IRQ(image->eax), irq_redirect);
 	ret(image, 0);
+}
+
+image_t *rsig_call(image_t *image) {
+	task_t *t = get_task(curr_pid);
+	u32int oldvalue = 0;
+
+	switch (signal_map[image->edi]) {
+		case SF_SYS:
+			if (!(t->flags & TF_SUPER)) ret(image, EPERMIT);
+		case SF_USE:
+			oldvalue = signal_table[image->edi];
+		case SF_NIL:
+			signal_table[image->edi] = image->eax;
+			signal_map[image->edi] = SF_USE;
+			break;
+	}
+
+	ret(image, oldvalue);
+}
+
+image_t *lsig_call(image_t *image) {	
+	task_t *t = get_task(curr_pid);
+	u32int oldvalue = 0;
+
+	switch (signal_map[image->edi]) {
+		case SF_SYS:
+			if (!(t->flags & TF_SUPER)) ret(image, EPERMIT);
+		case SF_USE:
+			oldvalue = signal_table[image->edi];
+		default:
+			signal_table[image->edi] = 0;
+			signal_map[image->edi] = SF_NIL;
+			break;
+	}
+
+	ret(image, oldvalue);
 }
 
 image_t *mmap_call(image_t *image) {
@@ -151,7 +187,7 @@ image_t *push_call(image_t *image) {
 	}
 	else {
 		src_t = get_task(curr_pid);
-		if (src_t->user.ring != 0) ret(image, EPERMIT);
+		if (!(src_t->flags & TF_SUPER)) ret(image, EPERMIT);
 	}
 
 	// Copy memory
@@ -202,7 +238,7 @@ image_t *pull_call(image_t *image) {
 	}
 	else {
 		src_t = get_task(curr_pid);
-		if (src_t->user.ring != 0) ret(image, EPERMIT);
+		if (!(src_t->flags & TF_SUPER)) ret(image, EPERMIT);
 	}
 
 	// Copy memory
