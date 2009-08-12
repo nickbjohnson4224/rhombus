@@ -8,7 +8,7 @@ static u16int cursor = 0;
 static u8int attr = 0x0F;
 
 static void sync() {
-	push(0, 0xB8000 + c_base * 2, (u32int) video_mem + c_base * 2, (cursor - c_base) * 2);
+	push(0, 0xB8000/* + c_base * 2*/, (u32int) video_mem /*+ c_base * 2*/, /*(cursor - c_base) * 2*/ 4000);
 
 	outb(0x3D4, 15);
 	outb(0x3D5, cursor & 0xFF);

@@ -133,7 +133,7 @@ image_t *push_call(image_t *image) {
 	u32int dst = image->edi;
 	u32int size = image->ecx;
 	u32int targ = image->eax;
-	task_t *t;
+	task_t *t, *src_t;
 	u32int soff, doff, cpy_size;
 
 	// Bounds check addresses
@@ -143,53 +143,37 @@ image_t *push_call(image_t *image) {
 	soff = src & 0xFFF;
 	doff = dst & 0xFFF;
 
+	// Find and check target
 	if (targ) {
-
-		// Find and check target
 		t = get_task(targ);
 		if (!t) ret(image, ENOTASK);
-
-		// Copy memory
-		while (size) {
-			page_set((u32int) tsrc, page_fmt(ctbl[src >> 12], (PF_RW | PF_PRES)));
-			page_set((u32int) tdst, page_fmt(ttbl[dst >> 12], (PF_RW | PF_PRES)));
-			cpy_size = min(size, min((0x1000 - soff), (0x1000 - doff)));
-			memcpy(&tdst[doff], &tsrc[soff], cpy_size);
-			doff += cpy_size;
-			soff += cpy_size;
-			size -= cpy_size;
-			if (doff >= 0x1000) {
-				dst += 0x1000;
-				doff = 0;
-			}
-			if (soff >= 0x1000) {
-				src += 0x1000;
-				soff = 0;
-			}
-		}
-
+		map_temp(t->map);
 	}
 	else {
+		src_t = get_task(curr_pid);
+		if (src_t->user.ring != 0) ret(image, EPERMIT);
+	}
 
-		// Copy memory
-		while (size) {
-			page_set((u32int) tsrc, page_fmt(ctbl[src >> 12], (PF_RW | PF_PRES)));
+	// Copy memory
+	while (size) {
+		page_set((u32int) tsrc, page_fmt(ctbl[src >> 12], (PF_RW | PF_PRES)));
+		if (targ)
+			page_set((u32int) tdst, page_fmt(ttbl[dst >> 12], (PF_RW | PF_PRES)));
+		else
 			page_set((u32int) tdst, page_fmt((dst &~ 0xFFF), (PF_RW | PF_PRES)));
-			cpy_size = min(size, min((0x1000 - soff), (0x1000 - doff)));
-			memcpy(&tdst[doff], &tsrc[soff], cpy_size);
-			doff += cpy_size;
-			soff += cpy_size;
-			size -= cpy_size;
-			if (doff >= 0x1000) {
-				dst += 0x1000;
-				doff = 0;
-			}
-			if (soff >= 0x1000) {
-				src += 0x1000;
-				soff = 0;
-			}
+		cpy_size = min(size, min((0x1000 - soff), (0x1000 - doff)));
+		memcpy(&tdst[doff], &tsrc[soff], cpy_size);
+		doff += cpy_size;
+		soff += cpy_size;
+		size -= cpy_size;
+		if (doff >= 0x1000) {
+			dst += 0x1000;
+			doff = 0;
 		}
-
+		if (soff >= 0x1000) {
+			src += 0x1000;
+			soff = 0;
+		}
 	}
 
 	ret(image, 0);
@@ -200,7 +184,7 @@ image_t *pull_call(image_t *image) {
 	u32int src = image->edi;
 	u32int size = image->ecx;
 	u32int targ = image->eax;
-	task_t *t;
+	task_t *t, *src_t;
 	u32int soff, doff, cpy_size;
 
 	// Bounds check addresses
@@ -210,53 +194,37 @@ image_t *pull_call(image_t *image) {
 	soff = src & 0xFFF;
 	doff = dst & 0xFFF;
 
+	// Find and check target
 	if (targ) {
-
-		// Find and check target
 		t = get_task(targ);
 		if (!t) ret(image, ENOTASK);
-
-		// Copy memory
-		while (size) {
-			page_set((u32int) tsrc, page_fmt(ttbl[src >> 12], (PF_RW | PF_PRES)));
-			page_set((u32int) tdst, page_fmt(ctbl[dst >> 12], (PF_RW | PF_PRES)));
-			cpy_size = min(size, min((0x1000 - soff), (0x1000 - doff)));
-			memcpy(&tdst[doff], &tsrc[soff], cpy_size);
-			doff += cpy_size;
-			soff += cpy_size;
-			size -= cpy_size;
-			if (doff >= 0x1000) {
-				dst += 0x1000;
-				doff = 0;
-			}
-			if (soff >= 0x1000) {
-				src += 0x1000;
-				soff = 0;
-			}
-		}
-
+		map_temp(t->map);
 	}
 	else {
+		src_t = get_task(curr_pid);
+		if (src_t->user.ring != 0) ret(image, EPERMIT);
+	}
 
-		// Copy memory
-		while (size) {
+	// Copy memory
+	while (size) {
+		if (targ)
+			page_set((u32int) tsrc, page_fmt(ttbl[src >> 12], (PF_RW | PF_PRES)));
+		else
 			page_set((u32int) tsrc, page_fmt((src &~ 0xFFF), (PF_RW | PF_PRES)));
-			page_set((u32int) tdst, page_fmt(ctbl[dst >> 12], (PF_RW | PF_PRES)));
-			cpy_size = min(size, min((0x1000 - soff), (0x1000 - doff)));
-			memcpy(&tdst[doff], &tsrc[soff], cpy_size);
-			doff += cpy_size;
-			soff += cpy_size;
-			size -= cpy_size;
-			if (doff >= 0x1000) {
-				dst += 0x1000;
-				doff = 0;
-			}
-			if (soff >= 0x1000) {
-				src += 0x1000;
-				soff = 0;
-			}
+		page_set((u32int) tdst, page_fmt(ctbl[dst >> 12], (PF_RW | PF_PRES)));
+		cpy_size = min(size, min((0x1000 - soff), (0x1000 - doff)));
+		memcpy(&tdst[doff], &tsrc[soff], cpy_size);
+		doff += cpy_size;
+		soff += cpy_size;
+		size -= cpy_size;
+		if (doff >= 0x1000) {
+			dst += 0x1000;
+			doff = 0;
 		}
-
+		if (soff >= 0x1000) {
+			src += 0x1000;
+			soff = 0;
+		}
 	}
 	
 	ret(image, 0);
