@@ -16,8 +16,8 @@ global sint
 global sret
 global mmap
 global umap
-global rmap
-global fmap
+global push
+global pull
 global eout
 global rirq
 
@@ -63,20 +63,19 @@ umap:
 	int 0x45
 	ret
 
-rmap:
-	mov edi, [esp+4]
-	mov esi, [esp+8]
-	mov ecx, [esp+12]
-	mov ebx, [esp+16]
-	int 0x46
-	ret
-
-fmap:
+push:
 	mov eax, [esp+4]
 	mov edi, [esp+8]
 	mov esi, [esp+12]
 	mov ecx, [esp+16]
-	mov ebx, [esp+20]
+	int 0x46
+	ret
+
+pull:
+	mov eax, [esp+4]
+	mov esi, [esp+8]
+	mov edi, [esp+12]
+	mov ecx, [esp+16]
 	int 0x47
 	ret
 

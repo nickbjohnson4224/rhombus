@@ -118,21 +118,13 @@ void death() {
 
 short *vmem = (void*) 0x100000;
 int init() {
-	fmap(0, (u32int) vmem, 0xB8000, 4000, 0x7);
+	mmap((u32int) vmem, 4000, 0x7);
 	cleark();
 	curse(0, 0);
 
 	signal_table[3] = (int) kb_handler;
 	signal_table[7] = (int) death;
 	rirq(1);
-
-	printf("Fork stress test:\n");
-	while (1) {
-		printf("i");
-		if (fork() < 0) {
-			exit(0);
-		}
-	}
 
 	for(;;);
 	return 0;

@@ -91,8 +91,8 @@ void init_int() {
 		register_int(0x43, sret_call);	// Return from signal handler
 		register_int(0x44, mmap_call);	// Allocate memory to a page
 		register_int(0x45, umap_call);	// Free memory from a page
-		register_int(0x46, rmap_call);	// Move memory from one page to another
-		register_int(0x47, fmap_call);	// Forcefully map a page
+		register_int(0x46, push_call);	// Move memory from one page to another
+		register_int(0x47, pull_call);	// Forcefully map a page
 
 		// Administrative system calls
 		register_int(0x50, rirq_call);	// Register IRQ

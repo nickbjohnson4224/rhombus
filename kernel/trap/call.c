@@ -128,58 +128,136 @@ image_t *umap_call(image_t *image) {
 	ret(image, 0);
 }
 
-image_t *rmap_call(image_t *image) {
+image_t *push_call(image_t *image) {
 	u32int src = image->esi;
 	u32int dst = image->edi;
-	u32int flags = image->ebx;
+	u32int size = image->ecx;
+	u32int targ = image->eax;
+	task_t *t;
+	u32int soff, doff, cpy_size;
 
-	// Bounds check both addresses
-	if (src + image->ecx > LSPACE || dst + image->ecx > LSPACE) ret(image, EPERMIT);
-	if (src & 0xFFF || dst & 0xFFF) ret(image, EPERMIT);
+	// Bounds check addresses
+	if (src + size > LSPACE || dst + size > LSPACE) ret(image, EPERMIT);
 
-	// Move pages
-	for (; dst<image->edi+image->ecx && src<image->esi+image->ecx; dst += 0x1000, src += 0x1000) {
-		if ((page_get(src) & 0x1) && ((page_get(dst) & 0x1) == 0)) {
-			page_set(dst, page_fmt(page_get(src), flags));
-			page_set(src, 0);
+	// Get offsets
+	soff = src & 0xFFF;
+	doff = dst & 0xFFF;
+
+	if (targ) {
+
+		// Find and check target
+		t = get_task(targ);
+		if (!t) ret(image, ENOTASK);
+
+		// Copy memory
+		while (size) {
+			page_set((u32int) tsrc, page_fmt(ctbl[src >> 12], (PF_RW | PF_PRES)));
+			page_set((u32int) tdst, page_fmt(ttbl[dst >> 12], (PF_RW | PF_PRES)));
+			cpy_size = min(size, min((0x1000 - soff), (0x1000 - doff)));
+			memcpy(&tdst[doff], &tsrc[soff], cpy_size);
+			doff += cpy_size;
+			soff += cpy_size;
+			size -= cpy_size;
+			if (doff >= 0x1000) {
+				dst += 0x1000;
+				doff = 0;
+			}
+			if (soff >= 0x1000) {
+				src += 0x1000;
+				soff = 0;
+			}
 		}
+
 	}
-	
+	else {
+
+		// Copy memory
+		while (size) {
+			page_set((u32int) tsrc, page_fmt(ctbl[src >> 12], (PF_RW | PF_PRES)));
+			page_set((u32int) tdst, page_fmt((dst &~ 0xFFF), (PF_RW | PF_PRES)));
+			cpy_size = min(size, min((0x1000 - soff), (0x1000 - doff)));
+			memcpy(&tdst[doff], &tsrc[soff], cpy_size);
+			doff += cpy_size;
+			soff += cpy_size;
+			size -= cpy_size;
+			if (doff >= 0x1000) {
+				dst += 0x1000;
+				doff = 0;
+			}
+			if (soff >= 0x1000) {
+				src += 0x1000;
+				soff = 0;
+			}
+		}
+
+	}
+
 	ret(image, 0);
 }
 
-image_t *fmap_call(image_t *image) {
-	u32int src = image->esi;
-	u32int dst = image->edi;
-	u32int flags = image->ebx;
-	task_t *t = get_task(curr_pid);
-	task_t *src_t;
+image_t *pull_call(image_t *image) {
+	u32int dst = image->esi;
+	u32int src = image->edi;
+	u32int size = image->ecx;
+	u32int targ = image->eax;
+	task_t *t;
+	u32int soff, doff, cpy_size;
 
-	// Bounds check destination
-	if (dst > LSPACE) ret(image, EPERMIT);
+	// Bounds check addresses
+	if (src + size > LSPACE || dst + size > LSPACE) ret(image, EPERMIT);
 
-	// Set physical address if chosen (eax == 0)
-	if (image->eax == 0) {
-		page_set(dst, src | (flags & PF_MASK));
-		ret(image, 0);
+	// Get offsets
+	soff = src & 0xFFF;
+	doff = dst & 0xFFF;
+
+	if (targ) {
+
+		// Find and check target
+		t = get_task(targ);
+		if (!t) ret(image, ENOTASK);
+
+		// Copy memory
+		while (size) {
+			page_set((u32int) tsrc, page_fmt(ttbl[src >> 12], (PF_RW | PF_PRES)));
+			page_set((u32int) tdst, page_fmt(ctbl[dst >> 12], (PF_RW | PF_PRES)));
+			cpy_size = min(size, min((0x1000 - soff), (0x1000 - doff)));
+			memcpy(&tdst[doff], &tsrc[soff], cpy_size);
+			doff += cpy_size;
+			soff += cpy_size;
+			size -= cpy_size;
+			if (doff >= 0x1000) {
+				dst += 0x1000;
+				doff = 0;
+			}
+			if (soff >= 0x1000) {
+				src += 0x1000;
+				soff = 0;
+			}
+		}
+
 	}
+	else {
 
-	// Bounds check source
-	if (src > LSPACE || t->user.ring > 0) ret(image, EPERMIT);
+		// Copy memory
+		while (size) {
+			page_set((u32int) tsrc, page_fmt((src &~ 0xFFF), (PF_RW | PF_PRES)));
+			page_set((u32int) tdst, page_fmt(ctbl[dst >> 12], (PF_RW | PF_PRES)));
+			cpy_size = min(size, min((0x1000 - soff), (0x1000 - doff)));
+			memcpy(&tdst[doff], &tsrc[soff], cpy_size);
+			doff += cpy_size;
+			soff += cpy_size;
+			size -= cpy_size;
+			if (doff >= 0x1000) {
+				dst += 0x1000;
+				doff = 0;
+			}
+			if (soff >= 0x1000) {
+				src += 0x1000;
+				soff = 0;
+			}
+		}
 
-	// Map source map
-	src_t = get_task(image->eax);
-	map_temp(src_t->map);
-
-	// Check source
-	if ((tmap[src >> 22] & 0x1) == 0 || (ttbl[src >> 12] & 0x1) == 0) ret(image, EREPEAT);
-
-	// Check destination
-	if (cmap[dst >> 22] & 0x1 || ctbl[src >> 12] & 0x1) ret(image, EREPEAT);
-
-	// Move page
-	page_set(dst, ttbl[src >> 12] | PF_LINK | PF_WRTT | PF_DISC);
-	ttbl[src >> 12] |= PF_WRTT | PF_DISC;
-
+	}
+	
 	ret(image, 0);
 }

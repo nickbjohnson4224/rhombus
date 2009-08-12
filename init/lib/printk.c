@@ -7,6 +7,15 @@ static u16int c_base = 0;
 static u16int cursor = 0;
 static u8int attr = 0x0F;
 
+static void sync() {
+	push(0, 0xB8000 + c_base * 2, (u32int) video_mem + c_base * 2, (cursor - c_base) * 2);
+
+	outb(0x3D4, 15);
+	outb(0x3D5, cursor & 0xFF);
+	outb(0x3D4, 14);
+	outb(0x3D5, cursor >> 8);
+}
+
 static void scroll() {
 	int i;
 	for (i = 0; i < 1920; i++) video_mem[i] = video_mem[i + 80];
@@ -35,6 +44,8 @@ void cleark() {
 	for (i = 0; i < 2000; i++) video_mem[i] = 0x0F20;
 	c_base = 0;
 	cursor = 0;
+
+	push(0, 0xB8000, (u32int) video_mem, 4000);
 }
 
 void printk_list(char *fmt, u32int *argv) {
@@ -52,10 +63,7 @@ void printk_list(char *fmt, u32int *argv) {
 		}
 		else cwrite(fmt[i]);
 	}
-	outb(0x3D4, 15);
-	outb(0x3D5, cursor & 0xFF);
-	outb(0x3D4, 14);
-	outb(0x3D5, cursor >> 8);
+	sync();
 }
 
 void printk(char *fmt, ...) {

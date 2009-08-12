@@ -69,6 +69,7 @@ extern pool_t fpool[0x1000];
 /***** PAGE.C *****/
 extern ptbl_t *cmap, *tmap;					// Address of current page directory
 extern page_t *ctbl, *ttbl;					// Base of current page tables
+extern u32int *tsrc, *tdst;
 
 void   page_flush();						// Flushes all paging
 void   page_touch(u32int page);				// Makes sure a page exists

@@ -41,8 +41,8 @@ extern int sint(int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, u32
 extern void sret(u32int flags);
 extern int mmap(addr_t addr, u32int size, u32int flags);
 extern int umap(addr_t addr, u32int size);
-extern int rmap(addr_t dest, addr_t src, u32int size, u32int flags);
-extern int fmap(int target, addr_t dest, addr_t src, u32int size, u32int flags);
+extern int push(int target, addr_t dest, addr_t src, u32int size);
+extern int pull(int target, addr_t src, addr_t dest, u32int size);
 extern void eout(char *message);
 extern void rirq(u32int irq);
 
