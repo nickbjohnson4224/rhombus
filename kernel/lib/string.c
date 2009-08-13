@@ -2,18 +2,6 @@
 
 #include <lib.h>
 
-void *memcpy(void *dest, void *src, u32int size) {
-	u32int i;
-	for (i = 0; i < size; i++) ((u8int*) dest)[i] = ((u8int*) src)[i];
-	return dest;
-}
-
-void *memset(void *dest, u8int src, u32int size) {
-	u32int i;
-	for (i = 0; i < size; i++) ((u8int*) dest)[i] = src;
-	return dest;
-}
-
 // Optimized memory clearing (modified from jgaref's memset)
 void *memclr(void *dest, u32int size) {
 	u32int num_words, num_bytes, *dest32, i;

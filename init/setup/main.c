@@ -9,9 +9,6 @@ void kb_handler() {
 	if (keymap[c & 0x7F] == '\001') up ^= 1;
 	if (c & 0x80 || keymap[(int) c] == '\001') sret(0);
 	c = (up) ? upkmap[(int) c] : keymap[(int) c];
-
-//	char m[] = {c, '\0'};
-//	eout(m);
 	if (c) printf("%c", c);
 	sret(0);
 }

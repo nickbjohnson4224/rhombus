@@ -5,7 +5,7 @@ ASFLAGS=-felf
 
 all: inc/config.h $(SOURCES) link
 
-lib/lib.o: lib/*.c inc/lib.h
+lib/lib.o: lib/*.c lib/*.s inc/lib.h
 	make -C lib
 
 init/init.o: init/*.c init/*.s

@@ -7,5 +7,5 @@ boot: a
 log: /dev/stdout
 mouse: enabled=0
 clock: sync=slowdown
-cpu: ips=1000000
+cpu: ips=500000
 

@@ -1,4 +1,4 @@
-SOURCES=std.o string.o printk.o panic.o pool.o
+SOURCES=std.o string.o printk.o panic.o pool.o memcpy.o
 LDFLAGS=-r
 ASFLAGS=-felf
 
@@ -15,3 +15,6 @@ link:
 
 clean:
 	rm $(SOURCES) lib.o
+
+.s.o:
+	nasm $(ASFLAGS) $<
