@@ -23,13 +23,15 @@ image_t *sint_call(image_t *image);	//0x42
 image_t *sret_call(image_t *image);	//0x43
 image_t *mmap_call(image_t *image);	//0x44
 image_t *umap_call(image_t *image);	//0x45
-image_t *push_call(image_t *image);	//0x46
-image_t *pull_call(image_t *image); //0x47
-image_t *rsig_call(image_t *image); //0x48
-image_t *lsig_call(image_t *image); //0x49
+image_t *rsig_call(image_t *image); //0x46
+image_t *lsig_call(image_t *image); //0x47
 
-image_t *eout_call(image_t *image); //0x52
 image_t *rirq_call(image_t *image); //0x50
+image_t *lirq_call(image_t *image); //0x51
+image_t *push_call(image_t *image);	//0x52
+image_t *pull_call(image_t *image); //0x53
+
+image_t *eout_call(image_t *image); //0x54
 
 #define ret(image, value) do { \
 image->eax = value; \

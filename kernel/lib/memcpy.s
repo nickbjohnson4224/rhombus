@@ -1,3 +1,5 @@
+; Copyright 2009 Nick Johnson
+
 [BITS 32]
 
 global memcpy

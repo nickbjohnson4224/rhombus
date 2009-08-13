@@ -87,10 +87,14 @@ image_t *irq_redirect(image_t *image) {
 }
 
 image_t *rirq_call(image_t *image) {
-	task_t *t = get_task(curr_pid);
-	if (!(t->flags & TF_SUPER)) ret(image, EPERMIT);
 	irq_holder[image->eax % 15] = curr_pid;
 	register_int(IRQ(image->eax), irq_redirect);
+	ret(image, 0);
+}
+
+image_t *lirq_call(image_t *image) {
+	irq_holder[image->eax % 15] = 0;
+	register_int(IRQ(image->eax), 0);
 	ret(image, 0);
 }
 
@@ -112,7 +116,7 @@ image_t *rsig_call(image_t *image) {
 	ret(image, oldvalue);
 }
 
-image_t *lsig_call(image_t *image) {	
+image_t *lsig_call(image_t *image) {
 	task_t *t = get_task(curr_pid);
 	u32int oldvalue = 0;
 
@@ -164,79 +168,22 @@ image_t *umap_call(image_t *image) {
 	ret(image, 0);
 }
 
-
-
-/*image_t *push_call(image_t *image) {
-	u32int src = image->esi;
-	u32int dst = image->edi;
-	u32int size = image->ecx;
-	u32int targ = image->eax;
-	task_t *t, *src_t;
-	u32int soff, doff, cpy_size;
-
-	// Bounds check addresses
-	if (src + size > LSPACE || dst + size > LSPACE) ret(image, EPERMIT);
-
-	// Get offsets
-	soff = src & 0xFFF;
-	doff = dst & 0xFFF;
-
-	// Find and check target
-	if (targ) {
-		t = get_task(targ);
-		if (!t) ret(image, ENOTASK);
-		map_temp(t->map);
-	}
-	else {
-		src_t = get_task(curr_pid);
-		if (!(src_t->flags & TF_SUPER)) ret(image, EPERMIT);
-	}
-
-	// Copy memory
-	while (size) {
-		page_set((u32int) tsrc, page_fmt(ctbl[src >> 12], (PF_RW | PF_PRES)));
-		if (targ)
-			page_set((u32int) tdst, page_fmt(ttbl[dst >> 12], (PF_RW | PF_PRES)));
-		else
-			page_set((u32int) tdst, page_fmt((dst &~ 0xFFF), (PF_RW | PF_PRES)));
-		cpy_size = min(size, min((0x1000 - soff), (0x1000 - doff)));
-		memcpy(&tdst[doff], &tsrc[soff], cpy_size);
-		doff += cpy_size;
-		soff += cpy_size;
-		size -= cpy_size;
-		if (doff >= 0x1000) {
-			dst += 0x1000;
-			doff = 0;
-		}
-		if (soff >= 0x1000) {
-			src += 0x1000;
-			soff = 0;
-		}
-	}
-
-	ret(image, 0);
-}*/
-
 image_t *push_call(image_t *image) {
 	u32int src = image->esi;
 	u32int dst = image->edi;
 	u32int size = image->ecx;
 	u32int targ = image->eax;
-	task_t *t, *src_t;
+	task_t *t;
 	u32int i;
 
 	// Bounds check addresses
 	if (src + size > LSPACE || dst + size > LSPACE) ret(image, EPERMIT);
-	if (size > 0xF000) ret(image, EPERMIT);	// Cannot copy > 56 KB
-
-	// Check permissions
-	src_t = get_task(curr_pid);
-	if (!(src_t->flags & TF_SUPER)) ret(image, EPERMIT);
+	if (size > 0x4000) ret(image, EPERMIT);	// Limit writes to 16K
 
 	// Find and check target
 	if (targ) {
 		t = get_task(targ);
-		if (!t) ret(image, ENOTASK);
+		if (t->magic != 0x4224) ret(image, ENOTASK);
 		map_temp(t->map);
 	}
 
@@ -258,21 +205,17 @@ image_t *pull_call(image_t *image) {
 	u32int src = image->edi;
 	u32int size = image->ecx;
 	u32int targ = image->eax;
-	task_t *t, *src_t;
+	task_t *t;
 	u32int i;
 
 	// Bounds check addresses
 	if (src + size > LSPACE || dst + size > LSPACE) ret(image, EPERMIT);
-	if (size > 0xF000) ret(image, EPERMIT);	// Cannot copy > 56 KB
-
-	// Check permissions
-	src_t = get_task(curr_pid);
-	if (!(src_t->flags & TF_SUPER)) ret(image, EPERMIT);
+	if (size > 0x4000) ret(image, EPERMIT);	// Limit reads to 16K
 
 	// Find and check target
 	if (targ) {
 		t = get_task(targ);
-		if (!t) ret(image, ENOTASK);
+		if (t->magic != 0x4224) ret(image, ENOTASK);
 		map_temp(t->map);
 	}
 

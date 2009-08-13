@@ -22,15 +22,11 @@ image_t *signal(u16int task, u8int sig,
 
 	// Switch to target task
 	if (t->pid != curr_pid) task_switch(t);
-	tss_set_esp(t->tss_esp);
 
 	// Check existence of signal handler
 	if (signal_map[sig] == SF_NIL) {
 		if (flags & TF_EKILL) return exit_call(t->image);
-
 		task_switch(src_t);
-		tss_set_esp(src_t->tss_esp);
-
 		if (flags & TF_NOERR) return src_t->image;
 		else ret(src_t->image, ENOSIG);
 	}

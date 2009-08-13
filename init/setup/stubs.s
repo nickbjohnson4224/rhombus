@@ -70,7 +70,7 @@ push:
 	mov edi, [esp+8]
 	mov esi, [esp+12]
 	mov ecx, [esp+16]
-	int 0x46
+	int 0x52
 	ret
 
 pull:
@@ -78,12 +78,12 @@ pull:
 	mov esi, [esp+8]
 	mov edi, [esp+12]
 	mov ecx, [esp+16]
-	int 0x47
+	int 0x53
 	ret
 
 eout:
 	mov eax, [esp+4]
-	int 0x52
+	int 0x54
 	ret
 
 rirq:
@@ -94,12 +94,12 @@ rirq:
 rsig:
 	mov edi, [esp+4]
 	mov eax, [esp+8]
-	int 0x48
+	int 0x46
 	ret
 
 lsig:
 	mov edi, [esp+4]
-	int 0x49
+	int 0x47
 	ret
 
 global inb

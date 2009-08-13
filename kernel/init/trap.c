@@ -91,14 +91,15 @@ void init_int() {
 		register_int(0x43, sret_call);	// Return from signal handler
 		register_int(0x44, mmap_call);	// Allocate memory to a page
 		register_int(0x45, umap_call);	// Free memory from a page
-		register_int(0x46, push_call);	// Move memory from one page to another
-		register_int(0x47, pull_call);	// Forcefully map a page
-		register_int(0x48, rsig_call);	// Register a signal handler
-		register_int(0x49, lsig_call);	// Deregister a signal handler
+		register_int(0x46, rsig_call);	// Register a signal handler
+		register_int(0x47, lsig_call);	// Deregister a signal handler
 
 		// Administrative system calls
 		register_int(0x50, rirq_call);	// Register IRQ
-		register_int(0x52, eout_call);	// Emergency output
+		register_int(0x51, lirq_call);	// Deregister IRQ
+		register_int(0x52, push_call);	// Copy memory to another address space
+		register_int(0x53, pull_call);	// Copy memory from another address space
+		register_int(0x54, eout_call);	// Emergency output
 
 		// Register fault handlers
 		init_fault();

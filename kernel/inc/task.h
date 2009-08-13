@@ -42,10 +42,10 @@ typedef struct {
 	u8int flags;
 	u8int quanta;
 	u16int magic;
-	u32int pid;
-	u32int next_task;
-	u32int parent;
-	u32int caller;
+	u16int pid;
+	u16int next_task;
+	u16int parent;
+	u16int caller;
 } task_t;
 
 #define TF_READY 0x00

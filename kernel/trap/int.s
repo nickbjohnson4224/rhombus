@@ -79,14 +79,14 @@ INTN	66 ; sint
 INTN	67 ; sret
 INTN	68 ; mmap
 INTN	69 ; umap
-INTN	70 ; push
-INTN	71 ; pull
-INTN	72 ; rsig
-INTN	73 ; lsig
+INTN	70 ; rsig
+INTN	71 ; lsig
 
 INTN	80 ; rirq
 INTN	81 ; lirq
-INTN	82 ; eout
+INTN	82 ; push
+INTN	83 ; pull
+INTN	84 ; eout
 
 extern int_handler
 

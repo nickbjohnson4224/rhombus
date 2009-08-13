@@ -1,4 +1,4 @@
-megs: 8
+megs: 64
 romimage: file=/usr/share/bochs/BIOS-bochs-latest, address=0xe0000
 vgaromimage: file=/usr/share/bochs/VGABIOS-lgpl-latest
 vga: extension=vbe
@@ -6,6 +6,6 @@ floppya: 1_44=/dev/loop4, status=inserted
 boot: a
 log: /dev/stdout
 mouse: enabled=0
-clock: sync=slowdown
-cpu: ips=500000
+clock: sync=realtime
+cpu: ips=10000000
 

@@ -56,26 +56,9 @@ umap:
 	int 0x45
 	ret
 
-rmap:
-	mov edi, [esp+4]
-	mov esi, [esp+8]
-	mov ecx, [esp+12]
-	mov ebx, [esp+16]
-	int 0x46
-	ret
-
-fmap:
-	mov eax, [esp+4]
-	mov edi, [esp+8]
-	mov esi, [esp+12]
-	mov ecx, [esp+16]
-	mov ebx, [esp+20]
-	int 0x47
-	ret
-
 eout:
 	mov eax, [esp+4]
-	int 0x52
+	int 0x54
 	ret
 
 rirq:
@@ -86,5 +69,5 @@ rirq:
 rsig:
 	mov edi, [esp+4]
 	mov eax, [esp+8]
-	int 0x48
+	int 0x46
 	ret
