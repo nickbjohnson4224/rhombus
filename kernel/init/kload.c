@@ -40,7 +40,7 @@ void init_kload() {
 
 		// Check for initrd (it's really a tape archive)
 		if (!mboot->mods_count) panic("No initrd found!");
-		initrd = (void*) *(uint32_t*) (mboot->mods_addr + KSPACE) + KSPACE;
+		initrd = (void*) (*(uint32_t*) (mboot->mods_addr + KSPACE) + KSPACE);
 		initrd_size = *(uint32_t*) (mboot->mods_addr + KSPACE + 4) + KSPACE;
 		initrd_size -= (uint32_t) initrd;
 		initrd_size /= 512; // In 512 byte blocks

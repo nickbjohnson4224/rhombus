@@ -29,8 +29,22 @@ page_t page_get(uint32_t page) {
 	return (cmap[page >> 22] & PF_PRES) ? ctbl[page >> 12] : 0;
 }
 
-inline void page_flush() {
-	register uint32_t cr3;
-	asm volatile("mov %%cr3, %0" : "=r" (cr3));
-	asm volatile("mov %0, %%cr3" : : "r" (cr3));
+void temp_touch(uint32_t page) {
+	page &= ~0x3FFFFF;
+	uint32_t target = (uint32_t) &ttbl[page >> 12];
+	if (tmap[page >> 22] & PF_PRES) return;
+	tmap[page >> 22] = frame_new() | (PF_PRES | PF_RW | PF_USER);
+	asm volatile ("invlpg %0" :: "m" (target));
+	pgclr(&ctbl[page >> 12]);
+}
+
+void temp_set(uint32_t page, page_t value) {
+	page &= ~0xFFF;
+	if ((tmap[page >> 22] & PF_PRES) == 0) temp_touch(page);
+	ttbl[page >> 12] = value;
+	asm volatile ("invlpg %0" :: "m" (page));
+}
+
+page_t temp_get(uint32_t page) {
+	return (tmap[page >> 22] & PF_PRES) ? ttbl[page >> 12] : 0;
 }

@@ -71,10 +71,12 @@ extern ptbl_t *cmap, *tmap;					// Address of current page directory
 extern page_t *ctbl, *ttbl;					// Base of current page tables
 extern uint32_t *tsrc, *tdst;
 
-void   page_flush();							// Flushes the whole TLB
 void   page_touch(uint32_t page);				// Makes sure a page exists
 void   page_set(uint32_t page, page_t value);	// Sets the value of a page
 page_t page_get(uint32_t page);					// Returns the value of a page
+void   temp_touch(uint32_t page);				// Makes sure a temporary page exists
+void   temp_set(uint32_t page, page_t value);	// Sets the value of a temporary page
+page_t temp_get(uint32_t page);					// Returns the value of a temporary page
 #define page_fmt(base,flags) (((base)&0xFFFFF000)|((flags)&PF_MASK))
 #define page_ufmt(page) ((page)&0xFFFFF000)
 #define p_alloc(addr, flags) (page_set(addr, page_fmt(frame_new(), (flags & PF_MASK) | PF_PRES)))

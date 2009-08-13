@@ -12,7 +12,7 @@ Bourne shell compatible shell
 C99 compliant C compiler
 	- tested: GCC 4.3.2 
 		- i586 cross compiler or -march=i586
-		- any optimizations (including -O3!)
+		- optimizations: -fomit-frame-pointer -O0
 	- tested: TCC 0.9.4, 0.9.23
 
 The Netwide Assembler (NASM)

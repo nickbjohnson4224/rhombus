@@ -4,22 +4,30 @@
 
 global memcpy
 memcpy:
-	mov edi, [esp+4]
-	mov esi, [esp+8]
-	mov ecx, [esp+12]
+	push esi
+	push edi
+	mov edi, [esp+12]
+	mov esi, [esp+16]
+	mov ecx, [esp+20]
 	
 	rep movsb
 
 	mov eax, edi
+
+	pop edi
+	pop esi
 	ret
 
 global memset
 memset:
-	mov edi, [esp+4]
-	mov eax, [esp+8]
-	mov ecx, [esp+12]
+	push edi
+	mov edi, [esp+8]
+	mov eax, [esp+12]
+	mov ecx, [esp+16]
 
 	rep stosb
 
 	mov eax, edi
+	
+	pop edi
 	ret

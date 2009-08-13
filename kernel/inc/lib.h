@@ -45,6 +45,8 @@ void panic(char *message);		// Panic with a message
 
 /***** POOL ALLOCATOR *****/
 
+#define SIZEOF_POOL(n) (((n) / 1024) + 1)
+
 typedef struct pool {
 	uint32_t word[32];
 	uint16_t first;	// First free bit in pool

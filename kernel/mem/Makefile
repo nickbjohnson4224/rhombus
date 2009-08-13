@@ -5,9 +5,6 @@ ASFLAGS=-felf
 
 all: $(SOURCES) link
 
-map.o: map.c
-	cc $(CFLAGS) -O0 -c -o map.o map.c
-
 link:
 	ld $(LDFLAGS) -o mem.o $(SOURCES)
 

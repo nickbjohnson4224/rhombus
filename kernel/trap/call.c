@@ -48,7 +48,7 @@ image_t *fault_double(image_t *image) {
 image_t *fork_call(image_t *image) {
 	pid_t parent = curr_pid;
 	task_t *child = new_task(get_task(curr_pid));
-	if (child->magic != 0x4224) ret(image, 0);
+	if (!child) ret(image, 0);
 	image->eax = child->pid;
 	image = task_switch(child);
 	ret(image, -parent);
@@ -178,7 +178,7 @@ image_t *push_call(image_t *image) {
 	// Find and check target
 	if (targ) {
 		t = get_task(targ);
-		if (t->magic != 0x4224) ret(image, ENOTASK);
+		if (!t) ret(image, ENOTASK);
 		map_temp(t->map);
 	}
 
@@ -210,7 +210,7 @@ image_t *pull_call(image_t *image) {
 	// Find and check target
 	if (targ) {
 		t = get_task(targ);
-		if (t->magic != 0x4224) ret(image, ENOTASK);
+		if (!t) ret(image, ENOTASK);
 		map_temp(t->map);
 	}
 
