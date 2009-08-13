@@ -77,11 +77,6 @@ image_t *sret_call(image_t *image) {
 	return sret(image);
 }
 
-image_t *eout_call(image_t *image) {
-	printk("%s", image->eax);
-	return image;
-}
-
 image_t *irq_redirect(image_t *image) {
 	return signal(irq_holder[DEIRQ(image->num)], S_IRQ, DEIRQ(image->num), 0, 0, 0, TF_NOERR);
 }

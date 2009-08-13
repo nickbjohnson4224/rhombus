@@ -35,8 +35,6 @@ static int tar_end_check(u8int *block) {
 }
 
 void init_load_init() {
-	eout("  Libsys: loading init");
-
 	struct tar_header *initrd = (void*) 0x10000000;
 	struct tar_header *header[256];
 	elf_t *init_base;
@@ -55,20 +53,12 @@ void init_load_init() {
 
 	// Find "init"
 	for (i = 0; i < n; i++) if (!strcmp(header[i]->name, "init")) break;
-	if (i == n) {
-		eout("\t\t\t\t\t\t\t\t\t\t\t\t\t  [fail]");
-		for(;;);
-	}
+	if (i == n) for(;;);
 
 	// Load init
 	init_base = (elf_t*) ((u32int) header[i] + 512);
-	if (elf_load(init_base, &image)) {
-		eout("\t\t\t\t\t\t\t\t\t\t\t\t\t  [felf]");
-		for(;;);
-	}
+	if (elf_load(init_base, &image)) for(;;);
 	entry_t entry = (entry_t) image.entry;
-
-	eout("\t\t\t\t\t\t\t\t\t\t\t\t\t  [done]");
 
 	entry();
 	for(;;);

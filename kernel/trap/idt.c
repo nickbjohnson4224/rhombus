@@ -20,7 +20,7 @@ handler_t int_handlers[96];
 extern void int0(),  int1(),  int2(),  int3(),  int4(),  int5(),  int6(),  int7(),  int8(),  int9(), int10(), int11(), int12(), int13(), int14(), int15(), int16(), int17(), int18();
 extern void int32(), int33(), int34(), int35(), int36(), int37(), int38(), int39(), int40(), int41(), int42(), int43(), int44(), int45(), int46(), int47();
 extern void int64(), int65(), int66(), int67(), int68(), int69(), int70(), int71();
-extern void int80(), int81(), int82(), int83(), int84();
+extern void int80(), int81(), int82(), int83();
 
 typedef void (*int_handler_t) (void);
 __attribute__ ((section(".tdata")))
@@ -43,7 +43,7 @@ int64, 	int65, 	int66, 	int67, 	int68, 	int69, 	int70, 	int71,
 NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
 
 // Administrative System Calls
-int80, 	int81, 	int82, 	int83,	int84,	NULL,	NULL,	NULL,
+int80, 	int81, 	int82, 	int83,	NULL,	NULL,	NULL,	NULL,
 NULL, 	NULL, 	NULL,	NULL,	NULL,	NULL,	NULL,	NULL
 
 };

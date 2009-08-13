@@ -31,8 +31,6 @@ image_t *lirq_call(image_t *image); //0x51
 image_t *push_call(image_t *image);	//0x52
 image_t *pull_call(image_t *image); //0x53
 
-image_t *eout_call(image_t *image); //0x54
-
 #define ret(image, value) do { \
 image->eax = value; \
 return image; \

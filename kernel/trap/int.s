@@ -86,7 +86,6 @@ INTN	80 ; rirq
 INTN	81 ; lirq
 INTN	82 ; push
 INTN	83 ; pull
-INTN	84 ; eout
 
 extern int_handler
 
