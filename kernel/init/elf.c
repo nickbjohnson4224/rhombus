@@ -6,20 +6,20 @@
 #include <mem.h>
 
 __attribute__ ((section(".ttext")))
-void elf_load_segment(u8int *src, elf_ph_t *seg) {
+void elf_load_segment(uint8_t *src, elf_ph_t *seg) {
 
 	// Check if we can load this segment
 	if (seg->p_type != PT_LOAD) return; // No libraries or any other crap!
 
 	// Get pointer to source
-	u8int *src_base = &src[seg->p_offset];
+	uint8_t *src_base = &src[seg->p_offset];
 
 	// Get pointer to destination
-	u8int *dest_base = (u8int*) seg->p_vaddr;
-	u32int dest_limit = ((u32int) dest_base + seg->p_memsz + 0x1000) & ~0xFFF;
+	uint8_t *dest_base = (uint8_t*) seg->p_vaddr;
+	uint32_t dest_limit = ((uint32_t) dest_base + seg->p_memsz + 0x1000) & ~0xFFF;
 
 	// Allocate adequate memory
-	u32int i = ((u32int) dest_base) & ~0xFFF;
+	uint32_t i = ((uint32_t) dest_base) & ~0xFFF;
 	for (; i < dest_limit; i += 0x1000)
 		p_alloc(i, PF_USER);
 
@@ -28,7 +28,7 @@ void elf_load_segment(u8int *src, elf_ph_t *seg) {
 
 	// Set proper flags (i.e. remove write flag if needed)
 	if (seg->p_flags & PF_W) {
-		i = ((u32int) dest_base) & ~0xFFF;
+		i = ((uint32_t) dest_base) & ~0xFFF;
 		for (; i < dest_limit; i+= 0x1000)
 			page_set(i, page_fmt(page_get(i), PF_USER | PF_PRES));
 	}
@@ -36,7 +36,7 @@ void elf_load_segment(u8int *src, elf_ph_t *seg) {
 }
 
 __attribute__ ((section(".ttext")))
-int elf_check(u8int *src) {
+int elf_check(uint8_t *src) {
 	elf_t *elf_header = (elf_t*) src;
 	if (elf_header->e_ident[0] != 0x7F)return 1;
 	if (elf_header->e_ident[1] != 'E') return 1;
@@ -49,14 +49,14 @@ int elf_check(u8int *src) {
 }
 
 __attribute__ ((section(".ttext")))
-u32int elf_load(u8int *src) {
-	u32int i, n;
+uint32_t elf_load(uint8_t *src) {
+	uint32_t i, n;
 	elf_t *elf_header = (elf_t*) src;
 
 	// Load all segments
 	elf_ph_t *program_header = (elf_ph_t*) &src[elf_header->e_phoff];
 	n = elf_header->e_phnum; // Number of segments
-	if (!n) return (u32int) NULL;
+	if (!n) return (uint32_t) NULL;
 
 	for (i = 0; i < n; i++) elf_load_segment(src, &program_header[i]);
 	

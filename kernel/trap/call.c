@@ -7,7 +7,7 @@
 
 // Handles IRQ 0, and advances a simple counter used as a clock
 image_t *pit_handler(image_t *state) {
-	static u32int tick = 0;
+	static uint32_t tick = 0;
 	if (state->cs & 0x3) tick++;
 
 	return task_switch(next_task(0));
@@ -22,7 +22,7 @@ image_t *fault_generic(image_t *image) {
 }
 
 image_t *fault_page(image_t *image) {
-	u32int cr2; asm volatile ("movl %%cr2, %0" : "=r" (cr2));
+	uint32_t cr2; asm volatile ("movl %%cr2, %0" : "=r" (cr2));
 	if ((image->cs & 0x3) == 0) { // i.e. if it was kernelmode
 		printk("page fault at %x, frame %x, ip = %x\n", cr2, page_get(cr2), image->eip);
 		panic("page fault exception");
@@ -46,7 +46,7 @@ image_t *fault_double(image_t *image) {
 // I think it's much more useful, but the libc can convert it easily
 
 image_t *fork_call(image_t *image) {
-	u32int parent = curr_pid;
+	uint32_t parent = curr_pid;
 	task_t *child = new_task(get_task(curr_pid));
 	if (child->magic != 0x4224) ret(image, 0);
 	image->eax = child->pid;
@@ -55,8 +55,8 @@ image_t *fork_call(image_t *image) {
 }
 
 image_t *exit_call(image_t *image) {
-	u32int dead_task = curr_pid;
-	u32int ret_val = image->eax;
+	uint32_t dead_task = curr_pid;
+	uint32_t ret_val = image->eax;
 	if (dead_task == 1) {
 		asm volatile ("sti");
 		asm volatile ("hlt");
@@ -100,7 +100,7 @@ image_t *lirq_call(image_t *image) {
 
 image_t *rsig_call(image_t *image) {
 	task_t *t = get_task(curr_pid);
-	u32int oldvalue = 0;
+	uint32_t oldvalue = 0;
 
 	switch (signal_map[image->edi]) {
 		case SF_SYS:
@@ -118,7 +118,7 @@ image_t *rsig_call(image_t *image) {
 
 image_t *lsig_call(image_t *image) {
 	task_t *t = get_task(curr_pid);
-	u32int oldvalue = 0;
+	uint32_t oldvalue = 0;
 
 	switch (signal_map[image->edi]) {
 		case SF_SYS:
@@ -135,7 +135,7 @@ image_t *lsig_call(image_t *image) {
 }
 
 image_t *mmap_call(image_t *image) {
-	u32int dst = image->edi;
+	uint32_t dst = image->edi;
 
 	// Bounds check page address
 	if (dst + image->ecx > LSPACE) ret(image, EPERMIT);
@@ -143,7 +143,7 @@ image_t *mmap_call(image_t *image) {
 	// Allocate pages with flags
 	for (dst &= ~0xFFF; dst < (image->edi + image->ecx); dst += 0x1000) {
 		if (!(page_get(dst) & 0x1)) {
-			u32int page = page_fmt(frame_new(), (image->ebx & PF_MASK) | PF_PRES | PF_USER); 
+			uint32_t page = page_fmt(frame_new(), (image->ebx & PF_MASK) | PF_PRES | PF_USER); 
 			page_set(dst, page);
 		}
 	}
@@ -152,7 +152,7 @@ image_t *mmap_call(image_t *image) {
 }
 
 image_t *umap_call(image_t *image) {
-	u32int dst = image->edi;
+	uint32_t dst = image->edi;
 
 	// Bounds check page address
 	if (dst + image->ecx > LSPACE) ret(image, EPERMIT);
@@ -169,12 +169,12 @@ image_t *umap_call(image_t *image) {
 }
 
 image_t *push_call(image_t *image) {
-	u32int src = image->esi;
-	u32int dst = image->edi;
-	u32int size = image->ecx;
-	u32int targ = image->eax;
+	uint32_t src = image->esi;
+	uint32_t dst = image->edi;
+	uint32_t size = image->ecx;
+	uint32_t targ = image->eax;
 	task_t *t;
-	u32int i;
+	uint32_t i;
 
 	// Bounds check addresses
 	if (src + size > LSPACE || dst + size > LSPACE) ret(image, EPERMIT);
@@ -189,9 +189,9 @@ image_t *push_call(image_t *image) {
 
 	// Map pages
 	for (i = 0; i < size; i += 0x1000) {
-		if (targ) page_set((u32int) &tdst[i], page_fmt(ttbl[(dst + i) >> 12], (PF_RW | PF_PRES)));
-		else page_set((u32int) &tdst[i], page_fmt((dst + i) &~ 0xFFF, (PF_RW | PF_PRES)));
-		page_set((u32int) &tsrc[i], page_fmt(ctbl[(src + i) >> 12], (PF_RW | PF_PRES)));
+		if (targ) page_set((uint32_t) &tdst[i], page_fmt(ttbl[(dst + i) >> 12], (PF_RW | PF_PRES)));
+		else page_set((uint32_t) &tdst[i], page_fmt((dst + i) &~ 0xFFF, (PF_RW | PF_PRES)));
+		page_set((uint32_t) &tsrc[i], page_fmt(ctbl[(src + i) >> 12], (PF_RW | PF_PRES)));
 	}
 
 	// Copy memory
@@ -201,12 +201,12 @@ image_t *push_call(image_t *image) {
 }
 
 image_t *pull_call(image_t *image) {
-	u32int dst = image->esi;
-	u32int src = image->edi;
-	u32int size = image->ecx;
-	u32int targ = image->eax;
+	uint32_t dst = image->esi;
+	uint32_t src = image->edi;
+	uint32_t size = image->ecx;
+	uint32_t targ = image->eax;
 	task_t *t;
-	u32int i;
+	uint32_t i;
 
 	// Bounds check addresses
 	if (src + size > LSPACE || dst + size > LSPACE) ret(image, EPERMIT);
@@ -221,9 +221,9 @@ image_t *pull_call(image_t *image) {
 
 	// Map pages
 	for (i = 0; i < size; i += 0x1000) {
-		if (targ) page_set((u32int) &tsrc[i], page_fmt(ttbl[(src + i) >> 12], (PF_RW | PF_PRES)));
-		else page_set((u32int) &tsrc[i], page_fmt((src + i) &~ 0xFFF, (PF_RW | PF_PRES)));
-		page_set((u32int) &tdst[i], page_fmt(ctbl[(dst + i) >> 12], (PF_RW | PF_PRES)));
+		if (targ) page_set((uint32_t) &tsrc[i], page_fmt(ttbl[(src + i) >> 12], (PF_RW | PF_PRES)));
+		else page_set((uint32_t) &tsrc[i], page_fmt((src + i) &~ 0xFFF, (PF_RW | PF_PRES)));
+		page_set((uint32_t) &tdst[i], page_fmt(ctbl[(dst + i) >> 12], (PF_RW | PF_PRES)));
 	}
 
 	// Copy memory

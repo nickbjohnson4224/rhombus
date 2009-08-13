@@ -2,17 +2,17 @@
 
 #include <lib.h>
 
-void outb(u16int port, u8int val) {
+void outb(uint16_t port, uint8_t val) {
     asm volatile ("outb %1, %0" : : "dN" (port), "a" (val));
 }
 
-u8int inb(u16int port) {
-	u8int ret;
+uint8_t inb(uint16_t port) {
+	uint8_t ret;
 	asm volatile("inb %1, %0" : "=a" (ret) : "dN" (port));
 	return ret;
 }
 
-void sleep(u32int cycles) {
-	u32int i;
+void sleep(uint32_t cycles) {
+	volatile uint32_t i;
 	for (i = 0; i < cycles; i++);
 }

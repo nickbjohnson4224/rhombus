@@ -44,9 +44,9 @@
 #define PF_MASK 0x0E7F	// Page flags that can be used
 
 /***** DATA TYPES *****/
-typedef u32int page_t;
-typedef u32int ptbl_t;
-typedef u32int map_t;
+typedef uint32_t page_t;
+typedef uint32_t ptbl_t;
+typedef uint32_t map_t;
 
 /****** MAP.C *****/
 void  map_temp(map_t map);				// Puts a map in temporary space
@@ -69,12 +69,12 @@ extern pool_t fpool[0x1000];
 /***** PAGE.C *****/
 extern ptbl_t *cmap, *tmap;					// Address of current page directory
 extern page_t *ctbl, *ttbl;					// Base of current page tables
-extern u32int *tsrc, *tdst;
+extern uint32_t *tsrc, *tdst;
 
-void   page_flush();						// Flushes all paging
-void   page_touch(u32int page);				// Makes sure a page exists
-void   page_set(u32int page, page_t value);	// Sets the value of a page
-page_t page_get(u32int page);				// Returns the value of a page
+void   page_flush();							// Flushes the whole TLB
+void   page_touch(uint32_t page);				// Makes sure a page exists
+void   page_set(uint32_t page, page_t value);	// Sets the value of a page
+page_t page_get(uint32_t page);					// Returns the value of a page
 #define page_fmt(base,flags) (((base)&0xFFFFF000)|((flags)&PF_MASK))
 #define page_ufmt(page) ((page)&0xFFFFF000)
 #define p_alloc(addr, flags) (page_set(addr, page_fmt(frame_new(), (flags & PF_MASK) | PF_PRES)))

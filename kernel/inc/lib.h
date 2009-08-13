@@ -5,35 +5,35 @@
 
 #include <config.h>
 
-typedef unsigned int u32int;
-typedef unsigned short u16int;
-typedef unsigned char u8int;
+typedef unsigned int uint32_t;
+typedef unsigned short uint16_t;
+typedef unsigned char uint8_t;
 typedef unsigned int addr_t;
 
 /***** STANDARD FUNCTIONS *****/
-void outb(u16int port, u8int val);
-u8int inb(u16int port);
+void outb(uint16_t port, uint8_t val);
+uint8_t inb(uint16_t port);
 #define max(a,b) ((a > b) ? a : b)
 #define min(a,b) ((a < b) ? a : b)
-void sleep(u32int cycles);
+void sleep(uint32_t cycles);
 #define NULL ((void*) 0)
 
 /***** STRING FUNCTIONS *****/
-void *memcpy(void *dest, void *src, u32int size);
-void *memset(void *dest, u8int src, u32int size);
-void *memclr(void *dest, u32int size);
-void *pgclr(u32int *base);
+void *memcpy(void *dest, void *src, uint32_t size);
+void *memset(void *dest, uint8_t src, uint32_t size);
+void *memclr(void *dest, uint32_t size);
+void *pgclr(uint32_t *base);
 char *strcpy(char *dest, char *src);
 int strcmp(char *s1, char *s2);
-u32int strlen(char *str);
-u32int atoi(char *str, u8int base);
-char *itoa(u32int n, char *buf, u8int base);
+uint32_t strlen(char *str);
+uint32_t atoi(char *str, uint8_t base);
+char *itoa(uint32_t n, char *buf, uint8_t base);
 
 /***** OUTPUT FUNCTIONS *****/
 void cleark();
 void printk(char *fmt, ...);
-void colork(u8int color);
-void cursek(u8int x, u8int y);
+void colork(uint8_t color);
+void cursek(uint8_t x, uint8_t y);
 
 /***** ERROR FUNCTIONS *****/
 void panic(char *message);		// Panic with a message
@@ -46,16 +46,16 @@ void panic(char *message);		// Panic with a message
 /***** POOL ALLOCATOR *****/
 
 typedef struct pool {
-	u32int word[32];
-	u16int first;	// First free bit in pool
-	u16int total;	// Total free bits in pool
-	u16int setup;	// Magic number that verifies setup
-	u16int upper;	// Highest actual bit in pool
+	uint32_t word[32];
+	uint16_t first;	// First free bit in pool
+	uint16_t total;	// Total free bits in pool
+	uint16_t setup;	// Magic number that verifies setup
+	uint16_t upper;	// Highest actual bit in pool
 } pool_t;
 
-pool_t *pool_new(u32int num, pool_t *pool);	// Allocate a new pool
-u32int pool_alloc(pool_t *pool);			// Allocate from a pool
-u32int pool_free(pool_t *pool, u32int pos);	// Free back to a pool
-u32int pool_query(pool_t *pool);			// Find how many elementa are allocated in a pool
+pool_t *pool_new(uint32_t num, pool_t *pool);		// Allocate a new pool
+uint32_t pool_alloc(pool_t *pool);					// Allocate from a pool
+uint32_t pool_free(pool_t *pool, uint32_t pos);		// Free back to a pool
+uint32_t pool_query(pool_t *pool);					// Find how many elementa are allocated in a pool
 
 #endif

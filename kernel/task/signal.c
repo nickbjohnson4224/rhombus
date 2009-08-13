@@ -4,13 +4,13 @@
 #include <task.h>
 #include <trap.h>
 
-u32int *signal_table = (void*) SIG_TBL;
-u32int *signal_map = (void*) SIG_MAP;
+uint32_t *signal_table = (void*) SIG_TBL;
+uint32_t *signal_map = (void*) SIG_MAP;
 
-image_t *signal(u16int task, u8int sig, 
-	u32int arg0, u32int arg1, u32int arg2, u32int arg3, u8int flags) {
+image_t *signal(pid_t task, uint8_t sig, 
+	uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3, uint8_t flags) {
 	task_t *t, *src_t;
-	u32int caller = curr_pid;
+	pid_t caller = curr_pid;
 
 	// Check existence of target
 	t = get_task(task);
@@ -40,10 +40,10 @@ image_t *signal(u16int task, u8int sig,
 	t->caller = caller;
 
 	// Create new image structure
-	memcpy((u8int*) ((u32int) t->image - sizeof(image_t)), t->image, sizeof(image_t));
-	t->tss_esp = (u32int) t->image; // Will now create image below old image
-	t->image = (void*) ((u32int) t->image - sizeof(image_t));
-	if ((u32int) t->image < SSTACK_BSE + sizeof(image_t)) 
+	memcpy((uint8_t*) ((uint32_t) t->image - sizeof(image_t)), t->image, sizeof(image_t));
+	t->tss_esp = (uint32_t) t->image; // Will now create image below old image
+	t->image = (void*) ((uint32_t) t->image - sizeof(image_t));
+	if ((uint32_t) t->image < SSTACK_BSE + sizeof(image_t)) 
 		panic("task state stack overflow");	
 
 	// Set registers to describe signal
@@ -75,7 +75,7 @@ image_t *sret(image_t *image) {
 	t->caller = t->image->caller;
 
 	// Bounds check image
-	if ((u32int) t->tss_esp >= SSTACK_TOP) 
+	if ((uint32_t) t->tss_esp >= SSTACK_TOP) 
 		panic("task state stack underflow");
 
 	tss_set_esp(t->tss_esp);

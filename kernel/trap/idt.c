@@ -5,14 +5,14 @@
 #include <task.h>
 #include <mem.h>
 
-void idt_set(u8int n, u32int base, u16int seg, u8int flags);
+void idt_set(uint8_t n, uint32_t base, uint16_t seg, uint8_t flags);
 
 struct idt_entry {
-	u16int base_l;
-	u16int seg;
-	u8int  reserved;
-	u8int  flags;
-	u16int base_h;
+	uint16_t base_l;
+	uint16_t seg;
+	uint8_t  reserved;
+	uint8_t  flags;
+	uint16_t base_h;
 } __attribute__((packed)) idt[96];
 
 handler_t int_handlers[96];
@@ -50,25 +50,25 @@ NULL, 	NULL, 	NULL,	NULL,	NULL,	NULL,	NULL,	NULL
 
 __attribute__ ((section(".ttext")))
 void init_idt() {
-	u32int i;
-	memset((u8int*) &idt[0], 0, sizeof(struct idt_entry) * 256);
-	for (i = 0; i <= 47; i++) if (idt_raw[i]) idt_set(i, (u32int) idt_raw[i], 0x08, 0x8E);
-	for (i = 64;i <= 96; i++) if (idt_raw[i]) idt_set(i, (u32int) idt_raw[i], 0x08, 0xEE);
+	uint32_t i;
+	memset((uint8_t*) &idt[0], 0, sizeof(struct idt_entry) * 256);
+	for (i = 0; i <= 47; i++) if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0x8E);
+	for (i = 64;i <= 96; i++) if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0xEE);
 	extern void idt_flush();
 	idt_flush();
 }
 
 __attribute__ ((section(".ttext")))
-void idt_set(u8int n, u32int base, u16int seg, u8int flags) {
+void idt_set(uint8_t n, uint32_t base, uint16_t seg, uint8_t flags) {
 	if (!base) return;
-	idt[n].base_l = (u32int) base & 0xFFFF;
-	idt[n].base_h = (u32int) base >> 16;
+	idt[n].base_l = (uint32_t) base & 0xFFFF;
+	idt[n].base_h = (uint32_t) base >> 16;
 	idt[n].seg = seg;
 	idt[n].reserved = 0;
 	idt[n].flags = flags;
 }
 
-void register_int(u8int n, handler_t handler) {
+void register_int(uint8_t n, handler_t handler) {
 	int_handlers[n] = handler;
 }
 
@@ -94,21 +94,21 @@ void *int_handler(image_t *state) {
 }
 
 struct tss {
-	u32int prev_tss;
-	u32int esp0;
-	u32int ss0;
-	u32int unused[15];
-	u32int es, cs, ss, ds, fs, gs;
-	u32int ldt;
-	u16int trap, iomap_base;
+	uint32_t prev_tss;
+	uint32_t esp0;
+	uint32_t ss0;
+	uint32_t unused[15];
+	uint32_t es, cs, ss, ds, fs, gs;
+	uint32_t ldt;
+	uint16_t trap, iomap_base;
 } __attribute__ ((packed)) tss;
 
-extern u8int gdt[48];
+extern uint8_t gdt[48];
 
 __attribute__ ((section(".ttext")))
 void init_tss() {
-	u32int base = (u32int) &tss;
-	u16int limit = base + sizeof(struct tss);
+	uint32_t base = (uint32_t) &tss;
+	uint16_t limit = base + sizeof(struct tss);
 
 	memclr(&tss, sizeof(struct tss));
 	tss.cs = 0x0B;
@@ -125,6 +125,6 @@ void init_tss() {
 	tss_flush();
 }
 
-void tss_set_esp(u32int esp) {
+void tss_set_esp(uint32_t esp) {
 	tss.esp0 = esp;
 }

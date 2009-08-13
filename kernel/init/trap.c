@@ -32,7 +32,7 @@ void init_fault() {
 
 __attribute__ ((section(".ttext"))) 
 void init_pit() {
-	u16int divisor;
+	uint16_t divisor;
 	printk("  Kernel: system timer @ 256Hz");
 
 		// Register IRQ handler (PIT == IRQ 0)
@@ -48,7 +48,7 @@ void init_pit() {
 	printk("[done]");
 }
 
-u16int irq_holder[15];
+uint16_t irq_holder[15];
 
 __attribute__ ((section(".ttext"))) 
 void init_int() {
@@ -71,7 +71,7 @@ void init_int() {
 		outb(0xA1, 0x00);
 
 		// Clear IRQ redirection table
-		memclr(irq_holder, sizeof(u16int) * 15);
+		memclr(irq_holder, sizeof(pid_t) * 15);
 
 	cursek(74, -1);
 	printk("[done]");

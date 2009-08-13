@@ -5,12 +5,12 @@
 
 // ELF Header
 typedef struct {
-	u8int e_ident[16];
-	u16int e_type, e_machine;
-	u32int e_version;
-	u32int e_entry, e_phoff, e_shoff, e_flags;
-	u16int e_ehsize, e_phentsize, e_phnum;
-	u16int e_shentsize, e_shnum, e_shstrndx;
+	uint8_t e_ident[16];
+	uint16_t e_type, e_machine;
+	uint32_t e_version;
+	uint32_t e_entry, e_phoff, e_shoff, e_flags;
+	uint16_t e_ehsize, e_phentsize, e_phnum;
+	uint16_t e_shentsize, e_shnum, e_shstrndx;
 } __attribute__ ((packed)) elf_t;
 
 #define ET_EXEC 2
@@ -18,8 +18,8 @@ typedef struct {
 
 // ELF Program Header
 typedef struct {
-	u32int p_type, p_offset, p_vaddr, p_paddr;
-	u32int p_filesz, p_memsz, p_flags, p_align;
+	uint32_t p_type, p_offset, p_vaddr, p_paddr;
+	uint32_t p_filesz, p_memsz, p_flags, p_align;
 } __attribute__ ((packed)) elf_ph_t;
 
 #define PT_NULL 	0
@@ -34,8 +34,8 @@ typedef struct {
 #define PF_W	0x2
 #define PF_X	0x4
 
-void elf_load_segment(u8int *src, elf_ph_t *seg);
-u32int elf_load(u8int *src); // Returns entry point
-int elf_check(u8int *src);
+void elf_load_segment(uint8_t *src, elf_ph_t *seg);
+uint32_t elf_load(uint8_t *src); // Returns entry point
+int elf_check(uint8_t *src);
 
 #endif /*ELF_H*/

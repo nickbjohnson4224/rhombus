@@ -41,8 +41,8 @@ struct multiboot *mboot;
 
 typedef void (*entry_t)();
 
-void init(void *mboot_ptr, u32int mboot_magic) {
-	u32int i;
+void init(void *mboot_ptr, uint32_t mboot_magic) {
+	uint32_t i;
 
 	cleark();
 	printk(stamp, KHAOS_VERSION_MAJOR, KHAOS_VERSION_MINOR);

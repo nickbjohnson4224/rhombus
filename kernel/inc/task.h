@@ -7,6 +7,8 @@
 #include <trap.h>
 #include <mem.h>
 
+typedef uint16_t pid_t;
+
 /***** SIGNALS *****/
 
 // Signals (system) (sig < 16) (esi = sig #)
@@ -23,13 +25,13 @@
 type to task task with various arguments and is controlled by flags. Arguments
 to this function are in the order shown as registers */
 
-image_t *signal(u16int task, u8int sig, 
-	u32int arg0, u32int arg1, u32int arg2, u32int arg3, u8int flags);
+image_t *signal(uint16_t task, uint8_t sig, 
+	uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3, uint8_t flags);
 image_t *sret();
 
 // The signal table is mapped in all address spaces
-extern u32int *signal_table;
-extern u32int *signal_map;
+extern uint32_t *signal_table;
+extern uint32_t *signal_map;
 #define SF_SYS 2
 #define SF_USE 1
 #define SF_NIL 0
@@ -38,14 +40,14 @@ extern u32int *signal_map;
 typedef struct {
 	map_t map;
 	image_t *image;
-	u32int tss_esp;
-	u8int flags;
-	u8int quanta;
-	u16int magic;
-	u16int pid;
-	u16int next_task;
-	u16int parent;
-	u16int caller;
+	uint32_t tss_esp;
+	uint8_t flags;
+	uint8_t quanta;
+	uint16_t magic;
+	pid_t pid;
+	pid_t next_task;
+	pid_t parent;
+	pid_t caller;
 } task_t;
 
 #define TF_READY 0x00
@@ -55,29 +57,29 @@ typedef struct {
 #define TF_EKILL 0x08
 #define TF_SUPER 0x10
 
-task_t *get_task(u16int pid);
+task_t *get_task(pid_t pid);
 task_t *new_task(task_t *src);
-u32int rem_task(task_t *t);
+uint32_t rem_task(task_t *t);
 image_t *task_switch(task_t *t);
 
 extern pool_t tpool[(MAX_TASKS/1024) + 1];	// Pool allocator for task structures
-extern task_t *task; 				// Array of task structures
-extern u16int curr_pid;				// Currently loaded task ID
+extern task_t *task; 						// Array of task structures
+extern pid_t curr_pid;						// Currently loaded task ID
 
 /***** IRQ REDIRECTION *****/
 
-extern u16int irq_holder[15];
+extern pid_t irq_holder[15];
 
 /***** SCHEDULER *****/
 
 extern struct sched_queue {
-	u16int next;
-	u16int last;
+	pid_t next;
+	pid_t last;
 } queue;
 
-void insert_sched(u16int pid);
-void remove_sched(u16int pid);
-task_t *next_task(u8int flags);
+void insert_sched(pid_t pid);
+void remove_sched(pid_t pid);
+task_t *next_task(uint8_t flags);
 
 #define SF_FORCED 0x00
 #define SF_VOLUNT 0x01

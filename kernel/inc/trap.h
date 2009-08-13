@@ -4,8 +4,8 @@
 #define TRAP_H
 
 typedef struct image {
-	u32int ds, edi, esi, ebp, esp, ebx, edx, ecx, eax;
-	u32int num, caller, err, eip, cs, eflags, useresp, ss;
+	uint32_t ds, edi, esi, ebp, esp, ebx, edx, ecx, eax;
+	uint32_t num, caller, err, eip, cs, eflags, useresp, ss;
 } __attribute__ ((packed)) image_t;
 
 typedef image_t* (*handler_t) (image_t*);
@@ -13,7 +13,7 @@ image_t *pit_handler(image_t *state);
 
 #define IRQ(n) (n + 32)
 #define DEIRQ(n) (n - 32)
-void register_int(u8int n, handler_t handler);
+void register_int(uint8_t n, handler_t handler);
 void tss_set_esp();
 
 /***** SYSTEM CALLS *****/

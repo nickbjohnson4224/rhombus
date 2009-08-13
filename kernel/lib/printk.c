@@ -3,10 +3,10 @@
 #include <lib.h>
 #include <mem.h>
 
-static u16int *video_mem = (void*) (KSPACE + 0xB8000);
-static u16int c_base = 0;
-static u16int cursor = 0;
-static u8int attr = 0x0F;
+static uint16_t *video_mem = (void*) (KSPACE + 0xB8000);
+static uint16_t c_base = 0;
+static uint16_t cursor = 0;
+static uint8_t attr = 0x0F;
 
 static void scroll() {
 	int i;
@@ -38,7 +38,7 @@ void cleark() {
 	cursor = 0;
 }
 
-void printk_list(char *fmt, u32int *argv) {
+void printk_list(char *fmt, uint32_t *argv) {
 	char buffer[32];
 	int i, n = 0;
 	for (i = 0; fmt[i]; i++) {
@@ -61,14 +61,14 @@ void printk_list(char *fmt, u32int *argv) {
 }
 
 void printk(char *fmt, ...) {
-	printk_list(fmt, (u32int*) &fmt + 1);
+	printk_list(fmt, (uint32_t*) &fmt + 1);
 }
 
-void colork(u8int color) {
+void colork(uint8_t color) {
 	attr = color & 0x0F; // Any color, as long as it's black
 }
 
-void cursek(u8int x, u8int y) {
+void cursek(uint8_t x, uint8_t y) {
 	if (x > 80) x = cursor % 80;
 	if (y > 25) y = cursor / 80;
 	cursor = c_base = (80 * y) + x;

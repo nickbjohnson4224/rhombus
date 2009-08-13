@@ -6,7 +6,7 @@
 
 struct sched_queue queue;
 
-void insert_sched(u16int pid) {
+void insert_sched(pid_t pid) {
 	task_t *t;
 
 	if (!queue.next) {
@@ -22,7 +22,7 @@ void insert_sched(u16int pid) {
 	}
 }
 
-void remove_sched(u16int pid) {
+void remove_sched(pid_t pid) {
 	task_t *t, *t2;
 
 	if (queue.next) {
@@ -34,8 +34,8 @@ void remove_sched(u16int pid) {
 	}
 }
 
-task_t *next_task(u8int flags) {
-	u32int pid;
+task_t *next_task(uint8_t flags) {
+	pid_t pid;
 	task_t *t;
 	flags = 0;
 

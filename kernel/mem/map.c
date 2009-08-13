@@ -7,8 +7,8 @@ ptbl_t *cmap = (void*) PGE_MAP + 0x3FF000;
 page_t *ctbl = (void*) PGE_MAP;
 ptbl_t *tmap = (void*) TMP_MAP + 0x3FF000;
 page_t *ttbl = (void*) TMP_MAP;
-u32int *tsrc = (void*) KSPACE + 0x7F0000;
-u32int *tdst = (void*) KSPACE + 0x7E0000;
+uint32_t *tsrc = (void*) KSPACE + 0x7F0000;
+uint32_t *tdst = (void*) KSPACE + 0x7E0000;
 
 void map_temp(map_t map) {
 	cmap[TMP_MAP >> 22] = page_fmt(map, (PF_PRES | PF_RW));
@@ -19,7 +19,7 @@ map_t map_alloc(map_t map) {
 	map = frame_new();
 
 	// Allocate and clear new map
-	page_set((u32int) tsrc, page_fmt(map, (PF_PRES | PF_RW)));
+	page_set((uint32_t) tsrc, page_fmt(map, (PF_PRES | PF_RW)));
 	pgclr(tsrc);
 
 	// Set PGE_MAP table recursively
@@ -33,7 +33,7 @@ map_t map_free(map_t map) {
 }
 
 map_t map_clean(map_t map) {
-	u32int i, j;
+	uint32_t i, j;
 
 	map_temp(map);
 	for (i = 0; i < LSPACE >> 22; i++) if (tmap[i] & PF_PRES) {
@@ -49,7 +49,7 @@ map_t map_clean(map_t map) {
 }
 
 map_t map_clone() {
-	u32int i, j;
+	uint32_t i, j;
 	map_t dest;
 
 	// Create new map
@@ -67,8 +67,8 @@ map_t map_clone() {
 		for (j = i; j < i + 0x400000; j += 0x1000) if (ctbl[j >> 12] & PF_PRES) {
 			page_flush();
 			ttbl[j >> 12] = frame_new() | (ctbl[j >> 12] & PF_MASK);
-			page_set((u32int) tsrc, page_fmt(ctbl[j >> 12], PF_PRES | PF_RW | PF_DISC));
-			page_set((u32int) tdst, page_fmt(ttbl[j >> 12], PF_PRES | PF_RW | PF_DISC));
+			page_set((uint32_t) tsrc, page_fmt(ctbl[j >> 12], PF_PRES | PF_RW | PF_DISC));
+			page_set((uint32_t) tdst, page_fmt(ttbl[j >> 12], PF_PRES | PF_RW | PF_DISC));
 			memcpy(tdst, tsrc, 0x1000);
 		}
 	}

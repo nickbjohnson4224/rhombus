@@ -7,18 +7,18 @@
 
 pool_t tpool[(MAX_TASKS/1024) + 1];	// Pool allocator for task structures
 task_t *task = (void*) TASK_TBL; 	// Array of task structures (max 65536)
-u16int curr_pid = 0;
+pid_t curr_pid = 0;
 
-task_t *get_task(u16int pid) {
-	if ((page_get((u32int) &task[pid]) & 0x1) == 0) {
-		p_alloc((u32int) &task[pid], (PF_PRES | PF_RW));
+task_t *get_task(pid_t pid) {
+	if ((page_get((uint32_t) &task[pid]) & 0x1) == 0) {
+		p_alloc((uint32_t) &task[pid], (PF_PRES | PF_RW));
 		pgclr((void*) &task[pid]);
 	}
 	return &task[pid];
 }
 
 task_t *new_task(task_t *src) {
-	u32int new_pid = pool_alloc(tpool);
+	pid_t new_pid = pool_alloc(tpool);
 	if (new_pid == 0) new_pid = pool_alloc(tpool);
 
 	task_t *new = get_task(new_pid);
@@ -35,7 +35,7 @@ task_t *new_task(task_t *src) {
 	return new;
 }
 
-u32int rem_task(task_t *t) {
+uint32_t rem_task(task_t *t) {
 	t->magic = 0x0000;
 	remove_sched(t->pid);
 	return pool_free(tpool, t->pid);

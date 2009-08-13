@@ -4,14 +4,14 @@
 #include <mem.h>
 
 __attribute__ ((section(".ttext"))) 
-pool_t *pool_new(u32int size, pool_t *pool) {
-	u32int i, npool, extra;
+pool_t *pool_new(uint32_t size, pool_t *pool) {
+	uint32_t i, npool, extra;
 
 	npool = (size - 1) / 1024 + 1; // 1024 entries per pool (and round up)
 	extra = size - ((npool - 1) * 1024);
 	
 	for (i = 0; i < npool; i++) {
-		memclr(pool[i].word, sizeof(u32int) * 32);
+		memclr(pool[i].word, sizeof(uint32_t) * 32);
 		pool[i].first = 0x0000;
 		pool[i].total = (i != npool - 1) ? 1024 : extra;
 		pool[i].setup = 0x4224;
@@ -21,8 +21,8 @@ pool_t *pool_new(u32int size, pool_t *pool) {
 	return pool;
 }
 
-u32int pool_alloc(pool_t *pool) {
-	u32int p, w, b;	// pool, word, bit
+uint32_t pool_alloc(pool_t *pool) {
+	uint32_t p, w, b;	// pool, word, bit
 
 	// Find suitable pool
 	for (p = 0; pool[p].total == 0; p++) 
@@ -48,8 +48,8 @@ u32int pool_alloc(pool_t *pool) {
 	return 0;
 }
 
-u32int pool_free(pool_t *pool, u32int pos) {
-	u32int p, w, b;
+uint32_t pool_free(pool_t *pool, uint32_t pos) {
+	uint32_t p, w, b;
 
 	// Convert to bit coordinates
 	p = pos >> 10;
@@ -64,8 +64,8 @@ u32int pool_free(pool_t *pool, u32int pos) {
 	return 0;
 }
 
-u32int pool_query(pool_t *pool) {
-	u32int total, p;
+uint32_t pool_query(pool_t *pool) {
+	uint32_t total, p;
 	
 	// Tally usage of all pools
 	total = 0;
