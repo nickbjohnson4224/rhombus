@@ -13,12 +13,14 @@ void insert_sched(pid_t pid) {
 		queue.next = pid;
 		queue.last = pid;
 		t = get_task(pid);
-		t->next_task = 0;
+		t->next_task = pid;
 	}
 	else {
 		t = get_task(queue.last);
 		t->next_task = pid;
 		queue.last = pid;
+		t = get_task(pid);
+		t->next_task = queue.next;
 	}
 }
 
@@ -40,21 +42,20 @@ task_t *next_task(uint8_t flags) {
 	flags = 0;
 
 	retry:
-	if (!queue.next) goto idle;
 	pid = queue.next;
 	t = get_task(pid);
 	queue.next = t->next_task;
-	t->next_task = 0;
-	if (t->magic == 0x4224) insert_sched(pid);
-	if (t->flags & TF_BLOCK || t->magic != 0x4224) {
+	insert_sched(pid);
+	if (t->flags & TF_BLOCK) {
 		if (queue.next == queue.last) goto idle; // If the only task left is blocked, idle
-		goto retry; // If errors occur, redo
+		goto retry; // If this task is blocked, try the next one
 	}
 
+	printk("switching to %d %d : %d\n", (uint32_t) queue.next, (uint32_t) queue.last, t->pid);
 	return t;
 
 	idle:
-	printk("IDLE\n");
+	printk("IDLE %d %d\n", queue.next, queue.last);
 	asm volatile ("sti");
 	for(;;) asm volatile ("hlt");
 }

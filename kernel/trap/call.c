@@ -46,7 +46,7 @@ image_t *fault_double(image_t *image) {
 // I think it's much more useful, but the libc can convert it easily
 
 image_t *fork_call(image_t *image) {
-	uint32_t parent = curr_pid;
+	pid_t parent = curr_pid;
 	task_t *child = new_task(get_task(curr_pid));
 	if (child->magic != 0x4224) ret(image, 0);
 	image->eax = child->pid;

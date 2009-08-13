@@ -9,7 +9,7 @@ CHECKSUM    equ  -(MAGIC + FLAGS)
 
 section .bss
 
-STACKSIZE equ 0x1000
+STACKSIZE equ 0x2000
 global stack
 stack:
 	resd STACKSIZE >> 2

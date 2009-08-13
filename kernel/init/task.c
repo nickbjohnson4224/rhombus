@@ -14,6 +14,7 @@ void init_task() {
 		// Bootstrap task 0, because there is nothing to fork from
 		task_t *idle = get_task(0);
 		memclr(idle, sizeof(task_t));
+		idle->pid = pool_alloc(tpool);
 		idle->magic = 0x4224;
 		idle->map = map_clone();
 		idle->flags = TF_READY | TF_SUPER;

@@ -37,6 +37,7 @@ extern uint32_t *signal_map;
 #define SF_NIL 0
 
 /***** TASK TABLE *****/
+// Size must be a divisor of 4096
 typedef struct {
 	map_t map;
 	image_t *image;

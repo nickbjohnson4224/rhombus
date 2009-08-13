@@ -106,7 +106,7 @@ int_common:
 	mov ebp, esp
 	
 	extern stack
-	mov esp, (stack + 0xF00)	; Setup stack
+	mov esp, (stack + 0x1F00)	; Setup stack
 
 	push ebp
 	call int_handler

@@ -56,8 +56,10 @@ map_t map_clone() {
 	dest = map_alloc(dest);
 	map_temp(dest);
 
+	printk("map_clone created %x\n", dest);
+
 	// Link kernel/libspace (except for recursive mapping)
-	for (i = LSPACE >> 22; i < (TMP_MAP >> 22); i++)
+	for (i = LSPACE >> 22; i < (PGE_MAP >> 22); i++)
 		tmap[i] = cmap[i];
 
 	// Clone/clear userspace
@@ -77,6 +79,7 @@ map_t map_clone() {
 }
 
 map_t map_load(map_t map) {
+	if (!map) panic("invalid map");
 	asm volatile ("mov %0, %%cr3" :: "r" (map));
 	return map;
 }
