@@ -44,7 +44,8 @@ short *vmem = (void*) 0x100000;
 int init() {
 	mmap((u32int) stuff, 1024, 0x7);
 	mmap((u32int) vmem, 4000, 0x7);
-	cleark();
+	pull(0, 0xB8000, (u32int) vmem, 4000); 
+//	cleark();
 	curse(0, 0);
 
 	printf(stamp, KHAOS_VERSION_MAJOR, KHAOS_VERSION_MINOR);

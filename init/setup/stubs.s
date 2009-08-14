@@ -24,8 +24,12 @@ global rsig
 global lsig
 
 fork:
+	push ebx
+
 	mov ebx, 0
 	int 0x40
+
+	pop ebx
 	ret
 
 exit:
@@ -34,16 +38,32 @@ exit:
 	ret
 
 sint:
-	mov edi, [esp+4]
-	mov esi, [esp+8]
-	mov ebx, [esp+16]
-	mov ecx, [esp+20]
-	mov edx, [esp+24]
-	mov eax, [esp+28]
+	push ebp
+	mov ebp, esp
+	add ebp, 4
+
+	push edi
+	push esi
+	push ebx
+
+	mov edi, [ebp+4]
+	mov esi, [ebp+8]
+	mov ebx, [ebp+16]
+	mov ecx, [ebp+20]
+	mov edx, [ebp+24]
+	mov eax, [ebp+28]
 	shl eax, 8
 	or esi, eax
-	mov eax, [esp+12]
+	mov eax, [ebp+12]
 	int 0x42
+
+	pop ebx
+	pop esi
+	pop edi
+
+	sub ebp, 4
+	mov esp, ebp
+	pop ebp
 	ret
 
 sret:
@@ -52,38 +72,89 @@ sret:
 	ret
 
 mmap:
-	mov edi, [esp+4]
-	mov ecx, [esp+8]
-	mov ebx, [esp+12]
+	push ebp
+	mov ebp, esp
+	add ebp, 4
+
+	push edi
+	push ebx
+
+	mov edi, [ebp+4]
+	mov ecx, [ebp+8]
+	mov ebx, [ebp+12]
 	int 0x44
+
+	pop ebx
+	pop edi
+
+	sub ebp, 4
+	mov esp, ebp
+	pop ebp
 	ret
 
 umap:
-	mov esi, [esp+4]
-	mov ecx, [esp+8]
+	push ebp
+	mov ebp, esp
+	add ebp, 4
+
+	push esi
+	push ebx
+
+	mov esi, [ebp+4]
+	mov ecx, [ebp+8]
 	mov ebx, 0
 	int 0x45
+
+	pop ebx
+	pop esi
+
+	sub ebp, 4
+	mov esp, ebp
+	pop ebp
 	ret
 
 push:
-	mov eax, [esp+4]
-	mov edi, [esp+8]
-	mov esi, [esp+12]
-	mov ecx, [esp+16]
+	push ebp
+	mov ebp, esp
+	add ebp, 4
+
+	push edi
+	push esi
+
+	mov eax, [ebp+4]
+	mov edi, [ebp+8]
+	mov esi, [ebp+12]
+	mov ecx, [ebp+16]
 	int 0x52
+
+	pop esi
+	pop edi
+
+	sub ebp, 4
+	mov esp, ebp
+	pop ebp
 	ret
 
 pull:
-	mov eax, [esp+4]
-	mov esi, [esp+8]
-	mov edi, [esp+12]
-	mov ecx, [esp+16]
-	int 0x53
-	ret
+	push ebp
+	mov ebp, esp
+	add ebp, 4
 
-eout:
-	mov eax, [esp+4]
-	int 0x54
+	push edi
+	push esi
+
+	mov eax, [ebp+4]
+	mov esi, [ebp+8]
+	mov edi, [ebp+12]
+	mov ecx, [ebp+16]
+	int 0x53
+
+	pop esi
+	pop edi
+
+	sub ebp, 4
+	mov esp, ebp
+	pop ebp
 	ret
 
 rirq:
@@ -92,14 +163,22 @@ rirq:
 	ret
 
 rsig:
-	mov edi, [esp+4]
-	mov eax, [esp+8]
+	push edi
+
+	mov edi, [esp+8]
+	mov eax, [esp+12]
 	int 0x46
+
+	pop edi
 	ret
 
 lsig:
-	mov edi, [esp+4]
+	push edi
+
+	mov edi, [esp+8]
 	int 0x47
+
+	pop edi
 	ret
 
 global inb
