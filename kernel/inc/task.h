@@ -58,9 +58,9 @@ typedef struct {
 #define TF_EKILL 0x08
 #define TF_SUPER 0x10
 
-task_t *get_task(pid_t pid);
-task_t *new_task(task_t *src);
-uint32_t rem_task(task_t *t);
+task_t *task_get(pid_t pid);
+task_t *task_new(task_t *src);
+uint32_t task_rem(task_t *t);
 image_t *task_switch(task_t *t);
 
 extern pool_t tpool[(MAX_TASKS/1024) + 1];	// Pool allocator for task structures

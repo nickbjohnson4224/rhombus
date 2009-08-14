@@ -12,11 +12,9 @@ void init_task() {
 		pool_new(MAX_TASKS, tpool);
 
 		// Bootstrap task 0, because there is nothing to fork from
-		p_alloc((uint32_t) task, (PF_PRES | PF_RW));
-		pgclr((uint32_t*) task);
-		task_t *idle = &task[0];
+		task_touch(0);
+		task_t *idle = task_get(0);
 		idle->pid = pool_alloc(tpool);
-		idle->magic = 0x4224;
 		idle->map = map_clone();
 		idle->flags = TF_READY | TF_SUPER;
 
@@ -25,7 +23,7 @@ void init_task() {
 		queue.last = 0;
 
 		// Fork task 1
-		task_switch(new_task(get_task(0)));
+		task_switch(task_new(task_get(0)));
 
 	cursek(74, -1);
 	printk("[done]");

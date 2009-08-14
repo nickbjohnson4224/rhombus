@@ -6,32 +6,33 @@
 
 struct sched_queue queue;
 
-void insert_sched(pid_t pid) {
+void sched_ins(pid_t pid) {
 	task_t *t;
 
 	if (!queue.next) {
-		t = get_task(pid);
+		t = task_get(pid);
 		t->next_task = pid;
 		queue.next = pid;
 		queue.last = pid;
 	}
 	else {
-		t = get_task(queue.last);
+		t = task_get(queue.last);
 		t->next_task = pid;
 		queue.last = pid;
-		t = get_task(pid);
+		t = task_get(pid);
 		t->next_task = queue.next;
 	}
 }
 
-void remove_sched(pid_t pid) {
+void sched_rem(pid_t pid) {
 	task_t *t, *t2;
 
 	if (queue.next) {
-		t = get_task(queue.next);
+		t = task_get(queue.next);
 		while (t->next_task != pid && t->next_task)
-			t = get_task(t->next_task);
-		t2 = get_task(t->next_task);
+			t = task_get(t->next_task);
+
+		t2 = task_get(t->next_task);
 		t->next_task = t2->next_task;
 	}
 }
@@ -43,9 +44,9 @@ task_t *next_task(uint8_t flags) {
 
 	do {
 		pid = queue.next;
-		t = get_task(pid);
+		t = task_get(pid);
 		queue.next = t->next_task;
-		insert_sched(pid);
+		sched_ins(pid);
 	} while (t->flags & TF_BLOCK);
 
 	return t;

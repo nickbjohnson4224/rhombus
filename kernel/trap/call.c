@@ -10,7 +10,7 @@ image_t *pit_handler(image_t *state) {
 	static uint32_t tick = 0;
 	if (state->cs & 0x3) tick++;
 
-	return task_switch(next_task(0));
+	return task_switch(task_next(0));
 }
 
 image_t *fault_generic(image_t *image) {
@@ -47,7 +47,7 @@ image_t *fault_double(image_t *image) {
 
 image_t *fork_call(image_t *image) {
 	pid_t parent = curr_pid;
-	task_t *child = new_task(get_task(curr_pid));
+	task_t *child = new_task(task_get(curr_pid));
 	if (!child) ret(image, 0);
 	image->eax = child->pid;
 	image = task_switch(child);
@@ -61,10 +61,10 @@ image_t *exit_call(image_t *image) {
 		asm volatile ("sti");
 		asm volatile ("hlt");
 	}
-	task_t *t = get_task(dead_task);
+	task_t *t = task_get(dead_task);
 	map_clean(t->map);
 	map_free(t->map);
-	rem_task(get_task(dead_task));
+	rem_task(task_get(dead_task));
 	return signal(t->parent, S_DTH, ret_val, 0, 0, 0, TF_NOERR);
 }
 
@@ -94,39 +94,39 @@ image_t *lirq_call(image_t *image) {
 }
 
 image_t *rsig_call(image_t *image) {
-	task_t *t = get_task(curr_pid);
-	uint32_t oldvalue = 0;
+	task_t *t = task_get(curr_pid);
+	uint32_t old_handler = 0;
 
 	switch (signal_map[image->edi]) {
 		case SF_SYS:
 			if (!(t->flags & TF_SUPER)) ret(image, EPERMIT);
 		case SF_USE:
-			oldvalue = signal_table[image->edi];
+			old_handler = signal_table[image->edi];
 		case SF_NIL:
 			signal_table[image->edi] = image->eax;
 			signal_map[image->edi] = SF_USE;
 			break;
 	}
 
-	ret(image, oldvalue);
+	ret(image, old_handler);
 }
 
 image_t *lsig_call(image_t *image) {
-	task_t *t = get_task(curr_pid);
-	uint32_t oldvalue = 0;
+	task_t *t = task_get(curr_pid);
+	uint32_t old_handler = 0;
 
 	switch (signal_map[image->edi]) {
 		case SF_SYS:
 			if (!(t->flags & TF_SUPER)) ret(image, EPERMIT);
 		case SF_USE:
-			oldvalue = signal_table[image->edi];
+			old_handler = signal_table[image->edi];
 		default:
 			signal_table[image->edi] = 0;
 			signal_map[image->edi] = SF_NIL;
 			break;
 	}
 
-	ret(image, oldvalue);
+	ret(image, old_handler);
 }
 
 image_t *mmap_call(image_t *image) {
@@ -178,7 +178,7 @@ image_t *push_call(image_t *image) {
 
 	// Find and check target
 	if (targ) {
-		t = get_task(targ);
+		t = task_get(targ);
 		if (!t) ret(image, ENOTASK);
 		map_temp(t->map);
 	}
@@ -210,7 +210,7 @@ image_t *pull_call(image_t *image) {
 
 	// Find and check target
 	if (targ) {
-		t = get_task(targ);
+		t = task_get(targ);
 		if (!t) ret(image, ENOTASK);
 		map_temp(t->map);
 	}
