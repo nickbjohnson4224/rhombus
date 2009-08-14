@@ -47,7 +47,7 @@ image_t *fault_double(image_t *image) {
 
 image_t *fork_call(image_t *image) {
 	pid_t parent = curr_pid;
-	task_t *child = new_task(task_get(curr_pid));
+	task_t *child = task_new(task_get(curr_pid));
 	if (!child) ret(image, 0);
 	image->eax = child->pid;
 	image = task_switch(child);
@@ -64,7 +64,7 @@ image_t *exit_call(image_t *image) {
 	task_t *t = task_get(dead_task);
 	map_clean(t->map);
 	map_free(t->map);
-	rem_task(task_get(dead_task));
+	task_rem(task_get(dead_task));
 	return signal(t->parent, S_DTH, ret_val, 0, 0, 0, TF_NOERR);
 }
 

@@ -58,6 +58,7 @@ typedef struct {
 #define TF_EKILL 0x08
 #define TF_SUPER 0x10
 
+void task_touch(pid_t pid);
 task_t *task_get(pid_t pid);
 task_t *task_new(task_t *src);
 uint32_t task_rem(task_t *t);
@@ -78,9 +79,9 @@ extern struct sched_queue {
 	pid_t last;
 } queue;
 
-void insert_sched(pid_t pid);
-void remove_sched(pid_t pid);
-task_t *next_task(uint8_t flags);
+void sched_ins(pid_t pid);
+void sched_rem(pid_t pid);
+task_t *task_next(uint8_t flags);
 
 #define SF_FORCED 0x00
 #define SF_VOLUNT 0x01

@@ -13,9 +13,9 @@ image_t *signal(pid_t task, uint8_t sig,
 	pid_t caller = curr_pid;
 
 	// Check existence of target
-	t = get_task(task);
-	src_t = get_task(caller);
-	if (t->magic != 0x4224) {
+	t = task_get(task);
+	src_t = task_get(caller);
+	if (!t) {
 		if (flags & TF_NOERR) return src_t->image;
 		else ret(src_t->image, ENOTASK);
 	}
@@ -64,8 +64,8 @@ image_t *sret(image_t *image) {
 	task_t *t, *src_t;
 
 	// Unblock the caller
-	t = get_task(curr_pid);
-	src_t = get_task(t->caller);
+	t = task_get(curr_pid);
+	src_t = task_get(t->caller);
 	if (image->eax & TF_UNBLK) 
 		src_t->flags &= ~TF_BLOCK;
 

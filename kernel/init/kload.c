@@ -68,7 +68,7 @@ void init_libsys() {
 	if (n == 256) panic("No system library found");
 
 	// Set up a stack for the process image
-	t = get_task(curr_pid);
+	t = task_get(curr_pid);
 
 	for (i = USTACK_BSE; i < USTACK_TOP; i += 0x1000) p_alloc(i, (PF_USER | PF_RW));
 	for (i = SSTACK_BSE; i < SSTACK_TOP; i += 0x1000) p_alloc(i, (PF_USER | PF_RW));

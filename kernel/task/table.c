@@ -20,7 +20,7 @@ task_t *task_get(pid_t pid) {
 
 // Used to initialize new tasks that are not marked yet
 void task_touch(pid_t pid) {
-	if (pid >= MAX_TASKS) return NULL;
+	if (pid >= MAX_TASKS) return;
 	if ((page_get((uint32_t) &task[pid]) & PF_PRES) == 0) {
 		p_alloc((uint32_t) &task[pid], (PF_PRES | PF_RW));
 		pgclr((void*) &task[pid]);

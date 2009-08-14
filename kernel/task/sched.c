@@ -37,7 +37,7 @@ void sched_rem(pid_t pid) {
 	}
 }
 
-task_t *next_task(uint8_t flags) {
+task_t *task_next(uint8_t flags) {
 	pid_t pid;
 	task_t *t;
 	flags = 0;

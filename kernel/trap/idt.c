@@ -73,7 +73,7 @@ void register_int(uint8_t n, handler_t handler) {
 }
 
 void *int_handler(image_t *state) {
-	task_t *t = get_task(curr_pid);
+	task_t *t = task_get(curr_pid);
 
 	if (state->cs & 0x3) t->image = state;
 
