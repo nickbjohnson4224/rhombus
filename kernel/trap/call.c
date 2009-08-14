@@ -133,7 +133,7 @@ image_t *mmap_call(image_t *image) {
 	uint32_t dst = image->edi;
 
 	// Bounds check page address
-	if (dst + image->ecx > LSPACE) ret(image, EPERMIT);
+	if (dst + image->ecx > SIG_TBL) ret(image, EPERMIT);
 
 	// Allocate pages with flags
 	for (dst &= ~0xFFF; dst < (image->edi + image->ecx); dst += 0x1000) {
@@ -141,6 +141,7 @@ image_t *mmap_call(image_t *image) {
 			uint32_t page = page_fmt(frame_new(), (image->ebx & PF_MASK) | PF_PRES | PF_USER); 
 			page_set(dst, page);
 		}
+		else page_set(dst, page_fmt(page_get(dst), (image->ebx & PF_MASK) | PF_PRES | PF_USER));
 	}
 
 	ret(image, 0);
@@ -150,7 +151,7 @@ image_t *umap_call(image_t *image) {
 	uint32_t dst = image->edi;
 
 	// Bounds check page address
-	if (dst + image->ecx > LSPACE) ret(image, EPERMIT);
+	if (dst + image->ecx > SIG_TBL) ret(image, EPERMIT);
 
 	// Free pages
 	for (dst &= ~0xFFF; dst < (image->edi + image->ecx); dst += 0x1000) {

@@ -42,24 +42,24 @@ void print() {
 
 short *vmem = (void*) 0x100000;
 int init() {
-/*	mmap((u32int) stuff, 1024, 0x7);
+	mmap((u32int) stuff, 1024, 0x7);
 	mmap((u32int) vmem, 4000, 0x7);
 	cleark();
 	curse(0, 0);
 
 	printf(stamp, KHAOS_VERSION_MAJOR, KHAOS_VERSION_MINOR);
 
-	rsig(3, (u32int) kb_handler);*/
+	rsig(3, (u32int) kb_handler);
 	rsig(7, (u32int) death);
-//	rsig(16, (u32int) print);
-//	up = 0;
-//	rirq(1);
+	rsig(16, (u32int) print);
+	up = 0;
+	rirq(1);
 
-//	if ((pid = fork()) < 0) othertask();
-	while(1) {
-		fork();
+	if ((pid = fork()) < 0) othertask();
+//	while(1) {
+//		fork();
 //		if (fork() < 0) exit(0);
-	}
+//	}
 
 	for(;;);// printf("A");
 	return 0;
