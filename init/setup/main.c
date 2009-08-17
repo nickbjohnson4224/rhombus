@@ -38,8 +38,6 @@ extern void print_stub();
 void print_handler(int task, u32int addr, u32int size) {
 	u32int i;
 
-	printk("PRINT: %d:%x <%d\n", task, addr, size);
-
 	pull(task, addr, (u32int) buffer, size);
 	for (i = 0; i < size; i++) {
 		printk("%c", buffer[i]);
