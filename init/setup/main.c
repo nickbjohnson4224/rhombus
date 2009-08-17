@@ -79,11 +79,9 @@ void print(char *message) {
 int init() {
 	eout("    Init:");
 
-	mmap((u32int) buffer, 0x1000, 0x7);
+	rsig(7, (u32int) death);
 
-//	rsig(7, (u32int) death);
-
-//	if ((cdrv_pid = fork()) < 0) cdrv_init();
+	if ((cdrv_pid = fork()) < 0) cdrv_init();
 
 	sleep(10000);
 
