@@ -185,8 +185,12 @@ image_t *push_call(image_t *image) {
 
 	// Map pages
 	for (i = 0; i < size; i += 0x1000) {
-		if (targ) page_set((uint32_t) &tdst[i], page_fmt(ttbl[(dst + i) >> 12], (PF_RW | PF_PRES)));
+		if (targ) {
+			if ((ttbl[(dst + i) >> 12] & PF_PRES) == 0) ret(image, EPERMIT);
+			page_set((uint32_t) &tdst[i], page_fmt(ttbl[(dst + i) >> 12], (PF_RW | PF_PRES)));
+		}
 		else page_set((uint32_t) &tdst[i], page_fmt((dst + i) &~ 0xFFF, (PF_RW | PF_PRES)));
+		if ((ctbl[(dst + i) >> 12] & PF_PRES) == 0) ret(image, EPERMIT);
 		page_set((uint32_t) &tsrc[i], page_fmt(ctbl[(src + i) >> 12], (PF_RW | PF_PRES)));
 	}
 
@@ -217,8 +221,12 @@ image_t *pull_call(image_t *image) {
 
 	// Map pages
 	for (i = 0; i < size; i += 0x1000) {
-		if (targ) page_set((uint32_t) &tsrc[i], page_fmt(ttbl[(src + i) >> 12], (PF_RW | PF_PRES)));
+		if (targ) {
+			if ((ttbl[(dst + i) >> 12] & PF_PRES) == 0) ret(image, EPERMIT);
+			page_set((uint32_t) &tsrc[i], page_fmt(ttbl[(src + i) >> 12], (PF_RW | PF_PRES)));
+		}
 		else page_set((uint32_t) &tsrc[i], page_fmt((src + i) &~ 0xFFF, (PF_RW | PF_PRES)));
+		if ((ctbl[(dst + i) >> 12] & PF_PRES) == 0) ret(image, EPERMIT);
 		page_set((uint32_t) &tdst[i], page_fmt(ctbl[(dst + i) >> 12], (PF_RW | PF_PRES)));
 	}
 
@@ -226,4 +234,9 @@ image_t *pull_call(image_t *image) {
 	memcpy(&tdst[dst & 0xFFF], &tsrc[src & 0xFFF], size);
 	
 	ret(image, 0);
+}
+
+image_t *eout_call(image_t *image) {
+	printk("%s\n", image->eax);
+	return image;
 }

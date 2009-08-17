@@ -104,7 +104,6 @@ start:
 	sti
 
 .loop:
-	hlt
 	jmp .loop
 
 section .ttext

@@ -17,6 +17,7 @@ void init_task() {
 		idle->pid = pool_alloc(tpool);
 		idle->map = map_clone();
 		idle->flags = TF_READY | TF_SUPER;
+		tss_set_esp(SSTACK_INI);
 
 		// Make sure the scheduler works
 		queue.next = 0;
@@ -24,6 +25,9 @@ void init_task() {
 
 		// Fork task 1
 		task_switch(task_new(task_get(0)));
+
+		// Mark task 0 as gone
+		idle->magic = 0;
 
 	cursek(74, -1);
 	printk("[done]");

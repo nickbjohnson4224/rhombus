@@ -66,6 +66,7 @@ image_t *sret(image_t *image) {
 	// Unblock the caller
 	t = task_get(curr_pid);
 	src_t = task_get(t->caller);
+	if (!src_t) panic("invalid caller");
 	if (image->eax & TF_UNBLK) 
 		src_t->flags &= ~TF_BLOCK;
 

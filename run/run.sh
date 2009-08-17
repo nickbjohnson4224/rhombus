@@ -12,5 +12,5 @@ cat initrd_old.tar null.tar > initrd.tar
 cp initrd.tar mnt/initrd.tar
 cp kernel mnt/kernel
 umount /dev/loop4
-bochs -f bochsrc.txt -q
+echo "c" | bochs -f bochsrc.txt -q
 /sbin/losetup -d /dev/loop4

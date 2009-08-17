@@ -181,6 +181,11 @@ lsig:
 	pop edi
 	ret
 
+eout:
+	mov eax, [esp+4]
+	int 0x54
+	ret
+
 global inb
 global outb
 global inw
@@ -196,3 +201,17 @@ outb:
 	mov al, [esp+8]
 	out dx, al
 	ret
+
+global print_stub
+extern print_handler
+print_stub:
+	push ecx
+	push edx
+	push esi
+	
+	call print_handler
+
+	add esp, 12
+
+	push dword 3
+	call sret

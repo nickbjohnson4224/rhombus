@@ -100,6 +100,8 @@ void init_int() {
 		register_int(0x52, push_call);	// Copy memory to another address space
 		register_int(0x53, pull_call);	// Copy memory from another address space
 
+		register_int(0x54, eout_call);
+
 		// Register fault handlers
 		init_fault();
 

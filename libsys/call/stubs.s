@@ -14,6 +14,7 @@ global eout
 global rirq
 global rsig
 global lsig
+global eout
 
 fork:
 	push ebx
@@ -171,4 +172,9 @@ lsig:
 	int 0x47
 
 	pop edi
+	ret
+
+eout:
+	mov eax, [esp+4]
+	int 0x54
 	ret

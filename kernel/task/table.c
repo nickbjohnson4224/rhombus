@@ -11,10 +11,8 @@ pid_t curr_pid = 0;
 
 task_t *task_get(pid_t pid) {
 	if (pid >= MAX_TASKS) return NULL;
-	if ((page_get((uint32_t) &task[pid]) & PF_PRES) == 0) {
-		p_alloc((uint32_t) &task[pid], (PF_PRES | PF_RW));
-		pgclr((void*) &task[pid]);
-	}
+	if ((page_get((uint32_t) &task[pid]) & PF_PRES) == 0)
+		return NULL;
 	return (task[pid].magic == 0x4224) ? &task[pid] : NULL;
 }
 
@@ -53,6 +51,7 @@ uint32_t task_rem(task_t *t) {
 }
 
 image_t *task_switch(task_t *t) {
+//	printk("task_switch %d\n", t->pid);
 	curr_pid = t->pid;
 
 	map_load(t->map);
