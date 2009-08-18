@@ -189,6 +189,7 @@ eout:
 global inb
 global outb
 global inw
+global outw
 
 inb:
 	mov dx, [esp+4]
@@ -202,6 +203,12 @@ outb:
 	out dx, al
 	ret
 
+outw:
+	mov dx, [esp+4]
+	mov ax, [esp+8]
+	out dx, ax
+	ret
+
 global print_stub
 extern print_handler
 print_stub:
@@ -213,5 +220,27 @@ print_stub:
 
 	add esp, 12
 
+	push dword 3
+	call sret
+
+global draw_stub
+extern draw_handler
+draw_stub:
+	push edx
+	push ebx
+	push eax
+
+	call draw_handler
+
+	add esp, 12
+	
+	push dword 3
+	call sret
+
+global flip_stub
+extern flip_handler
+flip_stub:
+	call flip_handler
+	
 	push dword 3
 	call sret

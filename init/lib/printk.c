@@ -51,6 +51,9 @@ void cleark() {
 void printk_list(char *fmt, u32int *argv) {
 	char buffer[32];
 	int i, n = 0;
+
+	pull(0, 0xB8000, (u32int) video_mem, 4000); // Sync up from vmem to get kernel output
+
 	for (i = 0; fmt[i]; i++) {
 		if (fmt[i] == '%') {
 			switch (fmt[i+1]) {

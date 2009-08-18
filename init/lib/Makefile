@@ -1,4 +1,4 @@
-SOURCES=string.o printk.o
+SOURCES=string.o printk.o vga.o
 LDFLAGS=-r
 ASFLAGS=-felf
 

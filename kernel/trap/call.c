@@ -172,6 +172,8 @@ image_t *push_call(image_t *image) {
 	task_t *t;
 	uint32_t i;
 
+//	printk("PUSH %d:%x -> %d:%x >%d\n", curr_pid, src, targ, dst, size);
+
 	// Bounds check addresses
 	if (src + size > LSPACE || dst + size > LSPACE) ret(image, EPERMIT);
 	if (size > 0x4000) ret(image, EPERMIT);	// Limit writes to 16K
@@ -209,6 +211,8 @@ image_t *pull_call(image_t *image) {
 	uint32_t targ = image->eax;
 	task_t *t;
 	uint32_t i;
+
+//	printk("PULL %d:%x -> %d:%x >%d\n", targ, src, curr_pid, dst, size);
 
 	// Bounds check addresses
 	if (src + size > LSPACE || dst + size > LSPACE) ret(image, EPERMIT);
