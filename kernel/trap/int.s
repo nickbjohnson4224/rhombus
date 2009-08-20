@@ -121,5 +121,4 @@ int_common:
 
 	popa
 	add esp, 12
-	sti
 	iret

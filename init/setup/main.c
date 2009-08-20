@@ -3,11 +3,12 @@
 #include <driver.h>
 
 void death() {
+	sret(3);
 }
 
 void segfault() {
 	uint32_t addr;
-	asm volatile ("mov %%edi, %0" : "=r" (addr));
+	asm volatile ("mov %%edx, %0" : "=r" (addr));
 	printk("segfault @ 0x%x\n", addr);
 	exit(1);
 }

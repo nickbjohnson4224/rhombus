@@ -51,6 +51,7 @@ NULL, 	NULL, 	NULL,	NULL,	NULL,	NULL,	NULL,	NULL
 __attribute__ ((section(".ttext")))
 void init_idt() {
 	uint32_t i;
+	memclr(int_handlers, sizeof(handler_t) * 256);
 	memset((uint8_t*) &idt[0], 0, sizeof(struct idt_entry) * 256);
 	for (i = 0; i <= 47; i++) if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0x8E);
 	for (i = 64;i <= 96; i++) if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0xEE);

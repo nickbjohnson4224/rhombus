@@ -101,9 +101,9 @@ start:
 	popf
 
 	call init
-	sti
 
 .loop:
+	sti
 	jmp .loop
 
 section .ttext

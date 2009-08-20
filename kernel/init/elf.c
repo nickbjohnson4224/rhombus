@@ -20,10 +20,8 @@ void elf_load_segment(uint8_t *src, elf_ph_t *seg) {
 
 	// Allocate adequate memory
 	uint32_t i = ((uint32_t) dest_base) &~ 0xFFF;
-	for (; i < dest_limit; i += 0x1000) {
-		printk("ELF allocating %x\n", i);
+	for (; i < dest_limit; i += 0x1000)
 		p_alloc(i, (PF_USER | PF_PRES | PF_RW));
-	}
 
 	// Copy data
 	memcpy(dest_base, src_base, seg->p_filesz);
