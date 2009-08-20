@@ -208,39 +208,3 @@ outw:
 	mov ax, [esp+8]
 	out dx, ax
 	ret
-
-global print_stub
-extern print_handler
-print_stub:
-	push ecx
-	push edx
-	push esi
-	
-	call print_handler
-
-	add esp, 12
-
-	push dword 3
-	call sret
-
-global draw_stub
-extern draw_handler
-draw_stub:
-	push edx
-	push ebx
-	push eax
-
-	call draw_handler
-
-	add esp, 12
-	
-	push dword 3
-	call sret
-
-global flip_stub
-extern flip_handler
-flip_stub:
-	call flip_handler
-	
-	push dword 3
-	call sret

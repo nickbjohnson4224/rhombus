@@ -65,7 +65,7 @@ void init_mem();
 void init_free();
 void init_int();
 void init_kload();
-void init_libsys();
+void init_user_init();
 void init_sysmap();
 void init_task();
 void init_fault();

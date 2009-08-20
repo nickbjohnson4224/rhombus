@@ -1,9 +1,10 @@
 SOURCES=init/init.o lib/lib.o mem/mem.o trap/trap.o task/task.o
-export CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc $(OPTS)
+export CFLAGS=-nostdlib -nostdinc -fno-builtin -I$(BUILDDIR)/kernel/inc -I$(BUILDDIR)/inc $(OPTS)
 LDFLAGS=-Tlink.ld
 ASFLAGS=-felf
 
-all: inc/config.h $(SOURCES) link
+all: $(SOURCES) link
+	make -C libkernel
 
 lib/lib.o: lib/*.c lib/*.s inc/lib.h
 	make -C lib
@@ -29,4 +30,6 @@ clean:
 	make -C mem clean
 	make -C trap clean
 	make -C task clean
+	make -C libkernel clean
 	rm kernel
+	

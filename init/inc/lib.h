@@ -32,6 +32,7 @@ void printk(char *fmt, ...);
 void cwrite(char c);
 void colork(u8int color);
 void cursek(u8int x, u8int y);
+void sync();
 #define printf printk
 #define colorf colork
 #define curse cursek

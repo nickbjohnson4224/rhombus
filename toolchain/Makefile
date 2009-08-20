@@ -1,6 +1,6 @@
 SOURCES=
 export CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc $(OPTS)
-LDFLAGS=-Tlink.ld
+LDFLAGS=-Tlink.ld -L$(BUILDDIR)/lib
 ASFLAGS=-felf
 
 all: $(SOURCES) link

@@ -30,7 +30,7 @@ void elf_load_segment(uint8_t *src, elf_ph_t *seg) {
 	if (seg->p_flags & PF_W) {
 		i = ((uint32_t) dest_base) & ~0xFFF;
 		for (; i < dest_limit; i+= 0x1000)
-			page_set(i, page_fmt(page_get(i), PF_USER | PF_PRES));
+			page_set(i, page_fmt(page_get(i), PF_USER | PF_PRES | PF_RW));
 	}
 
 }

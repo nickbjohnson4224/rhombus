@@ -31,10 +31,10 @@ void init_task() {
 
 	cursek(74, -1);
 	printk("[done]");
-	printk("  Kernel: loading libsys");
+	printk("  Kernel: loading init");
 
-		// Load the system library from the initrd
-		init_libsys();
+		// Load init from the initrd
+		init_user_init();
 
 	cursek(74, -1);
 	printk("[done]");

@@ -16,6 +16,13 @@ void *memclr(void *dest, uint32_t size) {
 	return dest;
 }
 
+void *memcpy(void *dest, void *src, uint32_t size) {
+	uint32_t i;
+	uint8_t *dest8 = dest, *src8 = src;
+	for (i = 0; i < size; i++) dest8[i] = src8[i];
+	return dest;
+}
+
 void *pgclr(register uint32_t *base) {
 	return memclr(base, 0x1000);
 }

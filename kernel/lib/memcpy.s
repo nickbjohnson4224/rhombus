@@ -2,10 +2,11 @@
 
 [BITS 32]
 
-global memcpy
+;global memcpy
 memcpy:
 	push esi
 	push edi
+
 	mov edi, [esp+12]
 	mov esi, [esp+16]
 	mov ecx, [esp+20]

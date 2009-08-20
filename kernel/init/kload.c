@@ -59,13 +59,13 @@ void init_kload() {
 }
 
 __attribute__ ((section(".ttext")))
-void init_libsys() {
+void init_user_init() {
 	uint32_t i, n;
 	task_t *t;
 
 	// Check for libsys header
-	for (n = 0; n < 256; n++) if (header[n] && !strcmp(header[n]->name, "libsys")) break;
-	if (n == 256) panic("No system library found");
+	for (n = 0; n < 256; n++) if (header[n] && !strcmp(header[n]->name, "init")) break;
+	if (n == 256) panic("No userspace init found");
 
 	// Set up a stack for the process image
 	t = task_get(curr_pid);
@@ -79,7 +79,7 @@ void init_libsys() {
 	pgclr((void*) SIG_TBL);
 
 	// Load libsys image
-	if (elf_check(header_contents(header[n]))) panic("libsys is not valid ELF");
+	if (elf_check(header_contents(header[n]))) panic("init is not valid ELF");
 
 	// Setup process image
 	t->tss_esp = SSTACK_INI - sizeof(image_t);

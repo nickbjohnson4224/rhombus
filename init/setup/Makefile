@@ -4,9 +4,6 @@ ASFLAGS=-felf
 
 all: $(SOURCES) link
 
-main.o: main.c
-	$(CC) $(CFLAGS) -O0 -c -o main.o main.c
-
 link:
 	ld $(LDFLAGS) -o setup.o $(SOURCES)
 

@@ -196,8 +196,8 @@ int vga_write(int x, int y, u32int buffer, u16int size) {
 
 int vga_flip(u32int buffer) {
 	u32int i = 0;
-	for (i = 0; i < scrdim[0] * scrdim[1]; i += 0x4000)
-		push(0, 0xA0000 + i, buffer + i, min((scrdim[0] * scrdim[1]) - i, 0x4000));
+	for (i = 0; i + 0x100 < scrdim[0] * scrdim[1]; i += 0x100)
+		push(0, 0xA0000 + i, buffer + i, min((scrdim[0] * scrdim[1]) - i, 0x200));
 
 	return 0;
 }

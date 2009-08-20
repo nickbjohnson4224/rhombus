@@ -7,7 +7,7 @@ static u16int c_base = 0;
 static u16int cursor = 0;
 static u8int attr = 0x0F;
 
-static void sync() {
+void sync() {
 	push(0, 0xB8000, (u32int) video_mem,  4000);
 
 	outb(0x3D4, 15);
@@ -22,6 +22,8 @@ static void scroll() {
     for (i = 1920; i < 2000; i++) video_mem[i] = 0x0F20;
 	c_base -= 80;
 	cursor -= 80;
+
+	sync();
 }
 
 void cwrite(char c) {
@@ -52,14 +54,14 @@ void printk_list(char *fmt, u32int *argv) {
 	char buffer[32];
 	int i, n = 0;
 
-	pull(0, 0xB8000, (u32int) video_mem, 4000); // Sync up from vmem to get kernel output
+//	pull(0, 0xB8000, (u32int) video_mem, 4000); // Sync up from vmem to get kernel output
 
 	for (i = 0; fmt[i]; i++) {
 		if (fmt[i] == '%') {
 			switch (fmt[i+1]) {
 				case 'd': swrite(itoa(argv[n++], buffer, 10)); break;
 				case 'x': swrite(itoa(argv[n++], buffer, 16)); break;
-				case 'c': cwrite((char) argv[n++]); break;
+				case 'c': cwrite((char) argv[n++] & 0xFF); break;
 				case 's': swrite((char*) argv[n++]); break;
 			}
 			i++;

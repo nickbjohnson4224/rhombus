@@ -21,8 +21,8 @@ void map_temp(map_t map) {
 	page_flush();
 }
 
-map_t map_alloc(map_t map) {
-	map = frame_new();
+map_t map_alloc() {
+	map_t map = frame_new();
 
 	// Allocate and clear new map
 	page_set((uint32_t) tsrc, page_fmt(map, (PF_PRES | PF_RW)));
@@ -59,7 +59,7 @@ map_t map_clone() {
 	map_t dest;
 
 	// Create new map
-	dest = map_alloc(dest);
+	dest = map_alloc();
 	map_temp(dest);
 
 	// Link kernel/libspace (except for recursive mapping)
