@@ -7,7 +7,7 @@ all: $(SOURCES) link
 	install -t $(BUILDDIR)/inc inc/kernel.h -m 644
 
 link:
-	ld $(LDFLAGS) -o libkernel.o $(SOURCES)
+	$(LD) -o libkernel.o $(SOURCES) $(LDFLAGS)
 	ar rcs libkernel.a libkernel.o
 
 clean:

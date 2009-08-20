@@ -16,23 +16,17 @@ void elf_load_segment(uint8_t *src, elf_ph_t *seg) {
 
 	// Get pointer to destination
 	uint8_t *dest_base = (uint8_t*) seg->p_vaddr;
-	uint32_t dest_limit = ((uint32_t) dest_base + seg->p_memsz + 0x1000) & ~0xFFF;
+	uint32_t dest_limit = ((uint32_t) dest_base + seg->p_memsz + 0x1000) &~ 0xFFF;
 
 	// Allocate adequate memory
-	uint32_t i = ((uint32_t) dest_base) & ~0xFFF;
-	for (; i < dest_limit; i += 0x1000)
-		p_alloc(i, PF_USER);
+	uint32_t i = ((uint32_t) dest_base) &~ 0xFFF;
+	for (; i < dest_limit; i += 0x1000) {
+		printk("ELF allocating %x\n", i);
+		p_alloc(i, (PF_USER | PF_PRES | PF_RW));
+	}
 
 	// Copy data
 	memcpy(dest_base, src_base, seg->p_filesz);
-
-	// Set proper flags (i.e. remove write flag if needed)
-	if (seg->p_flags & PF_W) {
-		i = ((uint32_t) dest_base) & ~0xFFF;
-		for (; i < dest_limit; i+= 0x1000)
-			page_set(i, page_fmt(page_get(i), PF_USER | PF_PRES | PF_RW));
-	}
-
 }
 
 __attribute__ ((section(".ttext")))

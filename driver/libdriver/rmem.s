@@ -2,10 +2,12 @@
 
 section .text
 
-global push
-global pull
+global push_call
+global pull_call
+global rirq_call
+global lirq_call
 
-push:
+push_call:
 	push ebp
 	mov ebp, esp
 	add ebp, 4
@@ -27,7 +29,7 @@ push:
 	pop ebp
 	ret
 
-pull:
+pull_call:
 	push ebp
 	mov ebp, esp
 	add ebp, 4
@@ -47,4 +49,14 @@ pull:
 	sub ebp, 4
 	mov esp, ebp
 	pop ebp
+	ret
+
+rirq_call:
+	mov eax, [esp+4]
+	int 0x50
+	ret
+
+lirq_call:
+	mov eax, [esp+4]
+	int 0x51
 	ret

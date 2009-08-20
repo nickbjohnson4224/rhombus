@@ -185,26 +185,3 @@ eout:
 	mov eax, [esp+4]
 	int 0x54
 	ret
-
-global inb
-global outb
-global inw
-global outw
-
-inb:
-	mov dx, [esp+4]
-	mov eax, 0
-	in al, dx
-	ret
-
-outb:
-	mov dx, [esp+4]
-	mov al, [esp+8]
-	out dx, al
-	ret
-
-outw:
-	mov dx, [esp+4]
-	mov ax, [esp+8]
-	out dx, ax
-	ret

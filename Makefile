@@ -1,5 +1,8 @@
 export BUILDDIR=$(PWD)
 
+export LD=/usr/khaos/bin/i586-elf-ld
+export LIBRARY_PATH=$(PWD)/lib
+
 export CC=/usr/khaos/bin/i586-elf-gcc
 #export CC=tcc
 FLAGS=-march=i586 -pipe -Wall -Werror -Wextra
@@ -13,8 +16,8 @@ export OPTS=$(FLAGS) -fomit-frame-pointer -O3
 
 all:
 	make -C kernel
-	make -C init
 	make -C driver
+	make -C init
 
 clean:
 	make -C kernel clean

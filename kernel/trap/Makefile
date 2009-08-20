@@ -6,7 +6,7 @@ ASFLAGS=-felf
 all: $(SOURCES) link
 
 link:
-	ld $(LDFLAGS) -o trap.o $(SOURCES)
+	$(LD) -o trap.o $(SOURCES) $(LDFLAGS)
 
 clean:
 	rm $(SOURCES) trap.o

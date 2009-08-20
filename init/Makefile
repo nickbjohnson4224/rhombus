@@ -1,12 +1,12 @@
 SOURCES=lib/lib.o setup/setup.o
 export CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc -I$(BUILDDIR)/inc $(OPTS)
-LDFLAGS=-L$(BUILDDIR)/lib
+LDFLAGS=-L$(BUILDDIR)/lib -ldriver
 ASFLAGS=-felf
 
 all: $(SOURCES) link
 
 link:
-	ld $(LDFLAGS) -o init $(SOURCES)
+	$(LD) -o init $(SOURCES) $(LDFLAGS)
 
 lib/lib.o: lib/*.c
 	make -C lib

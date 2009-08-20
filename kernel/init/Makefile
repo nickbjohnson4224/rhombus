@@ -6,7 +6,7 @@ ASFLAGS=-felf
 all: $(SOURCES) link
 
 link:
-	ld $(LDFLAGS) -o init.o $(SOURCES)
+	$(LD) -o init.o $(SOURCES) $(LDFLAGS)
 
 clean:
 	rm $(SOURCES) init.o

@@ -5,7 +5,7 @@ ASFLAGS=-felf
 all: $(SOURCES) link
 
 link:
-	ld $(LDFLAGS) -o cdrv.o $(SOURCES)
+	$(LD) -o cdrv.o $(SOURCES) $(LDFLAGS)
 
 clean:
 	rm $(SOURCES) cdrv.o

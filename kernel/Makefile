@@ -22,7 +22,7 @@ task/task.o: task/*.c inc/task.h
 	make -C task
 
 link:
-	ld $(LDFLAGS) -o kernel $(SOURCES)
+	$(LD) -o kernel $(SOURCES) $(LDFLAGS)
 
 clean:
 	make -C lib clean

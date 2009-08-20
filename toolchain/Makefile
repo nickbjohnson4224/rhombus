@@ -24,7 +24,7 @@ info/info.o: info/*.c inc/info.h
 	make -C info
 
 link:
-	ld $(LDFLAGS) -o libsys $(SOURCES)
+	ld -o libsys $(SOURCES) $(LDFLAGS)
 
 clean:
 	make -C init clean

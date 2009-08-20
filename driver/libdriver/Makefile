@@ -7,7 +7,7 @@ all: $(SOURCES) link
 	install -t $(BUILDDIR)/inc inc/driver.h -m 644
 
 link:
-	ld $(LDFLAGS) -o libdriver.o $(SOURCES)
+	$(LD) -o libdriver.o $(SOURCES) $(LDFLAGS)
 	ar rcs libdriver.a libdriver.o
 
 clean:
