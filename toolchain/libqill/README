@@ -1,0 +1,13 @@
+libQILL - The QILL Integrated LLVM Library
+
+This will be a simplified LLVM library implementation, written in C, 
+that allows the use of LLVM bitcode as a dynamically loadable tool 
+extension format, as well as it's normal uses. It is intended to 
+facilitate the construction of a drop in replacement for the LLVM/Clang 
+toolchain, independent of C++ and the LLVM build system, which will 
+serve as the standard Khaos toolchain.
+
+Said toolchain will remain fully interoperable with LLVM, and most 
+likely not surpass it in speed, but instead in code simplicity and 
+degree of integration into the Khaos system. The intent is *not* to 
+compete directly with LLVM.
