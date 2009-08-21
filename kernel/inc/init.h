@@ -60,18 +60,19 @@ struct tar_header {
 	char padding[255];
 } __attribute__ ((packed));
 
-void init_detect();
-void init_mem();
-void init_free();
-void init_int();
-void init_kload();
-void init_user_init();
-void init_sysmap();
-void init_task();
-void init_fault();
-void init_tss();
-void init_idt();
-void init_pit();
-void init_initrd_rmap();
+void init(void *mboot_ptr, uint32_t mboot_magic);
+void init_detect(void);
+void init_mem(void);
+void init_free(void);
+void init_int(void);
+void init_kload(void);
+void init_user_init(void);
+void init_sysmap(void);
+void init_task(void);
+void init_fault(void);
+void init_tss(void);
+void init_idt(void);
+void init_pit(void);
+void init_initrd_rmap(void);
 
 #endif /*INIT_H*/

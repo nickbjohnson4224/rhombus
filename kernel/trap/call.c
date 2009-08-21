@@ -51,11 +51,11 @@ image_t *fork_call(image_t *image) {
 	if (!child) ret(image, 0);
 	image->eax = child->pid;
 	image = task_switch(child);
-	ret(image, -parent);
+	ret(image, (uint32_t) (-parent));
 }
 
 image_t *exit_call(image_t *image) {
-	uint32_t dead_task = curr_pid;
+	pid_t dead_task = curr_pid;
 	uint32_t ret_val = image->eax;
 	if (dead_task == 1) {
 		asm volatile ("sti");
@@ -69,8 +69,8 @@ image_t *exit_call(image_t *image) {
 }
 
 image_t *sint_call(image_t *image) {
-	return signal(image->edi, image->esi & 0xFF, 
-		image->eax, image->ebx, image->ecx, image->edx, (image->esi >> 8) & 0xFF);
+	return signal((pid_t) image->edi, (uint8_t) (image->esi & 0xFF), 
+		image->eax, image->ebx, image->ecx, image->edx, (uint8_t) ((image->esi >> 8) & 0xFF));
 }
 
 image_t *sret_call(image_t *image) {

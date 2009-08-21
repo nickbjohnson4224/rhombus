@@ -50,10 +50,10 @@ typedef uint32_t map_t;
 
 /****** MAP.C *****/
 void  map_temp(map_t map);				// Puts a map in temporary space
-map_t map_alloc();						// Allocates a new map
+map_t map_alloc(void);					// Allocates a new map
 map_t map_free(map_t map);				// Frees a map (does not clean)
 map_t map_clean(map_t map);				// Cleans a map (frees all *user* memory)
-map_t map_clone();						// Clones the current map
+map_t map_clone(void);					// Clones the current map
 map_t map_load(map_t map);				// Activates a new map
 
 /***** FRAME.C ******/

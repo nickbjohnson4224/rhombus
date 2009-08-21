@@ -7,13 +7,13 @@
 uint32_t *signal_table = (void*) SIG_TBL;
 uint32_t *signal_map = (void*) SIG_MAP;
 
-image_t *signal(pid_t task, uint8_t sig, 
+image_t *signal(pid_t targ, uint8_t sig, 
 	uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3, uint8_t flags) {
 	task_t *t, *src_t;
 	pid_t caller = curr_pid;
 
 	// Check existence of target
-	t = task_get(task);
+	t = task_get(targ);
 	src_t = task_get(caller);
 	if (!t) {
 		if (flags & TF_NOERR) return src_t->image;
@@ -44,7 +44,7 @@ image_t *signal(pid_t task, uint8_t sig,
 	t->tss_esp = (uint32_t) t->image; // Will now create image below old image
 	t->image = (void*) ((uint32_t) t->image - sizeof(image_t));
 	if ((uint32_t) t->image < SSTACK_BSE + sizeof(image_t) && !(flags & TF_SUPER)) 
-		signal(task, S_IMG, 0, 0, 0, 0, TF_SUPER);
+		signal(targ, S_IMG, 0, 0, 0, 0, TF_SUPER);
 
 	// Set registers to describe signal
 	t->image->eax = arg0;

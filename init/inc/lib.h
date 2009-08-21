@@ -46,7 +46,7 @@ extern int mmap(addr_t addr, u32int size, u32int flags);
 extern int umap(addr_t addr, u32int size);
 extern int push(int target, addr_t dest, addr_t src, u32int size);
 extern int pull(int target, addr_t src, addr_t dest, u32int size);
-extern void eout(char *message);
+extern void eout(const char *message);
 extern void rirq(u32int irq);
 extern int rsig(u32int sig, u32int handler);
 extern int lsig(u32int sig);

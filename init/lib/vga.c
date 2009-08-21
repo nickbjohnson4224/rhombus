@@ -157,21 +157,21 @@ int vga_init(u32int width, u32int height, int chain4) {
 	for (a = 0; a < 42; a++) {
 		outb(0x3C8, (u8int) a + 128);
 		u8int hue = a % 6;
-		u8int val = (a >> 3) % 7;
+		u8int value = (a >> 3) % 7;
 		if (val == 3) {
 			outb(0x3C9, hue_table[hue][0]);
 			outb(0x3C9, hue_table[hue][1]);
 			outb(0x3C9, hue_table[hue][2]);
 		}
 		else if (val > 3) {
-			outb(0x3C9, (hue_table[hue][0]) ? hue_table[hue][0] : (val - 3) * 0x10);
-			outb(0x3C9, (hue_table[hue][1]) ? hue_table[hue][1] : (val - 3) * 0x10);
-			outb(0x3C9, (hue_table[hue][2]) ? hue_table[hue][2] : (val - 3) * 0x10);
+			outb(0x3C9, (hue_table[hue][0]) ? hue_table[hue][0] : (value - 3) * 0x10);
+			outb(0x3C9, (hue_table[hue][1]) ? hue_table[hue][1] : (value - 3) * 0x10);
+			outb(0x3C9, (hue_table[hue][2]) ? hue_table[hue][2] : (value - 3) * 0x10);
 		}
 		else {
-			outb(0x3C9, (hue_table[hue][0]) ? val * 0x10 : hue_table[hue][0]);
-			outb(0x3C9, (hue_table[hue][1]) ? val * 0x10 : hue_table[hue][1]);
-			outb(0x3C9, (hue_table[hue][2]) ? val * 0x10 : hue_table[hue][2]);
+			outb(0x3C9, (hue_table[hue][0]) ? value * 0x10 : hue_table[hue][0]);
+			outb(0x3C9, (hue_table[hue][1]) ? value * 0x10 : hue_table[hue][1]);
+			outb(0x3C9, (hue_table[hue][2]) ? value * 0x10 : hue_table[hue][2]);
 		}
 	}
 

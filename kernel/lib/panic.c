@@ -2,7 +2,7 @@
 
 #include <lib.h>
 
-void panic(char *message) {
+void panic(const char *message) {
 	colork(0x7);
 	printk("Kernel panic: %s\n", message);
 	asm volatile ("cli");

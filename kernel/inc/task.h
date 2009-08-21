@@ -27,7 +27,7 @@ to this function are in the order shown as registers */
 
 image_t *signal(uint16_t task, uint8_t sig, 
 	uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3, uint8_t flags);
-image_t *sret();
+image_t *sret(image_t *image);
 
 // The signal table is mapped in all address spaces
 extern uint32_t *signal_table;

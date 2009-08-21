@@ -1,40 +1,12 @@
 // Copyright 2009 Nick Johnson
 
 #include <lib.h>
-#include <mem.h>
 #include <init.h>
+#include <mem.h>
 
 // Assume at least 4MB of memory, because we can (it's a 386+)
 uint32_t memsize = 0x400000;
 uint32_t proto_base = KSPACE + 0x400000;
-
-#ifdef TEST
-void test_mem() {
-	uint32_t i;	
-
-	// Find number of used frames
-	printk("%x frames used\n", pool_query(fpool));
-
-	// Allocate 200 frames
-	for (i = 0x42240000; i < 0x44220000; i += 0x1000)
-		p_alloc(i, (PF_PRES | PF_RW));
-	
-	// Find number of used frames
-	printk("%x frames used\n", pool_query(fpool));
-
-	// Free 200 frames in order
-	for (i = 0x42240000; i < 0x44220000; i += 0x1000)
-		p_free(i);
-
-	// Find number of used frames
-	printk("%x frames used\n", pool_query(fpool));
-
-	// Clone a few tables
-	map_t maps[42];
-	for (i = 0; i < 42; i++) maps[i] = map_clone();
-
-}
-#endif
 
 __attribute__ ((section(".ttext"))) 
 void init_mem() {

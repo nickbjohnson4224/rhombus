@@ -31,7 +31,7 @@ int init() {
 
 	char buffer1[100];
 
-	strcpy(buffer2, "hot potato");
+	strcpy(buffer2, (char*) "hot potato");
 
 	while(1) {
 		eout("2 -> 1: ");

@@ -14,7 +14,7 @@ image_t *pit_handler(image_t *state);
 #define IRQ(n) (n + 32)
 #define DEIRQ(n) (n - 32)
 void register_int(uint8_t n, handler_t handler);
-void tss_set_esp();
+void tss_set_esp(uint32_t esp);
 
 /***** SYSTEM CALLS *****/
 image_t *fork_call(image_t *image);	//0x40
@@ -42,5 +42,8 @@ image_t *fault_generic(image_t *image);
 image_t *fault_page(image_t *image);
 image_t *fault_float(image_t *image);
 image_t *fault_double(image_t *image);
+
+/***** COMMON INTERRUPT HANDLER *****/
+void *int_handler(image_t *image);
 
 #endif /*TRAP_H*/

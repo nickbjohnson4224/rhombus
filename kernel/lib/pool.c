@@ -13,7 +13,7 @@ pool_t *pool_new(uint32_t size, pool_t *pool) {
 	for (i = 0; i < npool; i++) {
 		memclr(pool[i].word, sizeof(uint32_t) * 32);
 		pool[i].first = 0x0000;
-		pool[i].total = (i != npool - 1) ? 1024 : extra;
+		pool[i].total = (uint16_t) ((i < npool - 1) ? 1024 : extra);
 		pool[i].setup = 0x4224;
 		pool[i].upper = pool[i].total;
 	}
@@ -21,7 +21,7 @@ pool_t *pool_new(uint32_t size, pool_t *pool) {
 	return pool;
 }
 
-static inline void pool_full(pool_t *pool) {
+static void pool_full(pool_t *pool) {
 	printk("%x\n", pool_query(pool));
 	panic("pool allocator full");
 }
@@ -58,19 +58,19 @@ uint32_t pool_free(pool_t *pool, uint32_t pos) {
 
 	// Clear bit and set metadata
 	pool[p].word[w] &= ~(0x1 << b);
-	pool[p].first = min(pool[p].first, ((w << 5) | b));
+	pool[p].first = (uint16_t) min(pool[p].first, ((w << 5) | b));
 	pool[p].total ++;
 
 	return 0;
 }
 
 uint32_t pool_query(pool_t *pool) {
-	uint32_t total, p;
+	int total, p;
 	
 	// Tally usage of all pools
 	total = 0;
 	for (p = 0; pool[p].setup; p++)
 		total += (pool[p].upper - pool[p].total);
 
-	return total;
+	return (uint32_t) total;
 }

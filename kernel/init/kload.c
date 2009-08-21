@@ -18,7 +18,7 @@ uint32_t initrd_size;
 
 __attribute__ ((section(".ttext")))
 static int tar_header_check(struct tar_header *t) {
-	uint32_t i, sum = 0;
+	int i, sum = 0;
 	uint8_t *header_byte = (uint8_t*) t;
 	for (i = 0;   i < 512; i++) sum += header_byte[i];
 	for (i = 148; i < 156; i++) sum -= header_byte[i]; 	// Discount checksum itself
@@ -64,7 +64,7 @@ void init_user_init() {
 	task_t *t;
 
 	// Check for libsys header
-	for (n = 0; n < 256; n++) if (header[n] && !strcmp(header[n]->name, "init")) break;
+	for (n = 0; n < 256; n++) if (header[n] && !strcmp(header[n]->name, (char*) "init")) break;
 	if (n == 256) panic("No userspace init found");
 
 	// Set up a stack for the process image
@@ -91,7 +91,7 @@ void init_user_init() {
 	t->image->eip = elf_load(header_contents(header[n]));
 	for (i = 0; i < 1024; i++) signal_table[i] = 0;
 	t->image->cs = 0x1B;
-	extern uint32_t get_eflags();
+	extern uint32_t get_eflags(void);
 	t->image->eflags = get_eflags() | 0x3200; // Turns on interrupts, IOPL=3 in eflags
 }
 

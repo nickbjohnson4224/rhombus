@@ -40,7 +40,7 @@ uint32_t strlen(char *str) {
 	return i;
 }
 
-uint32_t atoi(char *str, uint8_t base) {
+int atoi(char *str, uint8_t base) {
 	int n = 0, i, neg;
 	if (str[0] == '-') neg = 1;
 	else neg = 0;

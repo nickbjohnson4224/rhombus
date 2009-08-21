@@ -11,7 +11,7 @@
 #define KHAOS_KERNEL_REVISN 1
 
 __attribute__ ((section(".tdata"))) 
-char *stamp = "\
+const char *stamp = "\
 Khaos Operating System v%d.%d\n\
 Copyright 2009 Nick Johnson\n\
 ===========================\n\n";

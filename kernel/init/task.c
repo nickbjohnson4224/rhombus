@@ -14,7 +14,7 @@ void init_task() {
 		// Bootstrap task 0, because there is nothing to fork from
 		task_touch(0);
 		task_t *idle = task_get(0);
-		idle->pid = pool_alloc(tpool);
+		idle->pid = (pid_t) pool_alloc(tpool);
 		idle->map = map_clone();
 		idle->flags = TF_READY | TF_SUPER;
 		tss_set_esp(SSTACK_INI);

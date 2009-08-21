@@ -5,7 +5,10 @@ export LIBRARY_PATH=$(PWD)/lib
 
 export CC=/usr/khaos/bin/i586-elf-gcc
 #export CC=tcc
-FLAGS=-march=i586 -pipe -Wall -Werror -Wextra
+FLAGS=-march=i586 -pipe -Wall -Werror -Wextra -Wshadow \
+	-Wpointer-arith -Wcast-align -Wwrite-strings \
+#	-Wmissing-declarations -Wredundant-decls \
+#	-Winline -Wno-long-long -Wconversion -Wstrict-prototypes
 
 # make sure GCC works with *all* of these flag sets
 # also make sure TCC works with the last one

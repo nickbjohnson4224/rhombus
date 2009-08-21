@@ -4,10 +4,11 @@
 #define LIB_H
 
 #include <config.h>
+#include <stdint.h>
 
-typedef unsigned int uint32_t;
-typedef unsigned short uint16_t;
-typedef unsigned char uint8_t;
+//typedef unsigned int uint32_t;
+//typedef unsigned short uint16_t;
+//typedef unsigned char uint8_t;
 typedef unsigned int addr_t;
 
 /***** STANDARD FUNCTIONS *****/
@@ -26,22 +27,22 @@ void *pgclr(uint32_t *base);
 char *strcpy(char *dest, char *src);
 int strcmp(char *s1, char *s2);
 uint32_t strlen(char *str);
-uint32_t atoi(char *str, uint8_t base);
+int atoi(char *str, uint8_t base);
 char *itoa(uint32_t n, char *buf, uint8_t base);
 
 /***** OUTPUT FUNCTIONS *****/
-void cleark();
-void printk(char *fmt, ...);
+void cleark(void);
+void printk(const char *fmt, ...);
 void colork(uint8_t color);
-void cursek(uint8_t x, uint8_t y);
+void cursek(int8_t x, int8_t y);
 
 /***** ERROR FUNCTIONS *****/
-void panic(char *message);		// Panic with a message
+void panic(const char *message);		// Panic with a message
 
-#define ENOTASK (-1)
-#define ENOSIG (-2)
-#define EPERMIT (-3)
-#define EREPEAT (-4)
+#define ENOTASK ((uint32_t) -1)
+#define ENOSIG ((uint32_t) -2)
+#define EPERMIT ((uint32_t) -3)
+#define EREPEAT ((uint32_t) -4)
 
 /***** POOL ALLOCATOR *****/
 

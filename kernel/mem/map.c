@@ -3,14 +3,14 @@
 #include <lib.h>
 #include <mem.h>
 
-ptbl_t *cmap = (void*) PGE_MAP + 0x3FF000;
+ptbl_t *cmap = (void*) (PGE_MAP + 0x3FF000);
 page_t *ctbl = (void*) PGE_MAP;
-ptbl_t *tmap = (void*) TMP_MAP + 0x3FF000;
+ptbl_t *tmap = (void*) (TMP_MAP + 0x3FF000);
 page_t *ttbl = (void*) TMP_MAP;
-uint32_t *tsrc = (void*) KSPACE + 0x7F0000;
-uint32_t *tdst = (void*) KSPACE + 0x7E0000;
+uint32_t *tsrc = (void*) (KSPACE + 0x7F0000);
+uint32_t *tdst = (void*) (KSPACE + 0x7E0000);
 
-static inline void page_flush() {
+static inline void page_flush(void) {
 	register uint32_t cr3;
 	asm volatile("mov %%cr3, %0" : "=r" (cr3));
 	asm volatile("mov %0, %%cr3" : : "r" (cr3));

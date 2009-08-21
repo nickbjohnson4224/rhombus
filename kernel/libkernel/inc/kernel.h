@@ -13,7 +13,8 @@ void exit_call(int32_t value);
 
 // Interprocess communication
 #define SINT_BLOCK 1
-#define SRET_UNBLOCK 2
+#define SRET_UNBLOCK_SELF 1
+#define SRET_UNBLOCK_CALLER 2
 
 int32_t sint_call(uint32_t target, uint8_t signal, uint32_t arg0,
 	uint32_t arg1, uint32_t arg2, uint32_t arg3, uint8_t flags);

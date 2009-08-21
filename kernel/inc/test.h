@@ -3,6 +3,6 @@
 
 //#define TEST
 
-void test_mem();
+void test_mem(void);
 
 #endif
