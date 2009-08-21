@@ -72,7 +72,7 @@ void init_user_init() {
 
 	for (i = USTACK_BSE; i < USTACK_TOP; i += 0x1000) p_alloc(i, (PF_USER | PF_RW));
 	for (i = SSTACK_BSE; i < SSTACK_TOP; i += 0x1000) p_alloc(i, (PF_USER | PF_RW));
-	t->image = (void*) (SSTACK_INI - (2 * sizeof(image_t)));
+	t->image = (void*) (SSTACK_INI - sizeof(image_t));
 
 	// Set up space for the signal handler table
 	p_alloc(SIG_TBL, (PF_USER | PF_RW));
@@ -82,7 +82,7 @@ void init_user_init() {
 	if (elf_check(header_contents(header[n]))) panic("init is not valid ELF");
 
 	// Setup process image
-	t->tss_esp = SSTACK_INI - sizeof(image_t);
+	t->tss_esp = SSTACK_INI;
 	t->image->useresp = USTACK_INI;
 	t->image->esp = USTACK_INI;
 	t->image->ebp = USTACK_INI;

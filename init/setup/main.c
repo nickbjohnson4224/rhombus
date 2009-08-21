@@ -12,7 +12,7 @@ void segfault() {
 	exit(1);
 }
 
-char buffer2[100];
+char buffer1[100], buffer2[100];
 int init() {
 	eout("    Init:");
 
@@ -23,31 +23,33 @@ int init() {
 	mmap(0x100000, 4000, 0x7);
 	printf("Hello, world!\n");
 
-	char buffer1[100];
+//	char buffer1[100], buffer2[100];
 
 	strcpy(buffer2, "hot potato");
 
-	printf("\n2 -> 1\n");
-	buffer1[0] = 0;
-	push_call(1, (uint32_t) buffer1, (uint32_t) buffer2, strlen(buffer2));
-	printf("1: %s\n", buffer1);
+	while(1) {
+		printf("\n2 -> 1\n");
+		buffer1[0] = 0;
+		push_call(1, (uint32_t) buffer1, (uint32_t) buffer2, strlen(buffer2));
+		printf("1: %s\n", buffer1);
 
-	printf("\n2 <- 1\n");
-	buffer2[0] = 0;
-	pull_call(1, (uint32_t) buffer1, (uint32_t) buffer2, strlen(buffer1));
-	printf("2: %s\n", buffer2);
+		printf("\n2 <- 1\n");
+		buffer2[0] = 0;
+		pull_call(1, (uint32_t) buffer1, (uint32_t) buffer2, strlen(buffer1));
+		printf("2: %s\n", buffer2);
 
-	printf("\n1 <- 2\n");
-	buffer1[0] = 0;
-	pull_call(1, (uint32_t) buffer2, (uint32_t) buffer1, strlen(buffer2));
-	printf("1: %s\n", buffer1);
+		printf("\n1 <- 2\n");
+		buffer1[0] = 0;
+		pull_call(1, (uint32_t) buffer2, (uint32_t) buffer1, strlen(buffer2));
+		printf("1: %s\n", buffer1);
 
-	printf("\n1 -> 2\n");
-	buffer2[0] = 0;
-	push_call(1, (uint32_t) buffer2, (uint32_t) buffer1, strlen(buffer1));
-	printf("2: %s\n", buffer1);
+		printf("\n1 -> 2\n");
+		buffer2[0] = 0;
+		push_call(1, (uint32_t) buffer2, (uint32_t) buffer1, strlen(buffer1));
+		printf("2: %s\n", buffer1);
 
-	printf("\ndone.\n");
+		printf("\ndone.\n");
+	}
 
 	for(;;);
 	return 0;

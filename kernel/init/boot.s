@@ -63,6 +63,7 @@ align 4
 extern init
 global start
 start:
+	cli
 	mov ecx, init_kmap - 0xFF000000	; Get physical address of the kernel address space
 	mov cr3, ecx	; Load address into CR3
 	mov ecx, cr4
@@ -104,6 +105,7 @@ start:
 
 .loop:
 	sti
+	hlt
 	jmp .loop
 
 section .ttext

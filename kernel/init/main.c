@@ -41,7 +41,7 @@ struct multiboot *mboot;
 
 typedef void (*entry_t)();
 
-void init(void *mboot_ptr, uint32_t mboot_magic) {
+uint32_t init(void *mboot_ptr, uint32_t mboot_magic) {
 	uint32_t i;
 
 	cleark();
@@ -60,4 +60,7 @@ void init(void *mboot_ptr, uint32_t mboot_magic) {
 	printk("  Kernel: dropping to usermode");
 	cursek(74, -1);
 	printk("[done]");
+
+	task_t *t = task_get(curr_pid);
+	return (uint32_t) t->image;
 }
