@@ -89,7 +89,6 @@ INTN	83 ; pull
 INTN	84 ; eout
 
 extern int_handler
-global int_return
 
 int_common:
 	pusha
@@ -114,7 +113,6 @@ int_common:
 	call int_handler
 	mov esp, eax
 
-int_return:
 	pop eax
 	mov ds, ax
 	mov es, ax

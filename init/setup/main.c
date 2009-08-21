@@ -7,48 +7,52 @@ void death() {
 }
 
 void segfault() {
-	printk("Segmentation Fault\n");
-	for(;;);
+	eout("Page Fault\n");
 	exit(1);
 }
 
-char buffer1[100], buffer2[100];
+void gepfault() {
+	eout("General Protection Fault\n");
+	exit(1);
+}
+
+void imgfault() {
+	eout("Image Stack Overflow (DoS)");
+	exit(1);
+}
+
+char buffer2[100];
 int init() {
 	eout("    Init:");
 
-	rsig(0, (uint32_t) segfault);
+	rsig(0, (uint32_t) gepfault);
 	rsig(2, (uint32_t) segfault);
-	rsig(5, (uint32_t) segfault);
+	rsig(5, (uint32_t) imgfault);
 
-	mmap(0x100000, 4000, 0x7);
-	printf("Hello, world!\n");
-
-//	char buffer1[100], buffer2[100];
+	char buffer1[100];
 
 	strcpy(buffer2, "hot potato");
 
 	while(1) {
-		printf("\n2 -> 1\n");
+		eout("2 -> 1: ");
 		buffer1[0] = 0;
 		push_call(1, (uint32_t) buffer1, (uint32_t) buffer2, strlen(buffer2));
-		printf("1: %s\n", buffer1);
+		eout(buffer1);
 
-		printf("\n2 <- 1\n");
+		eout("2 <- 1: ");
 		buffer2[0] = 0;
 		pull_call(1, (uint32_t) buffer1, (uint32_t) buffer2, strlen(buffer1));
-		printf("2: %s\n", buffer2);
+		eout(buffer2);
 
-		printf("\n1 <- 2\n");
+		eout("1 <- 2: ");
 		buffer1[0] = 0;
 		pull_call(1, (uint32_t) buffer2, (uint32_t) buffer1, strlen(buffer2));
-		printf("1: %s\n", buffer1);
+		eout(buffer1);
 
-		printf("\n1 -> 2\n");
+		eout("1 -> 2: ");
 		buffer2[0] = 0;
 		push_call(1, (uint32_t) buffer2, (uint32_t) buffer1, strlen(buffer1));
-		printf("2: %s\n", buffer1);
-
-		printf("\ndone.\n");
+		eout(buffer2);
 	}
 
 	for(;;);

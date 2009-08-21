@@ -77,6 +77,7 @@ void *int_handler(image_t *state) {
 	task_t *t = task_get(curr_pid);
 
 	if (state->num == 32 && state->cs & 0x3) t->image = state;
+	tss_set_esp(state);
 
 	if (state->num >= 32 && state->num <= 47) {
 		if (state->num >= 40) outb(0xA0, 0x20);

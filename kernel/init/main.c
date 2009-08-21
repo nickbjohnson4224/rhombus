@@ -41,7 +41,7 @@ struct multiboot *mboot;
 
 typedef void (*entry_t)();
 
-uint32_t init(void *mboot_ptr, uint32_t mboot_magic) {
+void init(void *mboot_ptr, uint32_t mboot_magic) {
 	uint32_t i;
 
 	cleark();
@@ -61,6 +61,6 @@ uint32_t init(void *mboot_ptr, uint32_t mboot_magic) {
 	cursek(74, -1);
 	printk("[done]");
 
-	task_t *t = task_get(curr_pid);
-	return (uint32_t) t->image;
+	cleark();
+	cursek(0, 15);
 }
