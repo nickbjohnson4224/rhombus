@@ -7,9 +7,8 @@ void death() {
 }
 
 void segfault() {
-	uint32_t addr;
-	asm volatile ("mov %%edx, %0" : "=r" (addr));
-	printk("segfault @ 0x%x\n", addr);
+	printk("Segmentation Fault\n");
+	for(;;);
 	exit(1);
 }
 
@@ -19,6 +18,7 @@ int init() {
 
 	rsig(0, (uint32_t) segfault);
 	rsig(2, (uint32_t) segfault);
+	rsig(5, (uint32_t) segfault);
 
 	mmap(0x100000, 4000, 0x7);
 	printf("Hello, world!\n");

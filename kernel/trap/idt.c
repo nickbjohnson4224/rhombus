@@ -84,10 +84,7 @@ void *int_handler(image_t *state) {
 	}
 
 	if (int_handlers[state->num]) {
-		if (state->num >= 0x50 && (t->flags & TF_SUPER) == 0) {
-			state->eax = EPERMIT;
-			return state; // Filter unprivileged tasks from admin calls
-		}
+		if (state->num >= 0x50 && (t->flags & TF_SUPER) == 0) ret(state, EPERMIT);
 		state = int_handlers[state->num](state);
 	}
 

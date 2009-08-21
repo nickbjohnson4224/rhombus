@@ -43,8 +43,8 @@ image_t *signal(pid_t task, uint8_t sig,
 	memcpy((uint8_t*) ((uint32_t) t->image - sizeof(image_t)), t->image, sizeof(image_t));
 	t->tss_esp = (uint32_t) t->image; // Will now create image below old image
 	t->image = (void*) ((uint32_t) t->image - sizeof(image_t));
-	if ((uint32_t) t->image < SSTACK_BSE + sizeof(image_t)) 
-		panic("task state stack overflow");	
+	if ((uint32_t) t->image < SSTACK_BSE + sizeof(image_t) && !(flags & TF_SUPER)) 
+		signal(task, S_IMG, 0, 0, 0, 0, TF_SUPER);
 
 	// Set registers to describe signal
 	t->image->eax = arg0;
