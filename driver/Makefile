@@ -4,7 +4,5 @@ LDFLAGS=-Tlink.ld -L$(BUILDDIR)/lib
 ASFLAGS=-felf
 
 all:
-	make -C libdriver
 
 clean:
-	make -C libdriver clean

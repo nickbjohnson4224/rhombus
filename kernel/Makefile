@@ -4,7 +4,6 @@ LDFLAGS=-Tlink.ld
 ASFLAGS=-felf
 
 all: $(SOURCES) link
-	make -C libkernel
 
 lib/lib.o: lib/*.c lib/*.s inc/lib.h
 	make -C lib
@@ -30,6 +29,5 @@ clean:
 	make -C mem clean
 	make -C trap clean
 	make -C task clean
-	make -C libkernel clean
 	rm kernel
 	

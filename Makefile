@@ -17,15 +17,21 @@ export OPTS=$(FLAGS) -fomit-frame-pointer -Os
 #export OPTS=$(FLAGS) -fomit-frame-pointer -O0
 #export OPTS=$(FLAGS) -O0
 
-all:
+all: libs
 	make -C kernel
 	make -C driver
 	make -C init
+
+libs:
+	make -C libkernel
+	make -C libdriver
 
 clean:
 	make -C kernel clean
 	make -C init clean
 	make -C driver clean
+	make -C libkernel clean
+	make -C libdriver clean
 
 test:	all
 	sudo run/test.sh
