@@ -1,6 +1,7 @@
 // Copyright 2009 Nick Johnson
 
 #include <lib.h>
+#include <driver.h>
 
 static u16int *video_mem = (void*) 0x100000;
 static u16int c_base = 0;
@@ -8,7 +9,7 @@ static u16int cursor = 0;
 static u8int attr = 0x0F;
 
 void sync() {
-	push(0, 0xB8000, (u32int) video_mem,  4000);
+	push_call(0, 0xB8000, (u32int) video_mem,  4000);
 
 	outb(0x3D4, 15);
 	outb(0x3D5, cursor & 0xFF);
@@ -47,14 +48,14 @@ void cleark() {
 	c_base = 0;
 	cursor = 0;
 
-	push(0, 0xB8000, (u32int) video_mem, 4000);
+	push_call(0, 0xB8000, (u32int) video_mem, 4000);
 }
 
 void printk_list(char *fmt, u32int *argv) {
 	char buffer[32];
 	int i, n = 0;
 
-//	pull(0, 0xB8000, (u32int) video_mem, 4000); // Sync up from vmem to get kernel output
+//	pull_call(0, 0xB8000, (u32int) video_mem, 4000); // Sync up from vmem to get kernel output
 
 	for (i = 0; fmt[i]; i++) {
 		if (fmt[i] == '%') {

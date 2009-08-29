@@ -25,7 +25,7 @@ all: libs
 libs:
 	make -C libkernel
 	make -C libdriver
-	make -C libsys
+#	make -C libsys
 
 clean:
 	make -C kernel clean

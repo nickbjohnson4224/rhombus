@@ -1,6 +1,6 @@
 SOURCES=lib/lib.o setup/setup.o
 export CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc -I$(BUILDDIR)/inc $(OPTS)
-LDFLAGS=-L$(BUILDDIR)/lib -ldriver
+LDFLAGS=-L$(BUILDDIR)/lib -ldriver -lkernel
 ASFLAGS=-felf
 
 all: $(SOURCES) link

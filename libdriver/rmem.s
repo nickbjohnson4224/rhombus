@@ -6,6 +6,7 @@ global push_call
 global pull_call
 global rirq_call
 global lirq_call
+global eout_call
 
 push_call:
 	push ebp
@@ -59,4 +60,9 @@ rirq_call:
 lirq_call:
 	mov eax, [esp+4]
 	int 0x51
+	ret
+
+eout_call:
+	mov eax, [esp+4]
+	int 0x54
 	ret

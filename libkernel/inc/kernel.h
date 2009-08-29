@@ -28,6 +28,7 @@ uint32_t lsig_call(uint8_t signal);
 
 int32_t mmap_call(uint32_t address, uint32_t size, uint8_t flags);
 int32_t umap_call(uint32_t address, uint32_t size);
+int32_t mmgc_call(void);
 
 /***** EVENT HANDLING *****/
 

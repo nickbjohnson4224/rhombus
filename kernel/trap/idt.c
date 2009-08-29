@@ -19,13 +19,13 @@ struct idt_entry {
 handler_t int_handlers[96];
 
 extern void 
-int0(void),  int1(void),  int2(void),   int3(void),  int4(void),  int5(void),  int6(void),  
-int7(void),  int8(void),  int9(void),  int10(void), int11(void), int12(void), int13(void), 
+ int0(void),  int1(void),  int2(void),  int3(void),  int4(void),  int5(void),  int6(void),  
+ int7(void),  int8(void),  int9(void), int10(void), int11(void), int12(void), int13(void), 
 int14(void), int15(void), int16(void), int17(void), int18(void), int32(void), int33(void), 
 int34(void), int35(void), int36(void), int37(void), int38(void), int39(void), int40(void), 
 int41(void), int42(void), int43(void), int44(void), int45(void), int46(void), int47(void),
 int64(void), int65(void), int66(void), int67(void), int68(void), int69(void), int70(void), 
-int71(void), int80(void), int81(void), int82(void), int83(void), int84(void);
+int71(void), int72(void), int80(void), int81(void), int82(void), int83(void), int84(void);
 
 typedef void (*int_handler_t) (void);
 __attribute__ ((section(".tdata")))

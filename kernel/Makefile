@@ -11,13 +11,13 @@ lib/lib.o: lib/*.c lib/*.s inc/lib.h
 init/init.o: init/*.c init/*.s
 	make -C init
 
-mem/mem.o: mem/*.c inc/mem.h
+mem/mem.o: mem/*.c mem/*.s inc/mem.h
 	make -C mem
 
 trap/trap.o: trap/*.c trap/*.s
 	make -C trap
 
-task/task.o: task/*.c inc/task.h
+task/task.o: task/*.c task/*.s inc/task.h
 	make -C task
 
 link:

@@ -82,6 +82,8 @@ INTN	69 ; umap
 INTN	70 ; rsig
 INTN	71 ; lsig
 
+INTN	72 ; mmgc
+
 INTN	80 ; rirq
 INTN	81 ; lirq
 INTN	82 ; push

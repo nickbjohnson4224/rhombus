@@ -54,7 +54,8 @@ map_t map_alloc(void);					// Allocates a new map
 map_t map_free(map_t map);				// Frees a map (does not clean)
 map_t map_clean(map_t map);				// Cleans a map (frees all *user* memory)
 map_t map_clone(void);					// Clones the current map
-map_t map_load(map_t map);				// Activates a new map
+extern map_t map_load(map_t map);		// Activates a new map
+void map_gc(void);						// Frees unused page tables
 
 /***** FRAME.C ******/
 #ifndef MAX_PHMEM_MAX
@@ -74,6 +75,7 @@ extern uint32_t *tsrc, *tdst;
 void   page_touch(uint32_t page);				// Makes sure a page exists
 void   page_set(uint32_t page, page_t value);	// Sets the value of a page
 page_t page_get(uint32_t page);					// Returns the value of a page
+extern void page_flush(uint32_t addr);			// Flushes the TLB for a page
 void   temp_touch(uint32_t page);				// Makes sure a temporary page exists
 void   temp_set(uint32_t page, page_t value);	// Sets the value of a temporary page
 page_t temp_get(uint32_t page);					// Returns the value of a temporary page

@@ -1,4 +1,5 @@
 #include <lib.h>
+#include <driver.h>
 
 //
 // vga mode switcher by Jonas Berlin -98 <jberlin@cc.hut.fi>
@@ -189,7 +190,7 @@ int vga_write(int x, int y, u32int buffer, u16int size) {
 
 	u16int i;
 	for (i = 0; i < size; i += 0x4000)
-		push(0, 0xA0000 + offset + i, buffer, min(size - i, 0x4000));
+		push_call(0, 0xA0000 + offset + i, buffer, min(size - i, 0x4000));
 
 	return 0;
 }
@@ -197,7 +198,7 @@ int vga_write(int x, int y, u32int buffer, u16int size) {
 int vga_flip(u32int buffer) {
 	u32int i = 0;
 	for (i = 0; i + 0x100 < scrdim[0] * scrdim[1]; i += 0x100)
-		push(0, 0xA0000 + i, buffer + i, min((scrdim[0] * scrdim[1]) - i, 0x200));
+		push_call(0, 0xA0000 + i, buffer + i, min((scrdim[0] * scrdim[1]) - i, 0x200));
 
 	return 0;
 }

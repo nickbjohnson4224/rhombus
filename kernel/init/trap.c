@@ -84,7 +84,7 @@ void init_int() {
 		// Initialize the TSS
 		init_tss();
 
-		// Register system calls
+		// System calls
 		register_int(0x40, fork_call);	// Fork current task
 		register_int(0x41, exit_call);	// End current task
 		register_int(0x42, sint_call);	// Send signal to task
@@ -93,6 +93,9 @@ void init_int() {
 		register_int(0x45, umap_call);	// Free memory from a page
 		register_int(0x46, rsig_call);	// Register a signal handler
 		register_int(0x47, lsig_call);	// Deregister a signal handler
+
+		// Special system calls
+		register_int(0x48, mmgc_call);	// Do paging garbage collection
 
 		// Administrative system calls
 		register_int(0x50, rirq_call);	// Register IRQ

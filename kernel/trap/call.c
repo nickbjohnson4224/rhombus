@@ -57,10 +57,8 @@ image_t *fork_call(image_t *image) {
 image_t *exit_call(image_t *image) {
 	pid_t dead_task = curr_pid;
 	uint32_t ret_val = image->eax;
-	if (dead_task == 1) {
-		asm volatile ("sti");
-		asm volatile ("hlt");
-	}
+	extern void idle(void);
+	if (dead_task == 1) idle();
 	task_t *t = task_get(dead_task);
 	map_clean(t->map);
 	map_free(t->map);
@@ -161,6 +159,11 @@ image_t *umap_call(image_t *image) {
 		}
 	}
 
+	ret(image, 0);
+}
+
+image_t *mmgc_call(image_t *image) {
+	map_gc();
 	ret(image, 0);
 }
 

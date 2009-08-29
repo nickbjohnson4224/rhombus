@@ -1,5 +1,4 @@
-SOURCES=page.o map.o
-#CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc -Wall -march=i386
+SOURCES=page.o map.o tlb.o
 LDFLAGS=-r
 ASFLAGS=-felf
 

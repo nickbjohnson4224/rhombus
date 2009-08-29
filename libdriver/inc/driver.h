@@ -20,4 +20,7 @@ int32_t pull_call(uint32_t target, uint32_t src, uint32_t dest, uint32_t size);
 int32_t rirq_call(uint32_t irq);
 int32_t lriq_call(uint32_t irq);
 
+/***** EMERGENCY OUTPUT *****/
+int32_t eout_call(const char *message);
+
 #endif
