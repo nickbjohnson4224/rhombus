@@ -19,15 +19,16 @@
 	#define MAX_PHMEM 64
 	//#define MAX_PHMEM_MAX
 
-	#define LSPACE	0xFF000000
-	#define KSPACE 	0xFF000000
+	#define ESPACE	0xFC000000	// Temporary space for exec data
+	#define LSPACE	0xFE000000	// Space for libsys
+	#define KSPACE 	0xFF000000	// Kernel space
 	#define TMP_MAP	0xFF800000
 	#define PGE_MAP	0xFFC00000
 
 	#define TASK_TBL (KSPACE + 0x400000)
 	
-	#define SIG_TBL (LSPACE - 0x1000)
-	#define SIG_MAP (LSPACE - 0x0C00)
+	#define SIG_TBL (KSPACE - 0x1000)
+	#define SIG_MAP (KSPACE - 0x0C00)
 
 	#define SSTACK_BSE	(LSPACE - 0x4000)
 	#define SSTACK_INI	(LSPACE - 0x2004)

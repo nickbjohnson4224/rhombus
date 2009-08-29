@@ -42,7 +42,7 @@ map_t map_clean(map_t map) {
 	uint32_t i, j;
 
 	map_temp(map);
-	for (i = 0; i < LSPACE >> 22; i++) if (tmap[i] & PF_PRES) {
+	for (i = 0; i < ESPACE >> 22; i++) if (tmap[i] & PF_PRES) {
 		for (j = 0; j < 1024; j++) {
 			frame_free(page_ufmt(ttbl[i*1024+j]));
 			ttbl[i*1024+j] = 0;
