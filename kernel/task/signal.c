@@ -59,6 +59,7 @@ image_t *signal(pid_t targ, uint8_t sig,
 	// Set reentry point
 	tss_set_esp(t->tss_esp);
 	t->image->eip = signal_table[sig];
+
 	return t->image;
 }
 

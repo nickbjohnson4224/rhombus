@@ -3,6 +3,7 @@
 #include <lib.h>
 #include <driver.h>
 
+/*
 static u16int *video_mem = (void*) 0x100000;
 static u16int c_base = 0;
 static u16int cursor = 0;
@@ -85,4 +86,4 @@ void cursek(u8int x, u8int y) {
 	if (y > 25) y = cursor / 80;
 	cursor = c_base = (80 * y) + x;
 	sync();
-}
+}*/

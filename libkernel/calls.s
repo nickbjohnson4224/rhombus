@@ -103,7 +103,7 @@ rsig_call:
 	push esi
 
 	mov edi, [esp+12]
-	mov esi, [esp+16]
+	mov eax, [esp+16]
 	int 0x46
 
 	pop esi

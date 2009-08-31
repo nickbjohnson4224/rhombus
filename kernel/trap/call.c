@@ -189,7 +189,7 @@ image_t *push_call(image_t *image) {
 //	printk("PUSH %d:%x -> %d:%x >%x (%x -> %x)\n", curr_pid, src, targ, dst, size, (uint32_t) tsrc + (src & 0xFFF), (uint32_t) tdst + (dst & 0xFFF));
 
 	// Map pages
-	for (i = 0; i < size; i += 0x1000) {
+	for (i = 0; i < size + 0x1000; i += 0x1000) {
 		if (targ) {
 			if ((temp_get(dst + i) & PF_PRES) == 0) ret(image, EPERMIT);
 			page_set((uint32_t) tdst + i, page_fmt(temp_get(dst + i), (PF_RW | PF_PRES)));
@@ -229,7 +229,7 @@ image_t *pull_call(image_t *image) {
 //	printk("PULL %d:%x -> %d:%x >%x (%x -> %x)\n", targ, src, curr_pid, dst, size, (uint32_t) tsrc + (src & 0xFFF), (uint32_t) tdst + (dst & 0xFFF));
 
 	// Map pages
-	for (i = 0; i < size; i += 0x1000) {
+	for (i = 0; i < size + 0x1000; i += 0x1000) {
 		if (targ) {
 			if ((temp_get(src + i) & PF_PRES) == 0) ret(image, EPERMIT);
 			page_set((uint32_t) tsrc + i, page_fmt(temp_get(src + i), (PF_RW | PF_PRES | PF_DISC)));
