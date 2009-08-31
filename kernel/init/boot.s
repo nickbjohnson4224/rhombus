@@ -101,6 +101,18 @@ start:
 	push eax
 	popf
 
+;	; Initialize FPU/SSE
+;	mov eax, cr4
+;	or eax, 0x600
+;	mov cr4, eax
+;	mov eax, cr0
+;	or eax, 0x3
+;	mov cr0, eax
+;	mov eax, 0x37F
+;	push eax
+;	fldcw [esp]
+;	add esp, 4
+
 	call init
 
 .loop:

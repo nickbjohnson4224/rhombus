@@ -10,7 +10,8 @@ memcpy:
 	mov edi, [esp+12]
 	mov esi, [esp+16]
 	mov ecx, [esp+20]
-	
+
+	cld	
 	rep movsb
 
 	mov eax, edi

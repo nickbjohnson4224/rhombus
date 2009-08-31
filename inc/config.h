@@ -20,7 +20,7 @@
 	//#define MAX_PHMEM_MAX
 
 	#define ESPACE	0xFC000000	// Temporary space for exec data
-	#define LSPACE	0xFE000000	// Space for libsys
+	#define LSPACE	0xFF000000	// Space for libsys
 	#define KSPACE 	0xFF000000	// Kernel space
 	#define TMP_MAP	0xFF800000
 	#define PGE_MAP	0xFFC00000

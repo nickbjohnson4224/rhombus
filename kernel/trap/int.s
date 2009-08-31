@@ -106,6 +106,9 @@ int_common:
 	mov gs, ax
 	mov ss, ax
 
+;	sub esp, 512
+;	fxsave [esp]
+
 	mov ebp, esp
 	
 	extern stack
@@ -114,6 +117,9 @@ int_common:
 	push ebp
 	call int_handler
 	mov esp, eax
+
+;	fxrstor [esp]
+;	add esp, 512
 
 	pop eax
 	mov ds, ax

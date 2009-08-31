@@ -1,4 +1,4 @@
-SOURCES=elf.o
+SOURCES=elf.o exec.o stack.o
 CFLAGS=-nostdlib -nostdinc -fno-builtin -Iinc -I$(BUILDDIR)/inc $(OPTS)
 LDFLAGS=-r
 ASFLAGS=-felf

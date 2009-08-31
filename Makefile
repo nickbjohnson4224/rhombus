@@ -5,7 +5,7 @@ export LIBRARY_PATH=$(PWD)/lib
 
 export CC=/usr/khaos/bin/i586-elf-gcc
 #export CC=tcc
-FLAGS=-march=i586 -pipe -Wall -Werror -Wextra -Wshadow \
+FLAGS=-march=i586 -pipe -Wall -Werror -Wshadow \
 	-Wpointer-arith -Wcast-align -Wwrite-strings \
 #	-Wmissing-declarations -Wredundant-decls \
 #	-Winline -Wno-long-long -Wconversion -Wstrict-prototypes
@@ -25,12 +25,15 @@ all: libs
 libs:
 	make -C libkernel
 	make -C libdriver
-#	make -C libsys
+	make -C libc
+	make -C libsys
 
 clean:
 	make -C kernel clean
 	make -C init clean
 	make -C driver clean
+	make -C libsys clean
+	make -C libc clean
 	make -C libkernel clean
 	make -C libdriver clean
 

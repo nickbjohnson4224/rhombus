@@ -4,6 +4,8 @@
 #define TRAP_H
 
 typedef struct image {
+//	uint32_t fxdata[128]; // SSE and FPU state
+//	uint32_t fxpadding[3];
 	uint32_t ds, edi, esi, ebp, esp, ebx, edx, ecx, eax;
 	uint32_t num, caller, err, eip, cs, eflags, useresp, ss;
 } __attribute__ ((packed)) image_t;
