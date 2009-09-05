@@ -156,14 +156,10 @@ image_t *umap_call(image_t *image) {
 		if (page_get(dst) & PF_PRES) {
 			if (page_get(dst) & PF_LINK) page_set(dst, 0);
 			else p_free(dst);
+			map_gc(dst);
 		}
 	}
 
-	ret(image, 0);
-}
-
-image_t *mmgc_call(image_t *image) {
-	map_gc();
 	ret(image, 0);
 }
 

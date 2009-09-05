@@ -20,7 +20,6 @@ int exec() {
 
 	// Clear current process address space
 	umap_call(0x1000, ESPACE - 0x1000);
-	mmgc_call();
 
 	// Load executable
 	elf_load((void*) ESPACE);

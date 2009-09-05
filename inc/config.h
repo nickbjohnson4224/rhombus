@@ -31,10 +31,10 @@
 	#define SIG_MAP (KSPACE - 0x0C00)
 
 	#define SSTACK_BSE	(LSPACE - 0x4000)
-	#define SSTACK_INI	(LSPACE - 0x2004)
+	#define SSTACK_INI	(LSPACE - 0x2010)
 	#define SSTACK_TOP	(LSPACE - 0x2000)
 	#define USTACK_BSE	(LSPACE - 0x10000)
-	#define USTACK_INI	(LSPACE - 0x5004)
+	#define USTACK_INI	(LSPACE - 0x5010)
 	#define USTACK_TOP	(LSPACE - 0x5000)
 	
 	/***** INTERRUPT SUBSYSTEM *****/

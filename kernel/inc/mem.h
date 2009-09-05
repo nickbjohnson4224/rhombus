@@ -55,7 +55,7 @@ map_t map_free(map_t map);				// Frees a map (does not clean)
 map_t map_clean(map_t map);				// Cleans a map (frees all *user* memory)
 map_t map_clone(void);					// Clones the current map
 extern map_t map_load(map_t map);		// Activates a new map
-void map_gc(void);						// Frees unused page tables
+void map_gc(uint32_t page);				// Frees unused page tables
 
 /***** FRAME.C ******/
 #ifndef MAX_PHMEM_MAX

@@ -94,9 +94,6 @@ void init_int() {
 		register_int(0x46, rsig_call);	// Register a signal handler
 		register_int(0x47, lsig_call);	// Deregister a signal handler
 
-		// Special system calls
-		register_int(0x48, mmgc_call);	// Do paging garbage collection
-
 		// Administrative system calls
 		register_int(0x50, rirq_call);	// Register IRQ
 		register_int(0x51, lirq_call);	// Deregister IRQ

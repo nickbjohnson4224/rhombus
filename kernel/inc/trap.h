@@ -27,14 +27,17 @@ image_t *mmap_call(image_t *image);	//0x44
 image_t *umap_call(image_t *image);	//0x45
 image_t *rsig_call(image_t *image); //0x46
 image_t *lsig_call(image_t *image); //0x47
-
-image_t *mmgc_call(image_t *image); //0x48
+image_t *bsig_call(image_t *image); //0x48
+image_t *usig_call(image_t *image); //0x49
+image_t *bsch_call(image_t *image); //0x4A
+image_t *usch_call(image_t *image); //0x4B
 
 image_t *rirq_call(image_t *image); //0x50
 image_t *lirq_call(image_t *image); //0x51
 image_t *push_call(image_t *image);	//0x52
 image_t *pull_call(image_t *image); //0x53
 image_t *eout_call(image_t *image); //0x54
+image_t *drop_call(image_t *image); //0x55
 
 #define ret(image, value) do { \
 image->eax = value; \

@@ -34,18 +34,20 @@ map_t map_free(map_t map) {
 	return map;
 }
 
-void map_gc() {
-	uint32_t i, j, empty;
+void map_gc(uint32_t page) {
+	uint32_t i, empty;
 
-	for (i = 0; i < LSPACE >> 22; i++) if (cmap[i] & PF_PRES) {
-		empty = 1;
-		for (j = 0; j < 1024; j++) {
-			if (ctbl[i*1024+j] & PF_PRES) {
-				empty = 0;
-				break;
-			}
+	if (!(cmap[page >> 22] & PF_PRES)) return;
+
+	empty = 1;
+	for (i = 0; i < 1024; i++) {
+		if (ctbl[(page >> 12) + i] & PF_PRES) {
+			empty = 0;
+			break;
 		}
-		if (empty) frame_free(page_ufmt(cmap[i]));
+	}
+	if (empty) {
+		frame_free(page_ufmt(cmap[i]));
 		cmap[i] = 0;
 	}
 }	
