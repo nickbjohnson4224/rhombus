@@ -16,17 +16,19 @@
 	/***** MEMORY SUBSYSTEM *****/
 
 	#define ESPACE	0xFC000000	// Temporary space for exec data
-	#define LSPACE	0xFF000000	// Space for libsys
-	#define KSPACE 	0xFF000000	// Kernel space
-	#define KMALLOC 0xFF200000	// Kernel allocator
+	#define LSPACE	0xFD000000	// Space for libsys
+	#define KSPACE 	0xFE000000	// Kernel space
+	#define KMALLOC 0xFE200000	// Kernel allocator
+
+	#define TMP_DST 0xFF000000
+	#define TMP_SRC 0xFF010000
+
 	#define TMP_MAP	0xFF800000
 	#define PGE_MAP	0xFFC00000
 
 	#define TASK_TBL (KSPACE + 0x400000)
-	
-	#define SIG_TBL (KSPACE - 0x1000)
-	#define SIG_MAP (KSPACE - 0x0C00)
 
+	#define SIG_TBL (LSPACE - 0x1000)
 	#define SSTACK_BSE	(LSPACE - 0x4000)
 	#define SSTACK_INI	(LSPACE - 0x2010)
 	#define SSTACK_TOP	(LSPACE - 0x2000)

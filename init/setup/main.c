@@ -3,31 +3,16 @@
 #include <kernel.h>
 #include <driver.h>
 
-void death() {
-	sret_call(3);
-}
-
-void segfault() {
-	eout_call("Page Fault\n");
-	exit_call(1);
-}
-
-void gepfault() {
-	eout_call("General Protection Fault\n");
-	exit_call(1);
-}
-
-void imgfault() {
-	eout_call("Image Stack Overflow (DoS)");
-	exit_call(1);
-}
-
-
 static uint16_t video_buf[4000];
 static uint16_t *video_mem = (void*) 0xB8000;
 static int c_base = 0;
 static int cursor = 0;
 static uint8_t attr = 0x0F;
+
+static void sclear(void) {
+	int i;
+	for (i = 0; i < 2000; i++) video_buf[i] = 0x0F20;
+}
 
 static void scroll(void) {
 	int i;
@@ -54,9 +39,29 @@ void cwrite(char c) {
 	outb(0x3D5, cursor >> 8);
 }
 
-void swrite(char *s) {
+void swrite(const char *s) {
 	while (*s != '\0') cwrite(*s++);
 }
+
+void death() {
+	sret_call(3);
+}
+
+void segfault() {
+	swrite("Page Fault\n");
+	exit_call(1);
+}
+
+void gepfault() {
+	swrite("General Protection Fault\n");
+	exit_call(1);
+}
+
+void imgfault() {
+	swrite("Image Stack Overflow (DoS)");
+	exit_call(1);
+}
+
 
 uint8_t keymap[128] = "\0\0331234567890-=\b\tqwertyuiop[]\n\0asdfghjkl;\'`\0\\zxcvbnm,./\0*\0 ";
 uint8_t upkmap[128] = "\0\033!@#$%^&*()_+\b\0QWERTYUIOP{}\n\0ASDFGHJKL:\"~\0|ZXCVBNM<>?\0*\0 ";
@@ -81,6 +86,8 @@ int init() {
 	rsig_call(5, (uint32_t) imgfault);
 	rsig_call(3, (uint32_t) kbhandle);
 	rirq_call(1);
+
+	sclear();
 
 	for(;;);
 	return 0;

@@ -5,7 +5,6 @@
 #include <trap.h>
 
 uint32_t *signal_table = (void*) SIG_TBL;
-uint32_t *signal_map = (void*) SIG_MAP;
 
 image_t *signal(pid_t targ, uint8_t sig, 
 	uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3, uint8_t flags) {
@@ -24,7 +23,7 @@ image_t *signal(pid_t targ, uint8_t sig,
 	if (t->pid != curr_pid) task_switch(t);
 
 	// Check existence of signal handler
-	if (signal_map[sig] == SF_NIL) {
+	if (!signal_table[sig]) {
 		if (flags & TF_EKILL) return exit_call(t->image);
 		task_switch(src_t);
 		if (flags & TF_NOERR) return src_t->image;

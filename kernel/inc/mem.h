@@ -74,7 +74,7 @@ void   mem_free(uintptr_t base, uintptr_t size);
 void   page_touch(uint32_t page);				// Makes sure a page exists
 void   page_set(uint32_t page, page_t value);	// Sets the value of a page
 page_t page_get(uint32_t page);					// Returns the value of a page
-extern void page_flush(uint32_t addr);			// Flushes the TLB for a page
+void   page_flush(uint32_t addr);				// Flushes the TLB for a page
 void   temp_touch(uint32_t page);				// Makes sure a temporary page exists
 void   temp_set(uint32_t page, page_t value);	// Sets the value of a temporary page
 page_t temp_get(uint32_t page);					// Returns the value of a temporary page

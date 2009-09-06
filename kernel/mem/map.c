@@ -7,8 +7,8 @@ ptbl_t *cmap = (void*) (PGE_MAP + 0x3FF000);
 page_t *ctbl = (void*) PGE_MAP;
 ptbl_t *tmap = (void*) (TMP_MAP + 0x3FF000);
 page_t *ttbl = (void*) TMP_MAP;
-uint32_t *tsrc = (void*) (KSPACE + 0x7F0000);
-uint32_t *tdst = (void*) (KSPACE + 0x7E0000);
+uint32_t *tsrc = (void*) TMP_SRC;
+uint32_t *tdst = (void*) TMP_DST;
 
 extern void page_flush_full(void);
 

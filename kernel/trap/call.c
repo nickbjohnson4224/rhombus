@@ -5,6 +5,8 @@
 #include <task.h>
 #include <mem.h>
 
+/***** IRQ HANDLERS *****/
+
 // Handles IRQ 0, and advances a simple counter used as a clock
 image_t *pit_handler(image_t *state) {
 	static uint32_t tick = 0;
@@ -12,6 +14,12 @@ image_t *pit_handler(image_t *state) {
 
 	return task_switch(task_next(0));
 }
+
+image_t *irq_redirect(image_t *image) {
+	return signal(irq_holder[DEIRQ(image->num)], S_IRQ, DEIRQ(image->num), 0, 0, 0, TF_NOERR);
+}
+
+/***** FAULT HANDLERS *****/
 
 image_t *fault_generic(image_t *image) {
 	if ((image->cs & 0x3) == 0) {
@@ -24,10 +32,10 @@ image_t *fault_generic(image_t *image) {
 image_t *fault_page(image_t *image) {
 	uint32_t cr2; asm volatile ("movl %%cr2, %0" : "=r" (cr2));
 	if ((image->cs & 0x3) == 0) { // i.e. if it was kernelmode
-		printk("page fault at %x, frame %x, ip = %x\n", cr2, page_get(cr2), image->eip);
+		printk("page fault at %x, ip = %x\n", cr2, image->eip);
 		panic("page fault exception");
 	}
-	return signal(curr_pid, S_PAG, 0, page_get(cr2), 0, cr2, TF_NOERR | TF_EKILL);
+	return signal(curr_pid, S_PAG, 0, image->err, 0, cr2, TF_NOERR | TF_EKILL);
 }
 
 image_t *fault_float(image_t *image) {
@@ -40,6 +48,8 @@ image_t *fault_double(image_t *image) {
 	panic("double fault exception");
 	return NULL;
 }
+
+/****** SYSTEM CALLS *****/
 
 // Note - different than UNIX / POSIX fork() -
 // parent gets child PID, child gets *negative* parent PID, 0 is error
@@ -57,8 +67,12 @@ image_t *fork_call(image_t *image) {
 image_t *exit_call(image_t *image) {
 	pid_t dead_task = curr_pid;
 	uint32_t ret_val = image->eax;
-	extern void idle(void);
-	if (dead_task == 1) idle();
+	extern void halt(void);
+	if (dead_task == 1) {
+		colork(0xC);
+		printk("Init has died - halting");
+		halt();
+	}
 	task_t *t = task_get(dead_task);
 	map_clean(t->map);
 	map_free(t->map);
@@ -75,10 +89,6 @@ image_t *sret_call(image_t *image) {
 	return sret(image);
 }
 
-image_t *irq_redirect(image_t *image) {
-	return signal(irq_holder[DEIRQ(image->num)], S_IRQ, DEIRQ(image->num), 0, 0, 0, TF_NOERR);
-}
-
 image_t *rirq_call(image_t *image) {
 	irq_holder[image->eax % 15] = curr_pid;
 	register_int(IRQ(image->eax), irq_redirect);
@@ -92,73 +102,41 @@ image_t *lirq_call(image_t *image) {
 }
 
 image_t *rsig_call(image_t *image) {
-	task_t *t = task_get(curr_pid);
-	uint32_t old_handler = 0;
+	uint32_t old_handler;
 
-	switch (signal_map[image->edi]) {
-		case SF_SYS:
-			if (!(t->flags & TF_SUPER)) ret(image, EPERMIT);
-		case SF_USE:
-			old_handler = signal_table[image->edi];
-		case SF_NIL:
-			signal_table[image->edi] = image->eax;
-			signal_map[image->edi] = SF_USE;
-			break;
-	}
+	old_handler = signal_table[image->edi];
+	signal_table[image->edi] = image->eax;
 
 	ret(image, old_handler);
 }
 
 image_t *lsig_call(image_t *image) {
-	task_t *t = task_get(curr_pid);
-	uint32_t old_handler = 0;
+	uint32_t old_handler;
 
-	switch (signal_map[image->edi]) {
-		case SF_SYS:
-			if (!(t->flags & TF_SUPER)) ret(image, EPERMIT);
-		case SF_USE:
-			old_handler = signal_table[image->edi];
-		default:
-			signal_table[image->edi] = 0;
-			signal_map[image->edi] = SF_NIL;
-			break;
-	}
+	old_handler = signal_table[image->edi];
+	signal_table[image->edi] = 0x00000000;
 
 	ret(image, old_handler);
 }
 
 image_t *mmap_call(image_t *image) {
-	uint32_t dst = image->edi;
 
 	// Bounds check page address
-	if (dst + image->ecx > SIG_TBL) ret(image, EPERMIT);
+	if (image->edi + image->ecx > SIG_TBL) ret(image, EPERMIT);
 
 	// Allocate pages with flags
-	for (dst &= ~0xFFF; dst < (image->edi + image->ecx); dst += 0x1000) {
-		if (!(page_get(dst) & 0x1)) {
-			uint32_t page = page_fmt(frame_new(), (image->ebx & PF_MASK) | PF_PRES | PF_USER); 
-			page_set(dst, page);
-		}
-		else page_set(dst, page_fmt(page_get(dst), (image->ebx & PF_MASK) | PF_PRES | PF_USER));
-	}
+	mem_alloc(image->edi, image->ecx, (image->ebx & PF_MASK) | PF_PRES | PF_USER);
 
 	ret(image, 0);
 }
 
 image_t *umap_call(image_t *image) {
-	uint32_t dst = image->edi;
 
 	// Bounds check page address
-	if (dst + image->ecx > SIG_TBL) ret(image, EPERMIT);
+	if (image->edi + image->ecx > SIG_TBL) ret(image, EPERMIT);
 
 	// Free pages
-	for (dst &= ~0xFFF; dst < (image->edi + image->ecx); dst += 0x1000) {
-		if (page_get(dst) & PF_PRES) {
-			if (page_get(dst) & PF_LINK) page_set(dst, 0);
-			else p_free(dst);
-			map_gc(dst);
-		}
-	}
+	mem_free(image->edi, image->ecx);
 
 	ret(image, 0);
 }
@@ -181,8 +159,6 @@ image_t *push_call(image_t *image) {
 		if (!t) ret(image, ENOTASK);
 		map_temp(t->map);
 	}
-
-//	printk("PUSH %d:%x -> %d:%x >%x (%x -> %x)\n", curr_pid, src, targ, dst, size, (uint32_t) tsrc + (src & 0xFFF), (uint32_t) tdst + (dst & 0xFFF));
 
 	// Map pages
 	for (i = 0; i < size + 0x1000; i += 0x1000) {
@@ -221,8 +197,6 @@ image_t *pull_call(image_t *image) {
 		if (!t) ret(image, ENOTASK);
 		map_temp(t->map);
 	}
-
-//	printk("PULL %d:%x -> %d:%x >%x (%x -> %x)\n", targ, src, curr_pid, dst, size, (uint32_t) tsrc + (src & 0xFFF), (uint32_t) tdst + (dst & 0xFFF));
 
 	// Map pages
 	for (i = 0; i < size + 0x1000; i += 0x1000) {

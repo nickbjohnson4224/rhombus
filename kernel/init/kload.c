@@ -95,7 +95,6 @@ void init_user_init() {
 	t->image->eflags = get_eflags() | 0x3200; // Turns on interrupts, IOPL=3 in eflags
 }
 
-// Note - this function breaks on all GCC optimizations and normal TCC - try and fix ASAP
 __attribute__ ((section(".itext")))
 void init_initrd_rmap() {
 	uint32_t i, base, limit;

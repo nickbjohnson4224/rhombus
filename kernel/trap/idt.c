@@ -57,7 +57,7 @@ __attribute__ ((section(".itext")))
 void init_idt() {
 	uint8_t i;
 	memclr(int_handlers, sizeof(handler_t) * 96);
-	memset((uint8_t*) &idt[0], 0, sizeof(struct idt_entry) * 96);
+	memclr(idt, sizeof(struct idt_entry) * 96);
 	for (i = 0; i < 48; i++) if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0x8E);
 	for (i = 64;i < 96; i++) if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0xEE);
 	extern void idt_flush(void);

@@ -61,6 +61,6 @@ void init(void *mboot_ptr, uint32_t mboot_magic) {
 	cursek(74, -1);
 	printk("[done]");
 
-	cleark();
-	cursek(0, 15);
+//	cleark();
+//	cursek(0, 15);
 }

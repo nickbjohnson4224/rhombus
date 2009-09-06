@@ -29,10 +29,10 @@ global init_kmap
 align 0x1000
 init_kmap:
     dd 0x00000083	; Identity map first 4 MB
-	times 1019 dd 0	; Fill until 0xFF000000
+	times 1015 dd 0	; Fill until 0xFE000000
 	dd 0x00000083	; Map first 4 MB again in higher mem
-	times 2 dd 0	; Fill remainder of map
-	dd (init_kmap - 0xFF000000)
+	times 6 dd 0	; Fill remainder of map
+	dd (init_kmap - 0xFE000000)
 
 section .data
 
@@ -66,7 +66,7 @@ extern init
 global start
 start:
 	cli
-	mov ecx, init_kmap - 0xFF000000	; Get physical address of the kernel address space
+	mov ecx, init_kmap - 0xFE000000	; Get physical address of the kernel address space
 	mov cr3, ecx	; Load address into CR3
 	mov ecx, cr4
 	mov edx, cr0
@@ -93,7 +93,7 @@ start:
 	push eax	; Push multiboot magic number for identification
 
 	; Push *virtual* multiboot pointer
-	add ebx, 0xFF000000
+	add ebx, 0xFE000000
 	push ebx
 
 	; Set IOPL to 3 - it will be reduced to 0 on a process-by-process basis
@@ -102,18 +102,6 @@ start:
 	or eax, 0x00003000
 	push eax
 	popf
-
-;	; Initialize FPU/SSE
-;	mov eax, cr4
-;	or eax, 0x600
-;	mov cr4, eax
-;	mov eax, cr0
-;	or eax, 0x3
-;	mov cr0, eax
-;	mov eax, 0x37F
-;	push eax
-;	fldcw [esp]
-;	add esp, 4
 
 	call init
 

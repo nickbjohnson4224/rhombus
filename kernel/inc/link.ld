@@ -2,41 +2,41 @@ ENTRY(start)
 OUTPUT_FORMAT(elf32-i386)
 
 SECTIONS {
-	. = 0xFF100000;
+	. = 0xFE100000;
 
-	.mboot : AT(ADDR(.mboot) - 0xFF000000) {
+	.mboot : AT(ADDR(.mboot) - 0xFE000000) {
 		*(.mboot)
 	}
 
-	.text : AT(ADDR(.text) - 0xFF000000) {
+	.text : AT(ADDR(.text) - 0xFE000000) {
 		*(.text)
 		*(.rodata*)
 	}
 
-	.data : AT(ADDR(.data) - 0xFF000000) {
+	.data : AT(ADDR(.data) - 0xFE000000) {
 		*(.data)
 	}
 
-	.pbss ALIGN (0x1000) : AT(ADDR(.pbss) - 0xFF000000) {
+	.pbss ALIGN (0x1000) : AT(ADDR(.pbss) - 0xFE000000) {
 		*(.pbss);
 	}
 
-	.pdata ALIGN (0x1000) : AT(ADDR(.pdata) - 0xFF000000) {
+	.pdata ALIGN (0x1000) : AT(ADDR(.pdata) - 0xFE000000) {
 		*(.pdata);
 	}
 
-	.idata ALIGN (0x1000) : AT(ADDR(.idata) - 0xFF000000) {
+	.idata ALIGN (0x1000) : AT(ADDR(.idata) - 0xFE000000) {
 		START_OF_INIT = .;
-		*(.tdata)
+		*(.idata)
 	}
 
-	.itext : AT(ADDR(.itext) - 0xFF000000) {
-		*(.ttext)
+	.itext : AT(ADDR(.itext) - 0xFE000000) {
+		*(.itext)
 		. = ALIGN(0x1000);
 		END_OF_INIT = .;
 	}
 
-	.bss : AT(ADDR(.bss) - 0xFF000000) {
+	.bss : AT(ADDR(.bss) - 0xFE000000) {
 		_sbss = .;
 		*(COMMON)
 		*(.bss)
@@ -45,4 +45,3 @@ SECTIONS {
 
 	end = .; _end = .; __end = .;
 }
-
