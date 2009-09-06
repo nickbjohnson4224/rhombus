@@ -3,7 +3,7 @@ SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
 HEADERS := $(shell find inc -name "*.h")
 SUBDIR	:= libkernel
 TARGET	:= libkernel.a
-CFLAGS  += -ffreestanding -I$(BUILDDIR)/kernel/inc
+CFLAGS  += -ffreestanding -I$(BUILDDIR)/$(SUBDIR)/inc
 LDFLAGS += -r
 ASFLAGS := -felf
 

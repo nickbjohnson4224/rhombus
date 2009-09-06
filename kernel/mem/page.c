@@ -3,11 +3,33 @@
 #include <lib.h>
 #include <mem.h>
 
-#ifndef MAX_PHMEM_MAX
-pool_t fpool[MAX_PHMEM/4];
-#else
-pool_t fpool[0x1000];
-#endif
+pool_t *fpool;
+
+void mem_alloc(uintptr_t base, uintptr_t size, uint16_t flags) {
+	uint32_t i;
+
+	i = base & ~0xFFF;
+	while (i < (base + size)) {
+		if ((page_get(i) & PF_PRES) == 0) {
+			p_alloc(i, flags);
+		}
+		i += 0x1000;
+	}
+}
+
+void mem_free(uintptr_t base, uintptr_t size) {
+	uint32_t i;
+
+	printk("Freeing %x size %x\n", base, size);
+
+	i = base & ~0xFFF;
+	while (i < (base + size)) {
+		if (page_get(i) & PF_PRES) {
+			p_free(i);
+		}
+		i += 0x1000;
+	}
+}
 
 void page_touch(uint32_t page) {
 	page &= ~0x3FFFFF;

@@ -15,13 +15,10 @@
 
 	/***** MEMORY SUBSYSTEM *****/
 
-	// Maximum physical memory size in megabytes (2^20 bytes)
-	#define MAX_PHMEM 64
-	//#define MAX_PHMEM_MAX
-
 	#define ESPACE	0xFC000000	// Temporary space for exec data
 	#define LSPACE	0xFF000000	// Space for libsys
 	#define KSPACE 	0xFF000000	// Kernel space
+	#define KMALLOC 0xFF200000	// Kernel allocator
 	#define TMP_MAP	0xFF800000
 	#define PGE_MAP	0xFFC00000
 

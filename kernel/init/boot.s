@@ -51,7 +51,7 @@ align 4
 	dw 0x002F	; 47 bytes limit
 	dd gdt 		; Points to *virtual* GDT
 
-section .text
+section .mboot
 
 ; Multiboot header
 MultiBootHeader:
@@ -59,6 +59,8 @@ align 4
     dd MAGIC
     dd FLAGS
     dd CHECKSUM
+
+section .text
 
 extern init
 global start
@@ -120,7 +122,7 @@ start:
 	hlt
 	jmp .loop
 
-section .ttext
+section .itext
 
 global get_eflags
 get_eflags:

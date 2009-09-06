@@ -58,11 +58,7 @@ extern map_t map_load(map_t map);		// Activates a new map
 void map_gc(uint32_t page);				// Frees unused page tables
 
 /***** FRAME.C ******/
-#ifndef MAX_PHMEM_MAX
-extern pool_t fpool[MAX_PHMEM/4];
-#else
-extern pool_t fpool[0x1000];
-#endif
+extern pool_t *fpool;
 
 #define frame_new() (pool_alloc(fpool) << 12)			// Allocates a new frame	
 #define frame_free(addr) (pool_free(fpool, addr >> 12))	// Frees a frame
@@ -71,6 +67,9 @@ extern pool_t fpool[0x1000];
 extern ptbl_t *cmap, *tmap;					// Address of current page directory
 extern page_t *ctbl, *ttbl;					// Base of current page tables
 extern uint32_t *tsrc, *tdst;
+
+void   mem_alloc(uintptr_t base, uintptr_t size, uint16_t flags);
+void   mem_free(uintptr_t base, uintptr_t size);
 
 void   page_touch(uint32_t page);				// Makes sure a page exists
 void   page_set(uint32_t page, page_t value);	// Sets the value of a page

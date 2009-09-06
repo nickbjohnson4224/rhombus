@@ -28,7 +28,7 @@ int64(void), int65(void), int66(void), int67(void), int68(void), int69(void), in
 int71(void), int72(void), int80(void), int81(void), int82(void), int83(void), int84(void);
 
 typedef void (*int_handler_t) (void);
-__attribute__ ((section(".tdata")))
+__attribute__ ((section(".idata")))
 int_handler_t idt_raw[] = {
 
 // Faults
@@ -53,13 +53,13 @@ NULL, 	NULL, 	NULL,	NULL,	NULL,	NULL,	NULL,	NULL
 
 };
 
-__attribute__ ((section(".ttext")))
+__attribute__ ((section(".itext")))
 void init_idt() {
 	uint8_t i;
-	memclr(int_handlers, sizeof(handler_t) * 256);
-	memset((uint8_t*) &idt[0], 0, sizeof(struct idt_entry) * 256);
-	for (i = 0; i <= 47; i++) if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0x8E);
-	for (i = 64;i <= 96; i++) if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0xEE);
+	memclr(int_handlers, sizeof(handler_t) * 96);
+	memset((uint8_t*) &idt[0], 0, sizeof(struct idt_entry) * 96);
+	for (i = 0; i < 48; i++) if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0x8E);
+	for (i = 64;i < 96; i++) if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0xEE);
 	extern void idt_flush(void);
 	idt_flush();
 }

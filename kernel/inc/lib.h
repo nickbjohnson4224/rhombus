@@ -56,9 +56,14 @@ typedef struct pool {
 	uint16_t upper;	// Highest actual bit in pool
 } pool_t;
 
-pool_t *pool_new(uint32_t num, pool_t *pool);		// Allocate a new pool
+pool_t *pool_new(uint32_t num);						// Allocate a new pool
 uint32_t pool_alloc(pool_t *pool);					// Allocate from a pool
 uint32_t pool_free(pool_t *pool, uint32_t pos);		// Free back to a pool
 uint32_t pool_query(pool_t *pool);					// Find how many elementa are allocated in a pool
+
+/***** STACK ALLOCATOR *****/
+
+void *kmalloc_align(uint32_t size, uint32_t align);
+void *kmalloc(uint32_t size);
 
 #endif

@@ -5,8 +5,8 @@
 #include <task.h>
 #include <mem.h>
 
-pool_t tpool[SIZEOF_POOL(MAX_TASKS)];	// Pool allocator for task structures
-task_t *task = (void*) TASK_TBL; 		// Array of task structures (max 65536)
+pool_t *tpool;						// Pool allocator for task structures
+task_t *task = (void*) TASK_TBL; 	// Array of task structures (max 65536)
 pid_t curr_pid = 0;
 
 task_t *task_get(pid_t pid) {
@@ -19,10 +19,8 @@ task_t *task_get(pid_t pid) {
 // Used to initialize new tasks that are not marked yet
 void task_touch(pid_t pid) {
 	if (pid >= MAX_TASKS) return;
-	if ((page_get((uint32_t) &task[pid]) & PF_PRES) == 0) {
-		p_alloc((uint32_t) &task[pid], (PF_PRES | PF_RW));
-		pgclr((void*) &task[pid]);
-	}
+	mem_alloc((uintptr_t) &task[pid], sizeof(task_t), 0x3);
+	memclr((void*) &task[pid], sizeof(task_t)); 
 	task[pid].magic = 0x4224;
 }
 

@@ -7,16 +7,16 @@
 #include <task.h>
 #include <trap.h>
 
-__attribute__ ((section(".tdata")))
+__attribute__ ((section(".idata")))
 struct tar_header *header[256];
 
-__attribute__ ((section(".tdata")))
+__attribute__ ((section(".idata")))
 struct tar_header *initrd;
 
-__attribute__ ((section(".tdata")))
+__attribute__ ((section(".idata")))
 uint32_t initrd_size;
 
-__attribute__ ((section(".ttext")))
+__attribute__ ((section(".itext")))
 static int tar_header_check(struct tar_header *t) {
 	int i, sum = 0;
 	uint8_t *header_byte = (uint8_t*) t;
@@ -27,12 +27,12 @@ static int tar_header_check(struct tar_header *t) {
 	return -1;
 }
 
-__attribute__ ((section(".ttext")))
+__attribute__ ((section(".itext")))
 static uint8_t *header_contents(struct tar_header *t) {
 	return (uint8_t*) ((uint32_t) t + sizeof(struct tar_header));
 }
 
-__attribute__ ((section(".ttext")))
+__attribute__ ((section(".itext")))
 void init_kload() {
 	uint32_t i, n;
 
@@ -58,7 +58,7 @@ void init_kload() {
 	printk("[done]");
 }
 
-__attribute__ ((section(".ttext")))
+__attribute__ ((section(".itext")))
 void init_user_init() {
 	uint32_t i, n;
 	task_t *t;
@@ -96,7 +96,7 @@ void init_user_init() {
 }
 
 // Note - this function breaks on all GCC optimizations and normal TCC - try and fix ASAP
-__attribute__ ((section(".ttext")))
+__attribute__ ((section(".itext")))
 void init_initrd_rmap() {
 	uint32_t i, base, limit;
 	base = (uint32_t) initrd;

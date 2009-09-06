@@ -5,7 +5,7 @@
 #include <task.h>
 #include <mem.h>
 
-__attribute__ ((section(".ttext")))
+__attribute__ ((section(".itext")))
 void elf_load_segment(uint8_t *src, elf_ph_t *seg) {
 
 	// Check if we can load this segment
@@ -27,7 +27,7 @@ void elf_load_segment(uint8_t *src, elf_ph_t *seg) {
 	memcpy(dest_base, src_base, seg->p_filesz);
 }
 
-__attribute__ ((section(".ttext")))
+__attribute__ ((section(".itext")))
 int elf_check(uint8_t *src) {
 	elf_t *elf_header = (elf_t*) src;
 	if (elf_header->e_ident[0] != 0x7F)return 1;
@@ -40,7 +40,7 @@ int elf_check(uint8_t *src) {
 	return 0;
 }
 
-__attribute__ ((section(".ttext")))
+__attribute__ ((section(".itext")))
 uint32_t elf_load(uint8_t *src) {
 	uint32_t i, n;
 	elf_t *elf_header = (elf_t*) src;

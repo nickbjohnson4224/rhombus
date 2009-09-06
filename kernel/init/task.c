@@ -4,12 +4,12 @@
 #include <task.h>
 #include <init.h>
 
-__attribute__ ((section(".ttext"))) 
+__attribute__ ((section(".itext"))) 
 void init_task() {
 	printk("  Kernel: tasking system");
 
 		// Set up task table and allocator
-		pool_new(MAX_TASKS, tpool);
+		tpool = pool_new(MAX_TASKS);
 
 		// Bootstrap task 0, because there is nothing to fork from
 		task_touch(0);

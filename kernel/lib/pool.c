@@ -3,13 +3,15 @@
 #include <lib.h>
 #include <mem.h>
 
-__attribute__ ((section(".ttext"))) 
-pool_t *pool_new(uint32_t size, pool_t *pool) {
+__attribute__ ((section(".itext"))) 
+pool_t *pool_new(uint32_t size) {
 	uint32_t i, npool, extra;
+	pool_t *pool;
 
 	npool = (size - 1) / 1024 + 1; // 1024 entries per pool (and round up)
 	extra = size - ((npool - 1) * 1024);
-	
+	pool = kmalloc(sizeof(pool_t) * npool);
+
 	for (i = 0; i < npool; i++) {
 		memclr(pool[i].word, sizeof(uint32_t) * 32);
 		pool[i].first = 0x0000;
@@ -22,12 +24,14 @@ pool_t *pool_new(uint32_t size, pool_t *pool) {
 }
 
 static void pool_full(pool_t *pool) {
-	printk("%x\n", pool_query(pool));
+	printk("\npool %x\n", pool);
 	panic("pool allocator full");
 }
 
 uint32_t pool_alloc(pool_t *pool) {
 	uint32_t p, w, b;	// pool, word, bit
+
+	if (!pool) panic("No pool");
 
 	// Find suitable pool
 	for (p = 0; pool[p].total == 0; p++) 

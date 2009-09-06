@@ -64,9 +64,9 @@ task_t *task_new(task_t *src);
 uint32_t task_rem(task_t *t);
 image_t *task_switch(task_t *t);
 
-extern pool_t tpool[(MAX_TASKS/1024) + 1];	// Pool allocator for task structures
-extern task_t *task; 						// Array of task structures
-extern pid_t curr_pid;						// Currently loaded task ID
+extern pool_t *tpool;	// Pool allocator for task structures
+extern task_t *task; 	// Array of task structures
+extern pid_t curr_pid;	// Currently loaded task ID
 
 /***** IRQ REDIRECTION *****/
 
