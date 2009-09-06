@@ -1,4 +1,4 @@
-// Copyright 2009 Nick Johnson
+/* Copyright 2009 Nick Johnson */
 
 #include <lib.h>
 #include <trap.h>
@@ -7,7 +7,7 @@
 
 /***** IRQ HANDLERS *****/
 
-// Handles IRQ 0, and advances a simple counter used as a clock
+/* Handles IRQ 0, and advances a simple counter used as a clock */
 image_t *pit_handler(image_t *state) {
 	static uint32_t tick = 0;
 	if (state->cs & 0x3) tick++;
@@ -31,7 +31,7 @@ image_t *fault_generic(image_t *image) {
 
 image_t *fault_page(image_t *image) {
 	uint32_t cr2; asm volatile ("movl %%cr2, %0" : "=r" (cr2));
-	if ((image->cs & 0x3) == 0) { // i.e. if it was kernelmode
+	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */
 		printk("page fault at %x, ip = %x\n", cr2, image->eip);
 		panic("page fault exception");
 	}
@@ -51,9 +51,9 @@ image_t *fault_double(image_t *image) {
 
 /****** SYSTEM CALLS *****/
 
-// Note - different than UNIX / POSIX fork() -
-// parent gets child PID, child gets *negative* parent PID, 0 is error
-// I think it's much more useful, but the libc can convert it easily
+/* Note - different than UNIX / POSIX fork() - */
+/* parent gets child PID, child gets *negative* parent PID, 0 is error */
+/* I think it's much more useful, but the libc can convert it easily */
 
 image_t *fork_call(image_t *image) {
 	pid_t parent = curr_pid;
@@ -67,13 +67,15 @@ image_t *fork_call(image_t *image) {
 image_t *exit_call(image_t *image) {
 	pid_t dead_task = curr_pid;
 	uint32_t ret_val = image->eax;
+	task_t *t;
+
 	extern void halt(void);
 	if (dead_task == 1) {
 		colork(0xC);
 		printk("Init has died - halting");
 		halt();
 	}
-	task_t *t = task_get(dead_task);
+	t = task_get(dead_task);
 	map_clean(t->map);
 	map_free(t->map);
 	task_rem(task_get(dead_task));
@@ -121,10 +123,10 @@ image_t *lsig_call(image_t *image) {
 
 image_t *mmap_call(image_t *image) {
 
-	// Bounds check page address
+	/* Bounds check page address */
 	if (image->edi + image->ecx > SIG_TBL) ret(image, EPERMIT);
 
-	// Allocate pages with flags
+	/* Allocate pages with flags */
 	mem_alloc(image->edi, image->ecx, (image->ebx & PF_MASK) | PF_PRES | PF_USER);
 
 	ret(image, 0);
@@ -132,10 +134,10 @@ image_t *mmap_call(image_t *image) {
 
 image_t *umap_call(image_t *image) {
 
-	// Bounds check page address
+	/* Bounds check page address */
 	if (image->edi + image->ecx > SIG_TBL) ret(image, EPERMIT);
 
-	// Free pages
+	/* Free pages */
 	mem_free(image->edi, image->ecx);
 
 	ret(image, 0);
@@ -149,18 +151,18 @@ image_t *push_call(image_t *image) {
 	task_t *t;
 	uint32_t i;
 
-	// Bounds check addresses
+	/* Bounds check addresses */
 	if (src + size > LSPACE || dst + size > LSPACE) ret(image, EPERMIT);
-	if (size > 0x4000) ret(image, EPERMIT);	// Limit writes to 16K
+	if (size > 0x4000) ret(image, EPERMIT);	/* Limit writes to 16K */
 
-	// Find and check target
+	/* Find and check target */
 	if (targ) {
 		t = task_get(targ);
 		if (!t) ret(image, ENOTASK);
 		map_temp(t->map);
 	}
 
-	// Map pages
+	/* Map pages */
 	for (i = 0; i < size + 0x1000; i += 0x1000) {
 		if (targ) {
 			if ((temp_get(dst + i) & PF_PRES) == 0) ret(image, EPERMIT);
@@ -172,7 +174,7 @@ image_t *push_call(image_t *image) {
 		page_set((uint32_t) tsrc + i, page_fmt(ctbl[(src + i) >> 12], (PF_RW | PF_PRES)));
 	}
 
-	// Copy memory
+	/* Copy memory */
 	memcpy((void*) ((uint32_t) tdst + (dst & 0xFFF)),
 		(void*) ((uint32_t) tsrc + (src & 0xFFF)), size);
 	
@@ -187,18 +189,18 @@ image_t *pull_call(image_t *image) {
 	task_t *t;
 	uint32_t i;
 
-	// Bounds check addresses
+	/* Bounds check addresses */
 	if (src + size > LSPACE || dst + size > LSPACE) ret(image, EPERMIT);
-	if (size > 0x4000) ret(image, EPERMIT);	// Limit reads to 16K
+	if (size > 0x4000) ret(image, EPERMIT);	/* Limit reads to 16K */
 
-	// Find and check target
+	/* Find and check target */
 	if (targ) {
 		t = task_get(targ);
 		if (!t) ret(image, ENOTASK);
 		map_temp(t->map);
 	}
 
-	// Map pages
+	/* Map pages */
 	for (i = 0; i < size + 0x1000; i += 0x1000) {
 		if (targ) {
 			if ((temp_get(src + i) & PF_PRES) == 0) ret(image, EPERMIT);
@@ -210,7 +212,7 @@ image_t *pull_call(image_t *image) {
 		page_set((uint32_t) tdst + i, page_fmt(page_get(dst + i), (PF_RW | PF_PRES | PF_DISC)));
 	}
 
-	// Copy memory
+	/* Copy memory */
 	memcpy((void*) ((uint32_t) tdst + (dst & 0xFFF)),
 		(void*) ((uint32_t) tsrc + (src & 0xFFF)), size);
 	

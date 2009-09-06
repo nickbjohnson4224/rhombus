@@ -1,12 +1,12 @@
-// Copyright 2009 Nick Johnson
+/* Copyright 2009 Nick Johnson */
 
 #include <lib.h>
 #include <trap.h>
 #include <task.h>
 #include <mem.h>
 
-pool_t *tpool;						// Pool allocator for task structures
-task_t *task = (void*) TASK_TBL; 	// Array of task structures (max 65536)
+pool_t *tpool;						/* Pool allocator for task structures */
+task_t *task = (void*) TASK_TBL; 	/* Array of task structures (max 65536) */
 pid_t curr_pid = 0;
 
 task_t *task_get(pid_t pid) {
@@ -16,7 +16,7 @@ task_t *task_get(pid_t pid) {
 	return (task[pid].magic == 0x4224) ? &task[pid] : NULL;
 }
 
-// Used to initialize new tasks that are not marked yet
+/* Used to initialize new tasks that are not marked yet */
 void task_touch(pid_t pid) {
 	if (pid >= MAX_TASKS) return;
 	mem_alloc((uintptr_t) &task[pid], sizeof(task_t), 0x3);
@@ -25,10 +25,13 @@ void task_touch(pid_t pid) {
 }
 
 task_t *task_new(task_t *src) {
+	pid_t new_pid;
+	task_t *new;
+
 	if (!src) panic ("bad parent");
-	pid_t new_pid = pool_alloc(tpool);
+	new_pid = pool_alloc(tpool);
 	task_touch(new_pid);
-	task_t *new = task_get(new_pid);
+	new = task_get(new_pid);
 	if (!new) panic ("bad pid");
 
 	new->map = map_clone();
@@ -49,7 +52,7 @@ uint32_t task_rem(task_t *t) {
 }
 
 image_t *task_switch(task_t *t) {
-//	printk("task_switch %d\n", t->pid);
+/*	printk("task_switch %d\n", t->pid); */
 	curr_pid = t->pid;
 
 	map_load(t->map);

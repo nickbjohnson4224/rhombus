@@ -1,4 +1,4 @@
-// Copyright 2009 Nick Johnson
+/* Copyright 2009 Nick Johnson */
 
 #include <lib.h>
 #include <mem.h>

@@ -1,4 +1,4 @@
-// Copyright 2009 Nick Johnson
+/* Copyright 2009 Nick Johnson */
 
 #include <lib.h>
 #include <elf.h>
@@ -7,23 +7,25 @@
 
 __attribute__ ((section(".itext")))
 void elf_load_segment(uint8_t *src, elf_ph_t *seg) {
+	uint8_t *src_base, *dest_base;
+	uint32_t dest_limit, i;
 
-	// Check if we can load this segment
-	if (seg->p_type != PT_LOAD) return; // No libraries or any other crap!
+	/* Check if we can load this segment */
+	if (seg->p_type != PT_LOAD) return; /* No libraries or any other crap! */
 
-	// Get pointer to source
-	uint8_t *src_base = &src[seg->p_offset];
+	/* Get pointer to source */
+	src_base = &src[seg->p_offset];
 
-	// Get pointer to destination
-	uint8_t *dest_base = (uint8_t*) seg->p_vaddr;
-	uint32_t dest_limit = ((uint32_t) dest_base + seg->p_memsz + 0x1000) &~ 0xFFF;
+	/* Get pointer to destination */
+	dest_base = (uint8_t*) seg->p_vaddr;
+	dest_limit = ((uint32_t) dest_base + seg->p_memsz + 0x1000) &~ 0xFFF;
 
-	// Allocate adequate memory
-	uint32_t i = ((uint32_t) dest_base) &~ 0xFFF;
+	/* Allocate adequate memory */
+	i = ((uint32_t) dest_base) &~ 0xFFF;
 	for (; i < dest_limit; i += 0x1000)
 		p_alloc(i, (PF_USER | PF_PRES | PF_RW));
 
-	// Copy data
+	/* Copy data */
 	memcpy(dest_base, src_base, seg->p_filesz);
 }
 
@@ -45,12 +47,12 @@ uint32_t elf_load(uint8_t *src) {
 	uint32_t i, n;
 	elf_t *elf_header = (elf_t*) src;
 
-	// Load all segments
+	/* Load all segments */
 	elf_ph_t *program_header = (elf_ph_t*) &src[elf_header->e_phoff];
-	n = elf_header->e_phnum; // Number of segments
+	n = elf_header->e_phnum; /* Number of segments */
 	if (!n) return (uint32_t) NULL;
 
 	for (i = 0; i < n; i++) elf_load_segment(src, &program_header[i]);
 	
-	return elf_header->e_entry; // Return entry point
+	return elf_header->e_entry; /* Return entry point */
 }

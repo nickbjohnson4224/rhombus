@@ -1,11 +1,11 @@
-// Copyright 2009 Nick Johnson
+/* Copyright 2009 Nick Johnson */
 
 #ifndef INIT_H
 #define INIT_H
 
 #include <test.h>
 
-// Multiboot header
+/* Multiboot header */
 struct multiboot {
 	uint32_t flags;
 	uint32_t mem_lower;
@@ -33,7 +33,7 @@ struct multiboot {
 	uint32_t vbe_interface_len;
 }  __attribute__((packed));
 
-// Multiboot memory map
+/* Multiboot memory map */
 struct memory_map {
 	uint32_t size;
 	uint32_t base_addr_low;
@@ -46,7 +46,7 @@ struct memory_map {
 extern struct multiboot *mboot;
 extern uint32_t memsize;
 
-// Standard V7 TAR header
+/* Standard V7 TAR header */
 struct tar_header {
 	char name[100];
 	char mode[8];

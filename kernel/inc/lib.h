@@ -1,4 +1,4 @@
-// Copyright 2009 Nick Johnson
+/* Copyright 2009 Nick Johnson */
 
 #ifndef LIB_H
 #define LIB_H
@@ -6,9 +6,9 @@
 #include <config.h>
 #include <stdint.h>
 
-//typedef unsigned int uint32_t;
-//typedef unsigned short uint16_t;
-//typedef unsigned char uint8_t;
+/*typedef unsigned int uint32_t; */
+/*typedef unsigned short uint16_t; */
+/*typedef unsigned char uint8_t; */
 typedef unsigned int addr_t;
 
 /***** STANDARD FUNCTIONS *****/
@@ -37,7 +37,7 @@ void colork(uint8_t color);
 void cursek(int8_t x, int8_t y);
 
 /***** ERROR FUNCTIONS *****/
-void panic(const char *message);		// Panic with a message
+void panic(const char *message); /* Panic with a message */
 
 #define ENOTASK ((uint32_t) -1)
 #define ENOSIG ((uint32_t) -2)
@@ -50,16 +50,16 @@ void panic(const char *message);		// Panic with a message
 
 typedef struct pool {
 	uint32_t word[32];
-	uint16_t first;	// First free bit in pool
-	uint16_t total;	// Total free bits in pool
-	uint16_t setup;	// Magic number that verifies setup
-	uint16_t upper;	// Highest actual bit in pool
+	uint16_t first;	/* First free bit in pool */
+	uint16_t total;	/* Total free bits in pool */
+	uint16_t setup;	/* Magic number that verifies setup */
+	uint16_t upper;	/* Highest actual bit in pool */
 } pool_t;
 
-pool_t *pool_new(uint32_t num);						// Allocate a new pool
-uint32_t pool_alloc(pool_t *pool);					// Allocate from a pool
-uint32_t pool_free(pool_t *pool, uint32_t pos);		// Free back to a pool
-uint32_t pool_query(pool_t *pool);					// Find how many elementa are allocated in a pool
+pool_t *pool_new(uint32_t num);						/* Allocate a new pool */
+uint32_t pool_alloc(pool_t *pool);					/* Allocate from a pool */
+uint32_t pool_free(pool_t *pool, uint32_t pos);		/* Free back to a pool */
+uint32_t pool_query(pool_t *pool);					/* Find how many elementa are allocated in a pool */
 
 /***** STACK ALLOCATOR *****/
 

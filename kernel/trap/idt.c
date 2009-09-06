@@ -1,4 +1,4 @@
-// Copyright 2009 Nick Johnson
+/* Copyright 2009 Nick Johnson */
 
 #include <lib.h>
 #include <trap.h>
@@ -31,23 +31,23 @@ typedef void (*int_handler_t) (void);
 __attribute__ ((section(".idata")))
 int_handler_t idt_raw[] = {
 
-// Faults
+/* Faults */
 int0, 	int1, 	int2, 	int3, 	int4, 	int5, 	int6, 	int7, 
 int8, 	int9, 	int10, 	int11, 	int12, 	int13, 	int14, 	int15, 
 int16,	int17, 	int18, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
 NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
 
-// IRQs
+/* IRQs */
 int32,	int33, 	int34, 	int35, 	int36, 	int37, 	int38, 	int39, 
 int40,	int41, 	int42, 	int43, 	int44, 	int45, 	int46, 	int47, 
 NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
 NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
 
-// User system calls
+/* User system calls */
 int64, 	int65, 	int66, 	int67, 	int68, 	int69, 	int70, 	int71,
 NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
 
-// Administrative System Calls
+/* Administrative System Calls */
 int80, 	int81, 	int82, 	int83,	int84,	NULL,	NULL,	NULL,
 NULL, 	NULL, 	NULL,	NULL,	NULL,	NULL,	NULL,	NULL
 
@@ -55,12 +55,13 @@ NULL, 	NULL, 	NULL,	NULL,	NULL,	NULL,	NULL,	NULL
 
 __attribute__ ((section(".itext")))
 void init_idt() {
+	extern void idt_flush(void);
 	uint8_t i;
+
 	memclr(int_handlers, sizeof(handler_t) * 96);
 	memclr(idt, sizeof(struct idt_entry) * 96);
 	for (i = 0; i < 48; i++) if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0x8E);
 	for (i = 64;i < 96; i++) if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0xEE);
-	extern void idt_flush(void);
 	idt_flush();
 }
 
@@ -111,6 +112,7 @@ extern uint8_t gdt[48];
 
 __attribute__ ((section(".ttext")))
 void init_tss() {
+	extern void tss_flush(void);
 	uint32_t base = (uint32_t) &tss;
 	uint16_t limit = (uint16_t) (base + sizeof(struct tss));
 
@@ -125,7 +127,6 @@ void init_tss() {
 	gdt[44] = (uint8_t) ((base >> 16) & 0xFF);
 	gdt[47] = (uint8_t) ((base >> 24) & 0xFF);
 
-	extern void tss_flush(void);
 	tss_flush();
 }
 

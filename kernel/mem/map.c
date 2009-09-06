@@ -1,4 +1,4 @@
-// Copyright 2009 Nick Johnson
+/* Copyright 2009 Nick Johnson */
 
 #include <lib.h>
 #include <mem.h>
@@ -20,11 +20,11 @@ void map_temp(map_t map) {
 map_t map_alloc() {
 	map_t map = frame_new();
 
-	// Allocate and clear new map
+	/* Allocate and clear new map */
 	page_set((uint32_t) tsrc, page_fmt(map, (PF_PRES | PF_RW)));
 	pgclr(tsrc);
 
-	// Set PGE_MAP table recursively
+	/* Set PGE_MAP table recursively */
 	tsrc[PGE_MAP >> 22] = page_fmt(map, (PF_PRES | PF_RW));
 	return map;
 }
@@ -72,15 +72,15 @@ map_t map_clone() {
 	uint32_t i, j;
 	map_t dest;
 
-	// Create new map
+	/* Create new map */
 	dest = map_alloc();
 	map_temp(dest);
 
-	// Link kernel/libspace (except for recursive mapping)
+	/* Link kernel/libspace (except for recursive mapping) */
 	for (i = LSPACE >> 22; i < TMP_MAP >> 22; i++)
 		tmap[i] = cmap[i];
 
-	// Clone/clear userspace
+	/* Clone/clear userspace */
 	for (i = 0; i < LSPACE; i += 0x400000) if (cmap[i >> 22] & PF_PRES) {
 		tmap[i >> 22] = frame_new() | PF_PRES | PF_USER | PF_RW;
 		pgclr(&ttbl[i >> 12]);

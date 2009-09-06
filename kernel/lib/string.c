@@ -1,8 +1,8 @@
-// Copyright 2009 Nick Johnson
+/* Copyright 2009 Nick Johnson */
 
 #include <lib.h>
 
-// Optimized memory clearing (modified from jgaref's memset)
+/* Optimized memory clearing (modified from jgaref's memset) */
 void *memclr(void *dest, uint32_t size) {
 	uint32_t num_words, num_bytes, *dest32, i;
 	uint8_t *dest8;

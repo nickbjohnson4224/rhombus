@@ -1,4 +1,4 @@
-// Copyright 2009 Nick Johnson
+/* Copyright 2009 Nick Johnson */
 
 #include <lib.h>
 #include <mem.h>
@@ -65,7 +65,7 @@ void printk(const char *fmt, ...) {
 }
 
 void colork(uint8_t color) {
-	attr = (uint8_t) (color & 0x0F); // Any color, as long as it's black
+	attr = (uint8_t) (color & 0x0F); /* Any color, as long as it's black */
 }
 
 void cursek(int8_t x, int8_t y) {

@@ -1,4 +1,4 @@
-// Copyright 2009 Nick Johnson
+/* Copyright 2009 Nick Johnson */
 
 #include <lib.h>
 #include <mem.h>
@@ -61,6 +61,6 @@ void init(void *mboot_ptr, uint32_t mboot_magic) {
 	cursek(74, -1);
 	printk("[done]");
 
-//	cleark();
-//	cursek(0, 15);
+/*	cleark(); */
+/*	cursek(0, 15); */
 }

@@ -1,4 +1,4 @@
-// Copyright 2009 Nick Johnson
+/* Copyright 2009 Nick Johnson */
 
 #include <lib.h>
 #include <mem.h>
@@ -8,7 +8,7 @@ pool_t *pool_new(uint32_t size) {
 	uint32_t i, npool, extra;
 	pool_t *pool;
 
-	npool = (size - 1) / 1024 + 1; // 1024 entries per pool (and round up)
+	npool = (size - 1) / 1024 + 1; /* 1024 entries per pool (and round up) */
 	extra = size - ((npool - 1) * 1024);
 	pool = kmalloc(sizeof(pool_t) * npool);
 
@@ -29,20 +29,20 @@ static void pool_full(pool_t *pool) {
 }
 
 uint32_t pool_alloc(pool_t *pool) {
-	uint32_t p, w, b;	// pool, word, bit
+	uint32_t p, w, b;	/* pool, word, bit */
 
 	if (!pool) panic("No pool");
 
-	// Find suitable pool
+	/* Find suitable pool */
 	for (p = 0; pool[p].total == 0; p++) 
 		if (pool[p].setup != 0x4224) pool_full(pool);
 	if (pool[p].setup != 0x4224) pool_full(pool);
 
-	// Find suitable word within pool
+	/* Find suitable word within pool */
 	for (w = pool[p].first / 32; w < pool[p].upper / 32; w++)
 		if (pool[p].word[w] != 0xFFFFFFFF) break;
 
-	// Find open bit within word
+	/* Find open bit within word */
 	for (b = 0; pool[p].word[w] & (0x1 << b); b++);
 	if (b == 32) pool_full(pool);
 
@@ -55,12 +55,12 @@ uint32_t pool_alloc(pool_t *pool) {
 uint32_t pool_free(pool_t *pool, uint32_t pos) {
 	uint32_t p, w, b;
 
-	// Convert to bit coordinates
+	/* Convert to bit coordinates */
 	p = pos >> 10;
 	w = (pos >> 5) % 1024;
 	b = pos % 32;
 
-	// Clear bit and set metadata
+	/* Clear bit and set metadata */
 	pool[p].word[w] &= ~(0x1 << b);
 	pool[p].first = (uint16_t) min(pool[p].first, ((w << 5) | b));
 	pool[p].total ++;
@@ -71,7 +71,7 @@ uint32_t pool_free(pool_t *pool, uint32_t pos) {
 uint32_t pool_query(pool_t *pool) {
 	int total, p;
 	
-	// Tally usage of all pools
+	/* Tally usage of all pools */
 	total = 0;
 	for (p = 0; pool[p].setup; p++)
 		total += (pool[p].upper - pool[p].total);
