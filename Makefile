@@ -1,41 +1,36 @@
-export BUILDDIR=$(PWD)
+BUILDDIR=$(PWD)
 
-export LD=/usr/khaos/bin/i586-elf-ld
-export LIBRARY_PATH=$(PWD)/lib
+LIB_DIRS=libkernel libdriver
+BIN_DIRS=kernel init
 
-export CC=/usr/khaos/bin/i586-elf-gcc
-#export CC=tcc
-FLAGS=-march=i586 -pipe -Wall -Werror -Wshadow \
-	-Wpointer-arith -Wcast-align -Wwrite-strings \
-#	-Wmissing-declarations -Wredundant-decls \
-#	-Winline -Wno-long-long -Wconversion -Wstrict-prototypes
+CC := /usr/khaos/bin/i586-elf-gcc
+LD := /usr/khaos/bin/i586-elf-ld
+AR := /usr/khaos/bin/i586-elf-ar
+AS := nasm
 
-# make sure GCC works with *all* of these flag sets
-# also make sure TCC works with the last one
-#export OPTS=$(FLAGS) -fomit-frame-pointer -O3
-export OPTS=$(FLAGS) -fomit-frame-pointer -Os
-#export OPTS=$(FLAGS) -fomit-frame-pointer -O0
-#export OPTS=$(FLAGS) -O0
+CFLAGS  := -march=i586 -pipe -Wall -Werror -Wextra
+CFLAGS  += -Wpointer-arith -Wcast-align -Wwrite-strings
+CFLAGS  += -fomit-frame-pointer -Os
+CFLAGS	+= -I$(BUILDDIR)/inc
+LDFLAGS := -L$(BUILDDIR)/lib
+ARFLAGS := rcs
 
-all: libs
-	make -C kernel
-	make -C driver
-	make -C init
+export BUILDDIR CC LD AR AS CFLAGS LDFLAGS ARFLAGS
 
-libs:
-	make -C libkernel
-	make -C libdriver
-	make -C libc
-	make -C libsys
+.PHONY: $(LIB_DIRS) $(BIN_DIRS)
+
+all: $(LIB_DIRS) $(BIN_DIRS)
+
+$(BIN_DIRS): $(LIB_DIRS)
+	@ echo "MAKE  " $@
+	@ make -s -C $@
+
+$(LIB_DIRS):
+	@ echo "MAKE  " $@
+	@ make -s -C $@
 
 clean:
-	make -C kernel clean
-	make -C init clean
-	make -C driver clean
-	make -C libsys clean
-	make -C libc clean
-	make -C libkernel clean
-	make -C libdriver clean
+	rm $(shell find . -name "*.o")
 
 test:	all
 	sudo run/test.sh

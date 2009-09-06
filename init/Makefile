@@ -1,23 +1,26 @@
-SOURCES=lib/lib.o setup/setup.o
-export CFLAGS=-nostdlib -nostdinc -fno-builtin -I../inc -I$(BUILDDIR)/inc $(OPTS)
-LDFLAGS=-L$(BUILDDIR)/lib -ldriver -lkernel
-ASFLAGS=-felf
+SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
+SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
+SUBDIR	:= init
+TARGET	:= init
+CFLAGS  += -ffreestanding -I$(BUILDDIR)/kernel/inc
+LDFLAGS += -ldriver -lkernel
+ASFLAGS := -felf
 
-all: $(SOURCES) link
+all: $(TARGET)
 
-link:
-	$(LD) -o init $(SOURCES) $(LDFLAGS)
+$(TARGET): $(SOURCES) inc/*
+	echo "LD    " $(SUBDIR)/$(TARGET)
+	@ $(LD) -o $(TARGET) $(SOURCES) $(LDFLAGS)
+	echo "CP    " $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/bin
+	@ cp $(TARGET) $(BUILDDIR)/bin
 
-lib/lib.o: lib/*.c
-	make -C lib
+.s.o:
+	echo "AS    " $(SUBDIR)/$<
+	@ $(AS) $(ASFLAGS) $<
 
-setup/setup.o: setup/*.c setup/*.s
-	make -C setup
-
-cdrv/cdrv.o: cdrv/*.c
-	make -C cdrv
+.c.o:
+	echo "CC    " $(SUBDIR)/$<
+	@ $(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	make -C lib clean
-	make -C setup clean
-	rm init
+	@ rm $(TARGET) $(SOURCES)

@@ -58,9 +58,9 @@ void swrite(char *s) {
 	while (*s != '\0') cwrite(*s++);
 }
 
-u8int keymap[128] = "\0\0331234567890-=\b\tqwertyuiop[]\n\0asdfghjkl;\'`\0\\zxcvbnm,./\0*\0 ";
-u8int upkmap[128] = "\0\033!@#$%^&*()_+\b\0QWERTYUIOP{}\n\0ASDFGHJKL:\"~\0|ZXCVBNM<>?\0*\0 ";
-u8int shift = 0;
+uint8_t keymap[128] = "\0\0331234567890-=\b\tqwertyuiop[]\n\0asdfghjkl;\'`\0\\zxcvbnm,./\0*\0 ";
+uint8_t upkmap[128] = "\0\033!@#$%^&*()_+\b\0QWERTYUIOP{}\n\0ASDFGHJKL:\"~\0|ZXCVBNM<>?\0*\0 ";
+uint8_t shift = 0;
 void kbhandle() {
 	char c = inb(0x60);
 	if (c & 0x80) {

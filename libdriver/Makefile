@@ -1,19 +1,35 @@
-SOURCES=port.o rmem.o
-LDFLAGS=-r
-ASFLAGS=-felf
+SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
+SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
+HEADERS := $(shell find inc -name "*.h")
+SUBDIR	:= libdriver
+TARGET	:= libdriver.a
+CFLAGS  += -ffreestanding -I$(BUILDDIR)/kernel/inc
+LDFLAGS += -r
+ASFLAGS := -felf
 
-all: $(SOURCES) link
-	install -t $(BUILDDIR)/lib libdriver.a -m 644
-	install -t $(BUILDDIR)/inc inc/driver.h -m 644
+.PHONY: $(HEADERS) clean
 
-link:
-	$(LD) -o libdriver.o $(SOURCES) $(LDFLAGS)
-	ar rcs libdriver.a libdriver.o
+all: $(TARGET) $(HEADERS)
 
-clean:
-	rm $(SOURCES) libdriver.o libdriver.a
-	rm $(BUILDDIR)/lib/libdriver.a
-	rm $(BUILDDIR)/inc/driver.h
+$(HEADERS):
+	echo "CP    " $(SUBDIR)/$@ "->" $(BUILDDIR)/inc
+	@ cp $@ $(BUILDDIR)/inc
+
+$(TARGET): $(SOURCES) inc/*
+	echo "LD    " $(SUBDIR)/$*.o
+	@ $(LD) -o $*.o $(SOURCES) $(LDFLAGS)
+	echo "AR    " $(SUBDIR)/$(TARGET)
+	@ $(AR) $(ARFLAGS) $(TARGET) $*.o
+	echo "CP    " $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/lib
+	@ cp $(TARGET) $(BUILDDIR)/lib
 
 .s.o:
-	nasm $(ASFLAGS) $<
+	echo "AS    " $(SUBDIR)/$<
+	@ $(AS) $(ASFLAGS) $<
+
+.c.o:
+	echo "CC    " $(SUBDIR)/$<
+	@ $(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	@ rm $(TARGET) $(SOURCES)
