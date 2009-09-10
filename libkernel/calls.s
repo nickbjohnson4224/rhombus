@@ -1,12 +1,13 @@
 global fork_call
 global exit_call
-global sint_call
-global sret_call
+global gpid_call
+global tblk_call
 global mmap_call
 global umap_call
-global rsig_call
-global lsig_call
-global mmgc_call
+global ssnd_call
+global sret_call
+global sblk_call
+global sreg_call
 
 fork_call:
 	push ebx
@@ -22,37 +23,12 @@ exit_call:
 	int 0x41
 	ret
 
-sint_call:
-	push ebp
-	mov ebp, esp
-	add ebp, 4
-
-	push edi
-	push esi
-	push ebx
-
-	mov edi, [ebp+4]
-	mov esi, [ebp+8]
-	mov ebx, [ebp+16]
-	mov ecx, [ebp+20]
-	mov edx, [ebp+24]
-	mov eax, [ebp+28]
-	shl eax, 8
-	or esi, eax
-	mov eax, [ebp+12]
+gpid_call:
 	int 0x42
-
-	pop ebx
-	pop esi
-	pop edi
-
-	sub ebp, 4
-	mov esp, ebp
-	pop ebp
 	ret
 
-sret_call:
-	mov ebx, [esp+4]
+tblk_call:
+	mov eax, [esp+4]
 	int 0x43
 	ret
 
@@ -98,27 +74,45 @@ umap_call:
 	pop ebp
 	ret
 
-rsig_call:
+ssnd_call:
+	push ebp
+	mov ebp, esp
+	add ebp, 4
+
 	push edi
 	push esi
+	push ebx
 
-	mov edi, [esp+12]
-	mov eax, [esp+16]
+	mov edi, [ebp+4]
+	mov esi, [ebp+8]
+	mov ebx, [ebp+16]
+	mov ecx, [ebp+20]
+	mov edx, [ebp+24]
+	mov eax, [ebp+28]
+	shl eax, 8
+	or esi, eax
+	mov eax, [ebp+12]
 	int 0x46
 
+	pop ebx
 	pop esi
 	pop edi
+
+	sub ebp, 4
+	mov esp, ebp
+	pop ebp
 	ret
 
-lsig_call:
-	push edi
-
-	mov edi, [esp+8]
+sret_call:
+	mov ebx, [esp+4]
 	int 0x47
-
-	pop edi
 	ret
 
-mmgc_call:
+sblk_call:
+	mov eax, [esp+4]
 	int 0x48
+
+sreg_call:
+	mov eax, [esp+4]
+	int 0x49
 	ret

@@ -6,7 +6,7 @@ floppya: 1_44=/dev/loop4, status=inserted
 boot: a
 log: /dev/stdout
 mouse: enabled=0
-clock: sync=realtime
+clock: sync=none
 cpu: ips=1000000
 
 debugger_log: /dev/null

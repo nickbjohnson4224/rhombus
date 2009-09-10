@@ -9,17 +9,17 @@ ASFLAGS := -felf
 all: $(TARGET)
 
 $(TARGET): $(SOURCES) inc/*
-	echo "LD    " $(SUBDIR)/$(TARGET)
+	echo " LD	" $(SUBDIR)/$(TARGET)
 	@ $(LD) -o $(TARGET) $(SOURCES) $(LDFLAGS)
-	echo "CP    " $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/bin
+	echo " CP	" $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/bin
 	@ cp $(TARGET) $(BUILDDIR)/bin
 
 .s.o:
-	echo "AS    " $(SUBDIR)/$<
+	echo " AS	" $(SUBDIR)/$<
 	@ $(AS) $(ASFLAGS) $<
 
 .c.o:
-	echo "CC    " $(SUBDIR)/$<
+	echo " CC	" $(SUBDIR)/$<
 	@ $(CC) $(CFLAGS) -c $< -o $@
 
 clean:

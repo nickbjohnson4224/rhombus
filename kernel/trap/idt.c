@@ -25,7 +25,8 @@ int14(void), int15(void), int16(void), int17(void), int18(void), int32(void), in
 int34(void), int35(void), int36(void), int37(void), int38(void), int39(void), int40(void), 
 int41(void), int42(void), int43(void), int44(void), int45(void), int46(void), int47(void),
 int64(void), int65(void), int66(void), int67(void), int68(void), int69(void), int70(void), 
-int71(void), int72(void), int80(void), int81(void), int82(void), int83(void), int84(void);
+int71(void), int72(void), int73(void), int80(void), int81(void), int82(void), int83(void), 
+int84(void);
 
 typedef void (*int_handler_t) (void);
 __attribute__ ((section(".idata")))
@@ -45,7 +46,7 @@ NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL,
 
 /* User system calls */
 int64, 	int65, 	int66, 	int67, 	int68, 	int69, 	int70, 	int71,
-NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
+int72, 	int73, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL,
 
 /* Administrative System Calls */
 int80, 	int81, 	int82, 	int83,	int84,	NULL,	NULL,	NULL,
@@ -82,7 +83,7 @@ void register_int(uint8_t n, handler_t handler) {
 void *int_handler(image_t *image) {
 	task_t *t = task_get(curr_pid);
 
-	if (image->num == 32 && image->cs & 0x3) t->image = image;
+	if (image->cs & 0x3) t->image = image;
 	tss_set_esp((uint32_t) image);
 
 	if (image->num >= 32 && image->num <= 47) {

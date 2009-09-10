@@ -49,6 +49,7 @@ typedef struct {
 	pid_t next_task;
 	pid_t parent;
 	pid_t caller;
+	uint32_t shandler;
 } task_t;
 
 #define TF_READY 0x00
@@ -57,6 +58,7 @@ typedef struct {
 #define TF_NOERR 0x04
 #define TF_EKILL 0x08
 #define TF_SUPER 0x10
+#define TF_SBLOK 0x20
 
 void task_touch(pid_t pid);
 task_t *task_get(pid_t pid);

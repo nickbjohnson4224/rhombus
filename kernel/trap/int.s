@@ -75,17 +75,17 @@ INTN	47
 ; System calls
 INTN	64 ; fork
 INTN	65 ; exit
-INTN	66 ; sint
-INTN	67 ; sret
+INTN	66 ; gpid
+INTN	67 ; tblk
 INTN	68 ; mmap
 INTN	69 ; umap
-INTN	70 ; rsig
-INTN	71 ; lsig
+INTN	70 ; ssnd
+INTN	71 ; sret
+INTN	72 ; sblk
+INTN	73 ; sreg
 
-INTN	72 ; mmgc
-
-INTN	80 ; rirq
-INTN	81 ; lirq
+INTN	80 ; ireg
+INTN	81 ; irel
 INTN	82 ; push
 INTN	83 ; pull
 INTN	84 ; eout

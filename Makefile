@@ -22,11 +22,11 @@ export BUILDDIR CC LD AR AS CFLAGS LDFLAGS ARFLAGS
 all: $(LIB_DIRS) $(BIN_DIRS)
 
 $(BIN_DIRS): $(LIB_DIRS)
-	@ echo "MAKE  " $@
+	@ echo " MAKE	" $@
 	@ make -s -C $@
 
 $(LIB_DIRS):
-	@ echo "MAKE  " $@
+	@ echo " MAKE	" $@
 	@ make -s -C $@
 
 clean:

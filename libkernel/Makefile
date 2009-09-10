@@ -12,23 +12,23 @@ ASFLAGS := -felf
 all: $(TARGET) $(HEADERS)
 
 $(HEADERS):
-	echo "CP    " $(SUBDIR)/$@ "->" $(BUILDDIR)/inc
+	echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/inc
 	@ cp $@ $(BUILDDIR)/inc
 
 $(TARGET): $(SOURCES) inc/*
-	echo "LD    " $(SUBDIR)/$*.o
+	echo " LD	" $(SUBDIR)/$*.o
 	@ $(LD) -o $*.o $(SOURCES) $(LDFLAGS)
-	echo "AR    " $(SUBDIR)/$(TARGET)
+	echo " AR	" $(SUBDIR)/$(TARGET)
 	@ $(AR) $(ARFLAGS) $(TARGET) $*.o
-	echo "CP    " $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/lib
+	echo " CP	" $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/lib
 	@ cp $(TARGET) $(BUILDDIR)/lib
 
 .s.o:
-	echo "AS    " $(SUBDIR)/$<
+	echo " AS	" $(SUBDIR)/$<
 	@ $(AS) $(ASFLAGS) $<
 
 .c.o:
-	echo "CC    " $(SUBDIR)/$<
+	echo " CC	" $(SUBDIR)/$<
 	@ $(CC) $(CFLAGS) -c $< -o $@
 
 clean:

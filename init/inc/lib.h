@@ -10,7 +10,6 @@ typedef unsigned int addr_t;
 
 #define PAGESZ 0x1000
 
-int *signal_table;
 char *wrtbuffer;
 
 #define min(a,b) (((a) > (b)) ? (b) : (a))
@@ -38,19 +37,6 @@ void sync();
 #define curse cursek
 
 /***** SYSCALL STUBS *****/
-extern int fork();
-extern void exit(int value);
-extern int sint(int task, u32int sig, u32int arg0, u32int arg1, u32int arg2, u32int arg3, u32int flags);
-extern void sret(u32int flags);
-extern int mmap(addr_t addr, u32int size, u32int flags);
-extern int umap(addr_t addr, u32int size);
-extern int push(int target, addr_t dest, addr_t src, u32int size);
-extern int pull(int target, addr_t src, addr_t dest, u32int size);
-extern void eout(const char *message);
-extern void rirq(u32int irq);
-extern int rsig(u32int sig, u32int handler);
-extern int lsig(u32int sig);
-
 extern u8int inb(u16int port);
 extern void outb(u16int port, u8int val);
 extern void outw(u16int port, u16int val);

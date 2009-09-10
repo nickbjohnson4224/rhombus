@@ -90,7 +90,6 @@ void init_user_init() {
 	t->image->ss = 0x23;
 	t->image->ds = 0x23;
 	t->image->eip = elf_load(header_contents(header[n]));
-	for (i = 0; i < 1024; i++) signal_table[i] = 0;
 	t->image->cs = 0x1B;
 	t->image->eflags = get_eflags() | 0x3200; /* Turns on interrupts, IOPL=3 in eflags */
 }

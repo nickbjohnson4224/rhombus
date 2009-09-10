@@ -88,20 +88,21 @@ void init_int() {
 		/* System calls */
 		register_int(0x40, fork_call);	/* Fork current task */
 		register_int(0x41, exit_call);	/* End current task */
-		register_int(0x42, sint_call);	/* Send signal to task */
-		register_int(0x43, sret_call);	/* Return from signal handler */
+		register_int(0x42, gpid_call);
+		register_int(0x43, tblk_call);
 		register_int(0x44, mmap_call);	/* Allocate memory to a page */
 		register_int(0x45, umap_call);	/* Free memory from a page */
-		register_int(0x46, rsig_call);	/* Register a signal handler */
-		register_int(0x47, lsig_call);	/* Deregister a signal handler */
+		register_int(0x46, ssnd_call);	/* Send signal to task */
+		register_int(0x47, sret_call);	/* Return from signal handler */
+		register_int(0x48, sblk_call);	/* Register a signal handler */
+		register_int(0x49, sreg_call);	/* Deregister a signal handler */
 
 		/* Administrative system calls */
-		register_int(0x50, rirq_call);	/* Register IRQ */
-		register_int(0x51, lirq_call);	/* Deregister IRQ */
+		register_int(0x50, ireg_call);	/* Register IRQ */
+		register_int(0x51, irel_call);	/* Deregister IRQ */
 		register_int(0x52, push_call);	/* Copy memory to another address space */
 		register_int(0x53, pull_call);	/* Copy memory from another address space */
-
-		register_int(0x54, eout_call);
+		register_int(0x54, eout_call);	/* Emergency output */
 
 		/* Register fault handlers */
 		init_fault();
