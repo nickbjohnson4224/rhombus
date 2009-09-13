@@ -66,7 +66,7 @@ void init_idt() {
 	idt_flush();
 }
 
-__attribute__ ((section(".ttext")))
+__attribute__ ((section(".itext")))
 void idt_set(uint8_t n, uint32_t base, uint16_t seg, uint8_t flags) {
 	if (!base) return;
 	idt[n].base_l = (uint16_t) (base & 0xFFFF);
@@ -106,6 +106,7 @@ void *int_handler(image_t *image) {
 		printk("CALL %x: %d.%d ms\n", image->num, time / 1000, time % 1000);
 	}
 
+	tss_set_esp((uintptr_t) image + sizeof(image_t));
 	return image;
 }
 

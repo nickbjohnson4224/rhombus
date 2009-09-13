@@ -34,12 +34,10 @@ task_t *task_new(task_t *src) {
 	new = task_get(new_pid);
 	if (!new) panic ("bad pid");
 
+	memcpy(new, src, sizeof(task_t));
 	new->map = map_clone();
-	new->image = src->image;
-	new->flags = src->flags;
 	new->parent = src->pid;
 	new->pid = new_pid;
-	new->tss_esp = src->tss_esp;
 
 	sched_ins(new_pid);
 	return new;
@@ -55,7 +53,6 @@ image_t *task_switch(task_t *t) {
 	curr_pid = t->pid;
 
 	map_load(t->map);
-	tss_set_esp(t->tss_esp);
 	return t->image;
 }
 

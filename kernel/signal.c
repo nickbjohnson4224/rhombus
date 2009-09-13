@@ -29,8 +29,7 @@ image_t *signal(pid_t targ, uint8_t sig,
 	t->caller = caller;
 
 	/* Create new image structure */
-	memcpy((uint8_t*) ((uint32_t) t->image - sizeof(image_t)), t->image, sizeof(image_t));
-	t->tss_esp = (uint32_t) t->image; /* Will now create image below old image */
+	memcpy((uint8_t*)  ((uint32_t) t->image - sizeof(image_t)), t->image, sizeof(image_t));
 	t->image = (void*) ((uint32_t) t->image - sizeof(image_t));
 
 	/* Check for task image stack overflows */
@@ -49,7 +48,6 @@ image_t *signal(pid_t targ, uint8_t sig,
 	t->image->ebp = t->tss_esp; /* Points to saved parent image for analysis */
 
 	/* Set reentry point */
-	tss_set_esp(t->tss_esp);
 	t->image->eip = t->shandler;
 
 	return t->image;
@@ -68,14 +66,12 @@ image_t *sret(image_t *image) {
 	}
 
 	/* Reset image stack */
-	t->image = (void*) t->tss_esp;
-	t->tss_esp += sizeof(image_t);
+	t->image = (void*) ((uintptr_t) t->image + sizeof(image_t));
 	t->caller = t->image->caller;
 
 	/* Bounds check image */
-	if ((uint32_t) t->tss_esp >= SSTACK_TOP) 
+	if ((uint32_t) t->image - sizeof(image_t) >= SSTACK_TOP) 
 		panic("task image stack underflow");
 
-	tss_set_esp(t->tss_esp);
 	return t->image;
 }

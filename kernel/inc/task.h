@@ -41,7 +41,6 @@ extern uint32_t *signal_map;
 typedef struct {
 	map_t map;
 	image_t *image;
-	uint32_t tss_esp;
 	uint8_t flags;
 	uint8_t quanta;
 	uint16_t magic;

@@ -69,7 +69,6 @@ void init_user_init() {
 	if (elf_check(user_init)) panic("init is not valid ELF");
 
 	/* Setup process image */
-	t->tss_esp = SSTACK_INI;
 	t->image->useresp = USTACK_INI;
 	t->image->esp = USTACK_INI;
 	t->image->ebp = USTACK_INI;
