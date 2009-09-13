@@ -33,10 +33,10 @@ image_t *signal(pid_t targ, uint8_t sig,
 	t->image = (void*) ((uint32_t) t->image - sizeof(image_t));
 
 	/* Check for task image stack overflows */
-	if ((uint32_t) t->image < SSTACK_BSE + 2 * sizeof(image_t) && !(flags & TF_SUPER)) 
+	if ((uintptr_t) t->image < SSTACK_BSE + 2 * sizeof(image_t) && !(flags & TF_SUPER)) 
 		signal(targ, S_IMG, 0, 0, 0, 0, TF_SUPER);
-	if ((uint32_t) t->image < SSTACK_BSE + sizeof(image_t))
-		panic("task image stack overflow"); /* XXX - change to process exit */
+	if ((uintptr_t) t->image < SSTACK_BSE + sizeof(image_t))
+		return exit_call(t->image);
 
 	/* Set registers to describe signal */
 	t->image->eax = arg0;
@@ -45,12 +45,8 @@ image_t *signal(pid_t targ, uint8_t sig,
 	t->image->edx = arg3;
 	t->image->esi = caller;
 	t->image->edi = sig;
-
-	/* Points to saved parent image for analysis */
-	t->image->ebp = (uintptr_t) t->image + sizeof(image_t);
-
-	/* Set reentry point */
-	t->image->eip = t->shandler;
+	t->image->ebp = (uintptr_t) t->image + sizeof(image_t); /* Points to saved parent image */
+	t->image->eip = t->shandler; /* Reentry point */
 
 	return t->image;
 }
@@ -61,19 +57,16 @@ image_t *sret(image_t *image) {
 	/* Unblock the caller */
 	t = task_get(curr_pid);
 	src_t = task_get(t->caller);
-	if (src_t) {
-		if (image->eax & TF_UNBLK) {
-			src_t->flags &= ~TF_BLOCK;
-		}
-	}
+	if (src_t && image->eax & TF_UNBLK)
+		src_t->flags &= ~TF_BLOCK;
 
 	/* Reset image stack */
 	t->image = (void*) ((uintptr_t) t->image + sizeof(image_t));
 	t->caller = t->image->caller;
 
 	/* Bounds check image */
-	if ((uint32_t) t->image - sizeof(image_t) >= SSTACK_TOP) 
-		panic("task image stack underflow");
+	if ((uint32_t) t->image - sizeof(image_t) >= SSTACK_TOP)
+		return exit_call(t->image);
 
 	return t->image;
 }
