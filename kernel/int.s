@@ -91,8 +91,6 @@ int_common:
 	mov gs, cx
 	mov ss, cx
 
-	sub esp, 524
-
 	mov ebp, esp
 
 	; Setup stack
@@ -103,8 +101,6 @@ int_common:
 	push ebp
 	call int_handler
 	mov esp, eax
-
-	add esp, 524
 
 	pop eax
 	mov ds, ax

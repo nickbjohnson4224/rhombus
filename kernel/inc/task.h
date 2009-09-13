@@ -47,7 +47,6 @@ typedef struct {
 	pid_t pid;
 	pid_t next_task;
 	pid_t parent;
-	pid_t caller;
 	uint32_t shandler;
 } task_t;
 

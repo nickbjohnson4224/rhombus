@@ -17,7 +17,11 @@ page_flush:
 global map_load
 map_load:
 	mov eax, [esp+4]
+	mov edx, cr3
+	cmp edx, eax
+	je .same
 	mov cr3, eax
+.same:
 	ret
 
 global idle

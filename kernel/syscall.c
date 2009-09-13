@@ -11,7 +11,6 @@
 image_t *pit_handler(image_t *image) {
 	static uint32_t tick = 0;
 	if (image->cs & 0x3) tick++;
-
 	return task_switch(task_next(0));
 }
 
@@ -51,10 +50,6 @@ image_t *fault_double(image_t *image) {
 
 /****** SYSTEM CALLS *****/
 
-/* Note - different than UNIX / POSIX fork() - */
-/* parent gets child PID, child gets *negative* parent PID, 0 is error */
-/* I think it's much more useful, but the libc can convert it easily */
-
 image_t *fork_call(image_t *image) {
 	pid_t parent = curr_pid;
 	task_t *child = task_new(task_get(curr_pid));
@@ -85,34 +80,20 @@ image_t *gpid_call(image_t *image) {
 
 image_t *tblk_call(image_t *image) {
 	task_t *t = task_get(curr_pid);
-	
-	if (image->eax)
-		t->flags |= TF_BLOCK;
-	else
-		t->flags &= ~ TF_BLOCK;
-
+	if (image->eax) t->flags |= TF_BLOCK;
+	else t->flags &= ~ TF_BLOCK;
 	return image;
 }
 
 image_t *mmap_call(image_t *image) {
-
-	/* Bounds check page address */
 	if (image->edi + image->ecx > LSPACE) ret(image, EPERMIT);
-
-	/* Allocate pages with flags */
 	mem_alloc(image->edi, image->ecx, (image->ebx & PF_MASK) | PF_PRES | PF_USER);
-
 	ret(image, 0);
 }
 
 image_t *umap_call(image_t *image) {
-
-	/* Bounds check page address */
 	if (image->edi + image->ecx > LSPACE) ret(image, EPERMIT);
-
-	/* Free pages */
 	mem_free(image->edi, image->ecx);
-
 	ret(image, 0);
 }
 
@@ -127,22 +108,16 @@ image_t *sret_call(image_t *image) {
 
 image_t *sblk_call(image_t *image) {
 	task_t *t = task_get(curr_pid);
-	
-	if (image->eax) 
-		t->flags |= TF_SBLOK;
-	else
-		t->flags &= ~TF_SBLOK;
-
+	if (image->eax) t->flags |= TF_SBLOK;
+	else t->flags &= ~TF_SBLOK;
 	return image;
 }
 
 image_t *sreg_call(image_t *image) {
 	uint32_t old_handler;
 	task_t *t = task_get(curr_pid);
-
 	old_handler = t->shandler;
 	t->shandler = image->eax;
-
 	ret(image, old_handler);
 }
 
@@ -229,7 +204,7 @@ image_t *pull_call(image_t *image) {
 	}
 
 	/* Copy memory */
-	memcpy((void*) ((uint32_t) tdst + (dst & 0xFFF)),
+	memcpy((void*) ((uint32_t) tdst + (dst & 0xFFF)), 
 		(void*) ((uint32_t) tsrc + (src & 0xFFF)), size);
 	
 	ret(image, 0);
