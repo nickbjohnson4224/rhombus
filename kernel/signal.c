@@ -45,7 +45,9 @@ image_t *signal(pid_t targ, uint8_t sig,
 	t->image->edx = arg3;
 	t->image->esi = caller;
 	t->image->edi = sig;
-	t->image->ebp = t->tss_esp; /* Points to saved parent image for analysis */
+
+	/* Points to saved parent image for analysis */
+	t->image->ebp = (uintptr_t) t->image + sizeof(image_t);
 
 	/* Set reentry point */
 	t->image->eip = t->shandler;

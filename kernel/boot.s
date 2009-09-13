@@ -120,17 +120,3 @@ start:
 	sti
 	hlt
 	jmp .loop
-
-section .itext
-
-global get_eflags
-get_eflags:
-	pushf
-	pop eax
-	ret
-
-global tss_flush
-tss_flush:
-	mov ax, 0x28
-	ltr ax
-	ret

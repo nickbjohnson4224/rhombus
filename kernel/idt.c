@@ -86,7 +86,6 @@ void *int_handler(image_t *image) {
 	uint32_t time;
 
 	if (image->cs & 0x3) t->image = image;
-	tss_set_esp((uint32_t) image);
 
 	if (image->num >= 32 && image->num <= 47) {
 		if (image->num >= 40) outb(0xA0, 0x20);
@@ -132,10 +131,10 @@ void init_tss() {
 	tss.cs = 0x0B;
 	tss.ss0 = tss.es = tss.ds = tss.fs = tss.gs = 0x10;
 
-	gdt[41] = (uint8_t) ((limit >> 8) & 0xFF);
 	gdt[40] = (uint8_t) ((limit) & 0xFF);
-	gdt[43] = (uint8_t) ((base >> 8) & 0xFF);
+	gdt[41] = (uint8_t) ((limit >> 8) & 0xFF);
 	gdt[42] = (uint8_t) (base & 0xFF);
+	gdt[43] = (uint8_t) ((base >> 8) & 0xFF);
 	gdt[44] = (uint8_t) ((base >> 16) & 0xFF);
 	gdt[47] = (uint8_t) ((base >> 24) & 0xFF);
 

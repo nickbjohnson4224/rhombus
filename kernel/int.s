@@ -1,20 +1,5 @@
 ; Copyright 2009 Nick Johnson
 
-section .data
-extern idt
-idt_ptr:
-	dw 0x2FF
-	dd idt
-
-section .text
-align 4
-
-global idt_flush
-idt_flush:
-	mov eax, idt_ptr
-	lidt [eax]
-	ret
-
 %macro INTN 1
   global int%1
   int%1:
@@ -130,8 +115,3 @@ int_common:
 	popa
 	add esp, 12
 	iret
-
-global read_tsc
-read_tsc:
-	rdtsc
-	ret
