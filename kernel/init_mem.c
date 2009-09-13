@@ -26,9 +26,13 @@ void init_free() {
 	extern uint32_t START_OF_INIT;
 	extern uint32_t END_OF_INIT;
 	extern uint32_t end;
+	extern uint32_t allocator_space; 
 	uint32_t base, limit;
 
 	printk("  Kernel: GC: ");
+
+		/* Free unused allocator space */
+		mem_free(allocator_space + 0x1000, TASK_TBL - allocator_space - 0x1000);
 
 		/* Free marked code and global data */
 		base = (uint32_t) &START_OF_INIT;

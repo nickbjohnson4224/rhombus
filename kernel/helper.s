@@ -24,6 +24,11 @@ map_load:
 .same:
 	ret
 
+global get_cr3
+get_cr3:
+	mov eax, cr3
+	ret
+
 global idle
 idle:
 	sti

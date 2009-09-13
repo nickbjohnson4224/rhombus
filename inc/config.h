@@ -28,7 +28,6 @@
 
 	#define TASK_TBL (KSPACE + 0x400000)
 
-	#define SIG_TBL (LSPACE - 0x1000)
 	#define SSTACK_BSE	(LSPACE - 0x7000)
 	#define SSTACK_INI	(LSPACE - 0x2010)
 	#define SSTACK_TOP	(LSPACE - 0x2000)
