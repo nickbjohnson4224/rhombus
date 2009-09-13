@@ -5,23 +5,16 @@
 
 __attribute__ ((section(".itext"))) 
 pool_t *pool_new(uint32_t size) {
-	uint32_t i, npool, extra;
+	uint32_t npool;
 	pool_t *pool;
 
-	npool = (size - 1) / 1024 + 1; /* 1024 entries per pool (and round up) */
-	extra = size - ((npool - 1) * 1024);
+	npool = (size - 1) / 32 + 2; /* 32 entries per pool (and round up) */
 	pool = kmalloc(sizeof(pool_t) * npool);
-
-	for (i = 0; i < npool; i++) {
-		memclr(pool[i].word, sizeof(uint32_t) * 32);
-		pool[i].first = 0x0000;
-		pool[i].total = (uint16_t) ((i < npool - 1) ? 1024 : extra);
-		pool[i].setup = 0x4224;
-		pool[i].upper = pool[i].total;
-	}
+	memclr(pool, sizeof(pool_t) * npool);
+	pool[0] = npool;
 
 	return pool;
-}
+} 
 
 static void pool_full(pool_t *pool) {
 	printk("\npool %x\n", pool);
@@ -29,52 +22,44 @@ static void pool_full(pool_t *pool) {
 }
 
 uint32_t pool_alloc(pool_t *pool) {
-	uint32_t p, w, b;	/* pool, word, bit */
+	uint32_t p, b;	/* pool, bit */
 
 	if (!pool) panic("No pool");
 
 	/* Find suitable pool */
-	for (p = 0; pool[p].total == 0; p++) 
-		if (pool[p].setup != 0x4224) pool_full(pool);
-	if (pool[p].setup != 0x4224) pool_full(pool);
+	for (p = 1; p < pool[0] && pool[p] == 0xFFFFFFFF; p++);
+	if (p == pool[0]) pool_full(pool);
 
-	/* Find suitable word within pool */
-	for (w = pool[p].first / 32; w < pool[p].upper / 32; w++)
-		if (pool[p].word[w] != 0xFFFFFFFF) break;
+	/* Find open bit within pool */
+	for (b = 0; pool[p] & (0x1 << b); b++);
 
-	/* Find open bit within word */
-	for (b = 0; pool[p].word[w] & (0x1 << b); b++);
-	if (b == 32) pool_full(pool);
+	/* Set bit */
+	pool[p] |= (0x1 << b);
 
-	pool[p].word[w] |= (0x1 << b);
-	pool[p].total --;
-	if (pool[p].first == ((w << 5) | b)) pool[p].first++;
-	return ((p << 10) | ((w << 5) | b));
+	return (p << 5) | b;
 }
 
 uint32_t pool_free(pool_t *pool, uint32_t pos) {
-	uint32_t p, w, b;
+	uint32_t p, b;
 
 	/* Convert to bit coordinates */
-	p = pos >> 10;
-	w = (pos >> 5) % 1024;
+	p = (pos >> 5) + 1;
 	b = pos % 32;
 
-	/* Clear bit and set metadata */
-	pool[p].word[w] &= ~(0x1 << b);
-	pool[p].first = (uint16_t) min(pool[p].first, ((w << 5) | b));
-	pool[p].total ++;
+	/* Clear bit */
+	pool[p] &= ~(0x1 << b);
 
 	return 0;
 }
 
 uint32_t pool_query(pool_t *pool) {
-	int total, p;
+	uint32_t total, p, b;
 	
 	/* Tally usage of all pools */
 	total = 0;
-	for (p = 0; pool[p].setup; p++)
-		total += (pool[p].upper - pool[p].total);
+	for (p = 1; p < pool[0]; p++)
+		for (b = 0; b < 32; b++)
+			if (pool[p] & (0x1 << b)) total++;
 
 	return (uint32_t) total;
 }

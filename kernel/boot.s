@@ -17,11 +17,6 @@ tstack:
 
 section .pbss
 
-global init_ktbl
-align 0x1000
-init_ktbl:
-	resd 1024
-
 KSTACKSIZE equ 0x1FF0
 global kstack
 align 0x1000
@@ -31,14 +26,19 @@ kstack:
 section .pdata
 
 ; Initial kernel address space
-global init_kmap
-align 0x1000
 init_kmap:
-    dd 0x00000083	; Identity map first 4 MB
+    dd (init_ktbl - 0xFE000000 + 3)	
 	times 1015 dd 0	; Fill until 0xFE000000
-	dd 0x00000083	; Map first 4 MB again in higher mem
+	dd (init_ktbl - 0xFE000000 + 3)
 	times 6 dd 0	; Fill remainder of map
-	dd (init_kmap - 0xFE000000)
+	dd (init_kmap - 0xFE000000 + 3)
+
+init_ktbl:
+%assign i 0
+%rep 	1024
+		dd (i << 12) | 3
+%assign i i+1
+%endrep
 
 section .data
 
@@ -92,6 +92,11 @@ start:
 	mov fs, cx
 	mov gs, cx
 	mov ss, cx
+
+	; Clear unneeded lomem identity map
+	mov edx, init_kmap
+	xor ecx, ecx
+	mov [edx], ecx
 
 	mov esp, (kstack + KSTACKSIZE)	; Setup init stack
 	mov ebp, (kstack + KSTACKSIZE)	; and base pointer

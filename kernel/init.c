@@ -58,7 +58,4 @@ void init(void *mboot_ptr, uint32_t mboot_magic) {
 	printk("  Kernel: dropping to usermode");
 	cursek(74, -1);
 	printk("[done]");
-
-/*	cleark(); */
-/*	cursek(0, 15); */
 }

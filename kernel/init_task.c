@@ -3,6 +3,7 @@
 #include <lib.h>
 #include <task.h>
 #include <init.h>
+#include <elf.h>
 
 __attribute__ ((section(".itext"))) 
 void init_task() {

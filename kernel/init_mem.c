@@ -8,37 +8,15 @@ uint32_t memsize;
 
 __attribute__ ((section(".itext"))) 
 void init_mem() {
-	extern uint32_t init_kmap;
-	extern uint32_t init_ktbl;
-	extern uint32_t allocator_space;
-	uint32_t i, *temp, initrd_end, *kmap;
+	uint32_t i, z;
 
 	printk("  Kernel: allocators");
 
 		/* Initialize frame allocator */
 		fpool = pool_new(memsize >> 12);
 
-	cursek(74, -1);
-	printk("[done]");
-	printk("  Kernel: memory map");
-
-		/* Make a new and proper memory map for the kernel in the init map */
-		kmap = &init_kmap;
-		temp = (void*) (KSPACE + 0x1000);
-		pgclr(temp);
-		temp[1023] = 0x1000 | (PF_PRES | PF_RW);
-		kmap[1022] = 0x1000 | (PF_PRES | PF_RW);
-		map_load((uint32_t) kmap - KSPACE);
-
-		/* Identity map necessary kernel memory (i.e. code and initrd) */
-
-		tmap[KSPACE >> 22] = ((uint32_t) &init_ktbl - KSPACE) | (PF_PRES | PF_RW);
-		initrd_end = *(uint32_t*) (mboot->mods_addr + KSPACE + 4) + KSPACE;
-		for (i = KSPACE; i < allocator_space; i += 0x1000)
-			ttbl[i >> 12] = page_fmt(frame_new(), (PF_PRES | PF_RW));
-
-		/* Reload the new map */
-		map_load(0x1000);
+		/* Set the first 4 MB to used (appropriately) */
+		for (i = 0; i < 1024; i++) z = frame_new();
 
 	cursek(74, -1);
 	printk("[done]");

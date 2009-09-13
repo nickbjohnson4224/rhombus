@@ -11,6 +11,7 @@ void mem_alloc(uintptr_t base, uintptr_t size, uint16_t flags) {
 	for (i = base & ~0xFFF; i < base + size; i += 0x1000)
 		if ((page_get(i) & PF_PRES) == 0)
 			p_alloc(i, flags);
+
 }
 
 void mem_free(uintptr_t base, uintptr_t size) {

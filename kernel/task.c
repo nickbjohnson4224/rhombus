@@ -52,7 +52,6 @@ uint32_t task_rem(task_t *t) {
 }
 
 image_t *task_switch(task_t *t) {
-/*	printk("task_switch %d\n", t->pid); */
 	curr_pid = t->pid;
 
 	map_load(t->map);

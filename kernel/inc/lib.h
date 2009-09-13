@@ -48,13 +48,7 @@ void panic(const char *message); /* Panic with a message */
 
 #define SIZEOF_POOL(n) (((n) / 1024) + 1)
 
-typedef struct pool {
-	uint32_t word[32];
-	uint16_t first;	/* First free bit in pool */
-	uint16_t total;	/* Total free bits in pool */
-	uint16_t setup;	/* Magic number that verifies setup */
-	uint16_t upper;	/* Highest actual bit in pool */
-} pool_t;
+typedef uint32_t pool_t;
 
 pool_t *pool_new(uint32_t num);						/* Allocate a new pool */
 uint32_t pool_alloc(pool_t *pool);					/* Allocate from a pool */
