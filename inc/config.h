@@ -29,12 +29,12 @@
 	#define TASK_TBL (KSPACE + 0x400000)
 
 	#define SIG_TBL (LSPACE - 0x1000)
-	#define SSTACK_BSE	(LSPACE - 0x4000)
+	#define SSTACK_BSE	(LSPACE - 0x7000)
 	#define SSTACK_INI	(LSPACE - 0x2010)
 	#define SSTACK_TOP	(LSPACE - 0x2000)
 	#define USTACK_BSE	(LSPACE - 0x10000)
-	#define USTACK_INI	(LSPACE - 0x5010)
-	#define USTACK_TOP	(LSPACE - 0x5000)
+	#define USTACK_INI	(LSPACE - 0x8010)
+	#define USTACK_TOP	(LSPACE - 0x8000)
 	
 	/***** INTERRUPT SUBSYSTEM *****/
 

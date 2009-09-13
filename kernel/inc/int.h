@@ -1,11 +1,11 @@
 /* Copyright 2009 Nick Johnson */
 
-#ifndef TRAP_H
-#define TRAP_H
+#ifndef INT_H
+#define INT_H
 
 typedef struct image {
-/*	uint32_t fxdata[128];  */
-/*	uint32_t fxpadding[3]; */
+	uint32_t fxdata[128];  
+	uint32_t fxpadding[3]; 
 	uint32_t ds, edi, esi, ebp, esp, ebx, edx, ecx, eax;
 	uint32_t num, caller, err, eip, cs, eflags, useresp, ss;
 } __attribute__ ((packed)) image_t;
@@ -51,4 +51,4 @@ image_t *fault_double(image_t *image);
 /***** COMMON INTERRUPT HANDLER *****/
 void *int_handler(image_t *image);
 
-#endif /*TRAP_H*/
+#endif /*INT_H*/

@@ -1,7 +1,7 @@
 /* Copyright 2009 Nick Johnson */
 
 #include <lib.h>
-#include <trap.h>
+#include <int.h>
 #include <task.h>
 #include <mem.h>
 #include <init.h>
@@ -82,6 +82,8 @@ void register_int(uint8_t n, handler_t handler) {
 
 void *int_handler(image_t *image) {
 	task_t *t = task_get(curr_pid);
+	extern uint32_t read_tsc(void);
+	uint32_t time;
 
 	if (image->cs & 0x3) t->image = image;
 	tss_set_esp((uint32_t) image);
@@ -91,9 +93,17 @@ void *int_handler(image_t *image) {
 		outb(0x20, 0x20);
 	}
 
+	time = read_tsc();
+
 	if (int_handlers[image->num]) {
 		if (image->num >= 0x50 && (t->flags & TF_SUPER) == 0) ret(image, EPERMIT);
 		image = int_handlers[image->num](image);
+	}
+
+	time = read_tsc() - time;
+
+	if (image->num >= 64 && image->num <= 96) {
+		printk("CALL %x: %d.%d ms\n", image->num, time / 1000, time % 1000);
 	}
 
 	return image;

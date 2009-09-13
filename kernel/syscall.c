@@ -1,16 +1,16 @@
 /* Copyright 2009 Nick Johnson */
 
 #include <lib.h>
-#include <trap.h>
+#include <int.h>
 #include <task.h>
 #include <mem.h>
 
 /***** IRQ HANDLERS *****/
 
 /* Handles IRQ 0, and advances a simple counter used as a clock */
-image_t *pit_handler(image_t *state) {
+image_t *pit_handler(image_t *image) {
 	static uint32_t tick = 0;
-	if (state->cs & 0x3) tick++;
+	if (image->cs & 0x3) tick++;
 
 	return task_switch(task_next(0));
 }

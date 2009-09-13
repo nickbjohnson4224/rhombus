@@ -1,10 +1,5 @@
 ; Copyright 2009 Nick Johnson
 
-section .data
-
-signal_table:
-	times 256 dd 0
-
 section .text
 
 global _start

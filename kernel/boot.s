@@ -9,11 +9,11 @@ CHECKSUM    equ  -(MAGIC + FLAGS)
 
 section .bss
 
-STACKSIZE equ 0x2000
-global stack
-stack:
-	resd STACKSIZE >> 2
-	resd 10 ; extra buffer just in case
+TSTACKSIZE equ 0xF0
+global tstack
+align 4
+tstack:
+	resb 0x100
 
 section .pbss
 
@@ -21,6 +21,12 @@ global init_ktbl
 align 0x1000
 init_ktbl:
 	resd 1024
+
+KSTACKSIZE equ 0x1FF0
+global kstack
+align 0x1000
+kstack:
+	resb 0x2000
 
 section .pdata
 
@@ -87,8 +93,8 @@ start:
 	mov gs, cx
 	mov ss, cx
 
-	mov esp, (stack + STACKSIZE)	; Setup init stack
-	mov ebp, (stack + STACKSIZE)	; and base pointer
+	mov esp, (kstack + KSTACKSIZE)	; Setup init stack
+	mov ebp, (kstack + KSTACKSIZE)	; and base pointer
 
 	push eax	; Push multiboot magic number for identification
 

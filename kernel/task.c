@@ -1,7 +1,7 @@
 /* Copyright 2009 Nick Johnson */
 
 #include <lib.h>
-#include <trap.h>
+#include <int.h>
 #include <task.h>
 #include <mem.h>
 

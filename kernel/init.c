@@ -2,7 +2,7 @@
 
 #include <lib.h>
 #include <mem.h>
-#include <trap.h>
+#include <int.h>
 #include <task.h>
 #include <init.h>
 
@@ -20,12 +20,10 @@ typedef void (*init_t)(void);
 __attribute__ ((section(".tdata")))
 init_t init_list[] = {
 init_detect,
-init_kload,
 init_mem,
 init_int,
 init_task,
 init_pit,
-init_initrd_rmap,
 init_free,
 NULL
 };

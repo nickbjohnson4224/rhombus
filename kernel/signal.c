@@ -2,7 +2,7 @@
 
 #include <lib.h>
 #include <task.h>
-#include <trap.h>
+#include <int.h>
 
 image_t *signal(pid_t targ, uint8_t sig, 
 	uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3, uint8_t flags) {

@@ -4,7 +4,7 @@
 #define TASK_H
 
 #include <lib.h>
-#include <trap.h>
+#include <int.h>
 #include <mem.h>
 
 typedef uint16_t pid_t;

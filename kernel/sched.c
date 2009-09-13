@@ -2,7 +2,7 @@
 
 #include <lib.h>
 #include <task.h>
-#include <trap.h>
+#include <int.h>
 
 struct sched_queue queue;
 

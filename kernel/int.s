@@ -99,27 +99,27 @@ int_common:
 	mov ax, ds
 	push eax
 	
-	mov ax, 0x10
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
-	mov ss, ax
+	mov cx, 0x10
+	mov ds, cx
+	mov es, cx
+	mov fs, cx
+	mov gs, cx
+	mov ss, cx
 
-;	sub esp, 512
-;	fxsave [esp]
+	sub esp, 524
 
 	mov ebp, esp
-	
-	extern stack
-	mov esp, (stack + 0x2000)	; Setup stack
+
+	; Setup stack
+	extern kstack
+ 
+	mov esp, (kstack + 0x1FF0)
 
 	push ebp
 	call int_handler
 	mov esp, eax
 
-;	fxrstor [esp]
-;	add esp, 512
+	add esp, 524
 
 	pop eax
 	mov ds, ax
@@ -130,3 +130,8 @@ int_common:
 	popa
 	add esp, 12
 	iret
+
+global read_tsc
+read_tsc:
+	rdtsc
+	ret

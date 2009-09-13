@@ -92,7 +92,7 @@ void kbhandle() {
 	sret_call(3);
 }
 
-extern void (*signal_table[256])(void);
+void (*signal_table[256])(void);
 void csig_handler(int sig) {
 	signal_table[sig]();
 }
@@ -103,7 +103,6 @@ void rsig(int sig, uint32_t handler) {
 char buffer2[100];
 int init() {
 	extern void sig_handler(void);
-	char buffer[10];
 
 	eout_call("Hello, world");
 
@@ -112,7 +111,6 @@ int init() {
 	rsig(2, (uint32_t) segfault);
 	rsig(5, (uint32_t) imgfault);
 	rsig(3, (uint32_t) kbhandle);
-	eout_call(itoa((int) signal_table[3], buffer, 16));
 	rirq_call(1);
 
 	sclear();
