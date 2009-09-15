@@ -8,7 +8,7 @@ LD := /usr/khaos/bin/i586-elf-ld
 AR := /usr/khaos/bin/i586-elf-ar
 AS := nasm
 
-CFLAGS  := -march=i586 -pipe -Wall -Werror -Wextra
+CFLAGS  := -march=i586 -pipe -Wall -Werror -Wextra -pedantic
 CFLAGS  += -Wpointer-arith -Wcast-align -Wwrite-strings
 CFLAGS  += -fomit-frame-pointer -O3
 CFLAGS	+= -I$(BUILDDIR)/inc
@@ -30,7 +30,8 @@ $(LIB_DIRS):
 	@ make -s -C $@
 
 clean:
-	rm $(shell find . -name "*.o")
+	@ echo " CLEAN	" $(shell find . -name "*.o")
+	@ rm $(shell find . -name "*.o")
 
 test:	all
 	sudo run/test.sh
