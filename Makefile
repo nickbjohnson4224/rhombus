@@ -1,7 +1,7 @@
 BUILDDIR=$(PWD)
 
-LIB_DIRS=libkernel libdriver
-BIN_DIRS=kernel init
+LIB_DIRS=libkernel libdriver libexec
+BIN_DIRS=kernel
 
 CC := /usr/khaos/bin/i586-elf-gcc
 LD := /usr/khaos/bin/i586-elf-ld
@@ -9,7 +9,7 @@ AR := /usr/khaos/bin/i586-elf-ar
 AS := nasm
 
 CFLAGS  := -march=i586 -pipe -Wall -Werror -Wextra -pedantic
-CFLAGS  += -Wpointer-arith -Wcast-align -Wwrite-strings
+CFLAGS  += -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-unused-parameter
 CFLAGS  += -fomit-frame-pointer -O3
 CFLAGS	+= -I$(BUILDDIR)/inc
 LDFLAGS := -L$(BUILDDIR)/lib
@@ -26,6 +26,7 @@ $(BIN_DIRS): $(LIB_DIRS)
 	@ make -s -C $@
 
 $(LIB_DIRS):
+	@ export CFLAGS="$(CFLAGS) -fPIC"
 	@ echo " MAKE	" $@
 	@ make -s -C $@
 

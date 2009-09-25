@@ -6,22 +6,22 @@
 extern void set_stack(uint32_t addr);
 extern void exec_jump(uint32_t ip, uint32_t sp);
 
-// Expects executable at ESPACE address
-int exec() {
+/* Expects executable at ESPACE address */
+int _exec() {
 
-	// Check executable validity
-	if (elf_check((void*) ESPACE)) return 1; // Yay
+	/* Check executable validity */
+	if (elf_check((void*) ESPACE)) return 1;
 
 	/***** THE POINT OF NO RETURN! *****/
 
-	// Jump to temporary stack
+	/* Jump to temporary stack */
 	mmap_call(0, 0x1000, 0x7);
 	set_stack(0xF00);
 
-	// Clear current process address space
+	/* Clear current process address space */
 	umap_call(0x1000, ESPACE - 0x1000);
 
-	// Load executable
+	/* Load executable */
 	elf_load((void*) ESPACE);
 	exec_jump(elf_entry((void*) ESPACE), USTACK_INI);
 

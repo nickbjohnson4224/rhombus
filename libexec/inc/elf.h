@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-// ELF Header
+/* ELF Header */
 typedef struct {
 	uint8_t e_ident[16];
 	uint16_t e_type, e_machine;
@@ -16,7 +16,7 @@ typedef struct {
 #define ET_EXEC 2
 #define EM_386 3
 
-// ELF Program Header
+/* ELF Program Header */
 typedef struct {
 	uint32_t p_type, p_offset, p_vaddr, p_paddr;
 	uint32_t p_filesz, p_memsz, p_flags, p_align;

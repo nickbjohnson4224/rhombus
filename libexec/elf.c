@@ -56,8 +56,13 @@ static int elf_load_segment(elf_ph_t *pheader, uint8_t *base) {
 	else return handler[pheader->p_type](pheader, base);
 }
 
-static int elf_segment_err(elf_ph_t *pheader, uint8_t *base) { return 1; }
-static int elf_segment_null(elf_ph_t *pheader, uint8_t *base) { return 0; }
+static int elf_segment_err(elf_ph_t *pheader, uint8_t *base) { 
+	return 1;
+}
+
+static int elf_segment_null(elf_ph_t *pheader, uint8_t *base) { 
+	return 0;
+}
 
 static int elf_segment_load(elf_ph_t *pheader, uint8_t *base) {
 	uint8_t flags = 0;

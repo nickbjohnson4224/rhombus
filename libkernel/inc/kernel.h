@@ -5,15 +5,14 @@
 
 /***** SYSTEM CALLS *****/
 
-// Process creation and control
+/* Process creation and control */
 #define FORK_DEMOTE 1
 
 int32_t fork_call(uint32_t flags);
 void    exit_call(int32_t value);
 int32_t gpid_call(void);
 
-
-// Interprocess communication
+/* Interprocess communication */
 #define SINT_BLOCK 1
 #define SRET_UNBLOCK_SELF 1
 #define SRET_UNBLOCK_CALLER 2
@@ -24,7 +23,7 @@ void sret_call(uint8_t flags);
 void sblk_call(uint32_t value);
 void sreg_call(uint32_t handler);
 
-// Memory management
+/* Memory management */
 #define MMAP_RW 2
 #define MMAP_EXEC 0
 
