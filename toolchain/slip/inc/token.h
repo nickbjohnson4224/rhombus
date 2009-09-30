@@ -2,15 +2,15 @@
 #define TOKEN_H
 
 
-#define TT_NIL		0	// Invalid token
-#define TT_LEVEL1	1	// Output from level 1 tokenizer
-#define TT_SYMBOL	2	// Uncategorized symbol
-#define TT_OPAREN	3	// Opening parenthesis
-#define TT_CPAREN	4	// Closing parenthesis
-#define TT_STRING	5	// String literal
-#define TT_APOST	6	// Apostraphe
-#define TT_COLON	7	// Cons colon
-#define TT_INDEX	8	// Pointer index
+#define TT_NIL		0	/* Invalid token */
+#define TT_LEVEL1	1	/* Output from level 1 tokenizer */
+#define TT_SYMBOL	2	/* Uncategorized symbol */
+#define TT_OPAREN	3	/* Opening parenthesis */
+#define TT_CPAREN	4	/* Closing parenthesis */
+#define TT_STRING	5	/* String literal */
+#define TT_APOST	6	/* Apostraphe */
+#define TT_COLON	7	/* Colon */
+#define TT_INDEX	8	/* Pointer index */
 
 struct token {
 	uint8_t type;

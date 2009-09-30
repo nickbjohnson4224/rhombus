@@ -1,7 +1,7 @@
 BUILDDIR=$(PWD)
 
 LIB_DIRS=libkernel libdriver libexec
-BIN_DIRS=kernel
+BIN_DIRS=kernel init
 
 CC := /usr/khaos/bin/i586-elf-gcc
 LD := /usr/khaos/bin/i586-elf-ld
@@ -33,6 +33,8 @@ $(LIB_DIRS):
 clean:
 	@ echo " CLEAN	" $(shell find . -name "*.o")
 	@ rm $(shell find . -name "*.o")
+	@ echo " CLEAN	libc"
+	@ make -C libc clean
 
 test:	all
 	sudo run/test.sh

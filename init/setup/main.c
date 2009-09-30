@@ -97,7 +97,7 @@ void csig_handler(int sig) {
 	signal_table[sig]();
 }
 void rsig(int sig, uint32_t handler) {
-	signal_table[sig] = (void*) handler;
+	signal_table[sig] = (void (*)(void)) handler;
 }
 
 char buffer2[100];

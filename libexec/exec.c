@@ -6,6 +6,9 @@
 extern void set_stack(uint32_t addr);
 extern void exec_jump(uint32_t ip, uint32_t sp);
 
+/* Bootstraps execution code */
+int _load_exec();
+
 /* Expects executable at ESPACE address */
 int _exec() {
 

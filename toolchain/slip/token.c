@@ -9,7 +9,7 @@
 /* 0 - whitespace, 1 - symbol, 2 - paren/apostraphe, 3 - comment, 4 - quote, 5 - newline, 6 - escape */
 const static uint8_t token_type[128] = {
 /*	NUL	SOH	STX	ETX	EOT	ENQ	ACK	BEL	BS	TAB	LF	VT	FF	CR	SO	SI 	*/
-	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	5,	0,	0,
+	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	5,	0,	0,	5,	0,	0,
 
 /*	DLE	DC1	DC2	DC3	DC4	NAK	SYN	ETB	CAN	EM	SUB	ESC	FS	GS	RS	US 	*/
 	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
@@ -69,6 +69,9 @@ struct token *tokenize_char(char c, struct token *t) {
 		in_quote = !in_quote;
 		return t;
 	}
+
+	/* Newlines are otherwise whitespace */
+	if (type == 5) type = 0;
 
 	/* If a new token needs to be started... */
 	if ((type != prev_type || type == 2) && !in_quote && prev_type != 0) {

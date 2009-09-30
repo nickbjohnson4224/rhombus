@@ -1,4 +1,4 @@
-// Copyright 2009 Nick Johnson
+/* Copyright 2009 Nick Johnson */
 
 #include <lib.h>
 #include <stdint.h>
@@ -15,7 +15,7 @@ void *memset(void *dest, uint8_t src, uint32_t size) {
 	return dest;
 }
 
-// Optimized memory clearing (modified from jgaref's memset)
+/* Optimized memory clearing (modified from jgaref's memset) */
 void *memclr(void *dest, uint32_t size) {
 	uint32_t num_words, num_bytes, *dest32, i;
 	uint8_t *dest8;
@@ -29,7 +29,7 @@ void *memclr(void *dest, uint32_t size) {
 	return dest;
 }
 
-// Extremely fast memory clearing for page aligned things
+/* Extremely fast memory clearing for page aligned things */
 void *pgclr(register uint32_t *base) {
 	register uint32_t i;
 	for (i = 0; i < 1024; i += 32) {
