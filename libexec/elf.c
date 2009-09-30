@@ -9,6 +9,7 @@ static int elf_segment_err(elf_ph_t *pheader, uint8_t *base);
 static int elf_segment_null(elf_ph_t *pheader, uint8_t *base);
 static int elf_segment_load(elf_ph_t *pheader, uint8_t *base);
 
+__attribute__ ((section(".xtext"))) 
 int elf_check(elf_t *header) {
 
 	if (header->e_ident[0] != 0x7F) return 1;
@@ -22,6 +23,7 @@ int elf_check(elf_t *header) {
 	return 0;
 }
 
+__attribute__ ((section(".xtext"))) 
 int elf_load(elf_t *header) {
 	uint8_t *base = (void*) header;
 	elf_ph_t *pheader_table = (void*) &base[header->e_phoff];
@@ -37,10 +39,12 @@ int elf_load(elf_t *header) {
 	return 0;
 }
 
+__attribute__ ((section(".xtext"))) 
 uint32_t elf_entry(elf_t *header) {
 	return header->e_entry;
 }
 
+__attribute__ ((section(".xtext"))) 
 static int elf_load_segment(elf_ph_t *pheader, uint8_t *base) {
 	elf_segment_handler_t handler[] = {
 		elf_segment_null,
@@ -56,14 +60,17 @@ static int elf_load_segment(elf_ph_t *pheader, uint8_t *base) {
 	else return handler[pheader->p_type](pheader, base);
 }
 
+__attribute__ ((section(".xtext"))) 
 static int elf_segment_err(elf_ph_t *pheader, uint8_t *base) { 
 	return 1;
 }
 
+__attribute__ ((section(".xtext"))) 
 static int elf_segment_null(elf_ph_t *pheader, uint8_t *base) { 
 	return 0;
 }
 
+__attribute__ ((section(".xtext"))) 
 static int elf_segment_load(elf_ph_t *pheader, uint8_t *base) {
 	uint8_t flags = 0;
 

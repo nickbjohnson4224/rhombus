@@ -3,7 +3,7 @@ SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
 HEADERS := inc/exec.h
 SUBDIR	:= libexec
 TARGET	:= libexec.a
-CFLAGS  += -ffreestanding -I$(BUILDDIR)/$(SUBDIR)/inc
+CFLAGS  += -ffreestanding -I$(BUILDDIR)/$(SUBDIR)/inc -fPIC
 LDFLAGS += -r
 ASFLAGS := -felf
 

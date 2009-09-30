@@ -1,5 +1,7 @@
 [bits 32]
 
+section .xtext
+
 global set_stack
 set_stack:
 	mov eax, [esp]

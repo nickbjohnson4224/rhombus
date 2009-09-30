@@ -3,7 +3,7 @@ SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
 SUBDIR	:= init
 TARGET	:= init
 CFLAGS  += -ffreestanding -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -ldriver -lkernel -T$(BUILDDIR)/inc/link.ld
+LDFLAGS += -ldriver -lkernel -lexec -T$(BUILDDIR)/inc/link.ld
 ASFLAGS := -felf
 
 all: $(TARGET)
