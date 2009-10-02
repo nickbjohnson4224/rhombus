@@ -8,7 +8,7 @@ ASFLAGS := -felf
 
 all: $(TARGET)
 
-$(TARGET): $(SOURCES) inc/*
+$(TARGET): $(SOURCES)
 	echo " LD	" $(SUBDIR)/$(TARGET)
 	@ $(LD) -o $(TARGET) $(SOURCES) $(LDFLAGS)
 	echo " CP	" $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/bin

@@ -15,7 +15,7 @@ $(HEADERS):
 	echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/inc
 	@ cp $@ $(BUILDDIR)/inc
 
-$(TARGET): $(SOURCES) inc/*
+$(TARGET): $(HEADERS) $(SOURCES) inc/*
 	echo " LD	" $(SUBDIR)/$*.o
 	@ $(LD) -o $*.o $(SOURCES) $(LDFLAGS)
 	echo " AR	" $(SUBDIR)/$(TARGET)
