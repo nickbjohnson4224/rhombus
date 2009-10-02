@@ -72,28 +72,10 @@ int init() {
 	rsig(3, (uint32_t) kbhandle);
 	rirq_call(1);
 
-	sclear();
+	if (gpid_call() != 1) for(;;);
 
-	swrite("\n\n\
-\t\t\t\t\t\t                'a,\n\
-\t\t\t\t\t\t            .     'b.\n\
-\t\t\t\t\t\t          .d'       b.\n\
-\t\t\t\t\t\t          S:        a:\n\
-\t\t\t\t\t\t          'q,       p'\n\
-\t\t\t\t\t\t            '     .p'\n\
-\t\t\t\t\t\t                .a'\n\n\
-\t\t\t\t\t _  _   _   _   _____   _____   _____ \n\
-\t\t\t\t\t| |/ / | |_| | |___  | |  _  | |  ___|\n\
-\t\t\t\t\t|  <   |  _  | |  _  | | |_| | |___  |\n\
-\t\t\t\t\t|_|\\_\\ |_| |_| |_____| |_____| |_____|\n\n\
-\t\t\t\t\t ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, \n\
-\t\t\t\t\t|                                    |\n\
-\t\t\t\t\t '''''''''''''''''''''''''''''''''''' \n\
-\n");
-
-	update_bar();
-	update_bar();
-	update_bar();
+	print_bootsplash();
+	update_progress("init system started");
 
 	for(;;);
 	return 0;

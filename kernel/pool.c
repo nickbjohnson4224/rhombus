@@ -36,7 +36,7 @@ uint32_t pool_alloc(pool_t *pool) {
 	/* Set bit */
 	pool[p] |= (0x1 << b);
 
-	return (p << 5) | b;
+	return ((p - 1) << 5) | b;
 }
 
 uint32_t pool_free(pool_t *pool, uint32_t pos) {
