@@ -70,7 +70,7 @@ static int elf_segment_null(elf_ph_t *pheader, uint8_t *base) {
 	return 0;
 }
 
-__attribute__ ((section(".xtext"))) 
+__attribute__ ((section(".xtext")))
 static int elf_segment_load(elf_ph_t *pheader, uint8_t *base) {
 	uint8_t flags = 0;
 
