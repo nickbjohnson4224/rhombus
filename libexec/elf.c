@@ -80,7 +80,7 @@ static int elf_segment_load(elf_ph_t *pheader, uint8_t *base) {
 	mmap_call(pheader->p_vaddr, pheader->p_memsz, flags);
 
 	memcpy((void*) pheader->p_vaddr, (void*) &base[pheader->p_offset], pheader->p_filesz);
-	memclr((void*) (pheader->p_vaddr + pheader->p_filesz), pheader->p_memsz - pheader->p_filesz);
+	memset((void*) (pheader->p_vaddr + pheader->p_filesz), 0, pheader->p_memsz - pheader->p_filesz);
 
 	return 0;
 }

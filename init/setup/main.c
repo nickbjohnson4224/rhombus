@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <kernel.h>
 #include <driver.h>
+#include <exec.h>
 
 static uint16_t video_buf[2000];
 static uint16_t *video_mem = (void*) 0xB8000;
@@ -103,8 +104,6 @@ void rsig(int sig, uint32_t handler) {
 char buffer2[100];
 int init() {
 	extern void sig_handler(void);
-
-	eout_call("Hello, world");
 
 	sreg_call((uint32_t) sig_handler);
 	rsig(0, (uint32_t) gepfault);
