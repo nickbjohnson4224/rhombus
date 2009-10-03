@@ -3,62 +3,39 @@
 #include <driver.h>
 #include <exec.h>
 #include "console.h"
+#include "floppy.h"
 
-void death() {
+void death(int eax) {
 	sret_call(3);
 }
 
-void segfault() {
-	uint32_t addr, err, ip;
-/*	char buffer[10]; */
-
-	asm volatile ("mov %%edx, %0" : "=r" (addr));
-	asm volatile ("mov %%ebx, %0" : "=r" (err));
-	asm volatile ("mov %%eax, %0" : "=r" (ip));
-
-	swrite("\n");
-	swrite("Page Fault");
-/*	swrite(itoa(addr, buffer, 16));
-	swrite(" flags ");
-	swrite(itoa(err, buffer, 16));
-	swrite(" instruction ");
-	swrite(itoa(ip, buffer, 16)); */
-	swrite("\n");
+void segfault(int eax) {
+	swrite("\nSegmentation Fault\n");
 	exit_call(1);
 }
 
-void gepfault() {
-	swrite("General Protection Fault\n");
-	exit_call(1);
-}
-
-void imgfault() {
+void imgfault(int eax) {
 	swrite("Image Stack Overflow (DoS)");
 	exit_call(1);
 }
 
-
-uint8_t keymap[128] = "\0\0331234567890-=\b\tqwertyuiop[]\n\0asdfghjkl;\'`\0\\zxcvbnm,./\0*\0 ";
-uint8_t upkmap[128] = "\0\033!@#$%^&*()_+\b\0QWERTYUIOP{}\n\0ASDFGHJKL:\"~\0|ZXCVBNM<>?\0*\0 ";
-uint8_t shift = 0;
-void kbhandle() {
-	char c = inb(0x60);
-	if (c & 0x80) {
-		if (keymap[(int) c & 0x7F] == '\0') shift = 0;
-		sret_call(3);
-	}
-	if (keymap[(int) c & 0x7F] == '\0') shift = 1;
-	c = (shift) ? upkmap[(int) c] : keymap[(int) c];
-	cwrite(c);
-	sret_call(3);
+void (*signal_table[256])(int);
+void csig_handler(int sig, int eax) {
+	signal_table[sig](eax);
 }
 
-void (*signal_table[256])(void);
-void csig_handler(int sig) {
-	signal_table[sig]();
+void (*irq_table[16])(void);
+void irq_handler(int irq) {
+	irq_table[irq]();
 }
+
 void rsig(int sig, uint32_t handler) {
-	signal_table[sig] = (void (*)(void)) handler;
+	signal_table[sig] = (void (*)(int)) handler;
+}
+
+void rirq(int irq, uint32_t handler) {
+	irq_table[irq] = (void (*)(void)) handler;
+	rirq_call(irq);
 }
 
 char buffer2[100];
@@ -66,16 +43,20 @@ int init() {
 	extern void sig_handler(void);
 
 	sreg_call((uint32_t) sig_handler);
-	rsig(0, (uint32_t) gepfault);
+	rsig(0, (uint32_t) segfault);
 	rsig(2, (uint32_t) segfault);
 	rsig(5, (uint32_t) imgfault);
-	rsig(3, (uint32_t) kbhandle);
-	rirq_call(1);
+	rsig(3, (uint32_t) irq_handler);
+	rirq(1, (uint32_t) kbhandle);
+	rirq(6, (uint32_t) floppy_handler);
 
 	if (gpid_call() != 1) for(;;);
 
 	print_bootsplash();
-	update_progress("init system started");
+	update_progress("init system started...");
+
+	update_progress("scanning for boot disk...");
+	init_floppy();
 
 	for(;;);
 	return 0;

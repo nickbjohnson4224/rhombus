@@ -30,9 +30,4 @@ void sreg_call(uint32_t handler);
 int32_t mmap_call(uint32_t address, uint32_t size, uint8_t flags);
 int32_t umap_call(uint32_t address, uint32_t size);
 
-/***** EVENT HANDLING *****/
-
-void waitfor(uint32_t signal);
-void block();
-
 #endif

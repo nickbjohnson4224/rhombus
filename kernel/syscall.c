@@ -15,7 +15,6 @@ image_t *pit_handler(image_t *image) {
 }
 
 image_t *irq_redirect(image_t *image) {
-	printk("%d -> %d\n", DEIRQ(image->num), irq_holder[DEIRQ(image->num)]);
 	return signal(irq_holder[DEIRQ(image->num)], S_IRQ, DEIRQ(image->num), 0, 0, 0, TF_NOERR);
 }
 

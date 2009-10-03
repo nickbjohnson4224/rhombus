@@ -13,6 +13,7 @@ extern sret_call
 extern csig_handler
 sig_handler:
 	lea ecx, [csig_handler]
+	push eax
 	push edi
 	call ecx
 	mov eax, 3
