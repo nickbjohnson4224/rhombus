@@ -55,7 +55,7 @@ int init() {
 	print_bootsplash();
 	update_progress("init system started...");
 
-	update_progress("scanning for boot disk...");
+	update_progress("scanning for floppy drive...");
 	init_floppy();
 
 	for(;;);

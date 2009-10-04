@@ -42,7 +42,7 @@ void init_free() {
 		/* Free initrd image data */
 		mem_free(((uintptr_t) &end + 0x1000), KMALLOC - ((uintptr_t) &end + 0x1000));
 
-		/* Free unused (by BIOS) lower memory */
+		/* Free unused (by BIOS) lower memory (0x1000 - 0x80000) */
 		mem_free(KSPACE + 0x1000, 0x7F000);
 
 		printk("%d KB used", pool_query(fpool) * 4);
