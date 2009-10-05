@@ -1,5 +1,5 @@
-#include <elf.h>
-#include <kernel.h>
+#include <khaos/elf.h>
+#include <khaos/syscall.h>
 #include <string.h>
 
 static int elf_load_segment(elf_ph_t *pheader, uint8_t *base);

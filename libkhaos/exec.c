@@ -1,7 +1,7 @@
-#include <kernel.h>
+#include <khaos/syscall.h>
 #include <config.h>
 #include <string.h>
-#include <elf.h>
+#include <khaos/elf.h>
 
 extern void set_stack(uint32_t addr);
 extern void exec_jump(uint32_t ip, uint32_t sp);

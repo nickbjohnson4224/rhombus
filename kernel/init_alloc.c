@@ -1,4 +1,4 @@
-#include <config.h>
+#include <khaos/config.h>
 #include <stdint.h>
 #include <lib.h>
 #include <mem.h>

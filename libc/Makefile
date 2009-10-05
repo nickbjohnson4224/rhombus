@@ -16,10 +16,8 @@ $(HEADERS):
 	@ cp $@ $(BUILDDIR)/inc
 
 $(TARGET): $(HEADERS) $(SOURCES) inc/*
-	echo " LD	" $(SUBDIR)/$*.o
-	@ $(LD) -o $*.o $(SOURCES) $(LDFLAGS)
 	echo " AR	" $(SUBDIR)/$(TARGET)
-	@ $(AR) $(ARFLAGS) $(TARGET) $*.o
+	@ $(AR) $(ARFLAGS) $(TARGET) $(shell find . -name "*.o")
 	echo " CP	" $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/lib
 	@ cp $(TARGET) $(BUILDDIR)/lib
 

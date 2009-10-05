@@ -1,6 +1,6 @@
 BUILDDIR=$(PWD)
 
-LIB_DIRS=libkernel libdriver libexec libc libkhsig
+LIB_DIRS=libkhaos libc
 BIN_DIRS=kernel init
 
 CC := /usr/khaos/bin/i586-elf-gcc

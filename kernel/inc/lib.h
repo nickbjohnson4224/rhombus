@@ -3,7 +3,7 @@
 #ifndef LIB_H
 #define LIB_H
 
-#include <config.h>
+#include <khaos/config.h>
 #include <stdint.h>
 
 /*typedef unsigned int uint32_t; */
