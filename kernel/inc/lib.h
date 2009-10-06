@@ -6,12 +6,7 @@
 #include <khaos/config.h>
 #include <stdint.h>
 
-/*typedef unsigned int uint32_t; */
-/*typedef unsigned short uint16_t; */
-/*typedef unsigned char uint8_t; */
-typedef unsigned int addr_t;
-
-/***** STANDARD FUNCTIONS *****/
+/***** I/O, ETC. *****/
 void outb(uint16_t port, uint8_t val);
 uint8_t inb(uint16_t port);
 #define max(a,b) ((a > b) ? a : b)
@@ -39,6 +34,7 @@ void cursek(int8_t x, int8_t y);
 /***** ERROR FUNCTIONS *****/
 void panic(const char *message); /* Panic with a message */
 
+#define ERROR	((uint32_t) -1)
 #define ENOTASK ((uint32_t) -1)
 #define ENOSIG ((uint32_t) -2)
 #define EPERMIT ((uint32_t) -3)
@@ -53,7 +49,7 @@ typedef uint32_t pool_t;
 pool_t *pool_new(uint32_t num);						/* Allocate a new pool */
 uint32_t pool_alloc(pool_t *pool);					/* Allocate from a pool */
 uint32_t pool_free(pool_t *pool, uint32_t pos);		/* Free back to a pool */
-uint32_t pool_query(pool_t *pool);					/* Find how many elementa are allocated in a pool */
+uint32_t pool_query(pool_t *pool);					/* Find how much of a pool is full */
 
 /***** STACK ALLOCATOR *****/
 

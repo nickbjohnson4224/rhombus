@@ -11,108 +11,279 @@
 image_t *pit_handler(image_t *image) {
 	static uint32_t tick = 0;
 	if (image->cs & 0x3) tick++;
+
+	/* Switch to next scheduled task */
 	return task_switch(task_next(0));
 }
 
 image_t *irq_redirect(image_t *image) {
+
+	/* Send S_IRQ signal to the task registered with the IRQ, with the IRQ number as arg0 */ 
 	return signal(irq_holder[DEIRQ(image->num)], S_IRQ, DEIRQ(image->num), 0, 0, 0, TF_NOERR);
 }
 
 /***** FAULT HANDLERS *****/
 
+/* Generic fault */
 image_t *fault_generic(image_t *image) {
+
+	/* If in kernelspace, panic */
 	if ((image->cs & 0x3) == 0) {
 		printk("EIP:%x NUM:%d ERR:%x\n", image->eip, image->num, image->err);
 		panic("unknown exception");
 	}
+
+	/* If in userspace, redirect to signal S_GEN */
 	return signal(curr_pid, S_GEN, image->num | (image->err << 16), 0, 0, 0, TF_NOERR | TF_EKILL);
 }
 
+/* Page fault */
 image_t *fault_page(image_t *image) {
-	uint32_t cr2; asm volatile ("movl %%cr2, %0" : "=r" (cr2));
+	uint32_t cr2;
+
+	/* Get faulting address from register CR2 */
+	asm volatile ("movl %%cr2, %0" : "=r" (cr2));
+
+	/* If in kernelspace, panic */
 	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */
 		printk("page fault at %x, ip = %x\n", cr2, image->eip);
 		panic("page fault exception");
 	}
+
+	/* If in userspace, redirect to signal S_GEN, with faulting flags and address */
 	return signal(curr_pid, S_PAG, image->eip, image->err, 0, cr2, TF_NOERR | TF_EKILL);
 }
 
+/* Floating point exception */
 image_t *fault_float(image_t *image) {
-	if ((image->cs & 0x3) == 0) panic("floating point exception");
+
+	/* If in kernelspace, panic */
+	if ((image->cs & 0x3) == 0) {
+		panic("floating point exception");
+	}
+
+	/* If in userspace, redirect to signal S_FPE */
 	return signal(curr_pid, S_FPE, image->eip, 0, 0, 0, TF_NOERR | TF_EKILL);
+
 }
 
+/* Double fault */
 image_t *fault_double(image_t *image) {
+
+	/* Can only come from kernel problems */
 	printk("DS:%x CS:%x\n", image->ds, image->cs);
 	panic("double fault exception");
 	return NULL;
+
 }
 
 /****** SYSTEM CALLS *****/
 
+/* Fork - create a new task
+ * 
+ * No arguments
+ * Returns:
+ *  0 on failure
+ *  PID of child if parent
+ *  negative PID of parent if child
+ *
+ * Creates a new task with a copy of
+ * the address space of the current one.
+ * The new task has a unique PID.
+ * All user memory is copied, not linked.
+ * All other metadata is copied.
+ */
 image_t *fork_call(image_t *image) {
-	pid_t parent = curr_pid;
-	task_t *child = task_new(task_get(curr_pid));
-	if (!child) ret(image, 0);
+	pid_t parent;
+	task_t *child;
+
+	/* Save current PID - it will become the parent */
+	parent = curr_pid;
+
+	/* Create a new task from the parent */
+	child = task_new(task_get(parent));
+	if (!child) ret(image, 0); /* Fail if child was not created */
+
+	/* (still in parent) Set return value to child's PID */
 	image->eax = child->pid;
+
+	/* Switch to child */
 	image = task_switch(child);
-	ret(image, (uint32_t) (-parent));
+
+	/* (now in child) Set return value to negative parent's PID */
+	image->eax = (uint32_t) -parent;
+
+	return image;
 }
 
+/* Exit - destroy the current task
+ *
+ * Arguments: 
+ *  eax: exit value
+ * No return value
+ *
+ * Deallocates all resources in current task.
+ * Sends a S_DTH signal to parent with return value 
+ */
 image_t *exit_call(image_t *image) {
-	pid_t dead_task = curr_pid;
-	uint32_t ret_val = image->eax;
+	extern void halt(void);
+	pid_t dead_task;
+	uint32_t ret_val;
 	task_t *t;
 
-	extern void halt(void);
+	/* Obviously, we are destroying the current task */
+	dead_task = curr_pid;
+
+	/* Copy return value because images are cleared with the address space */
+	ret_val = image->eax;
+
+	/* If init exits, halt */
 	if (dead_task == 1) halt();
 
+	/* Deallocate current address space and clear metadata */
 	t = task_get(dead_task);
-	map_clean(t->map);
-	map_free(t->map);
-	task_rem(task_get(dead_task));
+	map_clean(t->map);	/* Deallocate pages and page tables */
+	map_free(t->map);	/* Deallocate page directory itself */
+	task_rem(t);		/* Clear metadata and relinquish PID */
+
+	/* Send S_DTH signal to parent with return value */
 	return signal(t->parent, S_DTH, ret_val, 0, 0, 0, TF_NOERR);
 }
+
+/* GPID - get the current task's PID
+ * 
+ * No arguments
+ * Returns current task's PID
+ */
 
 image_t *gpid_call(image_t *image) {
 	ret(image, curr_pid);
 }
 
+/* TBLK - change task blocked bit
+ * 
+ * Arguments:
+ *  eax: 0 for off, anything else on
+ * Returns nothing
+ */
 image_t *tblk_call(image_t *image) {
-	task_t *t = task_get(curr_pid);
+	task_t *t;
+
+	t = task_get(curr_pid);
+
+	/* Set or clear blocked flag */
 	if (image->eax) t->flags |= TF_BLOCK;
-	else t->flags &= ~ TF_BLOCK;
+	else t->flags &= ~TF_BLOCK;
+
 	return image;
 }
 
+/* MMAP - map an area of memory
+ * 
+ * Arguments:
+ *  edi: base address
+ *  ecx: size
+ *  ebx: flags
+ * Returns 0 on success
+ *
+ * Guarantees memory between edi and edi+ecx.
+ * Memory may go beyond these limits.
+ * Sets all allowed flags specified.
+ */
 image_t *mmap_call(image_t *image) {
-	if (image->edi + image->ecx > LSPACE) ret(image, EPERMIT);
+
+	/* Bounds check address */
+	if (image->edi + image->ecx > LSPACE) ret(image, ERROR);
+
+	/* Allocate memory with flags */
 	mem_alloc(image->edi, image->ecx, (image->ebx & PF_MASK) | PF_PRES | PF_USER);
+
 	ret(image, 0);
 }
 
+/* UMAP - unmap an area of memory
+ * 
+ * Arguments:
+ *  edi: base address
+ *  ecx: size
+ *  ebx: flags
+ * Returns 0 on success
+ *
+ * Guarantees no memory between edi and edi+ecx.
+ * Removes minumum number of pages to complete.
+ */
 image_t *umap_call(image_t *image) {
-	if (image->edi + image->ecx > LSPACE) ret(image, EPERMIT);
+
+	/* Bounds check address */
+	if (image->edi + image->ecx > LSPACE) ret(image, ERROR);
+
+	/* Deallocate memory */
 	mem_free(image->edi, image->ecx);
+
 	ret(image, 0);
 }
 
+/* SSND - send a signal to a task
+ *
+ * Arguments:
+ *  edi: target task
+ *  esi: 
+ *   byte 0: signal number
+ *   byte 1: blocking flags
+ *  eax-edx: arguments (16 bytes)
+ * Returns nothing
+ *
+ * Pushes the target's current state onto its TIS
+ * Invokes the signal handler of the target task
+ * Sets esi to signal number
+ * Sets edi to the caller's PID
+ * Sets eax-edx to arguments
+ */
 image_t *ssnd_call(image_t *image) {
 	return signal((pid_t) image->edi, (uint8_t) (image->esi & 0xFF), 
 		image->eax, image->ebx, image->ecx, image->edx, (uint8_t) ((image->esi >> 8) & 0xFF));
 }
 
+/* SRET - return from a signal handler
+ *
+ * Arguments:
+ *  esi: caller
+ * Returns nothing
+ *
+ * Unblocks the caller
+ * Pops the target's previous state off of the TIS
+ */
 image_t *sret_call(image_t *image) {
 	return sret(image);
 }
 
+/* TBLK - change signal blocked bit
+ * 
+ * Arguments:
+ *  eax: 0 for off, anything else on
+ * Returns nothing
+ */
 image_t *sblk_call(image_t *image) {
-	task_t *t = task_get(curr_pid);
+	task_t *t;
+
+	t = task_get(curr_pid);
+
+	/* Set or clear signal blocked bit */
 	if (image->eax) t->flags |= TF_SBLOK;
 	else t->flags &= ~TF_SBLOK;
+
 	return image;
 }
 
+/* SREG - register signal handler
+ *
+ * Arguments:
+ *  eax: handler address
+ * Returns old handler if any
+ *
+ * 
+ *
+ */
 image_t *sreg_call(image_t *image) {
 	uint32_t old_handler;
 	task_t *t = task_get(curr_pid);
@@ -123,14 +294,20 @@ image_t *sreg_call(image_t *image) {
 
 /***** PRIVILEGED CALLS *****/
 image_t *ireg_call(image_t *image) {
+
+	/* Set IRQ holder to this task */
 	irq_holder[image->eax % 15] = curr_pid;
 	register_int(IRQ(image->eax), irq_redirect);
+
 	ret(image, 0);
 }
 
 image_t *irel_call(image_t *image) {
+
+	/* Set IRQ holder to the kernel, and deactivate */
 	irq_holder[image->eax % 15] = 0;
 	register_int(IRQ(image->eax), 0);
+
 	ret(image, 0);
 }
 
@@ -143,20 +320,20 @@ image_t *push_call(image_t *image) {
 	uint32_t i;
 
 	/* Bounds check addresses */
-	if (src + size > LSPACE || dst + size > LSPACE) ret(image, EPERMIT);
-	if (size > 0x4000) ret(image, EPERMIT);	/* Limit writes to 16K */
+	if (src + size > LSPACE || dst + size > LSPACE) ret(image, ERROR);
+	if (size > 0x4000) ret(image, ERROR);	/* Limit writes to 16K */
 
 	/* Find and check target */
 	if (targ) {
 		t = task_get(targ);
-		if (!t) ret(image, ENOTASK);
+		if (!t) ret(image, ERROR);
 		map_temp(t->map);
 	}
 
 	/* Map pages */
 	for (i = 0; i < size + 0x1000; i += 0x1000) {
 		if (targ) {
-			if ((temp_get(dst + i) & PF_PRES) == 0) ret(image, EPERMIT);
+			if ((temp_get(dst + i) & PF_PRES) == 0) ret(image, ERROR);
 			page_set((uint32_t) tdst + i, page_fmt(temp_get(dst + i), (PF_RW | PF_PRES)));
 		}
 		else page_set((uint32_t) tdst + i, page_fmt((dst + i) &~ 0xFFF, (PF_RW | PF_PRES)));
@@ -181,25 +358,25 @@ image_t *pull_call(image_t *image) {
 	uint32_t i;
 
 	/* Bounds check addresses */
-	if (src + size > LSPACE || dst + size > LSPACE) ret(image, EPERMIT);
-	if (size > 0x4000) ret(image, EPERMIT);	/* Limit reads to 16K */
+	if (src + size > LSPACE || dst + size > LSPACE) ret(image, ERROR);
+	if (size > 0x4000) ret(image, ERROR);	/* Limit reads to 16K */
 
 	/* Find and check target */
 	if (targ) {
 		t = task_get(targ);
-		if (!t) ret(image, ENOTASK);
+		if (!t) ret(image, ERROR);
 		map_temp(t->map);
 	}
 
 	/* Map pages */
 	for (i = 0; i < size + 0x1000; i += 0x1000) {
 		if (targ) {
-			if ((temp_get(src + i) & PF_PRES) == 0) ret(image, EPERMIT);
+			if ((temp_get(src + i) & PF_PRES) == 0) ret(image, ERROR);
 			page_set((uint32_t) tsrc + i, page_fmt(temp_get(src + i), (PF_RW | PF_PRES | PF_DISC)));
 		}
 		else page_set((uint32_t) tsrc + i, page_fmt((src + i) &~ 0xFFF, (PF_RW | PF_PRES|PF_DISC)));
 
-		if ((page_get(dst + i) & PF_PRES) == 0) ret(image, EPERMIT);
+		if ((page_get(dst + i) & PF_PRES) == 0) ret(image, ERROR);
 		page_set((uint32_t) tdst + i, page_fmt(page_get(dst + i), (PF_RW | PF_PRES | PF_DISC)));
 	}
 

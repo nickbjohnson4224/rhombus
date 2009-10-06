@@ -3,6 +3,8 @@
 #ifndef INT_H
 #define INT_H
 
+/* Image structure - contains the saved state of a task */
+/* Stored in the task image stack (TIS), used during signals and interrupts */
 typedef struct image {
 	uint32_t ds, edi, esi, ebp, esp, ebx, edx, ecx, eax;
 	uint32_t num, caller, err, eip, cs, eflags, useresp, ss;
@@ -35,6 +37,7 @@ image_t *pull_call(image_t *image); /* 0x53 - remote pull */
 image_t *eout_call(image_t *image); /* 0x54 - emergency output */
 image_t *drop_call(image_t *image); /* 0x55 - drop from drivermode */
 
+/* Return with eax set to a value */
 #define ret(image, value) do { \
 image->eax = value; \
 return image; \
