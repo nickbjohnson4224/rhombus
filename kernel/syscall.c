@@ -17,15 +17,19 @@ image_t *pit_handler(image_t *image) {
 }
 
 image_t *irq_redirect(image_t *image) {
+	uint32_t args[4];
 
-	/* Send S_IRQ signal to the task registered with the IRQ, with the IRQ number as arg0 */ 
-	return signal(irq_holder[DEIRQ(image->num)], S_IRQ, DEIRQ(image->num), 0, 0, 0, TF_NOERR);
+	/* Send S_IRQ signal to the task registered with the IRQ */
+	/* with the IRQ number as arg 0 */ 
+	args[0] = DEIRQ(image->num);
+	return signal(irq_holder[DEIRQ(image->num)], S_IRQ, args, TF_NOERR);
 }
 
 /***** FAULT HANDLERS *****/
 
 /* Generic fault */
 image_t *fault_generic(image_t *image) {
+	uint32_t args[4];
 
 	/* If in kernelspace, panic */
 	if ((image->cs & 0x3) == 0) {
@@ -34,11 +38,14 @@ image_t *fault_generic(image_t *image) {
 	}
 
 	/* If in userspace, redirect to signal S_GEN */
-	return signal(curr_pid, S_GEN, image->num | (image->err << 16), 0, 0, 0, TF_NOERR | TF_EKILL);
+	args[0] = image->num;
+	args[1] = image->err;
+	return signal(curr_pid, S_GEN, args, TF_NOERR | TF_EKILL);
 }
 
 /* Page fault */
 image_t *fault_page(image_t *image) {
+	uint32_t args[4];
 	uint32_t cr2;
 
 	/* Get faulting address from register CR2 */
@@ -50,12 +57,16 @@ image_t *fault_page(image_t *image) {
 		panic("page fault exception");
 	}
 
-	/* If in userspace, redirect to signal S_GEN, with faulting flags and address */
-	return signal(curr_pid, S_PAG, image->eip, image->err, 0, cr2, TF_NOERR | TF_EKILL);
+	/* If in userspace, redirect to signal S_GEN, with faulting address */
+	args[0] = image->eip;
+	args[1] = image->err;
+	args[3] = cr2;
+	return signal(curr_pid, S_PAG, args, TF_NOERR | TF_EKILL);
 }
 
 /* Floating point exception */
 image_t *fault_float(image_t *image) {
+	uint32_t args[4];
 
 	/* If in kernelspace, panic */
 	if ((image->cs & 0x3) == 0) {
@@ -63,7 +74,8 @@ image_t *fault_float(image_t *image) {
 	}
 
 	/* If in userspace, redirect to signal S_FPE */
-	return signal(curr_pid, S_FPE, image->eip, 0, 0, 0, TF_NOERR | TF_EKILL);
+	args[0] = image->eip;
+	return signal(curr_pid, S_FPE, args, TF_NOERR | TF_EKILL);
 
 }
 
@@ -127,6 +139,7 @@ image_t *fork_call(image_t *image) {
  */
 image_t *exit_call(image_t *image) {
 	extern void halt(void);
+	uint32_t args[4];
 	pid_t dead_task;
 	uint32_t ret_val;
 	task_t *t;
@@ -147,7 +160,8 @@ image_t *exit_call(image_t *image) {
 	task_rem(t);		/* Clear metadata and relinquish PID */
 
 	/* Send S_DTH signal to parent with return value */
-	return signal(t->parent, S_DTH, ret_val, 0, 0, 0, TF_NOERR);
+	args[0] = ret_val;
+	return signal(t->parent, S_DTH, args, TF_NOERR);
 }
 
 /* GPID - get the current task's PID
@@ -191,12 +205,16 @@ image_t *tblk_call(image_t *image) {
  * Sets all allowed flags specified.
  */
 image_t *mmap_call(image_t *image) {
+	uint32_t flags;
+
+	/* Extract and check flags */
+	flags = (image->ebx & PF_MASK) | PF_PRES | PF_USER;
 
 	/* Bounds check address */
 	if (image->edi + image->ecx > LSPACE) ret(image, ERROR);
 
 	/* Allocate memory with flags */
-	mem_alloc(image->edi, image->ecx, (image->ebx & PF_MASK) | PF_PRES | PF_USER);
+	mem_alloc(image->edi, image->ecx, flags);
 
 	ret(image, 0);
 }
@@ -240,8 +258,17 @@ image_t *umap_call(image_t *image) {
  * Sets eax-edx to arguments
  */
 image_t *ssnd_call(image_t *image) {
-	return signal((pid_t) image->edi, (uint8_t) (image->esi & 0xFF), 
-		image->eax, image->ebx, image->ecx, image->edx, (uint8_t) ((image->esi >> 8) & 0xFF));
+	uint32_t args[4];
+	uint8_t sig, flags;
+
+	args[0] = image->eax;
+	args[1] = image->ebx;
+	args[2] = image->ecx;
+	args[3] = image->edx;
+	sig = image->esi & 0xFF;
+	flags = (image->esi >> 8) & 0xFF;
+
+	return signal((pid_t) image->edi, sig, args, flags);
 }
 
 /* SRET - return from a signal handler
@@ -299,7 +326,7 @@ image_t *ireg_call(image_t *image) {
 	irq_holder[image->eax % 15] = curr_pid;
 	register_int(IRQ(image->eax), irq_redirect);
 
-	ret(image, 0);
+	return image;
 }
 
 image_t *irel_call(image_t *image) {
@@ -308,7 +335,7 @@ image_t *irel_call(image_t *image) {
 	irq_holder[image->eax % 15] = 0;
 	register_int(IRQ(image->eax), 0);
 
-	ret(image, 0);
+	return image;
 }
 
 image_t *push_call(image_t *image) {
