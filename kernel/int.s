@@ -86,9 +86,9 @@ int_common:
 	
 	mov cx, 0x10
 	mov ds, cx
-	mov es, cx
-	mov fs, cx
-	mov gs, cx
+;	mov es, cx
+;	mov fs, cx
+;	mov gs, cx
 	mov ss, cx
 
 	mov ebp, esp

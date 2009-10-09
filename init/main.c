@@ -1,9 +1,9 @@
 #include <stdint.h>
-#include <kernel.h>
-#include <driver.h>
-#include <exec.h>
-#include "console.h"
-#include "floppy.h"
+#include <khaos/kernel.h>
+#include <khaos/driver.h>
+#include <khaos/exec.h>
+#include <console.h>
+#include <floppy.h>
 
 void death(int eax) {
 	sret_call(3);
@@ -48,7 +48,7 @@ int init() {
 	rsig(5, (uint32_t) imgfault);
 	rsig(3, (uint32_t) irq_handler);
 	rirq(1, (uint32_t) kbhandle);
-	rirq(6, (uint32_t) floppy_handler);
+	rirq(floppy.interrupt, (uint32_t) floppy.handler);
 
 	if (gpid_call() != 1) for(;;);
 
@@ -56,7 +56,7 @@ int init() {
 	update_progress("init system started...");
 
 	update_progress("scanning for floppy drive...");
-	init_floppy();
+	floppy.init(0);
 
 	for(;;);
 	return 0;

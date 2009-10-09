@@ -23,4 +23,16 @@ int32_t lriq_call(uint32_t irq);
 /***** EMERGENCY OUTPUT *****/
 int32_t eout_call(const char *message);
 
+/***** DRIVER INTERFACE STRUCTURE *****/
+
+struct driver_interface {
+	int (*init) (uint16_t selector);
+	int (*read) (uintmax_t seek, size_t size, void *data);
+	int (*write)(uintmax_t seek, size_t size, void *data);
+	int (*ctrl) (int16_t request, void *data);
+	void (*handler) (void);
+	uint8_t interrupt;
+	int (*halt) (void);
+};
+
 #endif
