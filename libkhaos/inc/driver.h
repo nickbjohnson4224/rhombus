@@ -30,7 +30,7 @@ struct driver_interface {
 	int (*read) (uintmax_t seek, size_t size, void *data);
 	int (*write)(uintmax_t seek, size_t size, void *data);
 	int (*ctrl) (int16_t request, void *data);
-	void (*handler) (void);
+	void (*handler) (uint32_t source, uint32_t args[4]);
 	uint8_t interrupt;
 	int (*halt) (void);
 };

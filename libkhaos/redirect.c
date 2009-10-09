@@ -1,11 +1,11 @@
-#include <khsignal.h>
-#include <kernel.h>
+#include <khaos/signal.h>
+#include <khaos/kernel.h>
 #include <string.h>
 
 static void (*khsignal_handlers[256])(uint32_t, uint32_t[4]);
 static volatile uint8_t khsignal_count[256]; /* Used for wait */
 
-void khsignal_redirect(uint32_t source, uint8_t signal, uint32_t args[4]) {
+void khsignal_redirect(uint32_t source, uint32_t signal, uint32_t args[4]) {
 	khsignal_count[signal]++;
 	if (khsignal_handlers[signal]) {
 		khsignal_handlers[signal](source, args);

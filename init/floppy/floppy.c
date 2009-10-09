@@ -107,7 +107,7 @@ int init_floppy(uint16_t selector) {
 	return 0;
 }
 
-void floppy_handler(void) {
+void floppy_handler(uint32_t source, uint32_t args[4]) {
 	got_irq6 = 1;
 }
 

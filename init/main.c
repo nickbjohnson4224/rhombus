@@ -2,35 +2,27 @@
 #include <khaos/kernel.h>
 #include <khaos/driver.h>
 #include <khaos/exec.h>
+#include <khaos/signal.h>
 #include <console.h>
 #include <floppy.h>
 
-void death(int eax) {
+void death(uint32_t source, uint32_t args[4]) {
 	sret_call(3);
 }
 
-void segfault(int eax) {
+void segfault(uint32_t source, uint32_t args[4]) {
 	swrite("\nSegmentation Fault\n");
 	exit_call(1);
 }
 
-void imgfault(int eax) {
+void imgfault(uint32_t source, uint32_t args[4]) {
 	swrite("Image Stack Overflow (DoS)");
 	exit_call(1);
 }
 
-void (*signal_table[256])(int);
-void csig_handler(int sig, int eax) {
-	signal_table[sig](eax);
-}
-
 void (*irq_table[16])(void);
-void irq_handler(int irq) {
-	irq_table[irq]();
-}
-
-void rsig(int sig, uint32_t handler) {
-	signal_table[sig] = (void (*)(int)) handler;
+void irq_handler(uint32_t source, uint32_t args[4]) {
+	if (irq_table[args[0] & 0xF]) irq_table[args[0] & 0xF]();
 }
 
 void rirq(int irq, uint32_t handler) {
@@ -40,13 +32,14 @@ void rirq(int irq, uint32_t handler) {
 
 char buffer2[100];
 int init() {
-	extern void sig_handler(void);
 
-	sreg_call((uint32_t) sig_handler);
-	rsig(0, (uint32_t) segfault);
-	rsig(2, (uint32_t) segfault);
-	rsig(5, (uint32_t) imgfault);
-	rsig(3, (uint32_t) irq_handler);
+	khsignal_init();
+
+	khsignal_register(0, segfault);
+	khsignal_register(2, segfault);
+	khsignal_register(3, irq_handler);
+	khsignal_register(5, imgfault);
+
 	rirq(1, (uint32_t) kbhandle);
 	rirq(floppy.interrupt, (uint32_t) floppy.handler);
 

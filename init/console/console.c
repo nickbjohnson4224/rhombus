@@ -1,6 +1,6 @@
 #include <stdint.h>
-#include <kernel.h>
-#include <driver.h>
+#include <khaos/kernel.h>
+#include <khaos/driver.h>
 
 static uint16_t video_buf[2000];
 static uint16_t *video_mem = (void*) 0xB8000;

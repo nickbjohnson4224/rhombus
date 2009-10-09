@@ -1,5 +1,5 @@
-#include <khsignal.h>
-#include <kernel.h>
+#include <khaos/signal.h>
+#include <khaos/kernel.h>
 
 void khsignal_block(void) {
 	sblk_call(0);

@@ -1,5 +1,5 @@
 #include <khaos/syscall.h>
-#include <config.h>
+#include <khaos/config.h>
 #include <string.h>
 #include <khaos/elf.h>
 
