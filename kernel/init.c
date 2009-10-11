@@ -37,10 +37,14 @@ void init(void *mboot_ptr, uint32_t mboot_magic) {
 	cleark(); 
 	printk(stamp, KHAOS_VERSION_MAJOR, KHAOS_VERSION_MINOR);
 
-	if (mboot_magic != 0x2BADB002) panic("Bootloader is not multiboot compliant");
+	if (mboot_magic != 0x2BADB002) {
+		panic("Bootloader is not multiboot compliant");
+	}
 	else mboot = mboot_ptr;
 
-	for (i = 0; init_list[i]; i++) init_list[i]();
+	for (i = 0; init_list[i]; i++) {
+		init_list[i]();
+	}
 
 	printk("  Kernel: dropping to usermode");
 	cursek(74, -1);

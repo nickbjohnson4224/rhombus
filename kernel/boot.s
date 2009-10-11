@@ -72,7 +72,7 @@ extern init
 global start
 start:
 	cli
-	mov ecx, init_kmap - 0xFE000000	; Get physical address of the kernel address space
+	mov ecx, init_kmap - 0xFE000000	; Physical address
 	mov cr3, ecx	; Load address into CR3
 	mov ecx, cr4
 	mov edx, cr0
@@ -107,7 +107,7 @@ start:
 	add ebx, 0xFE000000
 	push ebx
 
-	; Set IOPL to 3 - it will be reduced to 0 on a process-by-process basis
+	; Set IOPL to 3 - it will be reduced to 0 on a per-process basis
 	pushf
 	pop eax
 	or eax, 0x00003000

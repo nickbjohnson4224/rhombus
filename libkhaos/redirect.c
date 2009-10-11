@@ -17,7 +17,7 @@ void khsignal_register(uint8_t signal, void (*handler) (uint32_t source, uint32_
 }
 
 void khsignal_wait(uint32_t signal) {
-	while (!khsignal_count[signal]);
+	while (!khsignal_count[signal]) tblk_call(1);
 	khsignal_count[signal]--;
 }
 

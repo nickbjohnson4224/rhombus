@@ -1,5 +1,6 @@
 #include <khaos/driver.h>
 #include <khaos/kernel.h>
+#include <khaos/signal.h>
 #include <stdint.h>
 #include <string.h>
 #include <floppy.h>
@@ -10,7 +11,7 @@ struct driver_interface floppy = {
 	NULL,
 	NULL,
 	NULL,
-	floppy_handler,
+	NULL,
 	6,
 	NULL,
 };
@@ -50,7 +51,6 @@ typedef struct {
 	uint8_t motor_start_time;
 } floppy_parameters_t;
 
-static volatile uint8_t got_irq6;
 static volatile uint32_t floppy_size;
 
 static const char * drive_types[8] = {
@@ -76,27 +76,20 @@ static const uint32_t drive_sizes[8] = {
 };
 
 int init_floppy(uint16_t selector) {
-	uint16_t base = 0x3F0;
+	uint16_t base = (selector) ? 0x370 : 0x3F0;
 	uint8_t fdtype;
 	floppy_parameters_t floppy;
 
 	/* Fetch floppy data */
 	pull_call(0, FLOPPY_PARAMETER_TABLE, (uint32_t) &floppy, sizeof(floppy_parameters_t));
 
-	got_irq6 = 0;
-
-	/* Send software reset */
-	outb(base + D_OUTPUT, 0x00);
-	outb(base + D_OUTPUT, 0x0C);
-
-	while (!got_irq6);
-
 	outb(0x70, 0x10);
 	fdtype = inb(0x71);
-	
-	if (fdtype >> 4 != 0) {
+	fdtype = (selector) ? fdtype & 0xF : fdtype >> 4;
+
+	if (fdtype != 0) {
 		update_progress("found floppy drive: ");
-		swrite(drive_types[fdtype >> 4]);
+		swrite(drive_types[fdtype]);
 	}
 	else {
 		update_progress("no floppy drive found!");
@@ -104,11 +97,13 @@ int init_floppy(uint16_t selector) {
 
 	floppy_size = drive_sizes[fdtype >> 4];
 
-	return 0;
-}
+	/* Send software reset */
+	outb(base + D_OUTPUT, 0x00);
+	outb(base + D_OUTPUT, 0x0C);
 
-void floppy_handler(uint32_t source, uint32_t args[4]) {
-	got_irq6 = 1;
+	khsignal_wait(3);
+
+	return 0;
 }
 
 void floppy_write_cmd(uint8_t cmd) {
