@@ -1,6 +1,7 @@
 BUILDDIR=$(PWD)
 
-LIB_DIRS=libkhaos libc
+DRV_DIRS=driver/console driver/floppy
+LIB_DIRS=libkhaos libc $(DRV_DIRS)
 BIN_DIRS=kernel init
 
 CC := /usr/khaos/bin/i586-elf-gcc
@@ -10,7 +11,7 @@ AS := nasm
 
 CFLAGS  := -march=i586 -pipe -Wall -Werror -Wextra -pedantic
 CFLAGS  += -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-unused-parameter
-CFLAGS  += -fomit-frame-pointer -O3
+CFLAGS  += -fomit-frame-pointer
 CFLAGS	+= -I$(BUILDDIR)/inc
 LDFLAGS := -L$(BUILDDIR)/lib
 ARFLAGS := rcs

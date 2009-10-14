@@ -3,8 +3,6 @@ romimage: file=/usr/share/bochs/BIOS-bochs-latest, address=0xe0000
 vgaromimage: file=/usr/share/bochs/VGABIOS-lgpl-latest
 vga: extension=vbe
 floppya: 1_44=/dev/loop4, status=inserted
-#ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14
-#ata0-master: type=disk, path=disk.img, mode=flat, cylinders=
 boot: a
 log: /dev/stdout
 mouse: enabled=0

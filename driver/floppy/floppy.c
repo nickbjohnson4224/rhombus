@@ -3,8 +3,8 @@
 #include <khaos/signal.h>
 #include <stdint.h>
 #include <string.h>
-#include <floppy.h>
-#include <console.h>
+#include <driver/floppy.h>
+#include <driver/console.h>
 
 struct driver_interface floppy = {
 	init_floppy,
@@ -52,6 +52,8 @@ typedef struct {
 } floppy_parameters_t;
 
 static volatile uint32_t floppy_size;
+static volatile uint16_t base;
+static volatile floppy_parameters_t floppy_params;
 
 static const char * drive_types[8] = {
 	"none",
@@ -76,12 +78,12 @@ static const uint32_t drive_sizes[8] = {
 };
 
 int init_floppy(uint16_t selector) {
-	uint16_t base = (selector) ? 0x370 : 0x3F0;
 	uint8_t fdtype;
-	floppy_parameters_t floppy;
+	
+	base = (selector) ? 0x370 : 0x3F0;
 
-	/* Fetch floppy data */
-	pull_call(0, FLOPPY_PARAMETER_TABLE, (uint32_t) &floppy, sizeof(floppy_parameters_t));
+	/* Fetch floppy data from EBDA */
+	pull_call(0, FLOPPY_PARAMETER_TABLE, (uint32_t) &floppy_params, sizeof(floppy_parameters_t));
 
 	outb(0x70, 0x10);
 	fdtype = inb(0x71);

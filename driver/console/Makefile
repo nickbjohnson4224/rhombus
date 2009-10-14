@@ -1,19 +1,19 @@
 SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
 SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
-HEADERS := $(shell find inc -name "*.*")
-SUBDIR	:= libc
-TARGET	:= libc.a
-CFLAGS  += -ffreestanding -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -r -lkernel
+HEADERS := $(shell find inc -name "*.h")
+SUBDIR	:= driver/console
+TARGET	:= libconsole.a
+CFLAGS  += -ffreestanding -I$(BUILDDIR)/driver/$(SUBDIR)/inc
+LDFLAGS += -r
 ASFLAGS := -felf
 
 .PHONY: $(HEADERS) clean
 
-all: $(TARGET)
+all: $(TARGET) $(HEADERS)
 
 $(HEADERS):
-	echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/inc
-	@ cp $@ $(BUILDDIR)/inc
+	echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/inc/driver
+	@ cp $@ $(BUILDDIR)/inc/driver
 
 $(TARGET): $(HEADERS) $(SOURCES)
 	echo " AR	" $(SUBDIR)/$(TARGET)

@@ -12,6 +12,8 @@ void outb(uint16_t port, uint8_t value);
 void outw(uint16_t port, uint16_t value);
 void outd(uint16_t port, uint32_t value);
 
+void iodelay(uint32_t usec);
+
 /***** REMOTE MEMORY ACCESS *****/
 int32_t push_call(uint32_t target, uint32_t dest, uint32_t src, uint32_t size);
 int32_t pull_call(uint32_t target, uint32_t src, uint32_t dest, uint32_t size);

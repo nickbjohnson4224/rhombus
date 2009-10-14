@@ -3,8 +3,8 @@
 #include <khaos/driver.h>
 #include <khaos/exec.h>
 #include <khaos/signal.h>
-#include <console.h>
-#include <floppy.h>
+#include <driver/console.h>
+#include <driver/floppy.h>
 
 void death(uint32_t source, uint32_t args[4]) {
 	sret_call(3);

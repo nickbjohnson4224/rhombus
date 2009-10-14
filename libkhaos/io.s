@@ -45,3 +45,18 @@ outd:
 	mov eax, [esp+8]
 	out dx, eax
 	ret
+
+global iodelay
+
+iodelay:
+	mov ecx, [esp+4]
+
+.loop:
+	mov dx, 0x80
+	mov al, 0x00
+	out dx, al
+	cmp ecx, 0
+	dec ecx
+	jne .loop
+
+	ret
