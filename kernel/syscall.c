@@ -414,6 +414,12 @@ image_t *pull_call(image_t *image) {
 	ret(image, 0);
 }
 
+image_t *phys_call(image_t *image) {
+	uint32_t addr = image->eax;
+
+	ret(image, page_ufmt(page_get(addr)) + (addr & 0xFFF));
+}
+
 image_t *eout_call(image_t *image) {
 	printk("%s\n", image->eax);
 	return image;

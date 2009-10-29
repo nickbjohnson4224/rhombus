@@ -3,7 +3,7 @@ SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
 SUBDIR	:= init
 TARGET	:= init
 CFLAGS  += -ffreestanding -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -lfloppy -lconsole -lkhaos -lc -T$(BUILDDIR)/inc/link.ld
+LDFLAGS += -lata -lconsole -lkhaos -lc -lpci -T$(BUILDDIR)/inc/link.ld
 ASFLAGS := -felf
 
 all: $(TARGET)

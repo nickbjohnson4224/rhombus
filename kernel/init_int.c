@@ -102,7 +102,7 @@ void init_int() {
 		register_int(0x51, irel_call);	/* Deregister IRQ */
 		register_int(0x52, push_call);	/* Copy memory to another address space */
 		register_int(0x53, pull_call);	/* Copy memory from another address space */
-		register_int(0x54, eout_call);	/* Emergency output */
+		register_int(0x54, phys_call);	/* Get physical address */
 
 		/* Register fault handlers */
 		init_fault();

@@ -4,7 +4,7 @@
 #include <khaos/exec.h>
 #include <khaos/signal.h>
 #include <driver/console.h>
-#include <driver/floppy.h>
+#include <driver/ata.h>
 
 void death(uint32_t source, uint32_t args[4]) {
 	sret_call(3);
@@ -16,7 +16,7 @@ void segfault(uint32_t source, uint32_t args[4]) {
 }
 
 void imgfault(uint32_t source, uint32_t args[4]) {
-	swrite("Image Stack Overflow (DoS)");
+	swrite("\nImage Stack Overflow (DoS)\n");
 	exit_call(1);
 }
 
@@ -34,22 +34,23 @@ char buffer2[100];
 int init() {
 
 	khsignal_init();
-
 	khsignal_register(0, segfault);
 	khsignal_register(2, segfault);
 	khsignal_register(3, irq_handler);
 	khsignal_register(5, imgfault);
 
-	rirq(1, (uint32_t) kbhandle);
-	rirq(floppy.interrupt, (uint32_t) floppy.handler);
-
-	if (gpid_call() != 1) for(;;);
-
 	print_bootsplash();
 	update_progress("init system started...");
 
-	update_progress("scanning for floppy drive...");
-	floppy.init(0);
+	update_progress("scanning disks...");
+	if (ata.init(0) == 0) {
+		update_progress("found ata0");
+	}
+	else {
+		update_progress("no disk found on ata0");
+	}
+
+	rirq(ata.interrupt, (uint32_t) ata.handler);
 
 	for(;;);
 	return 0;

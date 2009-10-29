@@ -34,7 +34,7 @@ image_t *ireg_call(image_t *image); /* 0x50 - interrupt register */
 image_t *irel_call(image_t *image); /* 0x51 - interrupt release */
 image_t *push_call(image_t *image);	/* 0x52 - remote push */
 image_t *pull_call(image_t *image); /* 0x53 - remote pull */
-image_t *eout_call(image_t *image); /* 0x54 - emergency output */
+image_t *phys_call(image_t *image); /* 0x54 - get physical address */
 image_t *drop_call(image_t *image); /* 0x55 - drop from drivermode */
 
 /* Return with eax set to a value */

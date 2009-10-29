@@ -1,6 +1,6 @@
 BUILDDIR=$(PWD)
 
-DRV_DIRS=driver/console driver/floppy
+DRV_DIRS=driver/console driver/floppy driver/ata driver/pci
 LIB_DIRS=libkhaos libc $(DRV_DIRS)
 BIN_DIRS=kernel init
 
