@@ -69,6 +69,7 @@ align 4
 section .text
 
 extern init
+extern int_return
 global start
 start:
 	cli
@@ -118,5 +119,5 @@ start:
 
 .loop:
 	sti
-	hlt
-	jmp .loop
+	mov esp, 0xFCFFDFAC
+	jmp int_return

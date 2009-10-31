@@ -76,6 +76,10 @@ INTN	83 ; pull
 INTN	84 ; eout
 
 extern int_handler
+extern printk
+global int_return
+message:
+	db "lies %x", 0x00
 
 int_common:
 	pusha
@@ -86,9 +90,9 @@ int_common:
 	
 	mov cx, 0x10
 	mov ds, cx
-;	mov es, cx
-;	mov fs, cx
-;	mov gs, cx
+	mov es, cx
+	mov fs, cx
+	mov gs, cx
 	mov ss, cx
 
 	mov ebp, esp
@@ -102,6 +106,7 @@ int_common:
 	call int_handler
 	mov esp, eax
 
+int_return:
 	pop eax
 	mov ds, ax
 	mov es, ax
