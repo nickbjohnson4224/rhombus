@@ -12,6 +12,7 @@ $(TARGET): $(SOURCES) inc/*
 	echo " LD	" $(SUBDIR)/$(TARGET)
 	@ $(LD) -o $(TARGET) $(SOURCES) $(LDFLAGS)
 	echo " CP	" $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/bin
+	@ mkdir -p $(BUILDDIR)/bin
 	@ cp $(TARGET) $(BUILDDIR)/bin
 
 .s.o:

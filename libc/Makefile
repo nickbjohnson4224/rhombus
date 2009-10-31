@@ -13,12 +13,14 @@ all: $(TARGET)
 
 $(HEADERS):
 	echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/inc
+	@ mkdir -p $(BUILDDIR)/inc
 	@ cp $@ $(BUILDDIR)/inc
 
 $(TARGET): $(HEADERS) $(SOURCES)
 	echo " AR	" $(SUBDIR)/$(TARGET)
 	@ $(AR) $(ARFLAGS) $(TARGET) $(shell find . -name "*.o")
 	echo " CP	" $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/lib
+	@ mkdir -p $(BUILDDIR)/inc
 	@ cp $(TARGET) $(BUILDDIR)/lib
 
 .s.o:
