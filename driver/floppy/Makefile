@@ -13,12 +13,14 @@ all: $(TARGET) $(HEADERS)
 
 $(HEADERS):
 	echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/inc/driver
+	@ mkdir -p $(BUILDDIR)/inc/driver
 	@ cp $@ $(BUILDDIR)/inc/driver
 
 $(TARGET): $(HEADERS) $(SOURCES)
 	echo " AR	" $(SUBDIR)/$(TARGET)
 	@ $(AR) $(ARFLAGS) $(TARGET) $(shell find . -name "*.o")
 	echo " CP	" $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/lib
+	@ mkdir -p $(BUILDDIR)/lib
 	@ cp $(TARGET) $(BUILDDIR)/lib
 
 .s.o:
