@@ -18,9 +18,9 @@ ARFLAGS := rcs
 
 export BUILDDIR CC LD AR AS CFLAGS LDFLAGS ARFLAGS
 
-.PHONY: $(LIB_DIRS) $(BIN_DIRS)
+.PHONY: $(LIB_DIRS) $(BIN_DIRS) libc_headers
 
-all: $(LIB_DIRS) $(BIN_DIRS)
+all: libc_headers $(LIB_DIRS) $(BIN_DIRS)
 
 $(BIN_DIRS): $(LIB_DIRS)
 	@ echo " MAKE	" $@
@@ -37,3 +37,9 @@ clean:
 
 test:	all
 	sudo run/test.sh
+
+libc_headers:
+	@ echo " CP	" $(shell find libc/inc -name "*.h") 
+	@ echo "	  -> " $(BUILDDIR)/inc
+	@ mkdir -p $(BUILDDIR)/inc
+	@ cp libc/inc/*.h $(BUILDDIR)/inc
