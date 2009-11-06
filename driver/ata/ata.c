@@ -7,7 +7,7 @@
 
 static int init_ata(uint16_t selector);
 /*static int read_ata(uintmax_t seek, size_t size, void *data);
-static int write_ata(uintmax_t seek, size_t size, void *data); */
+static int write_ata(uintmax_t seek, size_t size, void *data);*/
 
 struct driver_interface ata = {
 	init_ata,
@@ -20,7 +20,7 @@ struct driver_interface ata = {
 };
 
 static int init_ata(uint16_t selector) {
-	if (pci_scan_class(0, 0x0, 0x1) != 0xFFFF) {
+	if (pci_scan_class(0, 0x0, 0x0) != 0xFFFF) {
 		return 0;
 	}
 	else {

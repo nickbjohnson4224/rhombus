@@ -3,6 +3,7 @@
 
 void sclear(void);
 void cwrite(char c);
+void nwrite(int n, int b);
 void swrite(const char *s);
 void curse(int y, int x);
 void gets(char *buf);

@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <khaos/kernel.h>
 #include <khaos/driver.h>
+#include <driver/console.h>
 
 static uint16_t video_buf[2000];
 static uint16_t *video_mem = (void*) 0xB8000;
@@ -31,6 +32,23 @@ void cwrite(char c) {
 		case '\b': if (c_base < cursor) cursor--; video_buf[cursor] = 0x00 | (attr << 8); break;
 		default: video_buf[cursor++] = (uint16_t) ((attr << 8) | c); break;
 	}
+}		
+
+void nwrite(int n, int b) {
+	const char d[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	char buffer[10];
+	int i = 0;
+
+	while (n) {
+		buffer[i++] = d[n % b];
+		n /= b;
+	}
+
+	for (; i > 0; i--) {
+		cwrite(buffer[i-1]);
+	}
+
+	swrite("");
 }
 
 void swrite(const char *s) {

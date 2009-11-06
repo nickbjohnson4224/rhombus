@@ -44,11 +44,13 @@ int init() {
 
 	update_progress("scanning disks...");
 	if (ata.init(0) == 0) {
-		update_progress("found ata0");
+		update_progress("found ata");
 	}
 	else {
-		update_progress("no disk found on ata0");
+		update_progress("no disk found on ata");
 	}
+
+	nwrite(0x42, 16);
 
 	rirq(ata.interrupt, (uint32_t) ata.handler);
 

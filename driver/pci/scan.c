@@ -9,9 +9,8 @@ uint16_t pci_scan_class(uint16_t bus, uint8_t class, uint8_t subclass) {
 
 	for (i = 0; i < 0xFFFF; i++) {
 		if (pci_read_word(bus, i, 0, 0x0) == 0xFFFF) break;
-		if (pci_read_byte(bus, i, 0, 0xB) == class) {
-/*			pci_read_byte(bus, i, 0, 0xA) == subclass) { */
-				return i;
+		if (pci_read_word(bus, i, 0, 0xA) == class || (subclass << 8)) {
+			return i;
 		}
 	}
 
