@@ -5,6 +5,7 @@
 #include <khaos/signal.h>
 #include <driver/console.h>
 #include <driver/ata.h>
+#include <stdlib.h>
 
 void death(uint32_t source, uint32_t args[4]) {
 	sret_call(3);
@@ -51,6 +52,13 @@ int init() {
 	}
 
 	nwrite(0, 16);
+
+	init_heap();
+	swrite("\n");
+
+	nwrite((uint32_t) calloc(100, sizeof(int)), 16);
+	swrite("\n");
+	nwrite((uint32_t) calloc(100, sizeof(int)), 16);
 
 	for(;;);
 	return 0;
