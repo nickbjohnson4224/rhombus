@@ -36,4 +36,6 @@ typedef int32_t			intmax_t;
 /* Size type */
 typedef uint32_t size_t;
 
+#define NULL ((void*) 0)
+
 #endif

@@ -75,4 +75,11 @@
 /*	#define VIDEO_VGA */
 /*	#define VIDEO_VESA */
 
+/********** C LIBRARY OPTIONS **********/
+
+	/***** HEAP *****/
+
+	#define EXEC_START 0x00001000
+	#define HEAP_START 0x01000000
+
 #endif

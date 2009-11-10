@@ -39,6 +39,11 @@ void nwrite(int n, int b) {
 	char buffer[10];
 	int i = 0;
 
+	if (!n) {
+		swrite("0");
+		return;
+	}
+
 	while (n) {
 		buffer[i++] = d[n % b];
 		n /= b;

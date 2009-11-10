@@ -50,9 +50,7 @@ int init() {
 		update_progress("no disk found on ata");
 	}
 
-	nwrite(0x42, 16);
-
-	rirq(ata.interrupt, (uint32_t) ata.handler);
+	nwrite(0, 16);
 
 	for(;;);
 	return 0;
