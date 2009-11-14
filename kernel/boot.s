@@ -108,16 +108,7 @@ start:
 	add ebx, 0xFE000000
 	push ebx
 
-	; Set IOPL to 3 - it will be reduced to 0 on a per-process basis
-	pushf
-	pop eax
-	or eax, 0x00003000
-	push eax
-	popf
-
 	call init
 
-.loop:
 	sti
-	mov esp, 0xFCFFDFAC
-	jmp int_return
+	jmp $

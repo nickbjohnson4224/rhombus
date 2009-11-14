@@ -76,10 +76,7 @@ INTN	83 ; pull
 INTN	84 ; eout
 
 extern int_handler
-extern printk
 global int_return
-message:
-	db "lies %x", 0x00
 
 int_common:
 	pusha

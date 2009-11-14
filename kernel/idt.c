@@ -85,10 +85,6 @@ void *int_handler(image_t *image) {
 
 	if (image->cs & 0x3) t->image = image;
 
-	if (image->eax == 0x4224C33C) {
-		printk("lies\n");
-	}
-
 	if (image->num >= 32 && image->num <= 47) {
 		if (image->num >= 40) outb(0xA0, 0x20);
 		outb(0x20, 0x20);
