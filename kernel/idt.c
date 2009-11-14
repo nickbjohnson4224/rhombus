@@ -95,6 +95,11 @@ void *int_handler(image_t *image) {
 		image = int_handlers[image->num](image);
 	}
 
+	if (image->mg != 0x42242442) {
+		printk("%x: ", image);
+		panic("invalid image");
+	}
+
 	tss_set_esp((uintptr_t) image + sizeof(image_t));
 	return image;
 }

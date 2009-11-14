@@ -86,7 +86,8 @@ int_common:
 	mov eax, 0
 	mov ax, ds
 	push eax
-	sub esp, 12
+	push 0x42242442
+	sub esp, 8
 	call fpu_save
 	
 	mov cx, 0x10

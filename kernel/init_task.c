@@ -53,6 +53,7 @@ void init_task() {
 		t->image->eip = elf_load(user_init);
 		t->image->cs = 0x1B;
 		t->image->eflags = get_eflags() | 0x3200; /* Turns on interrupts, IOPL=3 in eflags */
+		t->image->mg = 0x42242442;
 
 	cursek(74, -1);
 	printk("[done]");

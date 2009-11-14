@@ -10,7 +10,7 @@
 /* Handles IRQ 0, and advances a simple counter used as a clock */
 image_t *pit_handler(image_t *image) {
 	static uint32_t tick = 0;
-	if (image->cs & 0x3) tick++;
+	if (image->cs | 1) tick++;
 
 	/* Switch to next scheduled task */
 	return task_switch(task_next(0));
