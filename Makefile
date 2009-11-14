@@ -18,7 +18,7 @@ ARFLAGS := rcs
 
 export BUILDDIR CC LD AR AS CFLAGS LDFLAGS ARFLAGS
 
-.PHONY: $(LIB_DIRS) $(BIN_DIRS) libc_headers
+.PHONY: $(LIB_DIRS) $(BIN_DIRS) libc_headers clean image test cd
 
 all: libc_headers $(LIB_DIRS) $(BIN_DIRS)
 
@@ -35,8 +35,17 @@ clean:
 	@ echo " CLEAN	" $(shell find . -name "*.o")
 	@ rm $(shell find . -name "*.o")
 
-test:	all
-	sudo run/test.sh
+image:	all
+	export BUILDDIR
+	run/image.sh
+
+test:	all image
+	export BUILDDIR
+	run/run.sh
+
+cd:	all image
+	export BUILDDIR
+	run/makecd.sh
 
 libc_headers:
 	@ echo " CP	" $(shell find libc/inc -name "*.h") 

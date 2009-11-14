@@ -23,7 +23,6 @@ void init_heap(void) {
 	memset(bucket, -1, sizeof(uintptr_t*) * 1024);
 	heap_size = HEAP_INIT_SIZE;
 	mmap_call(heap_start, heap_size, MMAP_RW);
-	bucket[heap_get_bucket(heap_size)] = (uintptr_t*) heap_start;
 
 	block = (uintptr_t*) heap_start;
 	block[0] = (uintptr_t) -1;
@@ -61,7 +60,7 @@ void free(void *ptr) {
 	if (heap_pull(block)) return;
 
 	heap_push(block);
-	heap_merge(block);
+	if (0) heap_merge(block);
 }
 
 void *realloc(void *ptr, size_t size) {
@@ -151,6 +150,7 @@ static uintptr_t *heap_split(uintptr_t *block, size_t size) {
 static uintptr_t *heap_merge(uintptr_t *block) {
 	size_t size;
 
+	return block;
 	if (!block) return NULL;
 
 	size = block[1];
