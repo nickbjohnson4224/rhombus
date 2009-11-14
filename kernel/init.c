@@ -24,6 +24,7 @@ init_int,
 init_task,
 init_pit,
 init_free,
+init_fpu,
 NULL
 };
 

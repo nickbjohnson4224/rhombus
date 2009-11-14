@@ -76,6 +76,8 @@ INTN	83 ; pull
 INTN	84 ; eout
 
 extern int_handler
+extern fpu_save
+extern fpu_load
 global int_return
 
 int_common:
@@ -84,6 +86,8 @@ int_common:
 	mov eax, 0
 	mov ax, ds
 	push eax
+	sub esp, 12
+	call fpu_save
 	
 	mov cx, 0x10
 	mov ds, cx
@@ -104,6 +108,8 @@ int_common:
 	mov esp, eax
 
 int_return:
+	call fpu_load
+	add esp, 12
 	pop eax
 	mov ds, ax
 	mov es, ax

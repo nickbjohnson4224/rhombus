@@ -58,5 +58,6 @@ void init_fault(void);
 void init_tss(void);
 void init_idt(void);
 void init_pit(void);
+extern void init_fpu(void);
 
 #endif /*INIT_H*/

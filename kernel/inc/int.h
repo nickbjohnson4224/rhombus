@@ -6,7 +6,8 @@
 /* Image structure - contains the saved state of a task */
 /* Stored in the task image stack (TIS), used during signals and interrupts */
 typedef struct image {
-	uint32_t ds, edi, esi, ebp, esp, ebx, edx, ecx, eax;
+	uint32_t fxdata[128];
+	uint32_t pad[3], ds, edi, esi, ebp, esp, ebx, edx, ecx, eax;
 	uint32_t num, caller, err, eip, cs, eflags, useresp, ss;
 } __attribute__ ((packed)) image_t;
 

@@ -15,11 +15,10 @@ align 4
 tstack:
 	resb 0x100
 
-section .pbss
+section .bss
 
 KSTACKSIZE equ 0x1FF0
 global kstack
-align 0x1000
 kstack:
 	resb 0x2000
 
