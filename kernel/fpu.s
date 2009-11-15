@@ -58,23 +58,19 @@ init_fpu:
 	ret
 
 fpu_save:
-	pop edx
-	sub esp, 512
 	mov eax, [can_use_fpu]
 	cmp eax, 0
 	je .blank
-	fxsave [esp]
+	mov ecx, [esp+4]
+	fxsave [ecx]
 .blank:
-	push edx
 	ret
 
 fpu_load:
-	pop edx
 	mov eax, [can_use_fpu]
 	cmp eax, 0
 	je .blank
-	fxrstor [esp]
+	mov ecx, [esp+4]
+	fxrstor [ecx]
 .blank:
-	add esp, 512
-	push edx
 	ret

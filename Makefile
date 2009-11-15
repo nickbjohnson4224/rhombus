@@ -18,7 +18,7 @@ ARFLAGS := rcs
 
 export BUILDDIR CC LD AR AS CFLAGS LDFLAGS ARFLAGS
 
-.PHONY: $(LIB_DIRS) $(BIN_DIRS) libc_headers clean image test cd
+.PHONY: $(LIB_DIRS) $(BIN_DIRS) clean image test cd
 
 all: libc_headers $(LIB_DIRS) $(BIN_DIRS)
 

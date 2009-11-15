@@ -50,9 +50,18 @@ uint32_t task_rem(task_t *t) {
 }
 
 image_t *task_switch(task_t *t) {
-	curr_pid = t->pid;
+	extern void fpu_save(uint32_t *fxdata);
+	extern void fpu_load(uint32_t *fxdata);
+	task_t *t2;
 
+	if (t->pid == curr_pid) return t->image;
+	t2 = task_get(curr_pid);
+	fpu_save(t2->image->fxdata);
+
+	curr_pid = t->pid;
 	map_load(t->map);
+	fpu_load(t->image->fxdata);
+
 	return t->image;
 }
 

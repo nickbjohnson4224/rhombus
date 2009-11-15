@@ -87,9 +87,8 @@ int_common:
 	mov ax, ds
 	push eax
 	push 0x42242442
-	sub esp, 8
-	call fpu_save
-	
+	sub esp, 520
+
 	mov cx, 0x10
 	mov ds, cx
 	mov es, cx
@@ -109,8 +108,7 @@ int_common:
 	mov esp, eax
 
 int_return:
-	call fpu_load
-	add esp, 12
+	add esp, 524
 	pop eax
 	mov ds, ax
 	mov es, ax

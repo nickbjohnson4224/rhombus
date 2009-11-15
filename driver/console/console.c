@@ -23,7 +23,7 @@ static void scroll(void) {
 }
 
 void cwrite(char c) {
-	if (cursor >= 1999) scroll();
+	if (cursor >= 2000) scroll();
 	switch (c) {
 		case '\0': break;
 		case '\t': cursor = (cursor + 4) - (cursor % 4); break;
@@ -96,18 +96,18 @@ void print_bootsplash() {
 \t\t\t\t\t\t\t           .,a'\n\n\
 \t\t\t\t\t _  _   _   _   _____   _____   _____ \n\
 \t\t\t\t\t| |/ / | |_| | |___  | |  _  | |  ___|\n\
-\t\t\t\t\t|  <   |  _  | |  _  | | |_| | |___  |\n\
+\t\t\t\t\t|   <  |  _  | |  _  | | |_| | |___  |\n\
 \t\t\t\t\t|_|\\_\\ |_| |_| |_____| |_____| |_____|\n\
-\t\t\t\t\t         -= Version 0.1a =-\n\n\
-\t\t\t\t\t[                                    ]\n");
+\t\t\t\t\t          -= Version 0.1a =-\n\n\
+\t\t\t\t\t   [                              ]\n");
 }
 
 void update_progress(const char *message) {
-	static int xpos = 21;
+	static int xpos = 24;
 	curse(17, xpos);
 	swrite("*");
-	if (xpos < 56) xpos ++;
-	curse(18, 21);
+	if (xpos < 50) xpos ++;
+	curse(18, 24);
 	swrite(message);
 	swrite("                \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 }

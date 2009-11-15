@@ -34,6 +34,7 @@ void rirq(int irq, uint32_t handler) {
 char buffer2[100];
 int init() {
 	void *m;
+	double d;
 
 	khsignal_init();
 	khsignal_register(0, segfault);
@@ -63,6 +64,17 @@ int init() {
 	free(m);
 	swrite("\n");
 	nwrite((uint32_t) calloc(16, sizeof(int)), 16);
+
+	swrite("\n");
+	d = 42.0 / 5.0;
+	d *= 5.0;
+	nwrite((int) d, 10);
+
+	curse(24, 79);
+	swrite("@");
+
+	curse(0,0);
+	swrite("@");
 
 	for(;;);
 	return 0;
