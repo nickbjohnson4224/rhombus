@@ -6,7 +6,7 @@
 
 image_t *signal(pid_t targ, uint8_t sig, uint32_t args[4], uint8_t flags) {
 	task_t *dst_t = task_get(targ);
-	task_t *src_t = task_get(curr_pid);
+	task_t *src_t = curr_task;
 	void *next_image;
 
 	/* Check target (for existence) */
@@ -67,7 +67,7 @@ image_t *signal(pid_t targ, uint8_t sig, uint32_t args[4], uint8_t flags) {
 }
 
 image_t *sret(image_t *image) {
-	task_t *dst_t = task_get(curr_pid);
+	task_t *dst_t = curr_task;
 	task_t *src_t = task_get(image->esi);
 
 	/* Unblock the caller */

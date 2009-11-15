@@ -181,13 +181,10 @@ image_t *gpid_call(image_t *image) {
  * Returns nothing
  */
 image_t *tblk_call(image_t *image) {
-	task_t *t;
-
-	t = task_get(curr_pid);
 
 	/* Set or clear blocked flag */
-	if (image->eax) t->flags |= TF_BLOCK;
-	else t->flags &= ~TF_BLOCK;
+	if (image->eax) curr_task->flags |= TF_BLOCK;
+	else curr_task->flags &= ~TF_BLOCK;
 
 	return image;
 }
@@ -291,13 +288,10 @@ image_t *sret_call(image_t *image) {
  * Returns nothing
  */
 image_t *sblk_call(image_t *image) {
-	task_t *t;
-
-	t = task_get(curr_pid);
 
 	/* Set or clear signal blocked bit */
-	if (image->eax) t->flags |= TF_SBLOK;
-	else t->flags &= ~TF_SBLOK;
+	if (image->eax) curr_task->flags |= TF_SBLOK;
+	else curr_task->flags &= ~TF_SBLOK;
 
 	return image;
 }
@@ -313,9 +307,8 @@ image_t *sblk_call(image_t *image) {
  */
 image_t *sreg_call(image_t *image) {
 	uint32_t old_handler;
-	task_t *t = task_get(curr_pid);
-	old_handler = t->shandler;
-	t->shandler = image->eax;
+	old_handler = curr_task->shandler;
+	curr_task->shandler = image->eax;
 	ret(image, old_handler);
 }
 
