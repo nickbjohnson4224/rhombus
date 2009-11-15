@@ -63,7 +63,7 @@ int init() {
 	nwrite((uint32_t) calloc(256, sizeof(int)), 16);
 	free(m);
 	swrite("\n");
-	nwrite((uint32_t) calloc(16, sizeof(int)), 16);
+	nwrite((uint32_t) calloc(256, sizeof(int)), 16);
 
 	swrite("\n");
 	d = 42.0 / 5.0;

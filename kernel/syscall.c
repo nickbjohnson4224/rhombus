@@ -57,7 +57,7 @@ image_t *fault_page(image_t *image) {
 		panic("page fault exception");
 	}
 
-	/* If in userspace, redirect to signal S_GEN, with faulting address */
+	/* If in userspace, redirect to signal S_PAG, with faulting address */
 	args[0] = image->eip;
 	args[1] = image->err;
 	args[3] = cr2;
@@ -301,9 +301,6 @@ image_t *sblk_call(image_t *image) {
  * Arguments:
  *  eax: handler address
  * Returns old handler if any
- *
- * 
- *
  */
 image_t *sreg_call(image_t *image) {
 	uint32_t old_handler;
@@ -313,6 +310,16 @@ image_t *sreg_call(image_t *image) {
 }
 
 /***** PRIVILEGED CALLS *****/
+
+/* IREG - register IRQ for redirection
+ *
+ * Arguments:
+ *  eax: IRQ number
+ * Returns nothing
+ *
+ * After this call, when the specified IRQ fires,
+ * a signal of type S_IRQ will be sent to the calling process
+ */
 image_t *ireg_call(image_t *image) {
 
 	/* Set IRQ holder to this task */
@@ -322,6 +329,12 @@ image_t *ireg_call(image_t *image) {
 	return image;
 }
 
+/* IREL - release IRQ from redirection
+ *
+ * Arguments:
+ *  eax: IRQ number
+ * Returns nothing
+ */
 image_t *irel_call(image_t *image) {
 
 	/* Set IRQ holder to the kernel, and deactivate */
@@ -331,6 +344,15 @@ image_t *irel_call(image_t *image) {
 	return image;
 }
 
+/* Push - move data to another address space
+ * 
+ * Arguments:
+ *  eax: target task (0 for physical memory)
+ *  ecx: size of data in bytes (cannot exceed 16KB)
+ *  esi: source address of data
+ *  edi: destination address of data
+ * Returns 0 on success
+ */
 image_t *push_call(image_t *image) {
 	uint32_t src = image->esi;
 	uint32_t dst = image->edi;
@@ -350,16 +372,20 @@ image_t *push_call(image_t *image) {
 		map_temp(t->map);
 	}
 
-	/* Map pages */
+	/* Map pages - XXX really ugly, fix or at least comment */
 	for (i = 0; i < size + 0x1000; i += 0x1000) {
 		if (targ) {
 			if ((temp_get(dst + i) & PF_PRES) == 0) ret(image, ERROR);
-			page_set((uint32_t) tdst + i, page_fmt(temp_get(dst + i), (PF_RW | PF_PRES)));
+			page_set((uint32_t) tdst + i,
+				page_fmt(temp_get(dst + i), (PF_RW | PF_PRES)));
 		}
-		else page_set((uint32_t) tdst + i, page_fmt((dst + i) &~ 0xFFF, (PF_RW | PF_PRES)));
+		else page_set((uint32_t) tdst + i,
+			page_fmt((dst + i) &~ 0xFFF, (PF_RW | PF_PRES)));
+
 
 		if ((page_get(src + i) & PF_PRES) == 0) ret(image, EPERMIT);
-		page_set((uint32_t) tsrc + i, page_fmt(ctbl[(src + i) >> 12], (PF_RW | PF_PRES)));
+		page_set((uint32_t) tsrc + i,
+			page_fmt(ctbl[(src + i) >> 12], (PF_RW | PF_PRES)));
 	}
 
 	/* Copy memory */
@@ -369,6 +395,15 @@ image_t *push_call(image_t *image) {
 	ret(image, 0);
 }
 
+/* Pull - move data from another address space
+ *
+ * Arguments:
+ *  eax: target task (0 for physical memory)
+ *  ecx: size of data in bytes (cannot exceed 16KB)
+ *  esi: source address of data
+ *  edi: destination address of data
+ * Returns 0 on success
+ */
 image_t *pull_call(image_t *image) {
 	uint32_t src = image->esi;
 	uint32_t dst = image->edi;
@@ -388,16 +423,19 @@ image_t *pull_call(image_t *image) {
 		map_temp(t->map);
 	}
 
-	/* Map pages */
+	/* Map pages - XXX really ugly, fix or at least comment */
 	for (i = 0; i < size + 0x1000; i += 0x1000) {
 		if (targ) {
 			if ((temp_get(src + i) & PF_PRES) == 0) ret(image, ERROR);
-			page_set((uint32_t) tsrc + i, page_fmt(temp_get(src + i), (PF_RW | PF_PRES | PF_DISC)));
+			page_set((uint32_t) tsrc + i,
+				page_fmt(temp_get(src + i), (PF_RW | PF_PRES | PF_DISC)));
 		}
-		else page_set((uint32_t) tsrc + i, page_fmt((src + i) &~ 0xFFF, (PF_RW | PF_PRES|PF_DISC)));
+		else page_set((uint32_t) tsrc + i,
+			page_fmt((src + i) &~ 0xFFF, (PF_RW | PF_PRES|PF_DISC)));
 
 		if ((page_get(dst + i) & PF_PRES) == 0) ret(image, ERROR);
-		page_set((uint32_t) tdst + i, page_fmt(page_get(dst + i), (PF_RW | PF_PRES | PF_DISC)));
+		page_set((uint32_t) tdst + i,
+			page_fmt(page_get(dst + i), (PF_RW | PF_PRES | PF_DISC)));
 	}
 
 	/* Copy memory */
@@ -407,12 +445,24 @@ image_t *pull_call(image_t *image) {
 	ret(image, 0);
 }
 
+/* Phys - get physical address of virtual position 
+ *
+ * Arguments:
+ *  eax: virtual address
+ * Returns physical address
+ */
 image_t *phys_call(image_t *image) {
 	uint32_t addr = image->eax;
 
 	ret(image, page_ufmt(page_get(addr)) + (addr & 0xFFF));
 }
 
+/* EOut - emergency output (deprecated)
+ *
+ * Arguments
+ *  eax: address of null-terminated string
+ * Returns nothing
+ */
 image_t *eout_call(image_t *image) {
 	printk("%s\n", image->eax);
 	return image;

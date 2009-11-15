@@ -54,13 +54,12 @@ void *malloc(size_t size) {
 }
 
 void free(void *ptr) {
-	uintptr_t *block = ptr;
+	uintptr_t *block = (void*) ((uintptr_t) ptr - 8);
 
-	if (!block) return;
-	if (heap_pull(block)) return;
+	if (!ptr) return;
 
 	heap_push(block);
-	if (0) heap_merge(block);
+	heap_merge(block);
 }
 
 void *realloc(void *ptr, size_t size) {

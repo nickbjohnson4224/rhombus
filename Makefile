@@ -18,7 +18,7 @@ ARFLAGS := rcs
 
 export BUILDDIR CC LD AR AS CFLAGS LDFLAGS ARFLAGS
 
-.PHONY: $(LIB_DIRS) $(BIN_DIRS) clean image test cd
+.PHONY: $(LIB_DIRS) $(BIN_DIRS) clean test cd
 
 all: libc_headers $(LIB_DIRS) $(BIN_DIRS)
 
@@ -34,10 +34,12 @@ $(LIB_DIRS):
 clean:
 	@ echo " CLEAN	" $(shell find . -name "*.o")
 	@ rm $(shell find . -name "*.o")
+	@ echo " CLEAN	" $(shell find . -name "*.a")
+	@ rm $(shell find . -name "*.a")
 
-image:	all
+image:	all run/floppy.img
 	export BUILDDIR
-	run/image.sh
+	sudo run/image.sh
 
 test:	all image
 	export BUILDDIR
