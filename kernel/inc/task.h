@@ -66,6 +66,7 @@ image_t *task_switch(task_t *t);
 extern pool_t *tpool;		/* Pool allocator for task structures */
 extern task_t *task; 		/* Array of task structures */
 extern pid_t curr_pid;		/* Currently loaded task ID */
+extern task_t *curr_task;	/* Currently loaded task pointer */
 
 /***** IRQ REDIRECTION *****/
 

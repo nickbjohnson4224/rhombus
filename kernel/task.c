@@ -8,6 +8,7 @@
 pool_t *tpool;						/* Pool allocator for task structures */
 task_t *task = (void*) TASK_TBL; 	/* Array of task structures (max 65536) */
 pid_t curr_pid = 0;
+task_t *curr_task = &task[0];
 
 task_t *task_get(pid_t pid) {
 	if (pid >= MAX_TASKS) return NULL;
@@ -52,13 +53,12 @@ uint32_t task_rem(task_t *t) {
 image_t *task_switch(task_t *t) {
 	extern void fpu_save(uint32_t *fxdata);
 	extern void fpu_load(uint32_t *fxdata);
-	task_t *t2;
 
 	if (t->pid == curr_pid) return t->image;
-	t2 = task_get(curr_pid);
-	fpu_save(t2->image->fxdata);
+	fpu_save(curr_task->image->fxdata);
 
 	curr_pid = t->pid;
+	curr_task = t;
 	map_load(t->map);
 	fpu_load(t->image->fxdata);
 
