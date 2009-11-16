@@ -33,6 +33,7 @@ void rirq(int irq, uint32_t handler) {
 char buffer2[100];
 int main() {
 
+	khsignal_init();
 	khsignal_register(0, segfault);
 	khsignal_register(2, segfault);
 	khsignal_register(3, irq_handler);
