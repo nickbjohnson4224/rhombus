@@ -17,7 +17,7 @@ $(HEADERS):
 	@ cp $@ $(BUILDDIR)/inc
 
 $(TARGET): $(HEADERS) $(SOURCES)
-	echo " AR	" $(SUBDIR)/$(TARGET)
+	echo " AR	" $(shell find . -name "*.o") $(SUBDIR)/$(TARGET)
 	@ $(AR) $(ARFLAGS) $(TARGET) $(shell find . -name "*.o")
 	echo " CP	" $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/lib
 	@ mkdir -p $(BUILDDIR)/inc

@@ -10,24 +10,26 @@
 
 	/* Scheduling algorithm */
 	#define SCHED_ROUND_ROBIN 0
-	#define SCHED_VAR_QUANTUM 1
+	#define SCHED_VAR_QUANTUM 1 /* Incomplete */
 	#define SCHED_ALG SCHED_ROUND_ROBIN
 
 	/***** MEMORY SUBSYSTEM *****/
 
 	/* These must remain in order */
 	#define ESPACE	0xFC000000	/* Temporary space for exec data */
-	#define SSPACE	0xFCF00000	/* Stack space */
-	#define LSPACE	0xFD000000	/* Space for libsys */
+	#define SSPACE	0xFCF00000	/* Stack space (grows down from next address) */
+	#define LSPACE	0xFD000000	/* Space for exec bootstrap */
 	#define KSPACE 	0xFE000000	/* Kernel space */
-	#define KMALLOC 0xFE200000	/* Kernel allocator */
+	#define KMALLOC 0xFE200000	/* Kernel init allocator */
 
+	/* Two areas of 16 pages for temporary mappings */
 	#define TMP_DST 0xFF000000
 	#define TMP_SRC 0xFF010000
 
 	#define TMP_MAP	0xFF800000
 	#define PGE_MAP	0xFFC00000
 
+	/* Address of task table */
 	#define TASK_TBL (KSPACE + 0x400000)
 
 	/* Task image stack */
@@ -40,21 +42,8 @@
 	#define USTACK_INI	(LSPACE - 0x8010)
 	#define USTACK_TOP	(LSPACE - 0x8000)
 
-	/* libexec bootstrap location */
-	#define EXEC_STRAP	(SSPACE - 0x10000)
-	
-	/***** INTERRUPT SUBSYSTEM *****/
-
-
-/********** INIT OPTIONS **********/
-
-	/***** INITRD *****/
-
-	/* Initrd base address */
-	#define INITRD_BASE 0x10000000
-
-	/* Initrd format */
-	#define INITRD_V7TAR
+	/* Exec bootstrap location */
+	#define EXEC_STRAP	(SSPACE - 0x100000)
 
 /********** DRIVER OPTIONS **********/
 
@@ -63,7 +52,7 @@
 	/* Bus scanning */
 	#define SCAN_PCI
 /*	#define SCAN_ISA */
-	#define SCAN_EISA
+/*	#define SCAN_EISA */
 /*	#define SCAN_AGP */
 /*	#define SCAN_PCIE */
 	#define SCAN_ATA

@@ -9,9 +9,9 @@ ASFLAGS := -felf
 all: $(TARGET)
 
 $(TARGET): $(SOURCES)
-	echo " LD	" $(SUBDIR)/$(TARGET)
+	@ echo " LD	" $(SUBDIR)/$(TARGET)
 	@ $(LD) -o $(TARGET) $(SOURCES) $(LDFLAGS)
-	echo " CP	" $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/bin
+	@ echo " CP	" $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/bin
 	@ mkdir -p $(BUILDDIR)/bin
 	@ cp $(TARGET) $(BUILDDIR)/bin
 

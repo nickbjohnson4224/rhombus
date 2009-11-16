@@ -8,6 +8,7 @@
 __attribute__ ((section(".ttext"))) 
 void init_fault() {
 
+	/* Register all fault handlers */
 	register_int(0,  fault_float);
 	register_int(1,  fault_generic);
 	register_int(2,  fault_generic);
@@ -38,7 +39,7 @@ void init_pit() {
 		/* Register IRQ handler (PIT == IRQ 0) */
 		register_int(IRQ(0), pit_handler);
 
-		/* Set the PIT frequency to 256Hz */
+		/* Set the PIT frequency to 256Hz - a nice round number */
 		divisor = 1193180 / 256;
 		outb(0x43, 0x36);
 		outb(0x40, (uint8_t) (divisor & 0xFF));
@@ -48,6 +49,7 @@ void init_pit() {
 	printk("[done]");
 }
 
+/* IRQ redirection table */
 uint16_t irq_holder[15];
 
 __attribute__ ((section(".ttext"))) 

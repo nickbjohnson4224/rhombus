@@ -1,7 +1,11 @@
+/* Copyright 2009 Nick Johnson */
+
 #include <khaos/config.h>
 #include <stdint.h>
 #include <lib.h>
 #include <mem.h>
+
+/* Simple stack-based virtual memory allocator for the init system */
 
 __attribute__ ((section(".idata"))) 
 uint32_t allocator_space = KMALLOC;

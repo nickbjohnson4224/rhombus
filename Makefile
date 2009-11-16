@@ -1,7 +1,7 @@
 BUILDDIR=$(PWD)
 
 DRV_DIRS=driver/console driver/floppy driver/ata driver/pci
-LIB_DIRS=libkhaos libc $(DRV_DIRS)
+LIB_DIRS=libc libkhaos $(DRV_DIRS)
 BIN_DIRS=kernel init
 
 CC := /usr/khaos/bin/i586-elf-gcc
@@ -20,7 +20,7 @@ export BUILDDIR CC LD AR AS CFLAGS LDFLAGS ARFLAGS
 
 .PHONY: $(LIB_DIRS) $(BIN_DIRS) clean test cd
 
-all: libc_headers $(LIB_DIRS) $(BIN_DIRS)
+all: $(LIB_DIRS) $(BIN_DIRS)
 
 $(BIN_DIRS): $(LIB_DIRS)
 	@ echo " MAKE	" $@
@@ -50,9 +50,3 @@ test:	all image
 cd:	all image
 	export BUILDDIR
 	run/makecd.sh
-
-libc_headers:
-	@ echo " CP	" $(shell find libc/inc -name "*.h") 
-	@ echo "	  -> " $(BUILDDIR)/inc
-	@ mkdir -p $(BUILDDIR)/inc
-	@ cp libc/inc/*.h $(BUILDDIR)/inc

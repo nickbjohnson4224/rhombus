@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <khaos/kernel.h>
 #include <khaos/driver.h>
-#include <khaos/exec.h>
 #include <khaos/signal.h>
 #include <driver/console.h>
 #include <driver/ata.h>
@@ -32,11 +31,8 @@ void rirq(int irq, uint32_t handler) {
 }
 
 char buffer2[100];
-int init() {
-	void *m;
-	double d;
+int main() {
 
-	khsignal_init();
 	khsignal_register(0, segfault);
 	khsignal_register(2, segfault);
 	khsignal_register(3, irq_handler);
@@ -52,31 +48,6 @@ int init() {
 	else {
 		update_progress("no disk found on ata");
 	}
-
-	init_heap();
-	swrite("\n");
-
-	nwrite((uint32_t) (m = calloc(254, sizeof(int))), 16);
-	swrite("\n");
-	nwrite((uint32_t) calloc(254, sizeof(int)), 16);
-	free(m);
-	swrite("\n");
-	nwrite((uint32_t) calloc(126, sizeof(int)), 16);
-	swrite("\n");
-	nwrite((uint32_t) calloc(62, sizeof(int)), 16);
-	swrite("\n");
-	nwrite((uint32_t) calloc(62, sizeof(int)), 16);
-
-	swrite("\n");
-	d = 42.0 / 5.0;
-	d *= 5.0;
-	nwrite((int) d, 10);
-
-	curse(24, 79);
-	swrite("@");
-
-	curse(0,0);
-	swrite("@");
 
 	for(;;);
 	return 0;
