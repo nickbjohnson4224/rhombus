@@ -53,17 +53,19 @@ int init() {
 		update_progress("no disk found on ata");
 	}
 
-	nwrite(0, 16);
-
 	init_heap();
 	swrite("\n");
 
-	nwrite((uint32_t) (m = calloc(256, sizeof(int))), 16);
+	nwrite((uint32_t) (m = calloc(254, sizeof(int))), 16);
 	swrite("\n");
-	nwrite((uint32_t) calloc(256, sizeof(int)), 16);
+	nwrite((uint32_t) calloc(254, sizeof(int)), 16);
 	free(m);
 	swrite("\n");
-	nwrite((uint32_t) calloc(256, sizeof(int)), 16);
+	nwrite((uint32_t) calloc(126, sizeof(int)), 16);
+	swrite("\n");
+	nwrite((uint32_t) calloc(62, sizeof(int)), 16);
+	swrite("\n");
+	nwrite((uint32_t) calloc(62, sizeof(int)), 16);
 
 	swrite("\n");
 	d = 42.0 / 5.0;

@@ -3,20 +3,23 @@
 #include <lib.h>
 #include <mem.h>
 
-ptbl_t *cmap = (void*) (PGE_MAP + 0x3FF000);
-page_t *ctbl = (void*) PGE_MAP;
-ptbl_t *tmap = (void*) (TMP_MAP + 0x3FF000);
-page_t *ttbl = (void*) TMP_MAP;
-uint32_t *tsrc = (void*) TMP_SRC;
-uint32_t *tdst = (void*) TMP_DST;
+ptbl_t *cmap = (void*) (PGE_MAP + 0x3FF000);	/* Current page directory mapping */
+page_t *ctbl = (void*) PGE_MAP;					/* Current base page table mapping */
+ptbl_t *tmap = (void*) (TMP_MAP + 0x3FF000);	/* Temporary page directory mapping */
+page_t *ttbl = (void*) TMP_MAP;					/* Temporary base page table mapping */
+uint32_t *tsrc = (void*) TMP_SRC;				/* Some pages of open virtual memory */
+uint32_t *tdst = (void*) TMP_DST;				/* Some other pages of open virtual memory */
 
+/* Does a full TLB flush - assembly function */
 extern void page_flush_full(void);
 
+/* Map a page directory at the temporary position */
 void map_temp(map_t map) {
 	cmap[TMP_MAP >> 22] = page_fmt(map, (PF_PRES | PF_RW));
 	page_flush_full();
 }
 
+/* Allocate a new page directory */
 map_t map_alloc() {
 	map_t map = frame_new();
 
@@ -29,11 +32,13 @@ map_t map_alloc() {
 	return map;
 }
 
+/* Free a page directory (does *not* free tables - use map_clean()) */
 map_t map_free(map_t map) {
 	frame_free(map);
 	return map;
 }
 
+/* Removes page table containing page if table is empty */
 void map_gc(uint32_t page) {
 	uint32_t i, empty;
 
@@ -52,6 +57,7 @@ void map_gc(uint32_t page) {
 	}
 }	
 
+/* Removes all page tables from page directory and frees them */
 map_t map_clean(map_t map) {
 	uint32_t i, j;
 
@@ -68,6 +74,7 @@ map_t map_clean(map_t map) {
 	return map;
 }
 
+/* Copies an entire address space, linking the kernel */
 map_t map_clone() {
 	uint32_t i, j;
 	map_t dest;

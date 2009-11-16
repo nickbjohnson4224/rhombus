@@ -8,6 +8,7 @@
 
 void idt_set(uint8_t n, uint32_t base, uint16_t seg, uint8_t flags);
 
+/* Interrupt Descriptor Table */
 struct idt_entry {
 	uint16_t base_l;
 	uint16_t seg;
@@ -16,8 +17,10 @@ struct idt_entry {
 	uint16_t base_h;
 } __attribute__((packed)) idt[96];
 
+/* Redirection table for handling interrupts */
 handler_t int_handlers[96];
 
+/* Assembly interrupt handler stubs to be registered in the IDT */
 extern void 
  int0(void),  int1(void),  int2(void),  int3(void),  int4(void),  int5(void),  int6(void),  
  int7(void),  int8(void),  int9(void), int10(void), int11(void), int12(void), int13(void), 
@@ -28,6 +31,7 @@ int64(void), int65(void), int66(void), int67(void), int68(void), int69(void), in
 int71(void), int72(void), int73(void), int80(void), int81(void), int82(void), int83(void), 
 int84(void);
 
+/* Handlers to be put into the IDT, in order */
 typedef void (*int_handler_t) (void);
 __attribute__ ((section(".idata")))
 int_handler_t idt_raw[] = {
@@ -54,6 +58,7 @@ NULL, 	NULL, 	NULL,	NULL,	NULL,	NULL,	NULL,	NULL
 
 };
 
+/* Create the IDT from idt_raw[] */
 __attribute__ ((section(".itext")))
 void init_idt() {
 	extern void idt_flush(void);
@@ -61,14 +66,21 @@ void init_idt() {
 
 	memclr(int_handlers, sizeof(handler_t) * 96);
 	memclr(idt, sizeof(struct idt_entry) * 96);
+
+	/* Write privileged interrupt handlers (faults, IRQs) */
 	for (i = 0; i < 48; i++) if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0x8E);
+	
+	/* Write usermode interrupt handlers (syscalls) */
 	for (i = 64;i < 96; i++) if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0xEE);
+
+	/* Write the IDT */
 	idt_flush();
 }
 
+/* Set an IDT entry to a value */
 __attribute__ ((section(".itext")))
 void idt_set(uint8_t n, uint32_t base, uint16_t seg, uint8_t flags) {
-	if (!base) return;
+	if (!base) return; /* Ignore null handlers */
 	idt[n].base_l = (uint16_t) (base & 0xFFFF);
 	idt[n].base_h = (uint16_t) (base >> 16);
 	idt[n].seg = seg;
@@ -76,34 +88,43 @@ void idt_set(uint8_t n, uint32_t base, uint16_t seg, uint8_t flags) {
 	idt[n].flags = flags;
 }
 
+/* Register an interrupt handler in C to be redirected to on an interrupt */
 void register_int(uint8_t n, handler_t handler) {
 	int_handlers[n] = handler;
 }
 
+/* C interrupt handler - called by assembly state-saving routine */
 void *int_handler(image_t *image) {
-	task_t *t = task_get(curr_pid);
+	task_t *t = curr_task;
 
+	/* If userspace was interrupted, make sure its state is saved */
 	if (image->cs & 0x3) t->image = image;
 
+	/* Reset PIC if it was an IRQ */
 	if (image->num >= 32 && image->num <= 47) {
 		if (image->num >= 40) outb(0xA0, 0x20);
 		outb(0x20, 0x20);
 	}
 
+	/* Call registered C interrupt handler from int_handlers[] table */
 	if (int_handlers[image->num]) {
 		if (image->num >= 0x50 && (t->flags & TF_SUPER) == 0) ret(image, EPERMIT);
 		image = int_handlers[image->num](image);
 	}
 
+	/* Check image checksum */
 	if (image->mg != 0x42242442) {
 		printk("%x: ", image);
 		panic("invalid image");
 	}
 
+	/* Set TSS to generate images in the proper position */
 	tss_set_esp((uintptr_t) image + sizeof(image_t));
+
 	return image;
 }
 
+/* Task State Segment */
 struct tss {
 	uint32_t prev_tss;
 	uint32_t esp0;
@@ -114,8 +135,10 @@ struct tss {
 	uint16_t trap, iomap_base;
 } __attribute__ ((packed)) tss;
 
+/* Global Descriptor Table - defined in boot.s */
 extern uint8_t gdt[48];
 
+/* Initialize the TSS */
 __attribute__ ((section(".ttext")))
 void init_tss() {
 	extern void tss_flush(void);
@@ -126,6 +149,7 @@ void init_tss() {
 	tss.cs = 0x0B;
 	tss.ss0 = tss.es = tss.ds = tss.fs = tss.gs = 0x10;
 
+	/* Change the 6th GDT entry to be the TSS */
 	gdt[40] = (uint8_t) ((limit) & 0xFF);
 	gdt[41] = (uint8_t) ((limit >> 8) & 0xFF);
 	gdt[42] = (uint8_t) (base & 0xFF);
@@ -136,6 +160,7 @@ void init_tss() {
 	tss_flush();
 }
 
+/* Set the ESP0 value of the TSS - used to define the top of the TIS */
 void tss_set_esp(uint32_t esp) {
 	tss.esp0 = esp;
 }

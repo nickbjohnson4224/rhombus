@@ -36,6 +36,8 @@ clean:
 	@ rm $(shell find . -name "*.o")
 	@ echo " CLEAN	" $(shell find . -name "*.a")
 	@ rm $(shell find . -name "*.a")
+	@ echo " CLEAN	" bin/*
+	@ rm bin/*
 
 image:	all run/floppy.img
 	export BUILDDIR

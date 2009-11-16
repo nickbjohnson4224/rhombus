@@ -4,8 +4,10 @@
 #include <task.h>
 #include <int.h>
 
+/* Scheduling queue */
 struct sched_queue queue;
 
+/* Insert a task into the scheduling queue */
 void sched_ins(pid_t pid) {
 	task_t *t, *tn;
 
@@ -22,6 +24,7 @@ void sched_ins(pid_t pid) {
 	}
 }
 
+/* Remove a task from the scheduling queue */
 void sched_rem(pid_t pid) {
 	task_t *t, *t2;
 
@@ -38,6 +41,8 @@ void sched_rem(pid_t pid) {
 	}
 }
 
+/* Get the next task from the scheduling queue, 
+ * skipping blocked tasks and moving the schedulable task to the end */
 task_t *task_next(uint8_t flags) {
 	pid_t pid;
 	task_t *t;

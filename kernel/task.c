@@ -25,6 +25,7 @@ void task_touch(pid_t pid) {
 	task[pid].magic = 0x4224;
 }
 
+/* Copy a task */
 task_t *task_new(task_t *src) {
 	pid_t new_pid;
 	task_t *new;
@@ -44,12 +45,14 @@ task_t *task_new(task_t *src) {
 	return new;
 }
 
+/* Delete a task, except for its address space */
 uint32_t task_rem(task_t *t) {
 	t->magic = 0x0000;
 	sched_rem(t->pid);
 	return pool_free(tpool, t->pid);
 }
 
+/* Switch to another task */
 image_t *task_switch(task_t *t) {
 	extern void fpu_save(uint32_t *fxdata);
 	extern void fpu_load(uint32_t *fxdata);
@@ -63,4 +66,3 @@ image_t *task_switch(task_t *t) {
 
 	return t->image;
 }
-

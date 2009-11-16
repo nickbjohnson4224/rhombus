@@ -3,8 +3,10 @@
 #include <lib.h>
 #include <mem.h>
 
+/* Page frame allocation pool */
 pool_t *fpool;
 
+/* Map a range of pages with given flags */
 void mem_alloc(uintptr_t base, uintptr_t size, uint16_t flags) {
 	uint32_t i;
 
@@ -14,6 +16,7 @@ void mem_alloc(uintptr_t base, uintptr_t size, uint16_t flags) {
 
 }
 
+/* Unmap a range of pages */
 void mem_free(uintptr_t base, uintptr_t size) {
 	uint32_t i;
 
@@ -22,6 +25,7 @@ void mem_free(uintptr_t base, uintptr_t size) {
 			p_free(i);
 }	
 
+/* Make sure table exists for a page */
 void page_touch(uint32_t page) {
 	page &= ~0x3FFFFF;
 	if (cmap[page >> 22] & PF_PRES) return;
@@ -30,6 +34,7 @@ void page_touch(uint32_t page) {
 	pgclr(&ctbl[page >> 12]);
 }
 
+/* Set the value of a page table entry */
 void page_set(uint32_t page, page_t value) {
 	page &= ~0xFFF;
 	if ((cmap[page >> 22] & PF_PRES) == 0) page_touch(page);
@@ -37,10 +42,12 @@ void page_set(uint32_t page, page_t value) {
 	page_flush(page);
 }
 
+/* Get the value of a page table entry */
 page_t page_get(uint32_t page) {
 	return (cmap[page >> 22] & PF_PRES) ? ctbl[page >> 12] : 0;
 }
 
+/* Makes sure table exists for a page in the temporary mapping */
 void temp_touch(uint32_t page) {
 	page &= ~0x3FFFFF;
 	if (tmap[page >> 22] & PF_PRES) return;
@@ -49,6 +56,7 @@ void temp_touch(uint32_t page) {
 	pgclr(&ctbl[page >> 12]);
 }
 
+/* Set the value of a page table entry in the temporary mapping */
 void temp_set(uint32_t page, page_t value) {
 	page &= ~0xFFF;
 	if ((tmap[page >> 22] & PF_PRES) == 0) temp_touch(page);
@@ -56,6 +64,7 @@ void temp_set(uint32_t page, page_t value) {
 	page_flush(page);
 }
 
+/* Get the value of a page table entry in the temporary mapping */
 page_t temp_get(uint32_t page) {
 	return (tmap[page >> 22] & PF_PRES) ? ttbl[page >> 12] : 0;
 }

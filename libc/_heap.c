@@ -6,7 +6,7 @@
 
 #define HEAP_INIT_SIZE 0x1000
 
-static uintptr_t *bucket[1024];
+static uintptr_t *bucket[HEAP_INIT_SIZE >> 2];
 
 static uintptr_t heap_start = HEAP_START;
 static uintptr_t heap_size = 0;
@@ -20,9 +20,9 @@ static size_t heap_get_bucket(size_t size);
 void init_heap(void) {
 	uintptr_t *block;
 
-	memset(bucket, -1, sizeof(uintptr_t*) * 1024);
+	memset(bucket, -1, sizeof(uintptr_t*) * (HEAP_INIT_SIZE >> 2));
 	heap_size = HEAP_INIT_SIZE;
-	mmap_call(heap_start, heap_size, MMAP_RW);
+	mmap_call(heap_start, heap_size * sizeof(uintptr_t), MMAP_RW);
 
 	block = (uintptr_t*) heap_start;
 	block[0] = (uintptr_t) -1;
@@ -70,38 +70,11 @@ void *realloc(void *ptr, size_t size) {
 }
 
 static size_t heap_get_bucket(size_t size) {
-	register size_t r = size, v;
-
 	return (size >> 2);
-
-	r --;
-	r |= r >> 1;
-	r |= r >> 2;
-	r |= r >> 4;
-	r |= r >> 8;
-	r |= r >> 16;
-	r ++;
-
-	v = r;
-	r = (size & (v >> 1)) ? 0x1 : 0x0;
-	r |= ((v & 0xAAAAAAAA) != 0) << 1;
-	r |= ((v & 0xCCCCCCCC) != 0) << 2;
-	r |= ((v & 0xF0F0F0F0) != 0) << 3;
-	r |= ((v & 0xFF00FF00) != 0) << 4;
-	r |= ((v & 0xFFFF0000) != 0) << 5;
-
-	return r;
 }
 
 static size_t inverse_bucket(size_t size) {
-	register size_t r;
-
 	return (size << 2);
-
-	r = 1 << (size >> 1);
-	if (size & 0x1) r += (r >> 1);
-
-	return r;
 }
 
 static uintptr_t *heap_fetch(size_t size) {
