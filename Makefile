@@ -1,6 +1,6 @@
 BUILDDIR=$(PWD)
 
-DRV_DIRS=driver/console driver/floppy driver/ata driver/pci
+DRV_DIRS=driver/pci driver/console driver/floppy driver/ata
 LIB_DIRS=libc libkhaos $(DRV_DIRS)
 BIN_DIRS=kernel init
 
@@ -18,9 +18,9 @@ ARFLAGS := rcs
 
 export BUILDDIR CC LD AR AS CFLAGS LDFLAGS ARFLAGS
 
-.PHONY: $(LIB_DIRS) $(BIN_DIRS) clean test cd
+.PHONY: $(LIB_DIRS) $(BIN_DIRS) clean test cd libc_headers
 
-all: $(LIB_DIRS) $(BIN_DIRS)
+all: libc_headers $(LIB_DIRS) $(BIN_DIRS)
 
 $(BIN_DIRS): $(LIB_DIRS)
 	@ echo " MAKE	" $@
@@ -50,3 +50,7 @@ test:	all image
 cd:	all image
 	export BUILDDIR
 	run/makecd.sh
+
+libc_headers:
+	@ echo " CP	" $(shell find libc/inc -name "*.*") "->" $(BUILDDIR)/inc
+	@ cp $(shell find libc/inc -name "*.*") $(BUILDDIR)/inc
