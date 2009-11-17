@@ -9,11 +9,6 @@ image_t *signal(pid_t targ, uint8_t sig, uint32_t args[4], uint8_t flags) {
 	task_t *src_t = curr_task;
 	void *next_image;
 
-	if (!dst_t->shandler) {
-		printk("no handler for task %d\n", targ);
-		for(;;);
-	}
-
 	/* Check target (for existence) */
 	if (!dst_t || !dst_t->shandler) {
 		ret(src_t->image, (flags & TF_NOERR) ? targ : ERROR);
@@ -66,7 +61,6 @@ image_t *signal(pid_t targ, uint8_t sig, uint32_t args[4], uint8_t flags) {
 	dst_t->image->ebp = (uintptr_t) dst_t->image + sizeof(image_t);
 
 	/* Entry point for signal */
-	printk("EIP: %x\n", dst_t->shandler);
 	dst_t->image->eip = dst_t->shandler;
 
 	return dst_t->image;

@@ -103,7 +103,7 @@ int init_floppy(uint16_t selector) {
 	outb(base + D_OUTPUT, 0x00);
 	outb(base + D_OUTPUT, 0x0C);
 
-	khsignal_wait(3);
+	khsig_wait(3);
 
 	return 0;
 }

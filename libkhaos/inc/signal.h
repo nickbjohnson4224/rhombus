@@ -3,25 +3,28 @@
 
 #include <stdint.h>
 
+/* Signal handler pointer */
+typedef void (*khsig_handler_t) (uint32_t, uint32_t[4]);
+
 /* Set up Khaos signal base handler */
-void khsignal_init(void);
+void khsig_init(void);
 
 /* Block all Khaos signals */
-void khsignal_block(void);
+void khsig_block(void);
 
 /* Unblock all Khaos signals */
-void khsignal_unblock(void);
+void khsig_unblock(void);
 
 /* Send a Khaos signal */
-int khsignal_send(uint32_t target, uint8_t signal, uint32_t args[4]);
+int khsig_send(uint32_t target, uint8_t signal, uint32_t args[4]);
 
 /* Send an asynchronous Khaos signal */
-int khsignal_asend(uint32_t target, uint8_t signal, uint32_t args[4]);
+int khsig_asend(uint32_t target, uint8_t signal, uint32_t args[4]);
 
 /* Register a Khaos signal handler */
-void khsignal_register(uint8_t signal, void (*handler) (uint32_t source, uint32_t args[4]));
+void khsig_register(uint8_t signal, khsig_handler_t handler);
 
 /* Wait for a Khaos signal */
-void khsignal_wait(uint32_t signal);
+void khsig_wait(uint32_t signal);
 
 #endif

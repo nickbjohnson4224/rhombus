@@ -1,9 +1,9 @@
 extern sret_call
-extern khsignal_redirect
-; void khsignal_redirect(uint32_t source, uint8_t signal, uint32_t args[4]);
+extern khsig_redirect
+; void khsig_redirect(uint32_t source, uint8_t signal, uint32_t args[4]);
 
-global khsignal_handler
-khsignal_handler:
+global khsig_handler
+khsig_handler:
 
 	push edx
 	push ecx
@@ -12,7 +12,7 @@ khsignal_handler:
 	push esp
 	push edi
 	push esi
-	call khsignal_redirect
+	call khsig_redirect
 	add esp, 28
 
 	mov eax, 3
