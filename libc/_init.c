@@ -1,5 +1,5 @@
 #include "libc.h"
 
 void _cini() {
-	init_heap();
+	_heap_init();
 }

@@ -17,7 +17,7 @@ static uintptr_t *heap_split(uintptr_t *block, size_t size);
 static uintptr_t *heap_merge(uintptr_t *block);
 static size_t heap_get_bucket(size_t size);
 
-void init_heap(void) {
+void _heap_init(void) {
 	uintptr_t *block;
 
 	memset(bucket, -1, sizeof(uintptr_t*) * (HEAP_INIT_SIZE >> 2));
@@ -31,13 +31,7 @@ void init_heap(void) {
 	heap_push(block);
 }
 
-void *calloc(size_t nmemb, size_t size) {
-	void *ptr = malloc(nmemb * size);
-	memset(ptr, 0, (nmemb * size));
-	return ptr;
-}
-
-void *malloc(size_t size) {
+void *_heap_alloc(size_t size) {
 	uintptr_t *block;
 
 	size += sizeof(uintptr_t) - 1;
@@ -53,7 +47,7 @@ void *malloc(size_t size) {
 	return &block[2];
 }
 
-void free(void *ptr) {
+void _heap_free(void *ptr) {
 	uintptr_t *block = (void*) ((uintptr_t) ptr - 8);
 
 	if (!ptr) return;
@@ -62,11 +56,8 @@ void free(void *ptr) {
 	heap_merge(block);
 }
 
-void *realloc(void *ptr, size_t size) {
-	void *nptr = malloc(size);
-	memcpy(nptr, ptr, ((uintptr_t*) ptr)[1] * sizeof(uintptr_t));
-	free(ptr);
-	return nptr;
+size_t _heap_size(void *ptr) {
+	return ((uintptr_t*) ptr)[1];
 }
 
 static size_t heap_get_bucket(size_t size) {
