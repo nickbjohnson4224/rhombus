@@ -1,7 +1,7 @@
 BUILDDIR=$(PWD)
 
-DRV_DIRS=driver/console driver/pci driver/floppy driver/ata
-LIB_DIRS=libkhaos libc $(DRV_DIRS)
+DRV_DIRS=driver/pci driver/console driver/floppy driver/ata
+LIB_DIRS=libc libkhaos $(DRV_DIRS)
 BIN_DIRS=kernel init
 
 CC := /usr/khaos/bin/i586-elf-gcc
@@ -18,7 +18,7 @@ ARFLAGS := rcs
 
 export BUILDDIR CC LD AR AS CFLAGS LDFLAGS ARFLAGS
 
-.PHONY: $(LIB_DIRS) $(BIN_DIRS) clean test cd libc_headers distclean
+.PHONY: $(LIB_DIRS) $(BIN_DIRS) clean test cd libc_headers
 
 all: libc_headers $(LIB_DIRS) $(BIN_DIRS)
 
@@ -31,12 +31,6 @@ $(LIB_DIRS):
 	@ echo " MAKE	" $@
 	@ make -s -C $@
 
-distclean: clean
-	@ echo " CLEAN	" $(shell find inc/*)
-	@ rm -r inc/*
-	@ echo " CLEAN	" run/floppy.img
-	@ rm run/floppy.img
-
 clean:
 	@ echo " CLEAN	" $(shell find . -name "*.o")
 	@ rm $(shell find . -name "*.o")
@@ -45,7 +39,7 @@ clean:
 	@ echo " CLEAN	" bin/*
 	@ rm bin/*
 
-image:	all
+image:	all run/floppy.img
 	export BUILDDIR
 	sudo run/image.sh
 
@@ -59,6 +53,4 @@ cd:	all image
 
 libc_headers:
 	@ echo " CP	" $(shell find libc/inc -name "*.*") "->" $(BUILDDIR)/inc
-	@ mkdir -p $(BUILDDIR)/inc
 	@ cp $(shell find libc/inc -name "*.*") $(BUILDDIR)/inc
-
