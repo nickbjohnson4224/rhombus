@@ -258,6 +258,8 @@ image_t *ssnd_call(image_t *image) {
 	uint32_t args[4];
 	uint8_t sig, flags;
 
+	printk("SSND %d -> %d\n", image->esi & 0xFF, image->edi); 
+
 	args[0] = image->eax;
 	args[1] = image->ebx;
 	args[2] = image->ecx;
@@ -304,6 +306,7 @@ image_t *sblk_call(image_t *image) {
  */
 image_t *sreg_call(image_t *image) {
 	uint32_t old_handler;
+
 	old_handler = curr_task->shandler;
 	curr_task->shandler = image->eax;
 	ret(image, old_handler);

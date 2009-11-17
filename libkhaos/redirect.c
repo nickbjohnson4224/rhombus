@@ -22,10 +22,10 @@ void khsignal_wait(uint32_t signal) {
 }
 
 void khsignal_init(void) {
-	extern uint32_t khsignal_handler;
+	extern void khsignal_handler(void);
 	size_t i;
 
-	sreg_call((uint32_t) &khsignal_handler);
+	sreg_call((uint32_t) khsignal_handler);
 	for (i = 0; i < 256; i++) {
 		khsignal_handlers[i] = NULL;
 		khsignal_count[i] = 0;

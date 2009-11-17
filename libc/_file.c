@@ -12,9 +12,9 @@ _file_des_t new_file() {
 	_file_des_t fd;
 
 	fd = 0;
-	while (filetable[fd].magic != 0x42242442) {
-		fd = (fd + 1) % NUM_FILES;
-		if (fd == 0) return -1;
+	while (filetable[fd].magic == 0x42242442) {
+		fd++;
+		if (fd > NUM_FILES) return -1;
 	}
 
 	filetable[fd].magic = 0x42242442;

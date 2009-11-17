@@ -5,6 +5,7 @@
 #include <driver/console.h>
 #include <driver/ata.h>
 #include <stdlib.h>
+#include "../libc/libc.h"
 
 void death(uint32_t source, uint32_t args[4]) {
 	sret_call(3);
@@ -30,14 +31,21 @@ void rirq(int irq, uint32_t handler) {
 	rirq_call(irq);
 }
 
+void stuff(uint32_t source, uint32_t args[4]) {
+	swrite("aaaaa");
+}
+
 char buffer2[100];
 int main() {
+	int pid;
+	uint32_t args[4] = {0, 0, 0, 0};
 
 	khsignal_init();
 	khsignal_register(0, segfault);
 	khsignal_register(2, segfault);
 	khsignal_register(3, irq_handler);
 	khsignal_register(5, imgfault);
+	khsignal_register(42, stuff);
 
 	print_bootsplash();
 	update_progress("init system started...");
@@ -49,6 +57,9 @@ int main() {
 	else {
 		update_progress("no disk found on ata");
 	}
+
+	pid = fork_call(0);
+	if (pid < 0) khsignal_send(-pid, 42, args);
 
 	for(;;);
 	return 0;

@@ -60,6 +60,7 @@ image_t *task_switch(task_t *t) {
 	if (t->pid == curr_pid) return t->image;
 	fpu_save(curr_task->image->fxdata);
 
+	curr_task = t;
 	curr_pid = t->pid;
 	map_load(t->map);
 	fpu_load(t->image->fxdata);

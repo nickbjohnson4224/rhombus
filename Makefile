@@ -34,8 +34,10 @@ $(LIB_DIRS):
 distclean: clean
 	@ echo " CLEAN	" $(shell find inc/*)
 	@ rm -r inc/*
-	@ echo " CLEAN	" run/floppy.img
-	@ rm run/floppy.img
+	@ echo " CLEAN	" run/floppy.img run/khaos.iso
+	@ rm run/floppy.img run/khaos.iso
+	@ echo " CLEAN	" $(shell find . -name "*.swp")
+	@ rm $(shell find . -name "*.swp")
 
 clean:
 	@ echo " CLEAN	" $(shell find . -name "*.o")
