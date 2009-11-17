@@ -1,4 +1,6 @@
 #include <string.h>
+#include <stdlib.h>
+#include <stdint.h>
 
 void *memccpy (void *d, const void *s, uint8_t c, size_t n) {
 	size_t i;
@@ -26,7 +28,18 @@ void *memchr (const void *s, uint8_t c, size_t n) {
 	return NULL;
 }
 
-int		memcmp		(const void *, const void *, size_t);
+int	memcmp (const void *p1, const void *p2, size_t n) {
+	uint8_t *v1 = (void*) p1;
+	uint8_t *v2 = (void*) p2;
+
+	while (n--) {
+		if (*v1++ != *v2++) {
+			return 0;
+		}
+	}
+
+	return 1;
+}
 
 void *memcpy (void *d, const void *s, size_t n) {
 	size_t i;
@@ -129,9 +142,14 @@ char *strcpy (char *d, const char *s) {
 	return d;
 }
 
-size_t	strcspn		(const char *, const char *);
-char	*strdup		(const char *);
-char	*strerror	(int);
+char *strdup (const char *s) {
+	char *d;
+
+	d = malloc(sizeof(char) * (strlen(s) + 1));
+	strcpy(d, s);
+
+	return d;
+}
 
 size_t strlen (const char *s) {
 	size_t i;
@@ -182,10 +200,12 @@ char *strncpy (char *d, const char *s, size_t n) {
 	return d;
 }
 
-char	*strpbrk	(const char *, const char *);
-char	*strrchr	(const char *, int);
-size_t	strspn		(const char *, const char *);
-char	*strstr		(const char *, const char *);
-char	*strtok		(char *, const char *);
-char	*strtok_r	(char *, const char *, char **);
-size_t	strxfrm		(char *, const char *, size_t);
+char *strpbrk (const char *, const char *);
+char *strrchr (const char *, int);
+size_t strspn (const char *, const char *);
+char *strstr (const char *, const char *);
+char *strtok (char *, const char *);
+char *strtok_r (char *, const char *, char **);
+size_t strxfrm (char *, const char *, size_t);
+size_t strcspn (const char *, const char *);
+char *strerror (int);
