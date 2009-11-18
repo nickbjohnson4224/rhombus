@@ -1,6 +1,8 @@
 #ifndef STDINT_H
 #define STDINT_H
 
+#include <stddef.h>
+
 /* Precise size integers */
 typedef unsigned char	uint8_t;
 typedef unsigned short	uint16_t;
@@ -35,7 +37,5 @@ typedef int32_t			intmax_t;
 
 /* Size type */
 typedef uint32_t size_t;
-
-#define NULL ((void*) 0)
 
 #endif
