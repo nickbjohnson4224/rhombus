@@ -35,7 +35,4 @@ typedef int32_t			intptr_t;
 typedef uint32_t		uintmax_t;
 typedef int32_t			intmax_t;
 
-/* Size type */
-typedef uint32_t size_t;
-
 #endif
