@@ -1,14 +1,21 @@
 #include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+
 #include <khaos/kernel.h>
 #include <khaos/driver.h>
 #include <khaos/signal.h>
+
 #include <driver/console.h>
-#include <driver/ata.h>
-#include <stdlib.h>
+
 #include "../libc/libc.h"
 
+void swrite(const char *message) {
+	console.write(0, strlen(message), (void*) message);
+}
+
 void death(uint32_t source, uint32_t args[4]) {
-	sret_call(3);
+	return;
 }
 
 void segfault(uint32_t source, uint32_t args[4]) {
@@ -47,7 +54,9 @@ int main() {
 	khsig_register(5, imgfault);
 	khsig_register(42, stuff);
 
-	print_bootsplash();
+	console.init(0);
+
+/*	print_bootsplash();
 	update_progress("init system started...");
 
 	update_progress("scanning disks...");
@@ -56,7 +65,7 @@ int main() {
 	}
 	else {
 		update_progress("no disk found on ata");
-	}
+	} */
 
 	pid = fork_call(0);
 	if (pid < 0) khsig_send(-pid, 42, args);

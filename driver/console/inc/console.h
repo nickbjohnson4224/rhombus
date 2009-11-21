@@ -1,7 +1,9 @@
 #ifndef INIT_CONSOLE_H
 #define INIT_CONSOLE_H
 
-void sclear(void);
+extern struct driver_interface console;
+
+/*void sclear(void);
 void cwrite(char c);
 void nwrite(int n, int b);
 void swrite(const char *s);
@@ -11,6 +13,6 @@ void gets(char *buf);
 void update_progress(const char *message);
 void print_bootsplash(void);
 
-void kbhandle(void);
+void kbhandle(void); */
 
 #endif
