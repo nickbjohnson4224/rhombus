@@ -55,7 +55,7 @@ static volatile uint32_t floppy_size;
 static volatile uint16_t base;
 static volatile floppy_parameters_t floppy_params;
 
-static const char * drive_types[8] = {
+/*static const char * drive_types[8] = {
 	"none",
 	"360 KB 5.25 inch",
 	"1.2 MB 5.25 inch",
@@ -64,7 +64,7 @@ static const char * drive_types[8] = {
 	"2.88 MB 3.5 inch",
 	"unknown type",
 	"unknown type"
-};
+}; */
 
 static const uint32_t drive_sizes[8] = {
 	0x000000,
@@ -88,14 +88,6 @@ int init_floppy(uint16_t selector) {
 	outb(0x70, 0x10);
 	fdtype = inb(0x71);
 	fdtype = (selector) ? fdtype & 0xF : fdtype >> 4;
-
-	if (fdtype != 0) {
-		update_progress("found floppy drive: ");
-		swrite(drive_types[fdtype]);
-	}
-	else {
-		update_progress("no floppy drive found!");
-	}
 
 	floppy_size = drive_sizes[fdtype >> 4];
 

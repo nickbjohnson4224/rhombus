@@ -283,13 +283,15 @@ image_t *sret_call(image_t *image) {
 	return sret(image);
 }
 
-/* TBLK - change signal blocked bit
+/* SBLK - change signal blocked bit
  * 
  * Arguments:
  *  eax: 0 for off, anything else on
  * Returns nothing
  */
 image_t *sblk_call(image_t *image) {
+
+	printk("SBLK %d\n", image->eax);
 
 	/* Set or clear signal blocked bit */
 	if (image->eax) curr_task->flags |= TF_SBLOK;

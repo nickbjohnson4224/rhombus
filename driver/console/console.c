@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include <khaos/kernel.h>
 #include <khaos/driver.h>
 #include <driver/console.h>
@@ -16,7 +17,7 @@ static int console_write(uintmax_t seek, size_t size, void *data);
 static void console_handler(uint32_t source, uint32_t args[4]);
 static int console_halt(void);
 
-static uint16_t *vbuf = NULL;
+static uint16_t vbuf[WIDTH * HEIGHT];
 static struct charcell {
 	char ch;
 	struct charcell *next;
@@ -36,8 +37,7 @@ static int console_init(uint16_t selector) {
 	int i;
 	selector = 0;
 
-	vbuf = calloc(sizeof(uint16_t), WIDTH * HEIGHT);
-	if (!vbuf) return 1;
+	memclr(vbuf, sizeof(uint16_t) * WIDTH * HEIGHT);
 
 	for (i = 0; i < WIDTH * HEIGHT; i++) {
 		vbuf[i] = 0x0F20;
@@ -96,6 +96,11 @@ static void cwrite(char c) {
 		default: 
 			vbuf[cursor++] = (uint16_t) (c | 0x0F00); break;
 	}
+
+/*	outb(0x3D4, 14);
+	outb(0x3D5, cursor >> 8);
+	outb(0x3D4, 15);
+	outb(0x3D5, cursor & 0xF); */
 }
 
 static int console_write(uintmax_t seek, size_t size, void *data) {
@@ -126,6 +131,8 @@ static void console_handler(uint32_t source, uint32_t args[4]) {
 	source = 0;
 	args = NULL;
 
+	sblk_call(1);
+
 	if (c & 0x80) {
 		if (keymap[c & 0x7F] == '\0') shift = false;
 		return;
@@ -134,106 +141,28 @@ static void console_handler(uint32_t source, uint32_t args[4]) {
 	if (keymap[c & 0x7F] == '\0') shift = true;
 	c = (size_t) ((shift) ? upkmap[c] : keymap[c]);
 
-	cc = malloc(sizeof(struct charcell));
-	cc->ch = c;
-	cc->next = kbuf;
-	kbuf = cc;
+	if (c != '\b') {
+		cc = malloc(sizeof(struct charcell));
+		cc->ch = c;
+		cc->next = kbuf;
+		kbuf = cc;
+	}
+	else {
+		if (kbuf) {
+			cc = kbuf;
+			kbuf = kbuf->next;
+			free(cc);
+		}
+	}
+
+	cwrite(c);
+	push_call(0, VMEM, (uint32_t) vbuf, WIDTH * HEIGHT * sizeof(uint16_t));
+
+	sblk_call(0);
 }
 
 static int console_halt(void) {
-	free(vbuf);
 	return 0;
 }
 
-/*
-static uint16_t video_buf[2000];
-static uint16_t *video_mem = (void*) 0xB8000;
-static int c_base = 0;
-static int cursor = 0;
-static uint8_t attr = 0x0F;
 
-void sclear(void) {
-}
-
-static void scroll(void) {
-}
-
-
-void nwrite(int n, int b) {
-	const char d[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	char buffer[10];
-	int i = 0;
-
-	if (!n) {
-		swrite("0");
-		return;
-	}
-
-	while (n) {
-		buffer[i++] = d[n % b];
-		n /= b;
-	}
-
-	for (; i > 0; i--) {
-		cwrite(buffer[i-1]);
-	}
-
-	swrite("");
-}
-
-void swrite(const char *s) {
-	while (*s != '\0') cwrite(*s++);
-	push_call(0, (uint32_t) video_mem, (uint32_t) video_buf, 4000);
-	outb(0x3D4, 15);
-	outb(0x3D5, cursor & 0xFF);
-	outb(0x3D4, 14);
-	outb(0x3D5, cursor >> 8);
-}
-
-void curse(int y, int x) {
-	c_base = cursor = (y * 80) + x;
-	outb(0x3D4, 15);
-	outb(0x3D5, cursor & 0xFF);
-	outb(0x3D4, 14);
-	outb(0x3D5, cursor >> 8);
-}
-
-void gets(char *buf) {
-	int i;
-
-	for (i = c_base; i < cursor && i - c_base < 10; i++) {
-		buf[i] = video_buf[i] & 0xFF;
-	}
-
-	buf[i] = '\0';
-}
-
-void print_bootsplash() {
-	sclear();
-
-	swrite("\n\n\n\
-\t\t\t\t\t\t\t           '^a,\n\
-\t\t\t\t\t\t\t        ,.    'b.\n\
-\t\t\t\t\t\t\t      .d'       b.\n\
-\t\t\t\t\t\t\t      S:        a:\n\
-\t\t\t\t\t\t\t      'q,       p'\n\
-\t\t\t\t\t\t\t        \"'    .p'\n\
-\t\t\t\t\t\t\t           .,a'\n\n\
-\t\t\t\t\t _  _   _   _   _____   _____   _____ \n\
-\t\t\t\t\t| |/ / | |_| | |___  | |  _  | |  ___|\n\
-\t\t\t\t\t|   <  |  _  | |  _  | | |_| | |___  |\n\
-\t\t\t\t\t|_|\\_\\ |_| |_| |_____| |_____| |_____|\n\
-\t\t\t\t\t          -= Version 0.1a =-\n\n\
-\t\t\t\t\t   [                              ]\n");
-}
-
-void update_progress(const char *message) {
-	static int xpos = 24;
-	curse(17, xpos);
-	swrite("*");
-	if (xpos < 50) xpos ++;
-	curse(18, 24);
-	swrite(message);
-	swrite("                \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-}
-*/
