@@ -258,8 +258,6 @@ image_t *ssnd_call(image_t *image) {
 	uint32_t args[4];
 	uint8_t sig, flags;
 
-	printk("SSND %d -> %d\n", image->esi & 0xFF, image->edi); 
-
 	args[0] = image->eax;
 	args[1] = image->ebx;
 	args[2] = image->ecx;
@@ -291,7 +289,7 @@ image_t *sret_call(image_t *image) {
  */
 image_t *sblk_call(image_t *image) {
 
-	printk("SBLK %d\n", image->eax);
+	printk("\nSBLK: %d %x\n", curr_task->pid, image->eax);
 
 	/* Set or clear signal blocked bit */
 	if (image->eax) curr_task->flags |= TF_SBLOK;

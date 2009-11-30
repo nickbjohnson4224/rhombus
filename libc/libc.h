@@ -2,8 +2,18 @@
 #define LIBC_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 /*** Heap ***/
+
+struct _heap_allocator {
+	size_t max_size;
+	void (*init)(void);		/* Initialize allocator */
+	void*(*alloc)(size_t);	/* Allocate chunk */
+	void (*free)(void*);	/* Free chunk */
+	bool (*cont)(void*);	/* Check if is in charge of chunk */
+	size_t(*size)(void*);	/* Check size of chunk */
+};
 
 void   _heap_init(void);
 void  *_heap_alloc(size_t size);

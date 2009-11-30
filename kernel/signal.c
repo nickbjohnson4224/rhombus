@@ -10,7 +10,7 @@ image_t *signal(pid_t targ, uint8_t sig, uint32_t args[4], uint8_t flags) {
 	void *next_image;
 
 	/* Check target (for existence) */
-	if (!dst_t || !dst_t->shandler) {
+	if (!dst_t || !dst_t->shandler || (dst_t->flags & TF_SBLOK)) {
 		ret(src_t->image, (flags & TF_NOERR) ? targ : ERROR);
 	}
 

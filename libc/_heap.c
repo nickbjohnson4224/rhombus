@@ -1,11 +1,161 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 #include <khaos/config.h>
 #include <khaos/kernel.h>
 
-#define HEAP_INIT_SIZE 0x1000
+#include "libc.h"
 
+#define HEAP_SIZE (HEAP_MXBRK - HEAP_START)
+
+static struct _heap_allocator _ba; /* Big Allocator */
+/*static struct _heap_allocator _qa; */ /* Quad Allocator */
+/*static struct _heap_allocator _ca; */ /* Cell Allocator */
+
+/* This MUST be sorted by descending maximum allocation size */
+static struct _heap_allocator *_heap_alg[] = { &_ba, NULL };
+
+/*** The Heap ***/
+
+/* This file contains the entire Khaos C standard
+ * library heap. It is divided into three allocators
+ * which ensure efficiency in different situations.
+ * Very large allocations are handled by the Big
+ * Allocator (_ba_*), 2- and 4-dword allocations are
+ * handled by the Cell and Quad Allocators, 
+ * respectively, (_ca_*, _qa_*), and all other 
+ * allocations are handled by the Variable Allocator 
+ * (_va_*).
+ */
+
+void _heap_init(void) {
+	size_t i;
+
+	for (i = 0; _heap_alg[i]; i++) {
+		_heap_alg[i]->init();
+	}
+}
+
+void *_heap_alloc(size_t size) {
+	size_t i;
+
+	for (i = 0; _heap_alg[i]; i++) {
+		if (_heap_alg[i]->max_size >= size) {
+			return _heap_alg[i]->alloc(size);
+		}
+	}
+
+	return NULL;
+}
+
+void _heap_free(void *ptr) {
+	size_t i;
+
+	for (i = 0; _heap_alg[i]; i++);
+	i--;
+
+	for (; (int) i >= 0; i--) {
+		if (_heap_alg[i]->cont(ptr)) {
+			_heap_alg[i]->free(ptr);
+			return;
+		}
+	}
+}
+
+size_t _heap_size(void *ptr) {
+	size_t i;
+
+	for (i = 0; _heap_alg[i]; i++);
+	i--;
+
+	for (; (int) i >= 0; i--) {
+		if (_heap_alg[i]->cont(ptr)) {
+			return _heap_alg[i]->size(ptr);
+		}
+	}
+
+	return 0;
+}
+
+/*** Big Allocator ***/
+
+/* The Big Allocator (_ba_*) can allocate chunks of
+ * size 4096. It feeds into the tuple allocator and
+ * variable allocator. It runs in constant time and 
+ * can ensure no memory waste even when fragmented, 
+ * because it uses the paging system directly.
+ */
+
+static uint32_t _ba_bitmap[HEAP_SIZE / (0x1000 * 8 * sizeof(uint32_t))];
+static void _ba_init(void);
+static void *_ba_alloc(size_t);
+static void _ba_free(void*);
+static bool _ba_cont(void*);
+static size_t _ba_size(void*);
+
+static struct _heap_allocator _ba = {
+	0x1000,
+	&_ba_init,
+	&_ba_alloc,
+	&_ba_free,
+	&_ba_cont,
+	&_ba_size,
+};
+
+static void _ba_init(void){
+	memclr(&_ba_bitmap[0], HEAP_SIZE / (0x1000 * 8));
+}
+
+static void *_ba_alloc(size_t size) {
+	register size_t i, j;
+	uint32_t word;
+
+	if (size > 0x1000) return NULL;
+
+	for (i = 0; _ba_bitmap[i] == (uint32_t) -1; i++) {
+		if (i > HEAP_SIZE / 0x1000) return NULL;
+	}
+	word = _ba_bitmap[i];
+
+	for (j = 0; j < 32; j++) {
+		if ((word & (1 << j)) == 0) break;
+	}
+
+	_ba_bitmap[i] |= (1 << j);
+	mmap_call(HEAP_START + (((i * 32) + j) * 0x1000), 0x1000, MMAP_RW);
+
+	return (void*) (HEAP_START + (((i * 32) + j) * 0x1000));
+}
+
+static void _ba_free(void *ptr) {
+	uintptr_t index = ((uintptr_t) ptr - HEAP_START) / 0x1000;
+	
+	if (_ba_bitmap[index / 32] & (1 << index % 32)) {
+		return;
+	}
+	else {
+		umap_call(HEAP_START + index * 0x1000, 0x1000);
+		_ba_bitmap[index / 32] &= ~(1 << index % 32);
+	}
+}
+
+static bool _ba_cont(void *ptr) {
+	uintptr_t addr = (uintptr_t) ptr;
+
+	if (addr > HEAP_START && addr < HEAP_MXBRK) {
+		return true;
+	}
+	
+	return false;
+}
+
+static size_t _ba_size(void *ptr) {
+	ptr = NULL;
+	return 0x1000;
+}
+
+/*
 static uintptr_t *bucket[HEAP_INIT_SIZE >> 2];
 
 static uintptr_t heap_start = HEAP_START;
@@ -142,4 +292,4 @@ static uintptr_t *heap_pull(uintptr_t *block) {
 	}
 
 	return NULL;
-}
+}*/

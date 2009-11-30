@@ -63,6 +63,7 @@ image_t *task_switch(task_t *t) {
 	curr_task = t;
 	curr_pid = t->pid;
 	map_load(t->map);
+
 	fpu_load(t->image->fxdata);
 
 	return t->image;

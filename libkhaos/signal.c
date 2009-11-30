@@ -42,3 +42,8 @@ void khsig_redirect(uint32_t source, uint32_t signal, uint32_t args[4]) {
 		khsig_handlers[signal](source, args);
 	}
 }
+	
+void khsig_wait(uint32_t signal) {
+	while (!khsig_count[signal]);
+	khsig_count[signal]--;
+}

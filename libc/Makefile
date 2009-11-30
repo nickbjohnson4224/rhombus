@@ -28,8 +28,8 @@ $(TARGET): $(HEADERS) $(SOURCES)
 	@ $(AS) $(ASFLAGS) $<
 
 .c.o:
-	echo " CC	" $(SUBDIR)/$<
-	@ $(CC) $(CFLAGS) -c $< -o $@
+	@ echo " CC	" $(SUBDIR)/$<
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	@ rm $(TARGET) $(SOURCES)

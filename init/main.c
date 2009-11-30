@@ -44,9 +44,22 @@ void stuff(uint32_t source, uint32_t args[4]) {
 	swrite("ZOMG 42!!!");
 }
 
+void xwrite(uint32_t addr) {
+	char m[9];
+	const char *d = "0123456789ABCDEF";
+	size_t i;
+
+	for (i = 7; (int) i >= 0; i--) {
+		m[i] = d[addr & 0xF];
+		addr >>= 4;
+	}
+
+	m[8] = '\0';
+	swrite((const char*) m);
+}
+
 int main() {
-	int pid;
-	uint32_t args[4] = {0, 0, 0, 0};
+	size_t i;
 
 	khsig_register(3, irq_handler);
 	khsig_register(42, stuff);
@@ -55,8 +68,11 @@ int main() {
 	rirq(console.interrupt, (uint32_t) console.handler);
 	print_bootsplash();
 
-	pid = fork_call(0);
-	if (pid < 0) khsig_send(-pid, 42, args);
+	swrite("Allocator test:\n");
+	for (i = 0; i < 8; i++) {
+		xwrite((uint32_t) malloc(0x1000));
+		swrite("\n");
+	}
 
 	for(;;);
 	return 0;

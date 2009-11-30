@@ -11,9 +11,7 @@ static _file_t filetable[NUM_FILES];
 _file_des_t new_file() {
 	_file_des_t fd;
 
-	fd = 0;
-	while (filetable[fd].magic == 0x42242442) {
-		fd++;
+	for (fd = 0; filetable[fd].magic == 0x42242442; fd++) {
 		if (fd > NUM_FILES) return -1;
 	}
 

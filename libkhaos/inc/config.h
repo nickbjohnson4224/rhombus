@@ -69,6 +69,7 @@
 	/***** HEAP *****/
 
 	#define EXEC_START 0x00001000
-	#define HEAP_START 0x01000000
+	#define HEAP_START 0x10000000
+	#define HEAP_MXBRK 0x20000000
 
 #endif

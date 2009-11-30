@@ -4,7 +4,7 @@ HEADERS := $(shell find inc -name "*.h")
 SUBDIR	:= driver/console
 TARGET	:= libconsole.a
 CFLAGS  += -ffreestanding -I$(BUILDDIR)/driver/$(SUBDIR)/inc
-LDFLAGS += -r
+LDFLAGS += -r -lkhaos
 ASFLAGS := -felf
 
 .PHONY: $(HEADERS) clean
