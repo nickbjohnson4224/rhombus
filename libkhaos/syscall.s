@@ -54,24 +54,15 @@ mmap_call:
 	ret
 
 umap_call:
-	push ebp
-	mov ebp, esp
-	add ebp, 4
-
-	push esi
-	push ebx
-
-	mov esi, [ebp+4]
-	mov ecx, [ebp+8]
-	mov ebx, 0
+	push edi
+	push ecx
+	
+	mov edi, [esp+12]
+	mov ecx, [esp+16]
 	int 0x45
 
-	pop ebx
-	pop esi
-
-	sub ebp, 4
-	mov esp, ebp
-	pop ebp
+	pop ecx
+	pop edi
 	ret
 
 ssnd_call:

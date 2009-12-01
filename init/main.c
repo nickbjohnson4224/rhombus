@@ -10,11 +10,11 @@
 
 #include "../libc/libc.h"
 
-static void swrite(const char *message) {
+void swrite(const char *message) {
 	console.write(0, strlen(message), (void*) message);
 }
 
-static void print_bootsplash() {
+/*static void print_bootsplash() {
 swrite("\n\
 \t\t\t\t\t\t\t           '^a,\n\
 \t\t\t\t\t\t\t        ,.    'b.\n\
@@ -28,7 +28,7 @@ swrite("\n\
 \t\t\t\t\t|   <  |  _  | |  _  | | |_| | |___  |\n\
 \t\t\t\t\t|_|\\_\\ |_| |_| |_____| |_____| |_____|\n\
 \t\t\t\t\t          -= Version 0.1a =-\n");
-}
+}*/
 
 void (*irq_table[16])(void);
 void irq_handler(uint32_t source, uint32_t args[4]) {
@@ -42,6 +42,11 @@ void rirq(int irq, uint32_t handler) {
 
 void stuff(uint32_t source, uint32_t args[4]) {
 	swrite("ZOMG 42!!!");
+}
+
+void segfault(uint32_t source, uint32_t args[4]) {
+	swrite("\nSegmentation Fault");
+	exit_call(1);
 }
 
 void xwrite(uint32_t addr) {
@@ -60,17 +65,22 @@ void xwrite(uint32_t addr) {
 
 int main() {
 	size_t i;
+	uint32_t *p;
 
+	khsig_register(0, segfault);
+	khsig_register(2, segfault);
 	khsig_register(3, irq_handler);
 	khsig_register(42, stuff);
 
 	console.init(0);
 	rirq(console.interrupt, (uint32_t) console.handler);
-	print_bootsplash();
+/*	print_bootsplash(); */
 
 	swrite("Allocator test:\n");
 	for (i = 0; i < 8; i++) {
-		xwrite((uint32_t) malloc(0x1000));
+		xwrite((uint32_t) (p = malloc(0x1000)));
+		*p = 0x12345678;
+		free(p);
 		swrite("\n");
 	}
 

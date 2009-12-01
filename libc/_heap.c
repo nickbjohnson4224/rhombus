@@ -130,20 +130,20 @@ static void *_ba_alloc(size_t size) {
 
 static void _ba_free(void *ptr) {
 	uintptr_t index = ((uintptr_t) ptr - HEAP_START) / 0x1000;
-	
-	if (_ba_bitmap[index / 32] & (1 << index % 32)) {
+
+	if ((_ba_bitmap[index / 32] & (1 << (index % 32))) == 0) {
 		return;
 	}
 	else {
-		umap_call(HEAP_START + index * 0x1000, 0x1000);
-		_ba_bitmap[index / 32] &= ~(1 << index % 32);
+		umap_call((uint32_t) ptr, 0x1000);
+		_ba_bitmap[index / 32] &= ~(1 << (index % 32));
 	}
 }
 
 static bool _ba_cont(void *ptr) {
 	uintptr_t addr = (uintptr_t) ptr;
 
-	if (addr > HEAP_START && addr < HEAP_MXBRK) {
+	if (addr >= HEAP_START && addr < HEAP_MXBRK) {
 		return true;
 	}
 	

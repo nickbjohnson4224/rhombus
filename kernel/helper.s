@@ -31,6 +31,7 @@ get_cr3:
 
 global idle
 idle:
+	mov eax, [esp]
 	sti
 	hlt
 
