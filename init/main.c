@@ -78,7 +78,7 @@ int main() {
 
 	swrite("Allocator test:\n");
 	for (i = 0; i < 8; i++) {
-		xwrite((uint32_t) (p = malloc(2 * sizeof(void*))));
+		xwrite((uint32_t) (p = malloc(4 * sizeof(void*))));
 		*p = 0x12345678;
 		free(p);
 		swrite("\n");

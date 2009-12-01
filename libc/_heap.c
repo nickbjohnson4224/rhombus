@@ -10,11 +10,11 @@
 #define HEAP_SIZE (HEAP_MXBRK - HEAP_START)
 
 static struct _heap_allocator _ba; /* Big Allocator */
-/*static struct _heap_allocator _qa; */ /* Quad Allocator */
+static struct _heap_allocator _qa; /* Quad Allocator */
 static struct _heap_allocator _ca; /* Cell Allocator */
 
 /* This MUST be sorted by ascending maximum allocation size */
-static struct _heap_allocator *_heap_alg[] = { &_ca, &_ba, NULL };
+static struct _heap_allocator *_heap_alg[] = { &_ca, &_qa, &_ba, NULL };
 
 /*** The Heap ***/
 
@@ -209,8 +209,6 @@ static void _ca_free(void *ptr) {
 static bool _ca_cont(void *ptr) {
 	struct _ca_cell *block = _ca_block_list;
 
-	return true;
-
 	while (block) {
 		if (_ca_find(ptr, block) == true) {
 			return true;
@@ -248,3 +246,103 @@ static bool _ca_find(void *ptr, struct _ca_cell *block) {
 	if (addr >= base && addr < base + PAGESZ) return true;
 	return false;
 }
+
+/*** Quad Allocator ***/
+
+/* The Quad Allocator (_qa_*) is a copy of the 
+ * Cell Allocator that allocates chunks of size
+ * 16 instead of 8, or four pointers on this
+ * architecture. It is more suitable for use in
+ * trees and more complex data structures.
+ */
+
+struct _qa_cell {
+	struct _qa_cell *car;
+	struct _qa_cell *cdr;
+	uintptr_t extra[2];
+};
+
+static struct _qa_cell *_qa_block_list;
+static struct _qa_cell *_qa_free_list;
+static void _qa_init(void);
+static void *_qa_alloc(size_t);
+static void _qa_free(void*);
+static bool _qa_cont(void*);
+static size_t _qa_size(void*);
+
+static struct _qa_cell *_qa_new_block(void);
+static bool _qa_find(void *ptr, struct _qa_cell *block);
+
+static struct _heap_allocator _qa = {
+	4 * sizeof(void*),
+	&_qa_init,
+	&_qa_alloc,
+	&_qa_free,
+	&_qa_cont,
+	&_qa_size,
+};
+
+static void _qa_init(void) {
+	_qa_block_list = NULL;
+	_qa_free_list = _qa_new_block();
+}
+
+static void *_qa_alloc(size_t size) {
+	struct _qa_cell *t;
+
+	if (!_qa_free_list) return NULL;
+
+	t = _qa_free_list;
+	_qa_free_list = _qa_free_list->cdr;
+
+	return t;
+}
+
+static void _qa_free(void *ptr) {
+	struct _qa_cell *cell = ptr;
+
+	cell->cdr = _qa_free_list;
+	_qa_free_list = cell;
+}
+
+static bool _qa_cont(void *ptr) {
+	struct _qa_cell *block = _qa_block_list;
+
+	while (block) {
+		if (_qa_find(ptr, block) == true) {
+			return true;
+		}
+		block = block->cdr;
+	}
+
+	return false;
+}
+
+static size_t _qa_size(void *ptr) {
+	ptr = NULL;
+	return (4 * sizeof(void*));
+}
+
+static struct _qa_cell *_qa_new_block(void) {
+	struct _qa_cell *block = malloc(PAGESZ);
+	size_t i;
+
+	block->cdr = _qa_block_list;
+	_qa_block_list = block;
+
+	for (i = 1; i < PAGESZ / sizeof(struct _qa_cell) - 1; i++) {
+		block[i].cdr = &block[i+1];
+	}
+	block[i].cdr = NULL;
+
+	return &block[1];
+}
+
+static bool _qa_find(void *ptr, struct _qa_cell *block) {
+	uintptr_t addr = (uintptr_t) ptr;
+	uintptr_t base = (uintptr_t) &block[1];
+
+	if (addr >= base && addr < base + PAGESZ) return true;
+	return false;
+}
+
