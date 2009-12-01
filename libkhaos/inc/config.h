@@ -15,6 +15,8 @@
 
 	/***** MEMORY SUBSYSTEM *****/
 
+	#define PAGESZ 0x1000
+
 	/* These must remain in order */
 	#define ESPACE	0xFC000000	/* Temporary space for exec data */
 	#define SSPACE	0xFCF00000	/* Stack space (grows down from next address) */
