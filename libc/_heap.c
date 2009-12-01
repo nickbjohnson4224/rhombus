@@ -52,10 +52,7 @@ void *_heap_alloc(size_t size) {
 void _heap_free(void *ptr) {
 	size_t i;
 
-	for (i = 0; _heap_alg[i]; i++);
-	i--;
-
-	for (; (int) i >= 0; i--) {
+	for (i = 0; _heap_alg[i]; i++) {
 		if (_heap_alg[i]->cont(ptr)) {
 			_heap_alg[i]->free(ptr);
 			return;
@@ -206,11 +203,13 @@ static void _ca_free(void *ptr) {
 	struct _ca_cell *cell = ptr;
 
 	cell->cdr = _ca_free_list;
-	_ca_free_list = cell->cdr;
+	_ca_free_list = cell;
 }
 
 static bool _ca_cont(void *ptr) {
 	struct _ca_cell *block = _ca_block_list;
+
+	return true;
 
 	while (block) {
 		if (_ca_find(ptr, block) == true) {
