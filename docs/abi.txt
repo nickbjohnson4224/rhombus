@@ -134,6 +134,21 @@ fire: int 0x60
 	- edi set to signal number
 	- ebp set to previous context image address (read-only)
 - grants page if non-null
+- currently assigned signals:
+	- 0: SSIG_FAULT: general exception
+	- 1: SSIG_ENTER: reentry
+	- 2: SSIG_PAGE: page fault
+	- 3: SSIG_IRQ: registered IRQ
+	- 4: SSIG_KILL: kill signal
+	- 5: SSIG_IMAGE: image overflow
+	- 6: SSIG_FLOAT: floating point exception
+	- 7: SSIG_DEATH: child death
+	- 16: SIG_READ: driver read request
+	- 17: SIG_WRITE: driver write request
+	- 18: SIG_INFO: driver info request
+	- 19: SIG_CTRL: driver control request
+	- 20: SIG_PING: ping request
+	- 32: SIG_REPLY: generic reply
 
 drop: int 0x61
 ------------------------------
