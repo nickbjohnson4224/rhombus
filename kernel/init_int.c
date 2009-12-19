@@ -61,18 +61,17 @@ void init_int() {
 		/* Set up interupt descriptor table */
 		init_idt();
 
-		/* Complex remapping code - even I don't understand it well */
-		/* Essentially, it moves all IRQs to interrupts 32-47. */
-		outb(0x20, 0x11);
-		outb(0xA0, 0x11);
-		outb(0x21, 0x20);
-		outb(0xA1, 0x28);
-		outb(0x21, 0x04);
-		outb(0xA1, 0x02);
-		outb(0x21, 0x01);
-		outb(0xA1, 0x01);
-		outb(0x21, 0x00);
-		outb(0xA1, 0x00);
+		/* Initialize 8259 PIC */
+		outb(0x20, 0x11); /* Initialize master */
+		outb(0xA0, 0x11); /* Initialize slave */
+		outb(0x21, 0x20); /* Master mapped to 0x20 - 0x27 */
+		outb(0xA1, 0x28); /* Slave mapped to 0x28 - 0x2E */
+		outb(0x21, 0x04); /* Master thingy */
+		outb(0xA1, 0x02); /* Slave thingy */
+		outb(0x21, 0x01); /* 8086 (standard) mode */
+		outb(0xA1, 0x01); /* 8086 (standard) mode */
+		outb(0x21, 0xFC); /* Allow only master IRQs 0, 1 */
+		outb(0xA1, 0xFF); /* Allow no slave IRQs */
 
 		/* Clear IRQ redirection table */
 		memclr(irq_holder, sizeof(pid_t) * 15);
@@ -105,6 +104,16 @@ void init_int() {
 		register_int(0x52, push_call);	/* Copy memory to another address space */
 		register_int(0x53, pull_call);	/* Copy memory from another address space */
 		register_int(0x54, phys_call);	/* Get physical address */
+
+		/* FLUX system calls (expermental) */
+		/* 0x60 - fire - fire signal to task
+		 * 0x61 - drop - drop from signal context
+		 * 0x62 - hand - register signal handler
+		 * 0x63 - ctrl - control task flags
+		 * 0x64 - info - get task/system information
+		 * 0x65 - mmap - manage memory
+		 * 0x66 - fork - fork new task
+		 * 0x67 - exit - exit current task */
 
 		/* Register fault handlers */
 		init_fault();
