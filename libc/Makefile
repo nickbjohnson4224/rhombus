@@ -23,11 +23,11 @@ $(TARGET): $(HEADERS) $(SOURCES)
 	@ mkdir -p $(BUILDDIR)/inc
 	@ cp $(TARGET) $(BUILDDIR)/lib
 
-.s.o:
+%.o: %.s
 	echo " AS	" $(SUBDIR)/$<
 	@ $(AS) $(ASFLAGS) $<
 
-.c.o:
+%.o: %.c
 	@ echo " CC	" $(SUBDIR)/$<
 	$(CC) $(CFLAGS) -c $< -o $@
 

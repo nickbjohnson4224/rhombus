@@ -1,5 +1,5 @@
-SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
-DRIVERS := $(patsubst %.c,%.a,$(shell find . -name "*.c"))
+SOURCES := $(patsubst ./%.c,%.o,$(shell find . -name "*.c"))
+DRIVERS := $(patsubst ./%.c,lib%.a,$(shell find . -name "*.c"))
 HEADERS := $(shell find inc -name "*.h")
 SUBDIR	:= driver
 CFLAGS  += -ffreestanding -I$(BUILDDIR)/driver/$(SUBDIR)/inc
@@ -14,15 +14,15 @@ $(HEADERS):
 	@ mkdir -p $(BUILDDIR)/inc/driver
 	@ cp $@ $(BUILDDIR)/inc/driver
 
-.c.o: $(HEADERS)
+%.o: %.c $(HEADERS)
 	@ echo " CC	" $(SUBDIR)/$<
 	@ $(CC) $(CFLAGS) -c $< -o $@
 
-.o.a: $(SOURCES)
+lib%.a: %.o $(SOURCES)
 	@ echo " AR	" $(SUBDIR)/$<
-	@ $(AR) $(ARFLAGS) lib$@ $<
-	@ echo " CP	" $(SUBDIR)/lib$@ "->" $(BUILDDIR)/lib
-	@ cp lib$@ $(BUILDDIR)/lib	
+	@ $(AR) $(ARFLAGS) $@ $<
+	@ echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/lib
+	@ cp $@ $(BUILDDIR)/lib	
 
 clean:
 	@ rm $(SOURCES) $(DRIVERS)

@@ -15,11 +15,11 @@ $(TARGET): $(SOURCES)
 	@ mkdir -p $(BUILDDIR)/bin
 	@ mv $(TARGET) $(BUILDDIR)/bin
 
-.s.o:
+%.o: %.s
 	echo " AS	" $(SUBDIR)/$<
 	@ $(AS) $(ASFLAGS) $<
 
-.c.o:
+%.o: %.c
 	echo " CC	" $(SUBDIR)/$<
 	@ $(CC) $(CFLAGS) -c $< -o $@
 
