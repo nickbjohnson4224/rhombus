@@ -169,10 +169,26 @@ request port access and map frames directly, through the CTRL_PORTS and
 MMAP_FRAME flags. They can also request that a single IRQ be redirected as 
 signal 1 to them. These things are managed though interfaces in libdriver.
 
+Drivers are launched during init by a service called the device daemon, or
+devd. It detects all of the devices in the system automatically, and loads
+the appropriate drivers. These drivers are provided with a device ID where they
+should look for information. devd will also spawn drivers when devices are
+hotplugged, and respawn them if they crash. Its behavior has not beed defined
+yet.
+
 In order to be used, drivers must be registered with the virtual filesystem
 daemon, vfsd. vfsd is essentially a dictionary of resources managed by drivers
 in the system, that provides those drivers' PIDs to requesting processes. Its
 behavior has not been defined yet.
+
+Drivers also have access to another service that lets them properly interface
+with the rest of the system: the process metadata daemon, pmdd. pmdd keeps track
+of all metadata about processes that is not basic mechanism information stored
+by the kernel (PID, flags, signal handler). This includes process name, user, 
+permissions, etc. Processes have the choice of registering, but will have little
+or no resource access without doing so. Drivers may use pmdd along with libpermit 
+to decide whether to allow access to a resource. Its behavior has not been defined
+yet.
 
 Drivers should implement a basic set of standard interfaces so processes can
 use them in a consistent fashion:
@@ -207,7 +223,7 @@ The Flux kernel is clearly lacking in an exec system call. It also does not
 have adequate facilities for drivers to load executables for processes. So, all
 executables are loaded directly by the calling process, with help from a 
 library. Linking with different of these libraries, or "libexec"s, enables 
-loading of different executable formats. The native format for Khaos binaries 
+loading of different executable formats. The native format for Flux binaries 
 is ELF, described in the UNIX System V ABI documentataion, but a programmer may
-use any format (s)he wishes. Execution is managed through interfaces in 
-libexec.
+use any format he or she wishes. Execution is managed through interfaces in 
+libexec. A standard libexec is part of the libc.
