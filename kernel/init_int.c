@@ -105,7 +105,7 @@ void init_int() {
 		register_int(0x53, pull_call);	/* Copy memory from another address space */
 		register_int(0x54, phys_call);	/* Get physical address */
 
-		/* FLUX system calls (expermental) */
+		/* ABI 2 system calls (experimental) */
 		/* 0x60 - fire - fire signal to task
 		 * 0x61 - drop - drop from signal context
 		 * 0x62 - hand - register signal handler

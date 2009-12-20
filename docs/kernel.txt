@@ -1,32 +1,52 @@
 Khaos Operating System 0.1
-User Manual Section I - Kernel
+User Manual Section II - Kernel
 ==============================
+
+***** WARNING: THIS DOCUMENT IS UNFINISHED AND OUT OF DATE *****
 
 Introduction
 ==============================
-The purpose of this manual is to help users of the Khaos operating system understand and manipulate the kernel source code. It covers both the general structure of the main kernel systems as well as specific information about the functions that make them up.
+The purpose of this manual is to help users of the Khaos operating system 
+understand and manipulate the kernel source code. It covers both the general 
+structure of the main kernel systems as well as specific information about the 
+functions that make them up.
 
 Contents:
 ==============================
-I - Kernel architecture
-II - Hardware support
-III - The init system
-IV - Memory management
-V - Interrupt handling
-VI - Signals and IPC
-VII - Task management
-IIX - The libsys
-IX - System call ABI
-X - I/O architecture
-XI - Configuration
+I 	- Kernel architecture
+II 	- Hardware support
+III	- The init system
+IV	- Memory management
+V	- Interrupt handling
+VI	- Signals and IPC
+VII	- Task management
+IIX	- The libsys
+IX	- System call ABI
+X	- I/O architecture
+XI	- Configuration
 
 I - Kernel Architecture
 ==============================
-The Khaos kernel is designed so that any reasonably advanced technical user will be able to understand it. The code is written almost entirely in C, and code size is kept under 1000 sorted lines to ensure transparency. Ideally, only about a week of experience with the kernel's internals should be enough to familiarize a developer. 
+The Khaos kernel is designed so that any reasonably advanced technical user 
+will be able to understand it. The code is written almost entirely in C, and 
+code size is kept under 2000 sorted lines to ensure transparency. Ideally, only 
+about a week of experience with the kernel's internals should be enough to 
+familiarize a developer.
 
-Being a microkernel, all device drivers are put in their own processes, and the kernel is kept free of many complex constructs. The kernel also takes some elements from the exokernel design, giving the application developer much lower level control over the system through direct manipulation of the event driven architecture.
+Being a microkernel, all device drivers are put in their own processes, and the
+kernel is kept free of many complex constructs. The kernel also takes some
+elements from the exokernel design, giving the application developer much lower
+level control over the system through direct manipulation of the event driven
+architecture.
 
-The kernel has three main responsibilites in the system. First, it manages the physical memory and address spaces associated with different tasks, as well as the protection schemes associated with virtual memory. Second, it handles various events and interrupts, both from applications and from hardware, and redirects them to the appropriate recipient. Third, it keeps track of all tasks, and schedules them to be run in fair proportions to each other. Other functions of the system occur through an IPC method based on the event driven architecture.
+The kernel has three main responsibilites in the system. First, it manages the 
+physical memory and address spaces associated with different tasks, as well as 
+the protection schemes associated with virtual memory. Second, it handles 
+various events and interrupts, both from applications and from hardware, and 
+redirects them to the appropriate recipient. Third, it keeps track of all 
+tasks, and schedules them to be run in fair proportions to each other. Other 
+functions of the system occur through an IPC method based on the event driven 
+architecture.
 
 II - Hardware Support
 ==============================
@@ -34,9 +54,19 @@ All I/O devices are handled by the drivers, so there are very few aspects of the
 
 Because it uses paging as a virtual memory technique, all architectures that the kernel may run on must have a proper MMU. This includes nearly every architecture used outside embedded development. Khaos/x86 is designed to be very compact not only in interfaces and code size, but also in memory usage. As such, it will happily run on a PC with only 4MB of RAM. It will also accept up to 3.5GB of RAM, as much as the PAE-disabled x86 architecture will support. The kernel itself uses approximately 512KB of RAM after initialization. However, the current init system requires the use of 4MB pages, which limits the processor range to i586+. This should be fixed in the near future.
 
-From an interrupt standpoint, any x86 processor should work fine, because everything is kept at a i386 level. The kernel does not take advantage of the new APIC interrupt controller, and instead uses the older and more common 8259 PIC. In most cases, this does not make a difference, unless you need a very large number of devices (like in a server). When an interrupt fires, the state of the current process is saved. So far, there is no support for saving the FPU and SSE registers, due to space restrictions on the task state stack - this means no support for floating point or SSE/MMX extensions. The option will be provided in later versions at a ~16KB memory cost per task.
+From an interrupt standpoint, any x86 processor should work fine, because 
+everything is kept at a i386 level. The kernel does not take advantage of 
+the new APIC interrupt controller, and instead uses the older and more 
+common 8259 PIC. In most cases, this does not make a difference, unless you 
+need a very large number of devices (like in a server). When an interrupt 
+fires, the state of the current process is saved.
 
-The kernel also does not support SMP - processors with multiple discrete processing "cores". Because of the complexity of implementing SMP, and the scope of the project, this may not happen for a while. Multiple threads per task is not enabled via the kernel, but the way in which the event driven architecture works, it is simple to emulate them in userspace. More on the relationship between IPC, tasks, and events will be covered in section VI.
+The kernel also does not support SMP - processors with multiple discrete 
+processing "cores". Because of the complexity of implementing SMP, and the 
+scope of the project, this may not happen for a while. Multiple threads per 
+task is not enabled via the kernel, but the way in which the event driven 
+architecture works, it is simple to emulate them in userspace. More on 
+the relationship between IPC, tasks, and events will be covered in section VI.
 
 III - The Init System
 ==============================
@@ -46,7 +76,12 @@ The operation of the init system is linear, so the functions it does are listed 
 
 start:
 ------------------------------
-This function first enables paging (with 4MB pages) and maps the kernel both ar 0x1000000 and 0xFF100000, starting lower then jumping higher. It then loads a pre-built GDT, which stores the segment descriptors. It switches to the proper kernel stack and passes information to init(). When init() returns (after the init system is done), the kernel idles until a timer interrupt starts the first task.
+This function first enables paging (with 4MB pages) and maps the kernel both
+at 0x1000000 and 0xFF100000, starting lower then jumping higher. It then loads 
+a pre-built GDT, which stores the segment descriptors. It switches to the 
+proper kernel stack and passes information to init(). When init() returns 
+(after the init system is done), the kernel idles until a timer interrupt 
+starts the first task.
 
 init:
 ------------------------------

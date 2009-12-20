@@ -1,0 +1,134 @@
+Khaos Operating System 0.1
+User Manual Section I - ABI
+==============================
+
+Contents:
+==============================
+I	- Process Control
+II	- Memory Management
+III	- Interprocess Communication
+IV	- Driver Interfaces
+V	- Executable Loading
+
+I	- Process Control
+==============================
+Khaos provides the same two basic system calls for process creation and 
+destruction as UNIX: fork and exit. However, a few small differences exist.
+
+fork: int 0x66
+------------------------------
+- takes no arguments
+- returns either
+	- 0 on failure
+	- positive of child PID if parent
+	- negative of parent PID if child
+- creates a new process from the current one
+	- same memory contents
+	- same process flags
+	- new PID
+
+exit: int 0x67
+------------------------------
+- takes one argument
+	- ecx: exit value page
+- does not return
+- destroys current process
+- sends signal to parent
+	- signal 7
+	- exit value page granted
+
+There are also three system calls used to control the state of the current
+process. These calls are ctrl, hand, and info.
+
+ctrl: int 0x63
+------------------------------
+- takes two arguments
+	- eax: flag values
+	- edx: flag mask
+- returns current flag values
+- sets flags marked in flag mask to values in flag values
+
+hand: int 0x62
+------------------------------
+- takes one argument
+	- eax: new handler
+- returns previous handler
+- sets signal hander for current process
+
+info: int 0x64
+------------------------------
+- takes one argument
+	- eax: selector
+- returns requested data
+- assigned selectors
+	- 0: current PID
+	- 1: parent PID
+	- 2: ticks elapsed
+
+II	- Memory Management
+==============================
+All Khaos memory management is done through a single mulitplexed call: mmap. 
+Khaos does not allow any memory to be mapped in multiple address spaces, for
+stability and security reasons. However, this does not mean it cannot take
+advantage of the paging system it requires: signals can grant pages to other 
+processes with the help of this call.
+
+mmap: int 0x65
+------------------------------
+- takes three arguments
+	- ebx: virtual address
+		- must be page aligned
+	- ecx: page count
+		- maximum 1024 pages per call
+		- assumed to be 1 if MMAP_FRAME
+	- edx: flags | frame
+		- first 12 bits: flags
+			- bit 0: MMAP_READ: page is readable
+			- bit 1: MMAP_WRITE: page is writable
+			- bit 2: MMAP_EXEC: page is executable
+			- bit 3: MMAP_FREE: free page instead of allocating
+			- bit 4: MMAP_FRAME: try to use frame
+		- last 20 bits: grant page (if MMAP_FRAME)
+			- only allowed if super or if frame was granted
+- returns 0 on success, negative on failure
+- maps memory with the requested flags into the requested frames
+
+III	- Interprocess Communication
+==============================
+Khaos has only one basic IPC facility: signals. Signals can be described as a 
+form of asynchronous unqueued pure message passing, with an interface similar
+to UNIX signals, which create a preemptive handler context in the target 
+process. Signals are also used by the kernel to notify processes of internal
+exceptions, IRQ firings, and other events. Signals can also be compared closely
+to interrupts.
+
+Two system calls are needed to work with signals: fire and drop.
+
+fire: int 0x60
+------------------------------
+- takes three arguments
+	- eax: target process
+	- ebx: granted page
+	- ecx: signal number
+		- limited to 16 bits
+- returns 0 on success, negative on failure
+- fires a signal to another process
+- grants page if non-null
+
+drop: int 0x61
+------------------------------
+- takes no arguments
+- does not return
+- if granted page is unmapped, it is freed
+
+IV	- Driver Interfaces
+==============================
+
+V	- Executable Loading
+==============================
+The Khaos kernel is clearly lacking in an exec system call. It also does not 
+have adequate facilities for drivers to load executables for processes. So, all
+executables are loaded directly by the calling process, with help from a 
+library. Linking with different of these libraries, or "libexec"s, enables 
+loading of different executable formats. The native format for Khaos binaries is
+ELF, described in the UNIX System V ABI documentataion.
