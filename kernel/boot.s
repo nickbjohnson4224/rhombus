@@ -111,5 +111,8 @@ start:
 
 	call init
 
+	; Create saved images at some empty space
+	mov esp, 0xFCFF1000
+
 	sti
 	jmp $

@@ -70,7 +70,7 @@ void init_int() {
 		outb(0xA1, 0x02); /* Slave thingy */
 		outb(0x21, 0x01); /* 8086 (standard) mode */
 		outb(0xA1, 0x01); /* 8086 (standard) mode */
-		outb(0x21, 0xFC); /* Allow only master IRQs 0, 1 */
+		outb(0x21, 0xFE); /* Allow only master IRQ 0 */
 		outb(0xA1, 0xFF); /* Allow no slave IRQs */
 
 		/* Clear IRQ redirection table */

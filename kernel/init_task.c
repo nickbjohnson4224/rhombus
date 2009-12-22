@@ -56,7 +56,7 @@ void init_task() {
 
 		/* Setup process image */
 		t->image->useresp = USTACK_INI;
-		t->image->esp = USTACK_INI;
+		t->image->esp = (uint32_t) &t->image->num;
 		t->image->ebp = USTACK_INI;
 		t->image->ss  = 0x23;
 		t->image->ds  = 0x23;
@@ -64,6 +64,7 @@ void init_task() {
 		t->image->cs  = 0x1B;
 		t->image->eflags = get_eflags() | 0x3200; 	/* IF, IOPL=3 */
 		t->image->mg  = 0x42242442;
+		tss_set_esp((uint32_t) &t->image[1]);
 
 	cursek(74, -1);
 	printk("[done]");
