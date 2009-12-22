@@ -61,18 +61,6 @@ void init_int() {
 		/* Set up interupt descriptor table */
 		init_idt();
 
-		/* Initialize 8259 PIC */
-		outb(0x20, 0x11); /* Initialize master */
-		outb(0xA0, 0x11); /* Initialize slave */
-		outb(0x21, 0x20); /* Master mapped to 0x20 - 0x27 */
-		outb(0xA1, 0x28); /* Slave mapped to 0x28 - 0x2E */
-		outb(0x21, 0x04); /* Master thingy */
-		outb(0xA1, 0x02); /* Slave thingy */
-		outb(0x21, 0x01); /* 8086 (standard) mode */
-		outb(0xA1, 0x01); /* 8086 (standard) mode */
-		outb(0x21, 0xFE); /* Allow only master IRQ 0 */
-		outb(0xA1, 0xFF); /* Allow no slave IRQs */
-
 		/* Clear IRQ redirection table */
 		memclr(irq_holder, sizeof(pid_t) * 15);
 
@@ -85,6 +73,9 @@ void init_int() {
 
 		/* Initialize the TSS */
 		init_tss();
+
+		/* Set the PIC to mask all bit IRQ 0 */
+		pic_mask(0x0001);
 
 		/* ABI 2 system calls */
 		register_int(0x60, fire);

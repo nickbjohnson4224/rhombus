@@ -1,5 +1,7 @@
 ; Copyright 2009 Nick Johnson
 
+#include <config.h>
+
 [bits 32]
 
 ; Multiboot stuff
@@ -28,11 +30,11 @@ section .pdata
 
 ; Initial kernel address space
 init_kmap:
-    dd (init_ktbl - 0xFE000000 + 3)	
+    dd (init_ktbl - KSPACE + 3)	
 	times 1015 dd 0	; Fill until 0xFE000000
-	dd (init_ktbl - 0xFE000000 + 3)
+	dd (init_ktbl - KSPACE + 3)
 	times 6 dd 0	; Fill remainder of map
-	dd (init_kmap - 0xFE000000 + 3)
+	dd (init_kmap - KSPACE + 3)
 
 init_ktbl:
 %assign i 0
@@ -74,7 +76,7 @@ extern int_return
 global start
 start:
 	cli
-	mov ecx, init_kmap - 0xFE000000	; Physical address
+	mov ecx, init_kmap - KSPACE	; Physical address
 	mov cr3, ecx	; Load address into CR3
 	mov ecx, cr4
 	mov edx, cr0
@@ -106,13 +108,13 @@ start:
 	push eax	; Push multiboot magic number for identification
 
 	; Push *virtual* multiboot pointer
-	add ebx, 0xFE000000
+	add ebx, KSPACE
 	push ebx
 
 	call init
 
 	; Create saved images at some empty space
-	mov esp, 0xFCFF1000
+	mov esp, USTACK_INI - 0x1000
 
 	sti
 	jmp $

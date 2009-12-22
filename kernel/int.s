@@ -1,5 +1,7 @@
 ; Copyright 2009 Nick Johnson
 
+#include <config.h>
+
 %macro INTN 1
   global int%1
   int%1:

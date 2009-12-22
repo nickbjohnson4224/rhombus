@@ -19,6 +19,7 @@ image_t *pit_handler(image_t *state);
 #define DEIRQ(n) (n - 32)
 void register_int(uint8_t n, handler_t handler);
 void tss_set_esp(uint32_t esp);
+void pic_mask(uint16_t mask);
 
 /***** ABI 2 System Calls *****/
 image_t *fire(image_t *image);

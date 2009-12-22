@@ -7,16 +7,18 @@ CC := /usr/khaos/bin/i586-elf-gcc
 LD := /usr/khaos/bin/i586-elf-ld
 AR := /usr/khaos/bin/i586-elf-ar
 AS := nasm
+PP := /usr/khaos/bin/i586-elf-cpp
 
-CFLAGS  := -march=i586 -pipe -Wall -Werror -Wextra -pedantic
-CFLAGS  += -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-unused-parameter
-CFLAGS	+= -Wno-array-bounds
-CFLAGS  += -O0
+CFLAGS	:= -march=i586 -pipe -Wall -Werror -Wextra -pedantic
+CFLAGS	+= -Wpointer-arith -Wcast-align -Wwrite-strings
+CFLAGS	+= -Wno-array-bounds -Wno-unused-parameter
+CFLAGS	+= -O3 -fomit-frame-pointer
 CFLAGS	+= -ffreestanding -I$(BUILDDIR)/inc
 LDFLAGS := -L$(BUILDDIR)/lib
 ARFLAGS := rcs
+PPFLAGS := -x assembler-with-cpp -I$(BUILDDIR)/inc
 
-export BUILDDIR CC LD AR AS CFLAGS LDFLAGS ARFLAGS
+export BUILDDIR CC LD AR AS PP CFLAGS LDFLAGS ARFLAGS PPFLAGS
 
 .PHONY: $(LIB_DIRS) $(BIN_DIRS) clean test cd distclean makedirs
 
@@ -44,6 +46,8 @@ clean:
 	@ rm $(shell find . -name "*.o")
 	@ echo " CLEAN	" $(shell find . -name "*.a")
 	@ rm $(shell find . -name "*.a")
+	@ echo " CLEAN	" $(shell find . -name "*.pp")
+	@ rm $(shell find . -name "*.pp")
 	@ echo " CLEAN	" bin/*
 	@ rm bin/*
 

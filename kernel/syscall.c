@@ -51,9 +51,6 @@ image_t *fault_page(image_t *image) {
 		panic("page fault exception");
 	}
 
-	printk("segfault: %x @ %x", cr2, image->eip);
-	for(;;);
-
 	/* If in userspace, redirect to signal S_PAG, with faulting address */
 	return signal(curr_pid, S_PAG, NULL, TF_NOERR | TF_EKILL);
 }
@@ -114,12 +111,14 @@ image_t *ctrl(image_t *image) {
 			if (irq < 15) {
 				irq_holder[irq] = curr_pid;
 				register_int(IRQ(irq), irq_redirect);
+				pic_mask(1 << irq);
 			}
 		}
 		else {
 			irq = (curr_task->flags >> 24) & 0xFF;
 			irq_holder[irq] = 0;
 			register_int(IRQ(irq), NULL);
+			pic_mask(1 << irq);
 		}
 	}
 

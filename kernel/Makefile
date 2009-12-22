@@ -16,8 +16,10 @@ $(TARGET): $(SOURCES) inc/*
 	@ mv $(TARGET) $(BUILDDIR)/bin
 
 %.o: %.s
-	echo " AS	" $(SUBDIR)/$<
-	@ $(AS) $(ASFLAGS) $<
+	@ echo " PP	" $(SUBDIR)/$<
+	@ $(PP) $(PPFLAGS) $< $<.pp
+	@ echo " AS	" $(SUBDIR)/$<
+	@ $(AS) $(ASFLAGS) $<.pp -o $@
 
 %.o: %.c
 	echo " CC	" $(SUBDIR)/$<

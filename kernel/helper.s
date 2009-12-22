@@ -2,6 +2,8 @@
 
 [bits 32]
 
+#include <config.h>
+
 section .text
 
 global page_flush_full
