@@ -38,6 +38,16 @@ image_t *pull_call(image_t *image); /* 0x53 - remote pull */
 image_t *phys_call(image_t *image); /* 0x54 - get physical address */
 image_t *drop_call(image_t *image); /* 0x55 - drop from drivermode */
 
+/***** ABI 2 System Calls *****/
+image_t *fire(image_t *image);
+image_t *drop(image_t *image);
+image_t *hand(image_t *image);
+image_t *ctrl(image_t *image);
+image_t *info(image_t *image);
+image_t *mmap(image_t *image);
+image_t *fork(image_t *image);
+image_t *exit(image_t *image);
+
 /* Return with eax set to a value */
 #define ret(image, value) do { \
 image->eax = value; \

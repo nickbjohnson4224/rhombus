@@ -34,7 +34,7 @@ exit: int 0x67
 - does not return
 - destroys current process
 - sends signal to parent
-	- signal 7
+	- sig 7: SSIG_DEATH
 	- exit value page granted
 
 There are also three system calls used to control the state of the current
@@ -47,6 +47,16 @@ ctrl: int 0x63
 	- edx: flag mask
 - returns current flag values
 - sets flags marked in flag mask to values in flag values
+- currently assigned flags
+	- bit 0: CTRL_SCHED: block scheduling
+	- bit 1: CTRL_SIGNAL: block signals
+	- bit 2: CTRL_ENTER: signal on reentry
+	- bit 3: CTRL_SUPER: super (super only)
+	- bit 4: CTRL_PORTS: port i/o (super only)
+	- bit 5: CTRL_IRQRD: irq redirect (super only)
+	- bits 8-11: scheduling priority (bit 8 super only)
+	- bits 12-23: unassigned (zero only)
+	- bits 24-31: irq number (super only)
 
 hand: int 0x62
 ------------------------------
@@ -64,6 +74,7 @@ info: int 0x64
 	- 0: current PID
 	- 1: parent PID
 	- 2: ticks elapsed
+	- 3: kernel version
 
 II	- Memory Management
 ==============================
@@ -111,8 +122,13 @@ fire: int 0x60
 	- ebx: granted page
 	- ecx: signal number
 		- limited to 16 bits
+		- first 16 reserved for system
 - returns 0 on success, negative on failure
 - fires a signal to another process
+	- signal is created in new signal handling context
+	- esi set to calling PID
+	- ebx set to granted page
+	- edi set to signal number
 - grants page if non-null
 
 drop: int 0x61
@@ -120,9 +136,48 @@ drop: int 0x61
 - takes no arguments
 - does not return
 - if granted page is unmapped, it is freed
+- signal handling context destroyed
+- preempted context resumed immediately
 
 IV	- Driver Interfaces
 ==============================
+Drivers in Khaos are individual processes, which have special privileges. Init
+spawns a process called devd, the device daemon, which analyzes the hardware 
+and spawns drivers. Drivers have the CTRL_SUPER flag set, which allows them to 
+request port access and map frames directly, through the CTRL_PORTS and 
+MMAP_FRAME flags. They can also request that a single IRQ be redirected as 
+signal 1 to them. These things are managed though interfaces in libdriver.
+
+In order to be used, drivers must be registered with the virtual filesystem
+daemon, vfsd. vfsd is essentially a dictionary of resources managed by drivers
+in the system, that provides those drivers' PIDs to requesting processes. Its
+behavior has not been defined yet.
+
+Drivers should implement a basic set of standard interfaces so processes can
+use them in a consistent fashion:
+- sig 16: read	(read data)
+- sig 17: write	(write data)
+- sig 18: info	(get metadata)
+- sig 19: ctrl	(set metadata)
+- sig 20: ping	(reply immediately)
+- sig 32: reply	(a reply from a driver)
+
+Resource 0 should represent the entire device.
+
+Data is given to drivers through granted pages. These pages have a standard
+header format that takes up the first 32 bytes, which will specify the exact
+action that should be taken by the driver. Here is a draft of the format:
+- bits 000-031: resource ID		(resource ID == inode)
+- bits 032-047: data size		(less than page size)
+- bits 048-063: transaction ID	(defined by caller, used for reply)
+- bits 064-095: checksum		(of everything but checksum, byte product)
+- bits 096-127: undefined
+- bits 128-255: offset			(screw you if files are > 2^128 bytes)
+All numbers are in network byte order (big endian).
+
+When an action finishes, the driver should reply with a signal which has a 
+granted page with a header containing the same transaction ID as was sent, 
+using signal 32: SIG_REPLY.
 
 V	- Executable Loading
 ==============================
@@ -130,5 +185,7 @@ The Khaos kernel is clearly lacking in an exec system call. It also does not
 have adequate facilities for drivers to load executables for processes. So, all
 executables are loaded directly by the calling process, with help from a 
 library. Linking with different of these libraries, or "libexec"s, enables 
-loading of different executable formats. The native format for Khaos binaries is
-ELF, described in the UNIX System V ABI documentataion.
+loading of different executable formats. The native format for Khaos binaries 
+is ELF, described in the UNIX System V ABI documentataion, but a programmer may
+use any format (s)he wished. Execution is managed through interfaces in 
+libexec.

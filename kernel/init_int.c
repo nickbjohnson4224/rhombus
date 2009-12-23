@@ -106,14 +106,14 @@ void init_int() {
 		register_int(0x54, phys_call);	/* Get physical address */
 
 		/* ABI 2 system calls (experimental) */
-		/* 0x60 - fire - fire signal to task
-		 * 0x61 - drop - drop from signal context
-		 * 0x62 - hand - register signal handler
-		 * 0x63 - ctrl - control task flags
-		 * 0x64 - info - get task/system information
-		 * 0x65 - mmap - manage memory
-		 * 0x66 - fork - fork new task
-		 * 0x67 - exit - exit current task */
+		register_int(0x60, fire);
+		register_int(0x61, drop);
+		register_int(0x62, hand);
+		register_int(0x63, ctrl);
+		register_int(0x64, info);
+		register_int(0x65, mmap);
+		register_int(0x66, fork);
+		register_int(0x67, exit);
 
 		/* Register fault handlers */
 		init_fault();

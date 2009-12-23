@@ -49,13 +49,18 @@ typedef struct {
 	uint32_t shandler;
 } task_t;
 
+#define TF_SMASK 0x07
 #define TF_READY 0x00
 #define TF_BLOCK 0x01
+#define TF_SBLOK 0x02
+#define TF_ENTER 0x04
+#define TF_SUPER 0x08
+#define TF_PORTS 0x10
+#define TF_IRQRD 0x20
+
 #define TF_UNBLK 0x02
 #define TF_NOERR 0x04
 #define TF_EKILL 0x08
-#define TF_SUPER 0x10
-#define TF_SBLOK 0x20
 
 void task_touch(pid_t pid);
 task_t *task_get(pid_t pid);

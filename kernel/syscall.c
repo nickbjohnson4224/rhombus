@@ -8,8 +8,8 @@
 /***** IRQ HANDLERS *****/
 
 /* Handles IRQ 0, and advances a simple counter used as a clock */
+uint32_t tick = 0;
 image_t *pit_handler(image_t *image) {
-	static uint32_t tick = 0;
 	if (image->cs | 1) tick++;
 
 	/* Switch to next scheduled task */
@@ -469,4 +469,82 @@ image_t *phys_call(image_t *image) {
 image_t *eout_call(image_t *image) {
 	printk("%s\n", image->eax);
 	return image;
+}
+
+/***** ABI 2 System Calls *****/
+image_t *fire(image_t *image) {
+	ret(image, -1);
+}
+
+image_t *drop(image_t *image) {
+	ret(image, -1);
+}
+
+image_t *hand(image_t *image) {
+	return sreg_call(image);
+}
+
+image_t *ctrl(image_t *image) {
+	uint32_t flags = image->eax;
+	uint32_t mask = image->edx;
+
+	if ((curr_task->flags & TF_SUPER) == 0) {
+		mask &= TF_SMASK;
+	}
+
+	curr_task->flags = (curr_task->flags & ~mask) | (flags & mask);
+
+	ret(image, curr_task->flags);
+}
+
+image_t *info(image_t *image) {
+	uint8_t sel = image->eax;
+
+	switch (sel) {
+	case 0: ret(image, curr_pid);
+	case 1: ret(image, curr_task->parent);
+	case 2: ret(image, tick);
+	case 3: ret(image, 2);
+	default: ret(image, -1);
+	}
+}
+
+image_t *mmap(image_t *image) {
+	uintptr_t addr = image->ebx;
+	size_t count =   image->ecx;
+	uint16_t flags = image->edx & 0xFFF;
+	uint32_t frame = image->edx & ~0xFFF;
+	uint16_t pflags = 0;
+
+	if (addr & 0xFFF) ret(image, -1);
+
+	if (flags & 0x08) {
+		mem_free(addr, count * PAGESZ);
+		ret(image, 0);
+	}
+	
+	if (flags & 0x01) pflags |= PF_PRES;
+	if (flags & 0x02) pflags |= PF_RW;
+	if (flags & 0x04) pflags |= PF_PRES;
+
+	if (flags & 0x10) {
+		if (curr_task->flags & TF_SUPER) {
+			page_set(addr, page_fmt(frame, pflags));
+			ret(image, 0);
+		}
+		else {
+			ret(image, -1);
+		}
+	}
+
+	mem_alloc(addr, count * PAGESZ, pflags);
+	ret(image, 0);
+}
+
+image_t *fork(image_t *image) {
+	return fork_call(image);
+}
+
+image_t *exit(image_t *image) {
+	return exit_call(image);
 }
