@@ -37,14 +37,14 @@ extern uint32_t *signal_map;
 
 /***** TASK TABLE *****/
 /* Size must be a divisor of 4096 */
-typedef struct {
+typedef struct task {
 	map_t map;
 	image_t *image;
-	uint8_t flags;
+	uint32_t flags;
 	uint8_t quanta;
 	uint16_t magic;
 	pid_t pid;
-	pid_t next_task;
+	struct task *next_task;
 	pid_t parent;
 	uint32_t shandler;
 } task_t;

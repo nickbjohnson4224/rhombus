@@ -77,29 +77,47 @@ void segfault(uint32_t source, uint32_t args[4]) {
 	swrite("\n");
 
 	for(;;);
-	exit_call(1);
+	exit(1);
+}
+
+void death(uint32_t source, uint32_t args[4]) {
+/*	swrite("child exit: ");
+	xwrite(source);
+	swrite("\n"); */
 }
 
 int main() {
 	size_t i, j;
+/*	int32_t pid; */
 	uint32_t *mb[1024];
 
 	khsig_register(0, segfault);
 	khsig_register(2, segfault);
 	khsig_register(3, irq_handler);
+	khsig_register(7, death);
 	khsig_register(42, stuff);
 
 	console.init(0);
 	rirq(console.interrupt, (uint32_t) console.handler);
 /*	print_bootsplash(); */
 
+/*	swrite("Fork test:\n");
+	for (i = 0; i < 10; i++) {
+		pid = fork();
+		if (pid < 0) {
+			for (j = 0; j < 100000000; j++);
+			exit(0);
+		}
+	}
+	for(;;); */
+
 	swrite("Heap: ");
 	xwrite(HEAP_START);
 	swrite(" to ");
 	xwrite(HEAP_MXBRK);
 	swrite("\n");
-
 	swrite("Allocator test:\n");
+	
 	for (i = 0; i < 1; i++) {
 		swrite("\tAllocing 16 Blocks\t");
 		for (j = 0; j < 16; j++) {

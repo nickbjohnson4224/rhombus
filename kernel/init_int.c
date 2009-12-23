@@ -54,7 +54,7 @@ uint16_t irq_holder[15];
 
 __attribute__ ((section(".ttext"))) 
 void init_int() {
-	extern handler_t int_handlers[96];
+	extern handler_t int_handlers[128];
 
 	printk("  Kernel: interrupts");
 

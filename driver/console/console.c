@@ -136,7 +136,7 @@ static void console_handler(uint32_t source, uint32_t args[4]) {
 	if (keymap[c & 0x7F] == '\0') shift = true;
 	c = (size_t) ((shift) ? upkmap[c] : keymap[c]);
 
-	khsig_send(gpid_call(), 0x20, arg);
+	khsig_send(info(0), 0x20, arg);
 
 	cwrite(c);
 	push_call(0, VMEM, (uint32_t) vbuf, WIDTH * HEIGHT * sizeof(uint16_t));

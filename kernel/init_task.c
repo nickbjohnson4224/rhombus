@@ -16,7 +16,7 @@ void init_task() {
 	printk("  Kernel: tasking system");
 
 		/* Set up task allocator */
-		tpool = pool_new(MAX_TASKS);		
+		tpool = pool_new(MAX_TASKS);
 
 		/* Bootstrap task 0 */
 		task_touch(0);
@@ -45,7 +45,7 @@ void init_task() {
 			p_alloc(i, (PF_USER | PF_RW));
 		}
 		for (i = SSTACK_BSE; i < SSTACK_TOP; i += 0x1000) {
-			p_alloc(i, (PF_USER | PF_RW));
+			p_alloc(i, PF_USER);
 		}
 
 		/* Set TIS top pointer */

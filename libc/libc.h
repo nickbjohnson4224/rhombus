@@ -3,6 +3,13 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <khaos/kernel.h>
+
+/*** Memory Management ***/
+
+int32_t __mmap(uint32_t addr, uint32_t size, uint32_t flags);
+int32_t __umap(uint32_t addr, uint32_t size);
+int32_t __emap(uint32_t addr, uint32_t frame, uint32_t flags);
 
 /*** Heap ***/
 

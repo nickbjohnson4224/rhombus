@@ -15,10 +15,10 @@ struct idt_entry {
 	uint8_t  reserved;
 	uint8_t  flags;
 	uint16_t base_h;
-} __attribute__((packed)) idt[96];
+} __attribute__((packed)) idt[128];
 
 /* Redirection table for handling interrupts */
-handler_t int_handlers[96];
+handler_t int_handlers[128];
 
 /* Assembly interrupt handler stubs to be registered in the IDT */
 extern void 
@@ -29,7 +29,8 @@ int34(void), int35(void), int36(void), int37(void), int38(void), int39(void), in
 int41(void), int42(void), int43(void), int44(void), int45(void), int46(void), int47(void),
 int64(void), int65(void), int66(void), int67(void), int68(void), int69(void), int70(void), 
 int71(void), int72(void), int73(void), int80(void), int81(void), int82(void), int83(void), 
-int84(void);
+int84(void), int96(void), int97(void), int98(void), int99(void), int100(void), int101(void),
+int102(void), int103(void);
 
 /* Handlers to be put into the IDT, in order */
 typedef void (*int_handler_t) (void);
@@ -54,7 +55,13 @@ int72, 	int73, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL,
 
 /* Administrative System Calls */
 int80, 	int81, 	int82, 	int83,	int84,	NULL,	NULL,	NULL,
-NULL, 	NULL, 	NULL,	NULL,	NULL,	NULL,	NULL,	NULL
+NULL, 	NULL, 	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+
+/* ABI 2 system calls */
+int96,	int97,	int98,	int99,	int100,	int101,	int102,	int103,
+NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
+NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL
 
 };
 
@@ -64,14 +71,18 @@ void init_idt() {
 	extern void idt_flush(void);
 	uint8_t i;
 
-	memclr(int_handlers, sizeof(handler_t) * 96);
-	memclr(idt, sizeof(struct idt_entry) * 96);
+	memclr(int_handlers, sizeof(handler_t) * 128);
+	memclr(idt, sizeof(struct idt_entry) * 128);
 
 	/* Write privileged interrupt handlers (faults, IRQs) */
-	for (i = 0; i < 48; i++) if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0x8E);
+	for (i = 0; i < 48; i++) {
+		if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0x8E);
+	}
 	
 	/* Write usermode interrupt handlers (syscalls) */
-	for (i = 64;i < 96; i++) if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0xEE);
+	for (i = 64;i< 128; i++) {
+		if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0xEE);
+	}
 
 	/* Write the IDT */
 	idt_flush();
@@ -109,7 +120,6 @@ void *int_handler(image_t *image) {
 
 	/* Call registered C interrupt handler from int_handlers[] table */
 	if (int_handlers[image->num]) {
-		if (image->num >= 0x50 && (t->flags & TF_SUPER) == 0) ret(image, EPERMIT);
 		image = int_handlers[image->num](image);
 	}
 

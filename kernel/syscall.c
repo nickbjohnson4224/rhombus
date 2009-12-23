@@ -106,8 +106,11 @@ image_t *fault_double(image_t *image) {
  * All other metadata is copied.
  */
 image_t *fork_call(image_t *image) {
+	extern void list_sched(void);
 	pid_t parent;
 	task_t *child;
+
+	printk("FORK ");
 
 	/* Save current PID - it will become the parent */
 	parent = curr_pid;
@@ -118,6 +121,9 @@ image_t *fork_call(image_t *image) {
 
 	/* (still in parent) Set return value to child's PID */
 	image->eax = child->pid;
+
+	printk("%d\n", child->pid);
+	list_sched();
 
 	/* Switch to child */
 	image = task_switch(child);
@@ -517,12 +523,15 @@ image_t *mmap(image_t *image) {
 	uint16_t pflags = 0;
 
 	if (addr & 0xFFF) ret(image, -1);
+	if (addr >= KSPACE) ret(image, -1);
+	if (count > 1024) ret(image, -1);
 
 	if (flags & 0x08) {
 		mem_free(addr, count * PAGESZ);
 		ret(image, 0);
 	}
 	
+	pflags |= PF_USER;
 	if (flags & 0x01) pflags |= PF_PRES;
 	if (flags & 0x02) pflags |= PF_RW;
 	if (flags & 0x04) pflags |= PF_PRES;
@@ -535,6 +544,11 @@ image_t *mmap(image_t *image) {
 		else {
 			ret(image, -1);
 		}
+	}
+
+	if (flags & 0x20) {
+		mem_alloc(addr, PAGESZ, pflags);
+		ret(image, page_ufmt(page_get(addr)));
 	}
 
 	mem_alloc(addr, count * PAGESZ, pflags);

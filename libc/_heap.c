@@ -176,7 +176,7 @@ static void *_heap_valloc(size_t size) {
 	}
 	
 	addr = _HEAP_START + (idx * BLOCKSZ);
-	mmap_call(addr, BLOCKSZ, MMAP_RW);
+	__mmap(addr, BLOCKSZ, MMAP_READ | MMAP_WRITE);
 
 	return (void*) addr;
 }
@@ -185,14 +185,13 @@ static void _heap_vfree(void* ptr) {
 	size_t idx = ((uintptr_t) ptr - _HEAP_START) / BLOCKSZ;
 
 	bmap[idx >> 3] &= ~(1 << (idx & 0x7));
-	umap_call((uintptr_t) ptr, BLOCKSZ);
+	__umap((uintptr_t) ptr, BLOCKSZ);
 }
-
 
 /*** The Heap Interface ***/
 
 void _heap_init(void) {
-	mmap_call(_BMAP_START, _BMAP_SIZE, MMAP_RW);
+	__mmap(_BMAP_START, _BMAP_SIZE, MMAP_WRITE | MMAP_READ);
 }
 
 void *_heap_alloc(size_t size) {

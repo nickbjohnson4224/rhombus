@@ -75,6 +75,16 @@ INTN	82 ; push
 INTN	83 ; pull
 INTN	84 ; eout
 
+; ABI 2 system calls
+INTN	96  ; fire
+INTN	97  ; drop
+INTN	98  ; hand
+INTN	99  ; ctrl
+INTN	100 ; info
+INTN	101 ; mmap
+INTN	102 ; fork
+INTN	103 ; exit
+
 extern int_handler
 extern fpu_save
 extern fpu_load
