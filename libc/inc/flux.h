@@ -1,5 +1,5 @@
-#ifndef KHAOS_H
-#define KHAOS_H
+#ifndef FLUX_H
+#define FLUX_H
 
 #include <stdint.h>
 
@@ -67,6 +67,7 @@ typedef struct {
 	uint32_t fpos;
 } file_t;
 
+/*
 typedef struct {
 	uint8_t resource	[4];
 	uint8_t data_size	[2];
@@ -76,6 +77,7 @@ typedef struct {
 	uint8_t header_type	[2];
 	uint8_t file_off	[16];
 } request_t;
+*/
 
 size_t read(file_t *fd, char *buffer, size_t count);
 size_t write(file_t *fd, char *buffer, size_t count);

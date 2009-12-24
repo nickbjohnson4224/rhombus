@@ -61,8 +61,9 @@ image_t *task_switch(task_t *t) {
 	extern void fpu_save(uint32_t *fxdata);
 	extern void fpu_load(uint32_t *fxdata);
 
-	if (t->pid == curr_pid) return t->image;
+	if (t == curr_task) return curr_task->image;
 
+	/* Save FPU state */
 	if (curr_task->flags & TF_FLOAT) {
 		fpu_save(curr_task->image->fxdata);
 	}
@@ -72,9 +73,10 @@ image_t *task_switch(task_t *t) {
 	if (!t->map) panic("invalid task");
 	map_load(t->map);
 
+	/* Load FPU state */
 	if (curr_task->flags & TF_FLOAT) {
-		fpu_load(t->image->fxdata);
+		fpu_load(curr_task->image->fxdata);
 	}
 
-	return t->image;
+	return curr_task->image;
 }

@@ -77,6 +77,7 @@ info: int 0x64
 	- 1: parent PID
 	- 2: ticks elapsed
 	- 3: kernel version
+	- 4: kernel base address
 
 II	- Memory Management
 ==============================

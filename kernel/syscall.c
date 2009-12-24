@@ -77,7 +77,9 @@ image_t *fault_double(image_t *image) {
 
 }
 
-/***** ABI 2 System Calls *****/
+/***** System Calls *****/
+/* See section I of the Flux manual for details */
+
 image_t *fire(image_t *image) {
 	return signal(image->eax, image->ecx, (void*) image->ebx, 0);
 }
@@ -95,18 +97,28 @@ image_t *hand(image_t *image) {
 }
 
 image_t *ctrl(image_t *image) {
+	extern uint32_t can_use_fpu;
 	uint32_t flags = image->eax;
 	uint32_t mask = image->edx;
 	uint8_t irq;
 
+	/* Stop the modification of protected flags if not super */
 	if ((curr_task->flags & TF_SUPER) == 0) {
 		mask &= TF_SMASK;
 	}
 
+	/* Set flags */
 	curr_task->flags = (curr_task->flags & ~mask) | (flags & mask);
 
+	/* Unset CTRL_FLOAT if FPU is disabled */
+	if ((flags & mask & TF_FLOAT) && (can_use_fpu == 0)) {
+		curr_task->flags &= ~TF_FLOAT;
+	}
+
+	/* Update IRQ redirect if CTRL_IRQRD is changed */
 	if (mask & TF_IRQRD) {
 		if (flags & TF_IRQRD) {
+			/* Set IRQ redirect */
 			irq = (flags >> 24) & 0xFF;
 			if (irq < 15) {
 				irq_holder[irq] = curr_pid;
@@ -115,6 +127,7 @@ image_t *ctrl(image_t *image) {
 			}
 		}
 		else {
+			/* Unset IRQ redirect */
 			irq = (curr_task->flags >> 24) & 0xFF;
 			irq_holder[irq] = 0;
 			register_int(IRQ(irq), NULL);
@@ -133,6 +146,7 @@ image_t *info(image_t *image) {
 	case 1: ret(image, curr_task->parent);
 	case 2: ret(image, tick);
 	case 3: ret(image, 2);
+	case 4: ret(image, KSPACE);
 	default: ret(image, -1);
 	}
 }

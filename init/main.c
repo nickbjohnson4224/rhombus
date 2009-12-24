@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <mmap.h>
 #include <flux.h>
 
 #include <driver.h>
@@ -11,10 +12,9 @@
 
 #include <driver/console.h>
 
-#include "../libc/libc.h"
-
 void swrite(const char *message) {
-	console.write(0, strlen(message), (void*) message);
+	extern void console_write(char*, size_t);
+	console_write((char*) message, strlen(message));
 }
 
 static void print_bootsplash() {
@@ -32,7 +32,7 @@ static void print_bootsplash() {
 \t\t\t\t\t|_|\\_\\ |_| |_| |_____| |_____| |_____|\n\
 \t\t\t\t\t          -= Version 0.2a =-\n\n\n"); */
 swrite("\n\
-Welcome to FLUX 0.2a\n\
+Welcome to Flux 0.2a\n\
 Written by Nick Johnson\n\n");
 }
 
@@ -57,24 +57,23 @@ void segfault(uint32_t source, void *grant) {
 }
 
 void writehand(uint32_t source, void *grant) {
-	uintptr_t addr = (uintptr_t) malloc(0x1000);
-	__emap(addr, (uintptr_t) grant, MMAP_READ | MMAP_WRITE);
-	swrite((char*) addr);
-	free((void*) addr);
+	void *addr = malloc(0x1000);
+	emap(addr, (uint32_t) grant, PROT_READ | PROT_WRITE);
+	swrite(addr);
+	free(addr);
 }
 
 int main() {
+	extern void console_init(void);
 	size_t i, j;
 	int32_t pid;
 	static uint32_t *mb[1024];
 
 	sigregister(SSIG_FAULT, segfault);
 	sigregister(SSIG_PAGE, segfault);
-	sigregister(SSIG_IRQ, console.handler);
 	sigregister(SIG_WRITE, writehand);
 
-	console.init(0);
-	rirq(1);
+	console_init();
 	print_bootsplash();
 
 	swrite("Fork test:\n");

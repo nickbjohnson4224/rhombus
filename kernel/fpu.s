@@ -6,6 +6,8 @@
 
 section .data
 
+global can_use_fpu
+
 can_use_fpu: 
 	dd 0
 
