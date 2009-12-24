@@ -14,6 +14,7 @@ void sched_ins(pid_t pid) {
 
 	t = task_get(pid);
 	if (!t) return;
+	t->next_task = NULL;
 
 	if (!queue_next) {
 		queue_next = t;
@@ -23,8 +24,6 @@ void sched_ins(pid_t pid) {
 		queue_last->next_task = t;
 		queue_last = t;
 	}
-
-	t->next_task = NULL;
 }
 
 /* Remove a task from the scheduling queue */
@@ -35,6 +34,11 @@ void sched_rem(pid_t pid) {
 
 	t2 = task_get(pid);
 	if (!t2) return;
+
+	if (queue_next->pid == pid) {
+		queue_next = queue_next->next_task;
+		return;
+	}
 
 	t = queue_next;
 	while (t && t->next_task != t2) {
@@ -48,35 +52,40 @@ void sched_rem(pid_t pid) {
 		}
 	}
 
-	if (queue_next->pid == pid) {
-		queue_next = queue_next->next_task;
-	}
+	queue_last->next_task = NULL;
 }
 
 /* Get the next task from the scheduling queue, 
  * skipping blocked tasks and moving the schedulable task to the end */
 task_t *task_next(uint8_t flags) {
 	extern void idle(void);
-	task_t *t, *f;
+	task_t *t;
 	flags = 0;
 
-	f = queue_next;
 	while (1) {
 		t = queue_next;
-		if (!t || t->next_task == f) {
+		if (!t) {
 			printk("idling\n");
 			idle();
 		}
 		sched_rem(t->pid);
 		sched_ins(t->pid);
-		if ((t->flags & TF_BLOCK) == 0) {
+		if ((t->flags & TF_BLOCK) == 0 && t->magic == 0x4224 
+			&& (t->pid != curr_pid || t->next_task == NULL)) {
 			return t;
 		}
 	}
 }
 
 void list_sched(void) {
-	task_t *t;
+	task_t *t, *f;
+
+	f = queue_next;
+	for (t = queue_next; t && t->next_task != f; t = t->next_task);
+	if (t && t->next_task == f) {
+		printk("scheduler loop detected!\n");
+		return;
+	}
 
 	printk("sched contents: ");
 	for (t = queue_next; t; t = t->next_task) {

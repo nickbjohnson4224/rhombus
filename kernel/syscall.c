@@ -53,7 +53,8 @@ image_t *fault_page(image_t *image) {
 
 	/* If in kernelspace, panic */
 	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */
-		printk("page fault at %x, ip = %x\n", cr2, image->eip);
+		printk("page fault at %x, ip = %x error %x frame %x task %d\n", 
+			cr2, image->eip, image->err, page_get(cr2), curr_pid);
 		panic("page fault exception");
 	}
 
@@ -110,8 +111,6 @@ image_t *fork_call(image_t *image) {
 	pid_t parent;
 	task_t *child;
 
-	printk("FORK ");
-
 	/* Save current PID - it will become the parent */
 	parent = curr_pid;
 
@@ -121,9 +120,6 @@ image_t *fork_call(image_t *image) {
 
 	/* (still in parent) Set return value to child's PID */
 	image->eax = child->pid;
-
-	printk("%d\n", child->pid);
-	list_sched();
 
 	/* Switch to child */
 	image = task_switch(child);
@@ -145,6 +141,7 @@ image_t *fork_call(image_t *image) {
  */
 image_t *exit_call(image_t *image) {
 	extern void halt(void);
+	extern void list_sched(void);
 	uint32_t args[4];
 	pid_t dead_task;
 	uint32_t ret_val;
@@ -157,13 +154,17 @@ image_t *exit_call(image_t *image) {
 	ret_val = image->eax;
 
 	/* If init exits, halt */
-	if (dead_task == 1) halt();
+	if (dead_task == 1) {
+		printk("\nhalting...");
+		halt();
+	}
 
 	/* Deallocate current address space and clear metadata */
 	t = task_get(dead_task);
 	map_clean(t->map);	/* Deallocate pages and page tables */
 	map_free(t->map);	/* Deallocate page directory itself */
 	task_rem(t);		/* Clear metadata and relinquish PID */
+	sched_rem(dead_task);
 
 	/* Send S_DTH signal to parent with return value */
 	args[0] = ret_val;

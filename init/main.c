@@ -88,7 +88,7 @@ void death(uint32_t source, uint32_t args[4]) {
 
 int main() {
 	size_t i, j;
-/*	int32_t pid; */
+	int32_t pid;
 	uint32_t *mb[1024];
 
 	khsig_register(0, segfault);
@@ -101,8 +101,19 @@ int main() {
 	rirq(console.interrupt, (uint32_t) console.handler);
 /*	print_bootsplash(); */
 
-/*	swrite("Fork test:\n");
-	for (i = 0; i < 10; i++) {
+	swrite("Fork test:\n");
+	for (i = 0; i < 30; i++) {
+		pid = fork();
+		if (pid < 0) exit(0);
+/*		else {
+			if (i % 6 == 0) swrite("spawned: ");
+			xwrite(pid);
+			if (i % 6 == 5) swrite("\n");
+			else swrite(" ");
+		} */
+	}
+
+/*	for (i = 0; i < 10; i++) {
 		pid = fork();
 		if (pid < 0) {
 			for (j = 0; j < 100000000; j++);
@@ -164,27 +175,27 @@ int main() {
 		swrite("Done. \n");
 	}
 
-	swrite("\tCycling 2^20 Cells\t");
-	for (i = 0; i < 4096; i++) {
+	swrite("\tCycling 2^16 Cells\t");
+	for (i = 0; i < 256; i++) {
 		for (j = 0; j < 256; j++) {
 			mb[j] = malloc(8);
 		}
 		for (j = 0; j < 256; j++) {
 			free(mb[j]);
 		}
-		if (i % 256 == 0) swrite(".");
+		if (i % 16 == 0) swrite(".");
 	}
 	swrite("Done. \n");
 
-	swrite("\tCycling 2^16 Blocks\t");
-	for (i = 0; i < 256; i++) {
+	swrite("\tCycling 2^12 Blocks\t");
+	for (i = 0; i < 16; i++) {
 		for (j = 0; j < 256; j++) {
 			mb[j] = malloc(0x1000);
 		}
 		for (j = 0; j < 256; j++) {
 			free(mb[j]);
 		}
-		if (i % 16 == 0) swrite(".");
+		swrite(".");
 	}
 	swrite("Done. \n");
 

@@ -110,7 +110,6 @@ void *int_handler(image_t *image) {
 
 	/* If userspace was interrupted, make sure its state is saved */
 	if (image->cs & 0x3) t->image = image;
-	else sleep(1000);
 
 	/* Reset PIC if it was an IRQ */
 	if (image->num >= 32 && image->num <= 47) {

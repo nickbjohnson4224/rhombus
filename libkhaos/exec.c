@@ -1,4 +1,4 @@
-#include <khaos/syscall.h>
+#include <khaos/kernel.h>
 #include <khaos/config.h>
 #include <string.h>
 #include <khaos/elf.h>
@@ -19,11 +19,11 @@ int _load_exec(uint8_t *image, size_t size) {
 	szxtext = (uintptr_t) &_extext - (uintptr_t) &_sxtext;
 
 	/* Copy exec code to EXEC_STRAP */
-	mmap_call(EXEC_STRAP, szxtext, MMAP_RW | MMAP_EXEC);
+	_mmap(EXEC_STRAP, szxtext, MMAP_READ | MMAP_WRITE | MMAP_EXEC);
 	memcpy((void*) EXEC_STRAP, &_sxtext, szxtext);
 
 	/* Copy executable to ESPACE */
-	mmap_call(ESPACE, size, MMAP_RW);
+	_mmap(ESPACE, size, MMAP_READ | MMAP_WRITE);
 	memcpy((void*) ESPACE, image, size);
 
 	_exec_location = (int (*)(void)) ((uintptr_t) _exec - (uintptr_t) &_sxtext + EXEC_STRAP);
@@ -42,11 +42,11 @@ int _exec() {
 	/***** THE POINT OF NO RETURN! *****/
 
 	/* Jump to temporary stack */
-	mmap_call(0, 0x1000, 0x7);
+	_mmap(0, 1, MMAP_READ | MMAP_WRITE);
 	set_stack(0xF00);
 
 	/* Clear current process address space */
-	umap_call(0x1000, ESPACE - 0x1000);
+	_mmap(0x1000, ESPACE / 0x1000 - 1, MMAP_FREE);
 
 	/* Load executable */
 	elf_load((void*) ESPACE);

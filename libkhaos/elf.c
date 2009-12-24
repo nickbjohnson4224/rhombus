@@ -1,5 +1,5 @@
+#include <khaos/kernel.h>
 #include <khaos/elf.h>
-#include <khaos/syscall.h>
 #include <string.h>
 
 static int elf_load_segment(elf_ph_t *pheader, uint8_t *base);
@@ -72,12 +72,12 @@ static int elf_segment_null(elf_ph_t *pheader, uint8_t *base) {
 
 __attribute__ ((section(".xtext")))
 static int elf_segment_load(elf_ph_t *pheader, uint8_t *base) {
-	uint8_t flags = 0;
+	uint8_t flags = MMAP_READ;
 
-	if (pheader->p_flags & PF_W) flags |= MMAP_RW;
+	if (pheader->p_flags & PF_W) flags |= MMAP_WRITE;
 	if (pheader->p_flags & PF_X) flags |= MMAP_EXEC;
 
-	mmap_call(pheader->p_vaddr, pheader->p_memsz, flags);
+	_mmap(pheader->p_vaddr, pheader->p_memsz, flags);
 
 	memcpy((void*) pheader->p_vaddr, (void*) &base[pheader->p_offset], pheader->p_filesz);
 	memset((void*) (pheader->p_vaddr + pheader->p_filesz), 0, pheader->p_memsz - pheader->p_filesz);
