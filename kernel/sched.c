@@ -51,8 +51,6 @@ void sched_rem(pid_t pid) {
 			queue_last = t;
 		}
 	}
-
-	queue_last->next_task = NULL;
 }
 
 /* Get the next task from the scheduling queue, 
@@ -64,10 +62,7 @@ task_t *task_next(uint8_t flags) {
 
 	while (1) {
 		t = queue_next;
-		if (!t) {
-			printk("idling\n");
-			idle();
-		}
+		if (!t) idle();
 		sched_rem(t->pid);
 		sched_ins(t->pid);
 		if ((t->flags & TF_BLOCK) == 0 && t->magic == 0x4224 
@@ -75,21 +70,4 @@ task_t *task_next(uint8_t flags) {
 			return t;
 		}
 	}
-}
-
-void list_sched(void) {
-	task_t *t, *f;
-
-	f = queue_next;
-	for (t = queue_next; t && t->next_task != f; t = t->next_task);
-	if (t && t->next_task == f) {
-		printk("scheduler loop detected!\n");
-		return;
-	}
-
-	printk("sched contents: ");
-	for (t = queue_next; t; t = t->next_task) {
-		printk("%d ", t->pid);
-	}
-	printk("\n");
 }

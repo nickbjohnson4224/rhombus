@@ -8,7 +8,7 @@ page_t *ctbl = (void*) PGE_MAP;					/* Current base page table mapping */
 ptbl_t *tmap = (void*) (TMP_MAP + 0x3FF000);	/* Temporary page directory mapping */
 page_t *ttbl = (void*) TMP_MAP;					/* Temporary base page table mapping */
 uint32_t *tsrc = (void*) TMP_SRC;				/* Some pages of open virtual memory */
-uint32_t *tdst = (void*) TMP_DST;				/* Some other pages of open virtual memory */
+uint32_t *tdst = (void*) TMP_DST;				/* Some pages of open virtual memory */
 
 /* Does a full TLB flush - assembly function */
 extern void page_flush_full(void);
@@ -64,7 +64,9 @@ map_t map_clean(map_t map) {
 	map_temp(map);
 	for (i = 0; i < LSPACE >> 22; i++) if (tmap[i] & PF_PRES) {
 		for (j = 0; j < 1024; j++) {
-			frame_free(page_ufmt(ttbl[i*1024+j]));
+			if (ttbl[i*1024+j] & PF_PRES) {
+				frame_free(page_ufmt(ttbl[i*1024+j]));
+			}
 			ttbl[i*1024+j] = 0;
 		}
 		frame_free(page_ufmt(tmap[i]));
@@ -83,12 +85,12 @@ map_t map_clone() {
 	dest = map_alloc();
 	map_temp(dest);
 
-	/* Link kernel/libspace (except for recursive mapping) */
-	for (i = LSPACE >> 22; i < TMP_MAP >> 22; i++)
+	/* Link kernelspace (except for recursive mapping) */
+	for (i = KSPACE >> 22; i < TMP_MAP >> 22; i++)
 		tmap[i] = cmap[i];
 
 	/* Clone/clear userspace */
-	for (i = 0; i < LSPACE; i += 0x400000) if (cmap[i >> 22] & PF_PRES) {
+	for (i = 0; i < KSPACE; i += 0x400000) if (cmap[i >> 22] & PF_PRES) {
 		tmap[i >> 22] = frame_new() | PF_PRES | PF_USER | PF_RW;
 		pgclr(&ttbl[i >> 12]);
 		for (j = i; j < i + 0x400000; j += 0x1000) if (ctbl[j >> 12] & PF_PRES) {

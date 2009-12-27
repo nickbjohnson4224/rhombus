@@ -9,8 +9,6 @@ image_t *signal(pid_t targ, uint8_t sig, uint32_t args[4], uint8_t flags) {
 	task_t *src_t = curr_task;
 	void *next_image;
 
-	printk("signal: %d -> %d sig %d\n", curr_pid, targ, sig);
-
 	/* Check target (for existence) */
 	if (!dst_t || !dst_t->shandler || (dst_t->flags & TF_SBLOK)) {
 		ret(src_t->image, (flags & TF_NOERR) ? targ : ERROR);

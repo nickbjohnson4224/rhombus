@@ -4,7 +4,17 @@
 
 /* Optimized memory clearing (modified from jgaref's memset) */
 void *memclr(void *dest, uint32_t size) {
-	uint32_t num_words, num_bytes, *dest32, i;
+	uint8_t *dest8 = dest;
+	size_t i;
+
+	for (i = 0; i < size; i++) {
+		dest8[i] = 0;
+	}
+
+	return dest;
+}
+
+/*	uint32_t num_words, num_bytes, *dest32, i;
 	uint8_t *dest8;
 
 	num_words = size/4;
@@ -13,8 +23,7 @@ void *memclr(void *dest, uint32_t size) {
 	dest8  = ((uint8_t*) dest) + num_words*4;
 	for (i = 0; i < num_words; i++) dest32[i] = 0;
 	for (i = 0; i < num_bytes; i++) dest8[i] = 0;
-	return dest;
-}
+	return dest; */
 
 void *memcpy(void *dest, void *src, uint32_t size) {
 	uint32_t i;

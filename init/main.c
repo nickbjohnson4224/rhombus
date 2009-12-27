@@ -99,6 +99,7 @@ int main() {
 /*	print_bootsplash(); */
 
 	swrite("Fork test:\n");
+	swrite("\tspawning 30 tasks:\t");
 	for (i = 0; i < 30; i++) {
 		pid = fork();
 		if (pid < 0) {
@@ -107,52 +108,47 @@ int main() {
 		}
 		else {
 			mb[i] = (void*) pid;
-			if (i % 6 == 0) swrite("spawned: ");
-			xwrite(pid);
-			if (i % 6 == 5) swrite("\n");
-			else swrite(" ");
+			swrite(".");
 			if (i % 2 == 0) {
 				mb[i] = NULL;
 				khsig_asend(pid, 16, (uint32_t*) mb);
+				khsig_wait(7);
 			}
 		}
 	}
+	swrite("Done.\n");
 
-	swrite("killing the rest: ");
+	swrite("\tkilling 30 tasks:\t");
 	for (i = 0; i < 30; i++) {
 		if (mb[i]) {
-			xwrite((uint32_t) mb[i]);
 			khsig_asend((uint32_t) mb[i], 16, (uint32_t*) mb);
+			swrite("..");
 		}
 	}
+	swrite("Done.\n");
+
 	swrite("\n");
 
-	swrite("Heap: ");
-	xwrite(HEAP_START);
-	swrite(" to ");
-	xwrite(HEAP_MXBRK);
-	swrite("\n");
 	swrite("Allocator test:\n");
-	
 	for (i = 0; i < 1; i++) {
-		swrite("\tAllocing 16 Blocks\t");
-		for (j = 0; j < 16; j++) {
+		swrite("\tAllocing 64 Blocks\t");
+		for (j = 0; j < 64; j++) {
 			mb[j] = malloc(0x1000);
-			swrite(".");
+			if (j % 4 == 0) swrite(".");
 		}
 		swrite("Done. \n");
 
-		swrite("\tTesting 16 Blocks\t");
-		for (j = 0; j < 16; j++) {
+		swrite("\tTesting 64 Blocks\t");
+		for (j = 0; j < 64; j++) {
 			mb[j][1023] = 0;
-			swrite(".");
+			if (j % 4 == 0) swrite(".");
 		}
 		swrite("Done. \n");
 
-		swrite("\tFreeing 16 Blocks\t");
-		for (j = 0; j < 16; j++) {
+		swrite("\tFreeing 64 Blocks\t");
+		for (j = 0; j < 64; j++) {
 			free(mb[j]);
-			swrite(".");
+			if (j % 4 == 0) swrite(".");
 		}
 		swrite("Done. \n");
 	}
@@ -204,7 +200,7 @@ int main() {
 	}
 	swrite("Done. \n");
 
-	swrite("All tests passed.\n");
+	swrite("\nAll tests passed.\n");
 
 	for(;;);
 	return 0;

@@ -106,6 +106,7 @@ void register_int(uint8_t n, handler_t handler) {
 
 /* C interrupt handler - called by assembly state-saving routine */
 void *int_handler(image_t *image) {
+	extern void page_flush_full();
 	task_t *t = curr_task;
 
 	/* If userspace was interrupted, make sure its state is saved */
@@ -123,8 +124,9 @@ void *int_handler(image_t *image) {
 	}
 
 	/* Check image checksum */
-	if (image->mg != 0x42242442) {
-		printk("%x: ", image);
+	if (!page_get((uintptr_t) &image->mg) || image->mg != 0x42242442) {
+		printk("%x: \n", image);
+		printk("%x\n", page_get((uintptr_t) (image + 0x1000)));
 		panic("invalid image");
 	}
 

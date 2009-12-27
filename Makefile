@@ -12,7 +12,7 @@ AS := nasm
 CFLAGS  := -march=i586 -pipe -Wall -Werror -Wextra -pedantic
 CFLAGS  += -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-unused-parameter
 CFLAGS	+= -Wno-array-bounds
-CFLAGS  += -O1
+CFLAGS  += -O3 -fomit-frame-pointer
 CFLAGS	+= -I$(BUILDDIR)/inc
 LDFLAGS := -L$(BUILDDIR)/lib
 ARFLAGS := rcs

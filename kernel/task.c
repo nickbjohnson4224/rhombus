@@ -58,7 +58,6 @@ uint32_t task_rem(task_t *t) {
 
 /* Switch to another task */
 image_t *task_switch(task_t *t) {
-	extern void list_sched(void);
 	extern void fpu_save(uint32_t *fxdata);
 	extern void fpu_load(uint32_t *fxdata);
 
@@ -67,6 +66,7 @@ image_t *task_switch(task_t *t) {
 
 	curr_task = t;
 	curr_pid = t->pid;
+	if (!t->map) panic("invalid task");
 	map_load(t->map);
 
 	fpu_load(t->image->fxdata);

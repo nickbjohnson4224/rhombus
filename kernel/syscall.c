@@ -45,6 +45,7 @@ image_t *fault_generic(image_t *image) {
 
 /* Page fault */
 image_t *fault_page(image_t *image) {
+	extern void list_sched(void);
 	uint32_t args[4];
 	uint32_t cr2;
 
@@ -53,8 +54,8 @@ image_t *fault_page(image_t *image) {
 
 	/* If in kernelspace, panic */
 	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */
-		printk("page fault at %x, ip = %x error %x frame %x task %d\n", 
-			cr2, image->eip, image->err, page_get(cr2), curr_pid);
+		printk("page fault at %x, ip = %x frame %x task %d\n", 
+			cr2, image->eip, page_get(cr2), curr_pid);
 		panic("page fault exception");
 	}
 
@@ -77,7 +78,6 @@ image_t *fault_float(image_t *image) {
 	/* If in userspace, redirect to signal S_FPE */
 	args[0] = image->eip;
 	return signal(curr_pid, S_FPE, args, TF_NOERR | TF_EKILL);
-
 }
 
 /* Double fault */
@@ -157,19 +157,25 @@ image_t *exit_call(image_t *image) {
 
 	/* If init exits, halt */
 	if (dead_task == 1) {
-		printk("\nhalting...");
-		halt();
+		panic("init died");
 	}
 
 	/* Deallocate current address space and clear metadata */
-	t = task_get(dead_task);
+	t = curr_task;
 	map_clean(t->map);	/* Deallocate pages and page tables */
 	map_free(t->map);	/* Deallocate page directory itself */
 	task_rem(t);		/* Clear metadata and relinquish PID */
 
-	/* Send S_DTH signal to parent with return value */
-	args[0] = ret_val;
-	return signal(catcher, S_DTH, args, TF_NOERR);
+	t = task_get(catcher);
+	if (!t || !t->shandler || t->flags & TF_SBLOK) {
+		/* Parent will not accept - reschedule */
+		return task_switch(task_next(0));
+	}
+	else {
+		/* Send S_DTH signal to parent with return value */
+		args[0] = ret_val;
+		return signal(catcher, S_DTH, args, TF_NOERR);
+	}
 }
 
 /* GPID - get the current task's PID
@@ -296,8 +302,6 @@ image_t *sret_call(image_t *image) {
  * Returns nothing
  */
 image_t *sblk_call(image_t *image) {
-
-	printk("\nSBLK: %d %x\n", curr_task->pid, image->eax);
 
 	/* Set or clear signal blocked bit */
 	if (image->eax) curr_task->flags |= TF_SBLOK;
