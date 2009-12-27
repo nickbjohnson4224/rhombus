@@ -24,6 +24,9 @@ int khsig_asend(uint32_t target, uint8_t signal, uint32_t args[4]);
 /* Register a Khaos signal handler */
 void khsig_register(uint8_t signal, khsig_handler_t handler);
 
+/* Reset the wait counter */
+void khsig_wreset(uint32_t signal);
+
 /* Wait for a Khaos signal */
 void khsig_wait(uint32_t signal);
 

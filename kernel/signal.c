@@ -7,20 +7,22 @@
 image_t *signal(pid_t targ, uint8_t sig, uint32_t args[4], uint8_t flags) {
 	task_t *dst_t = task_get(targ);
 	task_t *src_t = curr_task;
-	void *next_image;
 
 	/* Check target (for existence) */
-	if (!dst_t || !dst_t->shandler || (dst_t->flags & TF_SBLOK)) {
+	if (!dst_t || !dst_t->shandler) {
+		ret(src_t->image, (flags & TF_NOERR) ? targ : ERROR);
+	}
+
+	if ((dst_t->flags & TF_SBLOK) && (flags & TF_SUPER) == 0) {
 		ret(src_t->image, (flags & TF_NOERR) ? targ : ERROR);
 	}
 
 	/* Switch to target task */
 	task_switch(dst_t);
 
-	/* Create new image structure */
-	next_image = (void*) ((uint32_t) dst_t->image - sizeof(image_t));
-	memcpy(next_image, dst_t->image, sizeof(image_t));
-	dst_t->image = next_image;
+	/* Create new image structure below old one */	
+	memcpy(&dst_t->image[-1], dst_t->image, sizeof(image_t));
+	dst_t->image = &dst_t->image[-1];
 
 	/* Check for imminent task image stack overflows */
 	/* i.e. within two structures of overflow */
@@ -28,10 +30,11 @@ image_t *signal(pid_t targ, uint8_t sig, uint32_t args[4], uint8_t flags) {
 
 		/* Check for a second offense */
 		if (flags & TF_SUPER) {
-			return exit_call(dst_t->image);
+			return exit(dst_t->image);
 		}
 
 		else {
+			dst_t->flags |= TF_SBLOK;
 			args[0] = (uint32_t) src_t->pid;
 			signal(targ, S_IMG, args, TF_SUPER);
 		}
@@ -62,15 +65,14 @@ image_t *signal(pid_t targ, uint8_t sig, uint32_t args[4], uint8_t flags) {
 }
 
 image_t *sret(image_t *image) {
-	task_t *dst_t = curr_task;
 
 	/* Bounds check image */
-	if ((uint32_t) dst_t->image >= SSTACK_TOP) {
-		return exit_call(dst_t->image);
+	if ((uint32_t) curr_task->image >= SSTACK_TOP) {
+		return exit(curr_task->image);
 	}
 
 	/* Reset task image stack */
-	dst_t->image = (void*) ((uintptr_t) dst_t->image + sizeof(image_t));
+	curr_task->image = &curr_task->image[1];
 
-	return dst_t->image;
+	return curr_task->image;
 }

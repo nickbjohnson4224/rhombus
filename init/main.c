@@ -15,7 +15,7 @@ void swrite(const char *message) {
 	console.write(0, strlen(message), (void*) message);
 }
 
-/*static void print_bootsplash() {
+static void print_bootsplash() {
 swrite("\n\
 \t\t\t\t\t\t\t           '^a,\n\
 \t\t\t\t\t\t\t        ,.    'b.\n\
@@ -28,8 +28,8 @@ swrite("\n\
 \t\t\t\t\t| |/ / | |_| | |___  | |  _  | |  ___|\n\
 \t\t\t\t\t|   <  |  _  | |  _  | | |_| | |___  |\n\
 \t\t\t\t\t|_|\\_\\ |_| |_| |_____| |_____| |_____|\n\
-\t\t\t\t\t          -= Version 0.1a =-\n");
-}*/
+\t\t\t\t\t          -= Version 0.1a =-\n\n\n");
+}
 
 void xwrite(uint32_t addr) {
 	char m[9];
@@ -52,7 +52,7 @@ void irq_handler(uint32_t source, uint32_t args[4]) {
 
 void rirq(int irq, uint32_t handler) {
 	irq_table[irq] = (void (*)(void)) handler;
-	rirq_call(irq);
+	_ctrl(CTRL_IRQRD | CTRL_IRQ(irq), CTRL_IRQRD | CTRL_IRQMASK);
 }
 
 void stuff(uint32_t source, uint32_t args[4]) {
@@ -96,11 +96,11 @@ int main() {
 
 	console.init(0);
 	rirq(console.interrupt, (uint32_t) console.handler);
-/*	print_bootsplash(); */
+	print_bootsplash();
 
 	swrite("Fork test:\n");
-	swrite("\tspawning 30 tasks:\t");
-	for (i = 0; i < 30; i++) {
+	swrite("\tspawning 16 tasks:\t");
+	for (i = 0; i < 16; i++) {
 		pid = fork();
 		if (pid < 0) {
 			khsig_wait(16);
@@ -118,14 +118,27 @@ int main() {
 	}
 	swrite("Done.\n");
 
-	swrite("\tkilling 30 tasks:\t");
-	for (i = 0; i < 30; i++) {
+	swrite("\tkilling 16 tasks:\t");
+	for (i = 0; i < 16; i++) {
 		if (mb[i]) {
 			khsig_asend((uint32_t) mb[i], 16, (uint32_t*) mb);
 			swrite("..");
 		}
 	}
 	swrite("Done.\n");
+
+	swrite("\n");
+
+	swrite("Signals test:\n");
+	khsig_wreset(16);
+	khsig_block();
+	if (khsig_asend(info(0), 16, (uint32_t*) mb)) {
+		swrite("\tblocked\n");
+		khsig_unblock();
+		khsig_asend(info(0), 16, (uint32_t*) mb);
+	}
+	khsig_wait(16);
+	swrite("\tunblocked\n");
 
 	swrite("\n");
 

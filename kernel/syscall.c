@@ -90,168 +90,6 @@ image_t *fault_double(image_t *image) {
 
 }
 
-/****** SYSTEM CALLS *****/
-
-/* Fork - create a new task
- * 
- * No arguments
- * Returns:
- *  0 on failure
- *  PID of child if parent
- *  negative PID of parent if child
- *
- * Creates a new task with a copy of
- * the address space of the current one.
- * The new task has a unique PID.
- * All user memory is copied, not linked.
- * All other metadata is copied.
- */
-image_t *fork_call(image_t *image) {
-	extern void list_sched(void);
-	pid_t parent;
-	task_t *child;
-
-	/* Save current PID - it will become the parent */
-	parent = curr_pid;
-
-	/* Create a new task from the parent */
-	child = task_new(task_get(parent));
-	if (!child) ret(image, 0); /* Fail if child was not created */
-
-	/* (still in parent) Set return value to child's PID */
-	image->eax = child->pid;
-
-	/* Switch to child */
-	image = task_switch(child);
-
-	/* (now in child) Set return value to negative parent's PID */
-	image->eax = (uint32_t) -parent;
-
-	return image;
-}
-
-/* Exit - destroy the current task
- *
- * Arguments: 
- *  eax: exit value
- * No return value
- *
- * Deallocates all resources in current task.
- * Sends a S_DTH signal to parent with return value 
- */
-image_t *exit_call(image_t *image) {
-	extern void halt(void);
-	extern void list_sched(void);
-	uint32_t args[4];
-	pid_t dead_task;
-	pid_t catcher;
-	uint32_t ret_val;
-	task_t *t;
-
-	/* Obviously, we are destroying the current task */
-	dead_task = curr_pid;
-	catcher = curr_task->parent;
-
-	/* Copy return value because images are cleared with the address space */
-	ret_val = image->eax;
-
-	/* If init exits, halt */
-	if (dead_task == 1) {
-		panic("init died");
-	}
-
-	/* Deallocate current address space and clear metadata */
-	t = curr_task;
-	map_clean(t->map);	/* Deallocate pages and page tables */
-	map_free(t->map);	/* Deallocate page directory itself */
-	task_rem(t);		/* Clear metadata and relinquish PID */
-
-	t = task_get(catcher);
-	if (!t || !t->shandler || t->flags & TF_SBLOK) {
-		/* Parent will not accept - reschedule */
-		return task_switch(task_next(0));
-	}
-	else {
-		/* Send S_DTH signal to parent with return value */
-		args[0] = ret_val;
-		return signal(catcher, S_DTH, args, TF_NOERR);
-	}
-}
-
-/* GPID - get the current task's PID
- * 
- * No arguments
- * Returns current task's PID
- */
-
-image_t *gpid_call(image_t *image) {
-	ret(image, curr_pid);
-}
-
-/* TBLK - change task blocked bit
- * 
- * Arguments:
- *  eax: 0 for off, anything else on
- * Returns nothing
- */
-image_t *tblk_call(image_t *image) {
-
-	/* Set or clear blocked flag */
-	if (image->eax) curr_task->flags |= TF_BLOCK;
-	else curr_task->flags &= ~TF_BLOCK;
-
-	return image;
-}
-
-/* MMAP - map an area of memory
- * 
- * Arguments:
- *  edi: base address
- *  ecx: size
- *  ebx: flags
- * Returns 0 on success
- *
- * Guarantees memory between edi and edi+ecx.
- * Memory may go beyond these limits.
- * Sets all allowed flags specified.
- */
-image_t *mmap_call(image_t *image) {
-	uint32_t flags;
-
-	/* Extract and check flags */
-	flags = (image->ebx & PF_MASK) | PF_PRES | PF_USER;
-
-	/* Bounds check address */
-	if (image->edi + image->ecx > LSPACE) ret(image, ERROR);
-
-	/* Allocate memory with flags */
-	mem_alloc(image->edi, image->ecx, flags);
-
-	ret(image, 0);
-}
-
-/* UMAP - unmap an area of memory
- * 
- * Arguments:
- *  edi: base address
- *  ecx: size
- *  ebx: flags
- * Returns 0 on success
- *
- * Guarantees no memory between edi and edi+ecx.
- * Removes minumum number of pages to complete.
- */
-image_t *umap_call(image_t *image) {
-
-	/* Bounds check address */
-	if (image->edi + image->ecx > LSPACE) ret(image, ERROR);
-
-	/* Deallocate memory */
-	mem_free(image->edi, image->ecx);
-
-	ret(image, 0);
-}
-
 /* SSND - send a signal to a task
  *
  * Arguments:
@@ -293,70 +131,6 @@ image_t *ssnd_call(image_t *image) {
  */
 image_t *sret_call(image_t *image) {
 	return sret(image);
-}
-
-/* SBLK - change signal blocked bit
- * 
- * Arguments:
- *  eax: 0 for off, anything else on
- * Returns nothing
- */
-image_t *sblk_call(image_t *image) {
-
-	/* Set or clear signal blocked bit */
-	if (image->eax) curr_task->flags |= TF_SBLOK;
-	else curr_task->flags &= ~TF_SBLOK;
-
-	return image;
-}
-
-/* SREG - register signal handler
- *
- * Arguments:
- *  eax: handler address
- * Returns old handler if any
- */
-image_t *sreg_call(image_t *image) {
-	uint32_t old_handler;
-
-	old_handler = curr_task->shandler;
-	curr_task->shandler = image->eax;
-	ret(image, old_handler);
-}
-
-/***** PRIVILEGED CALLS *****/
-
-/* IREG - register IRQ for redirection
- *
- * Arguments:
- *  eax: IRQ number
- * Returns nothing
- *
- * After this call, when the specified IRQ fires,
- * a signal of type S_IRQ will be sent to the calling process
- */
-image_t *ireg_call(image_t *image) {
-
-	/* Set IRQ holder to this task */
-	irq_holder[image->eax % 15] = curr_pid;
-	register_int(IRQ(image->eax), irq_redirect);
-
-	return image;
-}
-
-/* IREL - release IRQ from redirection
- *
- * Arguments:
- *  eax: IRQ number
- * Returns nothing
- */
-image_t *irel_call(image_t *image) {
-
-	/* Set IRQ holder to the kernel, and deactivate */
-	irq_holder[image->eax % 15] = 0;
-	register_int(IRQ(image->eax), 0);
-
-	return image;
 }
 
 /* Push - move data to another address space
@@ -460,29 +234,6 @@ image_t *pull_call(image_t *image) {
 	ret(image, 0);
 }
 
-/* Phys - get physical address of virtual position 
- *
- * Arguments:
- *  eax: virtual address
- * Returns physical address
- */
-image_t *phys_call(image_t *image) {
-	uint32_t addr = image->eax;
-
-	ret(image, page_ufmt(page_get(addr)) + (addr & 0xFFF));
-}
-
-/* EOut - emergency output (deprecated)
- *
- * Arguments
- *  eax: address of null-terminated string
- * Returns nothing
- */
-image_t *eout_call(image_t *image) {
-	printk("%s\n", image->eax);
-	return image;
-}
-
 /***** ABI 2 System Calls *****/
 image_t *fire(image_t *image) {
 	ret(image, -1);
@@ -493,18 +244,38 @@ image_t *drop(image_t *image) {
 }
 
 image_t *hand(image_t *image) {
-	return sreg_call(image);
+	uint32_t old_handler;
+
+	old_handler = curr_task->shandler;
+	curr_task->shandler = image->eax;
+	ret(image, old_handler);
 }
 
 image_t *ctrl(image_t *image) {
 	uint32_t flags = image->eax;
 	uint32_t mask = image->edx;
+	uint8_t irq;
 
 	if ((curr_task->flags & TF_SUPER) == 0) {
 		mask &= TF_SMASK;
 	}
 
 	curr_task->flags = (curr_task->flags & ~mask) | (flags & mask);
+
+	if (mask & TF_IRQRD) {
+		if (flags & TF_IRQRD) {
+			irq = (flags >> 24) & 0xFF;
+			if (irq < 15) {
+				irq_holder[irq] = curr_pid;
+				register_int(IRQ(irq), irq_redirect);
+			}
+		}
+		else {
+			irq = (curr_task->flags >> 24) & 0xFF;
+			irq_holder[irq] = 0;
+			register_int(IRQ(irq), NULL);
+		}
+	}
 
 	ret(image, curr_task->flags);
 }
@@ -562,9 +333,58 @@ image_t *mmap(image_t *image) {
 }
 
 image_t *fork(image_t *image) {
-	return fork_call(image);
+	pid_t parent;
+	task_t *child;
+
+	/* Save current PID - it will become the parent */
+	parent = curr_pid;
+
+	/* Create a new task from the parent */
+	child = task_new(task_get(parent));
+	if (!child) ret(image, 0); /* Fail if child was not created */
+
+	/* (still in parent) Set return value to child's PID */
+	image->eax = child->pid;
+
+	/* Switch to child */
+	image = task_switch(child);
+
+	/* (now in child) Set return value to negative parent's PID */
+	image->eax = (uint32_t) -parent;
+
+	return image;
 }
 
 image_t *exit(image_t *image) {
-	return exit_call(image);
+	uint32_t args[4];
+	pid_t catcher;
+	uint32_t ret_val;
+	task_t *t;
+
+	/* Send death signal to parent */
+	catcher = curr_task->parent;
+
+	/* Copy return value because images are cleared with the address space */
+	ret_val = image->eax;
+
+	/* If init exits, halt */
+	if (curr_pid == 1) {
+		panic("init died");
+	}
+
+	/* Deallocate current address space and clear metadata */
+	map_clean(curr_task->map);	/* Deallocate pages and page tables */
+	map_free(curr_task->map);	/* Deallocate page directory itself */
+	task_rem(curr_task);		/* Clear metadata and relinquish PID */
+
+	t = task_get(catcher);
+	if (!t || !t->shandler || t->flags & TF_SBLOK) {
+		/* Parent will not accept - reschedule */
+		return task_switch(task_next(0));
+	}
+	else {
+		/* Send S_DTH signal to parent with return value */
+		args[0] = ret_val;
+		return signal(catcher, S_DTH, args, TF_NOERR);
+	}
 }

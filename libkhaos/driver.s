@@ -4,9 +4,9 @@ section .text
 
 global push_call
 global pull_call
-global rirq_call
-global lirq_call
-global phys_call
+;global rirq_call
+;global lirq_call
+;global phys_call
 
 push_call:
 	push ebp
@@ -52,17 +52,17 @@ pull_call:
 	pop ebp
 	ret
 
-rirq_call:
-	mov eax, [esp+4]
-	int 0x50
-	ret
+;rirq_call:
+;	mov eax, [esp+4]
+;	int 0x50
+;	ret
 
-lirq_call:
-	mov eax, [esp+4]
-	int 0x51
-	ret
+;lirq_call:
+;	mov eax, [esp+4]
+;	int 0x51
+;	ret
 
-phys_call:
-	mov eax, [esp+4]
-	int 0x54
-	ret
+;phys_call:
+;	mov eax, [esp+4]
+;	int 0x54
+;	ret

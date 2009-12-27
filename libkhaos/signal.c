@@ -9,18 +9,18 @@ static volatile uint8_t khsig_count[256]; /* Used for waiting */
 void khsig_init(void) {
 	extern void khsig_handler(void);
 
-	sreg_call((uint32_t) khsig_handler);
+	_hand((uint32_t) khsig_handler);
 
 	memclr(&khsig_handlers, sizeof(khsig_handler_t) * 256);
 	memclr(&khsig_count, sizeof(uint8_t) * 256);
 }
 
 void khsig_block(void) {
-	sblk_call(0);
+	_ctrl(CTRL_SIGNAL, CTRL_SIGNAL); 
 }
 
 void khsig_unblock(void) {
-	sblk_call(1);
+	_ctrl(CTRL_NONE, CTRL_SIGNAL);
 }
 
 int khsig_send(uint32_t target, uint8_t signal, uint32_t args[4]) {
@@ -42,7 +42,11 @@ void khsig_redirect(uint32_t source, uint32_t signal, uint32_t args[4]) {
 		khsig_handlers[signal](source, args);
 	}
 }
-	
+
+void khsig_wreset(uint32_t signal) {
+	khsig_count[signal] = 0;
+}
+
 void khsig_wait(uint32_t signal) {
 	while (!khsig_count[signal]);
 	khsig_count[signal]--;

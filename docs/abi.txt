@@ -53,9 +53,11 @@ ctrl: int 0x63
 	- bit 2: CTRL_ENTER: signal on reentry
 	- bit 3: CTRL_SUPER: super (super only)
 	- bit 4: CTRL_PORTS: port i/o (super only)
-	- bit 5: CTRL_IRQRD: irq redirect (super only)
+	- bit 5: CTRL_IRQRD: set irq redirect (super only)
+	- bit 6: CTRL_FLOAT: use FPU/SSE extensions
+	- bit 7: CTRL_RENICE: change scheduling priority
 	- bits 8-11: scheduling priority (bit 8 super only)
-	- bits 12-23: unassigned (zero only)
+	- bits 12-23: unassigned
 	- bits 24-31: irq number (super only)
 
 hand: int 0x62
@@ -99,6 +101,7 @@ mmap: int 0x65
 			- bit 2: MMAP_EXEC: page is executable
 			- bit 3: MMAP_FREE: free page instead of allocating
 			- bit 4: MMAP_FRAME: try to use frame
+			- bit 5: MMAP_PHYS: return physical address
 		- last 20 bits: grant page (if MMAP_FRAME)
 			- only allowed if super or if frame was granted
 - returns 0 on success, negative on failure
