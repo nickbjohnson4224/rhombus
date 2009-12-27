@@ -81,9 +81,6 @@ void segfault(uint32_t source, uint32_t args[4]) {
 }
 
 void death(uint32_t source, uint32_t args[4]) {
-/*	swrite("child exit: ");
-	xwrite(source);
-	swrite("\n"); */
 }
 
 int main() {
@@ -104,23 +101,31 @@ int main() {
 	swrite("Fork test:\n");
 	for (i = 0; i < 30; i++) {
 		pid = fork();
-		if (pid < 0) exit(0);
-/*		else {
+		if (pid < 0) {
+			khsig_wait(16);
+			exit(0);
+		}
+		else {
+			mb[i] = (void*) pid;
 			if (i % 6 == 0) swrite("spawned: ");
 			xwrite(pid);
 			if (i % 6 == 5) swrite("\n");
 			else swrite(" ");
-		} */
-	}
-
-/*	for (i = 0; i < 10; i++) {
-		pid = fork();
-		if (pid < 0) {
-			for (j = 0; j < 100000000; j++);
-			exit(0);
+			if (i % 2 == 0) {
+				mb[i] = NULL;
+				khsig_asend(pid, 16, (uint32_t*) mb);
+			}
 		}
 	}
-	for(;;); */
+
+	swrite("killing the rest: ");
+	for (i = 0; i < 30; i++) {
+		if (mb[i]) {
+			xwrite((uint32_t) mb[i]);
+			khsig_asend((uint32_t) mb[i], 16, (uint32_t*) mb);
+		}
+	}
+	swrite("\n");
 
 	swrite("Heap: ");
 	xwrite(HEAP_START);

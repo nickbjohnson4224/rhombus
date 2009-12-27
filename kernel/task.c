@@ -47,9 +47,13 @@ task_t *task_new(task_t *src) {
 
 /* Delete a task, except for its address space */
 uint32_t task_rem(task_t *t) {
+	uint32_t err;
+
 	sched_rem(t->pid);
-	t->magic = 0x0000;
-	return pool_free(tpool, t->pid);
+	err = pool_free(tpool, t->pid);
+
+	memclr(t, sizeof(task_t));
+	return err;
 }
 
 /* Switch to another task */

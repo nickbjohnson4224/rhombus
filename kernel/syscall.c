@@ -144,11 +144,13 @@ image_t *exit_call(image_t *image) {
 	extern void list_sched(void);
 	uint32_t args[4];
 	pid_t dead_task;
+	pid_t catcher;
 	uint32_t ret_val;
 	task_t *t;
 
 	/* Obviously, we are destroying the current task */
 	dead_task = curr_pid;
+	catcher = curr_task->parent;
 
 	/* Copy return value because images are cleared with the address space */
 	ret_val = image->eax;
@@ -164,11 +166,10 @@ image_t *exit_call(image_t *image) {
 	map_clean(t->map);	/* Deallocate pages and page tables */
 	map_free(t->map);	/* Deallocate page directory itself */
 	task_rem(t);		/* Clear metadata and relinquish PID */
-	sched_rem(dead_task);
 
 	/* Send S_DTH signal to parent with return value */
 	args[0] = ret_val;
-	return signal(t->parent, S_DTH, args, TF_NOERR);
+	return signal(catcher, S_DTH, args, TF_NOERR);
 }
 
 /* GPID - get the current task's PID

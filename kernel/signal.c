@@ -9,14 +9,11 @@ image_t *signal(pid_t targ, uint8_t sig, uint32_t args[4], uint8_t flags) {
 	task_t *src_t = curr_task;
 	void *next_image;
 
+	printk("signal: %d -> %d sig %d\n", curr_pid, targ, sig);
+
 	/* Check target (for existence) */
 	if (!dst_t || !dst_t->shandler || (dst_t->flags & TF_SBLOK)) {
 		ret(src_t->image, (flags & TF_NOERR) ? targ : ERROR);
-	}
-
-	/* Block if set to block */
-	if (flags & TF_BLOCK) {
-		src_t->flags |= TF_BLOCK;
 	}
 
 	/* Switch to target task */
@@ -68,12 +65,6 @@ image_t *signal(pid_t targ, uint8_t sig, uint32_t args[4], uint8_t flags) {
 
 image_t *sret(image_t *image) {
 	task_t *dst_t = curr_task;
-	task_t *src_t = task_get(image->esi);
-
-	/* Unblock the caller */
-	if (src_t && image->eax & TF_UNBLK) {
-		src_t->flags &= ~TF_BLOCK;
-	}
 
 	/* Bounds check image */
 	if ((uint32_t) dst_t->image >= SSTACK_TOP) {
