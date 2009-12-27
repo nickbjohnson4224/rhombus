@@ -4,7 +4,7 @@
 #include <task.h>
 #include <int.h>
 
-image_t *signal(pid_t targ, uint8_t sig, uint32_t args[4], uint8_t flags) {
+image_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 	task_t *dst_t = task_get(targ);
 	task_t *src_t = curr_task;
 
@@ -35,19 +35,15 @@ image_t *signal(pid_t targ, uint8_t sig, uint32_t args[4], uint8_t flags) {
 
 		else {
 			dst_t->flags |= TF_SBLOK;
-			args[0] = (uint32_t) src_t->pid;
-			signal(targ, S_IMG, args, TF_SUPER);
+			signal(targ, S_IMG, NULL, TF_SUPER);
 		}
 
 	}
 
 	/* Set registers to describe signal */
 
-	/* Match arguments to first four registers */
-	dst_t->image->eax = args[0];
-	dst_t->image->ebx = args[1];
-	dst_t->image->ecx = args[2];
-	dst_t->image->edx = args[3];
+	/* Granted frame */
+	dst_t->image->ebx = (uintptr_t) grant;
 
 	/* Caller PID */
 	dst_t->image->esi = src_t->pid;
@@ -56,7 +52,7 @@ image_t *signal(pid_t targ, uint8_t sig, uint32_t args[4], uint8_t flags) {
 	dst_t->image->edi = sig;
 
 	/* Pointer to saved image for debuggers */
-	dst_t->image->ebp = (uintptr_t) dst_t->image + sizeof(image_t);
+	dst_t->image->ebp = (uintptr_t) &dst_t->image[1];
 
 	/* Entry point for signal */
 	dst_t->image->eip = dst_t->shandler;

@@ -2,9 +2,10 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <khaos/kernel.h>
+#include <signal.h>
+#include <khaos.h>
+#include "../../libc/libc.h"
 #include <khaos/driver.h>
-#include <khaos/signal.h>
 #include <driver/console.h>
 
 #define VMEM 0xB8000
@@ -15,10 +16,10 @@
 static int console_init(uint16_t selector);
 static int console_read(uintmax_t seek, size_t size, void *data);
 static int console_write(uintmax_t seek, size_t size, void *data);
-static void console_handler(uint32_t source, uint32_t args[4]);
+static void console_handler(uint32_t source, void *grant);
 static int console_halt(void);
 
-static uint16_t vbuf[WIDTH * HEIGHT];
+static uint16_t *vbuf;
 static uint16_t c_base = 0;
 static uint16_t cursor = 0;
 static uint16_t buffer = 0;
@@ -37,6 +38,9 @@ static int console_init(uint16_t selector) {
 	int i;
 	selector = 0;
 
+	vbuf = malloc(0x1000);
+	__emap((uint32_t) vbuf, VMEM, MMAP_READ | MMAP_WRITE);
+
 	for (i = 0; i < WIDTH * HEIGHT; i++) {
 		vbuf[i] = 0x0F20;
 	}
@@ -49,7 +53,7 @@ static int console_read(uintmax_t seek, size_t size, void *data) {
 	char *cdata = data;
 	seek = 0;
 
-	khsig_wait(0x20);
+	wait(0x20);
 
 	for (i = 0; i < size && vbuf[buffer+i] & 0xFF; i++) {
 		cdata[i] = vbuf[buffer + i] & 0xFF;
@@ -109,8 +113,6 @@ static int console_write(uintmax_t seek, size_t size, void *data) {
 		buffer++;
 	}
 
-	push_call(0, VMEM, (uint32_t) vbuf, WIDTH * HEIGHT * sizeof(uint16_t));
-
 	return size;
 }
 
@@ -122,11 +124,9 @@ const char upkmap[] =
 
 bool shift = false;
 
-static void console_handler(uint32_t source, uint32_t args[4]) {
+static void console_handler(uint32_t source, void *grant) {
 	size_t c = inb(0x60);
-	uint32_t arg[4] = {0, 0, 0, 0};
 	source = 0;
-	args = NULL;
 
 	if (c & 0x80) {
 		if (keymap[c & 0x7F] == '\0') shift = false;
@@ -136,14 +136,11 @@ static void console_handler(uint32_t source, uint32_t args[4]) {
 	if (keymap[c & 0x7F] == '\0') shift = true;
 	c = (size_t) ((shift) ? upkmap[c] : keymap[c]);
 
-	khsig_send(info(0), 0x20, arg);
+	fire(info(0), 0x20, NULL);
 
 	cwrite(c);
-	push_call(0, VMEM, (uint32_t) vbuf, WIDTH * HEIGHT * sizeof(uint16_t));
 }
 
 static int console_halt(void) {
 	return 0;
 }
-
-

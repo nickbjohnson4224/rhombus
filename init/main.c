@@ -1,10 +1,10 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <signal.h>
+#include <khaos.h>
 
-#include <khaos/kernel.h>
 #include <khaos/driver.h>
-#include <khaos/signal.h>
 #include <khaos/config.h>
 
 #include <driver/console.h>
@@ -45,42 +45,18 @@ void xwrite(uint32_t addr) {
 	swrite((const char*) m);
 }
 
-void (*irq_table[16])(void);
-void irq_handler(uint32_t source, uint32_t args[4]) {
-	if (irq_table[args[0] & 0xF]) irq_table[args[0] & 0xF]();
-}
-
-void rirq(int irq, uint32_t handler) {
-	irq_table[irq] = (void (*)(void)) handler;
+void rirq(int irq, signal_handler_t handler) {
+	sigregister(3, handler);
 	_ctrl(CTRL_IRQRD | CTRL_IRQ(irq), CTRL_IRQRD | CTRL_IRQMASK);
 }
 
-void stuff(uint32_t source, uint32_t args[4]) {
-	swrite("ZOMG 42!!!");
-}
+void segfault(uint32_t source, void *grant) {
+	swrite("\nSegmentation Fault\n");
 
-void segfault(uint32_t source, uint32_t args[4]) {
-	swrite("\n");
-
-	if (args[3] & ~0xFFF) {
-		swrite("Segmentation Fault\n");
-		swrite("Address: ");
-		xwrite(args[3]);
-		swrite("\n");
-	}
-	else {
-		swrite("Null Pointer Exception\n");
-	}
-
-	swrite("Instruction: ");
-	xwrite(args[0]);
-	swrite("\n");
-
-	for(;;);
 	exit(1);
 }
 
-void death(uint32_t source, uint32_t args[4]) {
+void death(uint32_t source, void *grant) {
 }
 
 int main() {
@@ -88,14 +64,11 @@ int main() {
 	int32_t pid;
 	static uint32_t *mb[1024];
 
-	khsig_register(0, segfault);
-	khsig_register(2, segfault);
-	khsig_register(3, irq_handler);
-	khsig_register(7, death);
-	khsig_register(42, stuff);
+	sigregister(0, segfault);
+	sigregister(2, segfault);
+	sigregister(7, death);
 
 	console.init(0);
-	rirq(console.interrupt, (uint32_t) console.handler);
 	print_bootsplash();
 
 	swrite("Fork test:\n");
@@ -103,7 +76,7 @@ int main() {
 	for (i = 0; i < 16; i++) {
 		pid = fork();
 		if (pid < 0) {
-			khsig_wait(16);
+			wait(16);
 			exit(0);
 		}
 		else {
@@ -111,8 +84,8 @@ int main() {
 			swrite(".");
 			if (i % 2 == 0) {
 				mb[i] = NULL;
-				khsig_asend(pid, 16, (uint32_t*) mb);
-				khsig_wait(7);
+				fire(pid, 16, NULL);
+				wait(7);
 			}
 		}
 	}
@@ -121,7 +94,7 @@ int main() {
 	swrite("\tkilling 16 tasks:\t");
 	for (i = 0; i < 16; i++) {
 		if (mb[i]) {
-			khsig_asend((uint32_t) mb[i], 16, (uint32_t*) mb);
+			fire((uint32_t) mb[i], 16, NULL);
 			swrite("..");
 		}
 	}
@@ -130,14 +103,14 @@ int main() {
 	swrite("\n");
 
 	swrite("Signals test:\n");
-	khsig_wreset(16);
-	khsig_block();
-	if (khsig_asend(info(0), 16, (uint32_t*) mb)) {
+	wreset(16);
+	sigblock();
+	if (fire(info(0), 16, NULL)) {
 		swrite("\tblocked\n");
-		khsig_unblock();
-		khsig_asend(info(0), 16, (uint32_t*) mb);
+		sigunblock();
+		fire(info(0), 16, NULL);
 	}
-	khsig_wait(16);
+	wait(16);
 	swrite("\tunblocked\n");
 
 	swrite("\n");

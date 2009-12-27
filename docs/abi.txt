@@ -132,6 +132,7 @@ fire: int 0x60
 	- esi set to calling PID
 	- ebx set to granted page
 	- edi set to signal number
+	- ebp set to previous context image address (read-only)
 - grants page if non-null
 
 drop: int 0x61

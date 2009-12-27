@@ -1,8 +1,8 @@
 #include "libc.h"
-#include <khaos/signal.h>
-#include <khaos/kernel.h>
+#include <signal.h>
+#include <khaos.h>
 
-static void __exit(uint32_t source, uint32_t args[4]) {
+static void __exit(uint32_t source, void *grant) {
 	_exit(1);
 }
 
@@ -11,8 +11,8 @@ void _cini() {
 	_heap_init();
 
 	/* Fault handling */
-	khsig_init();
-	khsig_register(0, __exit);
-	khsig_register(2, __exit);
-	khsig_register(5, __exit);
+	siginit();
+	sigregister(0, __exit);
+	sigregister(2, __exit);
+	sigregister(5, __exit);
 }

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <khaos/kernel.h>
+#include <khaos.h>
 
 /*** Memory Management ***/
 

@@ -1,5 +1,3 @@
-#include <khaos/kernel.h>
-
 #include "libc.h"
 
 int32_t __mmap(uint32_t addr, uint32_t size, uint32_t flags) {

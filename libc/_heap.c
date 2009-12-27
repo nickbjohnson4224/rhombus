@@ -3,7 +3,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <khaos/config.h>
-#include <khaos/kernel.h>
 
 #include "libc.h"
 
