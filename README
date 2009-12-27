@@ -1,6 +1,6 @@
-Khaos Operating System v0.1a
+Khaos Operating System v0.2a
 Build Instructions
-============================
+================================
 
 Toolchain Dependencies:
 
@@ -10,12 +10,9 @@ Bourne shell compatible shell
 	- etc; almost *anything* will work
 
 C99 compliant C compiler
-	- tested: GCC 4.3.2 
+	- tested: GCC 4.3.4
 		- i586 cross compiler or -march=i586
-		- optimizations: (-fomit-frame-pointer) (-O0,-Os,-O3)
-	- tested: TCC 0.9.4 (deprecated)
-	- tested: TCC 0.9.23
-	- tested: TCC 0.9.25
+	- tested: TCC 0.9.25 (deprecated)
 
 The Netwide Assembler (NASM)
 	- tested: NASM 2.05.01
@@ -27,7 +24,7 @@ ELF based linker
 GNU Make or equivalent
 	- tested: GNU Make 3.81
 
-===========================
+===============================
 
 Testing Dependencies:
 
@@ -37,22 +34,22 @@ Linux 2.4 or greater with loopback support
 
 Bochs x86 emulator (or other VM - scripts will have to be modified)
 	- tested: Bochs 2.3, i586 emulation level (deprecated)
-	- tested: Bochs 2.3.7, i586 emulation level
+	- tested: Bochs 2.3.7, i586 emulation level (deprecated)
 	- tested: Bochs 2.4.1, i586 emulation level
-	- tested: VirtualBox OSE 2.2.2, on Celeron-M (PIII clone)
+	- tested: VirtualBox OSE 2.2.2, on Celeron-M (PIII clone) (deprecated)
 
-===========================
+===============================
 
 Build Instructions:
 
 To make each piece of the operating system, simply type "make 
-<subproject>", or just "make" to make everything. The kernel, libsys, 
+<subproject>", or just "make" to make everything. The kernel, libkhaos,
 init, libc, and at least basic drivers must be built for the system to 
 boot correctly. Toolchain and coreutils are required for normal operation. 
 Libc and toolchain/libqill contain headers linked to by coreutils, so 
 coreutils must be updated after both of them are rebuilt. "make -C 
 <subproject> clean" will remove all object files from the subprojects' 
-directories.
+directories, and "make clean" will remove all object files.
 
 Test Instructions:
 
@@ -60,15 +57,14 @@ To test the operating system, use "make test". This will make
 it run in a virtual machine: Bochs. run/bochsrc.txt is the 
 configuration file for Bochs - modify it to your liking.
 
-===========================
+===============================
 
 Tested Machines and Virtual Machines
 Please make sure all builds continue to work on this list!
 
 Virtual Machines:
-Bochs 2.4.1 i586
-VirtualBox OSE 2.2.2
+Bochs 2.4.1 i586 - 1MHz Intel i586, 8MB RAM
 
 Actual Machines:
-Asus Eee 900 - 900MHz Celeron M, 1024MB RAM
+Asus Eee 900 - 900MHz Celeron M, 2048MB RAM
 Dell Dimension 2350 - 2.3GHz Pentium IV, 512MB RAM

@@ -5,7 +5,7 @@ floppya: 1_44="$BUILDDIR/run/floppy.img", status=inserted
 boot: a
 log: /dev/stdout
 mouse: enabled=0
-clock: sync=none
+clock: sync=slowdown
 cpu: ips=1000000
 
 debugger_log: /dev/null

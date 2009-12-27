@@ -1,4 +1,4 @@
-Khaos Operating System 0.1
+Khaos Operating System 0.2
 User Manual Section I - ABI
 ==============================
 
@@ -170,13 +170,14 @@ Resource 0 should represent the entire device.
 Data is given to drivers through granted pages. These pages have a standard
 header format that takes up the first 32 bytes, which will specify the exact
 action that should be taken by the driver. Here is a draft of the format:
-- bits 000-031: resource ID		(resource ID == inode)
+- bits 000-031: resource ID		(resource ID == inode for block devices)
 - bits 032-047: data size		(less than page size)
 - bits 048-063: transaction ID	(defined by caller, used for reply)
 - bits 064-095: checksum		(of everything but checksum, byte product)
-- bits 096-127: undefined
+- bits 096-111: internal offset	(from start of header)
+- bits 112-127: header format	(0 = basic (this); others undefined)
 - bits 128-255: offset			(screw you if files are > 2^128 bytes)
-All numbers are in network byte order (big endian).
+All numbers are in NETWORK BYTE ORDER! (big endian).
 
 When an action finishes, the driver should reply with a signal which has a 
 granted page with a header containing the same transaction ID as was sent, 
@@ -190,5 +191,5 @@ executables are loaded directly by the calling process, with help from a
 library. Linking with different of these libraries, or "libexec"s, enables 
 loading of different executable formats. The native format for Khaos binaries 
 is ELF, described in the UNIX System V ABI documentataion, but a programmer may
-use any format (s)he wished. Execution is managed through interfaces in 
+use any format (s)he wishes. Execution is managed through interfaces in 
 libexec.

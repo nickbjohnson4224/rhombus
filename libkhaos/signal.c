@@ -10,9 +10,6 @@ void khsig_init(void) {
 	extern void khsig_handler(void);
 
 	_hand((uint32_t) khsig_handler);
-
-	memclr(&khsig_handlers, sizeof(khsig_handler_t) * 256);
-	memclr(&khsig_count, sizeof(uint8_t) * 256);
 }
 
 void khsig_block(void) {

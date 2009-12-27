@@ -86,7 +86,7 @@ void death(uint32_t source, uint32_t args[4]) {
 int main() {
 	size_t i, j;
 	int32_t pid;
-	uint32_t *mb[1024];
+	static uint32_t *mb[1024];
 
 	khsig_register(0, segfault);
 	khsig_register(2, segfault);
