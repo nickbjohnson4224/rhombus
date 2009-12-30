@@ -1,5 +1,7 @@
 ; Copyright 2009 Nick Johnson
 
+[bits 32]
+
 ; Multiboot stuff
 MODULEALIGN equ  1<<0
 MEMINFO     equ  1<<1

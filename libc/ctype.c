@@ -1,3 +1,5 @@
+/* Copyright 2009 Nick Johnson */
+
 #include <ctype.h>
 
 uint16_t _ctype_tbl[256] = {

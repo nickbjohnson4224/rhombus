@@ -1,3 +1,5 @@
+/* Copyright 2009 Nick Johnson */
+
 #include "libc.h"
 
 #include <stdlib.h>

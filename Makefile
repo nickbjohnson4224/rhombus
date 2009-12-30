@@ -1,7 +1,7 @@
 BUILDDIR=$(PWD)
 
 DRV_DIRS=driver/console
-LIB_DIRS=libc $(DRV_DIRS)
+LIB_DIRS=libc $(DRV_DIRS) # libc must be first 
 BIN_DIRS=kernel init
 
 CC := /usr/khaos/bin/i586-elf-gcc
@@ -19,9 +19,9 @@ ARFLAGS := rcs
 
 export BUILDDIR CC LD AR AS CFLAGS LDFLAGS ARFLAGS
 
-.PHONY: $(LIB_DIRS) $(BIN_DIRS) clean test cd libc_headers distclean
+.PHONY: $(LIB_DIRS) $(BIN_DIRS) clean test cd distclean
 
-all: libc_headers $(LIB_DIRS) $(BIN_DIRS)
+all: $(LIB_DIRS) $(BIN_DIRS)
 
 $(BIN_DIRS): $(LIB_DIRS)
 	@ echo " MAKE	" $@
@@ -59,9 +59,4 @@ test:	all image
 cd:	all image
 	export BUILDDIR
 	run/makecd.sh
-
-libc_headers:
-	@ echo " CP	" $(shell find libc/inc -name "*.*") "->" $(BUILDDIR)/inc
-	@ mkdir -p $(BUILDDIR)/inc
-	@ cp $(shell find libc/inc -name "*.*") $(BUILDDIR)/inc
 

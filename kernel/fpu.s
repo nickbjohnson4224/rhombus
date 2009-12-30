@@ -1,4 +1,8 @@
+; Copyright 2009 Nick Johnson
+
 ; FPU/SSE init/save/load functions
+
+[bits 32]
 
 section .data
 

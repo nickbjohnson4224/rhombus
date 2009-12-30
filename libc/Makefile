@@ -1,6 +1,6 @@
 SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
 SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
-HEADERS := $(shell find inc -name "*.h")
+HEADERS := $(shell find inc -name "*.h") inc/link.ld
 SUBDIR	:= libc
 TARGET	:= libc.a
 CFLAGS  += -ffreestanding -I$(BUILDDIR)/$(SUBDIR)/inc

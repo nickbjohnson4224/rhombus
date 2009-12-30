@@ -1,3 +1,4 @@
+/* Copyright 2009 Nick Johnson */
 
 #include "libc.h"
 #include <signal.h>

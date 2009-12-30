@@ -1,3 +1,5 @@
+/* Copyright 2009 Nick Johnson */
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>

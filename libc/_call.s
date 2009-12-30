@@ -1,3 +1,7 @@
+; Copyright 2009 Nick Johnson
+
+[bits 32]
+
 global sighand
 extern sigredirect
 sighand:

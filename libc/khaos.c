@@ -1,3 +1,5 @@
+/* Copyright 2009 Nick Johnson */
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <khaos.h>

@@ -1,3 +1,5 @@
+; Copyright 2009 Nick Johnson
+
 [bits 32]
 
 section .text
