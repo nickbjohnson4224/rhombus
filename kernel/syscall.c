@@ -51,6 +51,9 @@ image_t *fault_page(image_t *image) {
 		panic("page fault exception");
 	}
 
+	printk("segfault: %x @ %x", cr2, image->eip);
+	for(;;);
+
 	/* If in userspace, redirect to signal S_PAG, with faulting address */
 	return signal(curr_pid, S_PAG, NULL, TF_NOERR | TF_EKILL);
 }
@@ -158,6 +161,7 @@ image_t *mmap(image_t *image) {
 
 	if (flags & 0x10) {
 		if ((curr_task->flags & TF_SUPER) || curr_task->grant == frame) {
+			p_free(addr);
 			page_set(addr, page_fmt(frame, pflags));
 			if (curr_task->grant == frame) {
 				curr_task->grant = 0;

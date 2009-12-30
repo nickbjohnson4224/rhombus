@@ -97,6 +97,19 @@ static void cwrite(char c) {
 			vbuf[cursor++] = (uint16_t) (c | 0x0F00); break;
 	}
 
+	if (cursor >= WIDTH * HEIGHT) {
+		for (i = 0; i < WIDTH * HEIGHT - WIDTH; i++) {
+			vbuf[i] = vbuf[i + WIDTH];
+		}
+
+		for (i = WIDTH * HEIGHT - WIDTH; i < WIDTH * HEIGHT; i++) {
+			vbuf[i] = 0x0F20;
+		}
+		
+		c_base -= WIDTH;
+		cursor -= WIDTH;
+	}
+
 	outb(0x3D4, 14);
 	outb(0x3D5, cursor >> 8);
 	outb(0x3D4, 15);

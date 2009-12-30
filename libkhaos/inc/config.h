@@ -6,7 +6,7 @@
 	/***** TASKING SUBSYSTEM *****/
 
 	/* Maximum number of tasks, must be less than 65536 */
-	#define MAX_TASKS 256
+	#define MAX_TASKS 4096
 
 	/* Scheduling algorithm */
 	#define SCHED_ROUND_ROBIN 0
