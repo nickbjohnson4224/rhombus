@@ -157,8 +157,11 @@ image_t *mmap(image_t *image) {
 	if (flags & 0x04) pflags |= PF_PRES;
 
 	if (flags & 0x10) {
-		if (curr_task->flags & TF_SUPER) {
+		if ((curr_task->flags & TF_SUPER) || curr_task->grant == frame) {
 			page_set(addr, page_fmt(frame, pflags));
+			if (curr_task->grant == frame) {
+				curr_task->grant = 0;
+			}
 			ret(image, 0);
 		}
 		else {

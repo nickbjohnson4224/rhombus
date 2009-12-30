@@ -93,17 +93,19 @@ mmap: int 0x65
 		- must be page aligned
 	- ecx: page count
 		- maximum 1024 pages per call
-		- assumed to be 1 if MMAP_FRAME
+		- assumed to be 1 if MMAP_FRAME or MMAP_PHYS
 	- edx: flags | frame
 		- first 12 bits: flags
-			- bit 0: MMAP_READ: page is readable
+			- bit 0: MMAP_READ:  page is readable
 			- bit 1: MMAP_WRITE: page is writable
-			- bit 2: MMAP_EXEC: page is executable
-			- bit 3: MMAP_FREE: free page instead of allocating
+			- bit 2: MMAP_EXEC:  page is executable
+			- bit 3: MMAP_FREE:  free page instead of allocating
 			- bit 4: MMAP_FRAME: try to use frame
-			- bit 5: MMAP_PHYS: return physical address
+			- bit 5: MMAP_PHYS:  return frame of allocated page
+			- bit 6: MMAP_MOVE:  move pages from address to address
 		- last 20 bits: grant page (if MMAP_FRAME)
 			- only allowed if super or if frame was granted
+			- also used as source address for MMAP_MOVE
 - returns 0 on success, negative on failure
 - maps memory with the requested flags into the requested frames
 

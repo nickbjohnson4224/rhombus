@@ -45,11 +45,6 @@ void xwrite(uint32_t addr) {
 	swrite((const char*) m);
 }
 
-void rirq(int irq, signal_handler_t handler) {
-	sigregister(3, handler);
-	_ctrl(CTRL_IRQRD | CTRL_IRQ(irq), CTRL_IRQRD | CTRL_IRQMASK);
-}
-
 void segfault(uint32_t source, void *grant) {
 	swrite("\nSegmentation Fault\n");
 
@@ -57,6 +52,13 @@ void segfault(uint32_t source, void *grant) {
 }
 
 void death(uint32_t source, void *grant) {
+}
+
+void write(uint32_t source, void *grant) {
+	uintptr_t addr = (uintptr_t) malloc(0x1000);
+	__emap(addr, (uintptr_t) grant, MMAP_READ | MMAP_WRITE);
+	swrite((char*) addr);
+	free((void*) addr);
 }
 
 int main() {
@@ -67,8 +69,11 @@ int main() {
 	sigregister(0, segfault);
 	sigregister(2, segfault);
 	sigregister(7, death);
+	sigregister(3, console.handler);
+	sigregister(16, write);
 
 	console.init(0);
+	rirq(1);
 	print_bootsplash();
 
 	swrite("Fork test:\n");
@@ -76,7 +81,7 @@ int main() {
 	for (i = 0; i < 16; i++) {
 		pid = fork();
 		if (pid < 0) {
-			wait(16);
+			wait(32);
 			exit(0);
 		}
 		else {
@@ -84,7 +89,7 @@ int main() {
 			swrite(".");
 			if (i % 2 == 0) {
 				mb[i] = NULL;
-				fire(pid, 16, NULL);
+				fire(pid, 32, NULL);
 				wait(7);
 			}
 		}
@@ -94,7 +99,7 @@ int main() {
 	swrite("\tkilling 16 tasks:\t");
 	for (i = 0; i < 16; i++) {
 		if (mb[i]) {
-			fire((uint32_t) mb[i], 16, NULL);
+			fire((uint32_t) mb[i], 32, NULL);
 			swrite("..");
 		}
 	}
@@ -105,13 +110,16 @@ int main() {
 	swrite("Signals test:\n");
 	wreset(16);
 	sigblock();
-	if (fire(info(0), 16, NULL)) {
+	if (fire(info(0), 32, NULL)) {
 		swrite("\tblocked\n");
 		sigunblock();
-		fire(info(0), 16, NULL);
+		fire(info(0), 32, NULL);
 	}
-	wait(16);
+	wait(32);
 	swrite("\tunblocked\n");
+	mb[0] = malloc(0x1000);
+	strcpy((char*) mb[0], "\tgrants\n");
+	fire(info(0), 16, mb[0]);
 
 	swrite("\n");
 

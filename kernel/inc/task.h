@@ -47,6 +47,7 @@ typedef struct task {
 	struct task *next_task;
 	pid_t parent;
 	uint32_t shandler;
+	uint32_t grant;
 } task_t;
 
 #define TF_SMASK 0x47

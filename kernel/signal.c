@@ -17,6 +17,13 @@ image_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 		ret(src_t->image, (flags & TF_NOERR) ? targ : ERROR);
 	}
 
+	/* Get frame of grant */
+	if (grant) {
+		grant = (void*) page_get(page_ufmt((uintptr_t) grant));
+		page_set((uintptr_t) grant, 0);
+		grant = (void*) ((uint32_t) grant & ~0xFFF);
+	}
+
 	/* Switch to target task */
 	task_switch(dst_t);
 
@@ -43,6 +50,8 @@ image_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 	/* Set registers to describe signal */
 
 	/* Granted frame */
+	dst_t->image[1].grant = dst_t->grant;
+	dst_t->grant = (uintptr_t) grant;
 	dst_t->image->ebx = (uintptr_t) grant;
 
 	/* Caller PID */
@@ -69,6 +78,9 @@ image_t *sret(image_t *image) {
 
 	/* Reset task image stack */
 	curr_task->image = &curr_task->image[1];
+
+	/* Reload saved grant */
+	curr_task->grant = curr_task->image->grant;
 
 	return curr_task->image;
 }
