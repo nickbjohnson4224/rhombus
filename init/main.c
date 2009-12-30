@@ -4,8 +4,8 @@
 #include <signal.h>
 #include <khaos.h>
 
-#include <khaos/driver.h>
-#include <khaos/config.h>
+#include <driver.h>
+#include <config.h>
 
 #include <driver/console.h>
 
@@ -28,7 +28,7 @@ swrite("\n\
 \t\t\t\t\t| |/ / | |_| | |___  | |  _  | |  ___|\n\
 \t\t\t\t\t|   <  |  _  | |  _  | | |_| | |___  |\n\
 \t\t\t\t\t|_|\\_\\ |_| |_| |_____| |_____| |_____|\n\
-\t\t\t\t\t          -= Version 0.1a =-\n\n\n");
+\t\t\t\t\t          -= Version 0.2a =-\n\n\n");
 }
 
 void xwrite(uint32_t addr) {
@@ -51,10 +51,7 @@ void segfault(uint32_t source, void *grant) {
 	exit(1);
 }
 
-void death(uint32_t source, void *grant) {
-}
-
-void write(uint32_t source, void *grant) {
+void writehand(uint32_t source, void *grant) {
 	uintptr_t addr = (uintptr_t) malloc(0x1000);
 	__emap(addr, (uintptr_t) grant, MMAP_READ | MMAP_WRITE);
 	swrite((char*) addr);
@@ -66,11 +63,10 @@ int main() {
 	int32_t pid;
 	static uint32_t *mb[1024];
 
-	sigregister(0, segfault);
-	sigregister(2, segfault);
-	sigregister(7, death);
-	sigregister(3, console.handler);
-	sigregister(16, write);
+	sigregister(SSIG_FAULT, segfault);
+	sigregister(SSIG_PAGE, segfault);
+	sigregister(SSIG_IRQ, console.handler);
+	sigregister(SIG_WRITE, writehand);
 
 	console.init(0);
 	rirq(1);
@@ -81,7 +77,7 @@ int main() {
 	for (i = 0; i < 16; i++) {
 		pid = fork();
 		if (pid < 0) {
-			wait(32);
+			wait(SSIG_KILL);
 			exit(0);
 		}
 		else {
@@ -89,8 +85,8 @@ int main() {
 			swrite(".");
 			if (i % 2 == 0) {
 				mb[i] = NULL;
-				fire(pid, 32, NULL);
-				wait(7);
+				fire(pid, SSIG_KILL, NULL);
+				wait(SSIG_DEATH);
 			}
 		}
 	}
@@ -99,7 +95,7 @@ int main() {
 	swrite("\tkilling 16 tasks:\t");
 	for (i = 0; i < 16; i++) {
 		if (mb[i]) {
-			fire((uint32_t) mb[i], 32, NULL);
+			fire((uint32_t) mb[i], SSIG_KILL, NULL);
 			swrite("..");
 		}
 	}
@@ -108,18 +104,18 @@ int main() {
 	swrite("\n");
 
 	swrite("Signals test:\n");
-	wreset(16);
+	wreset(SIG_PING);
 	sigblock();
-	if (fire(info(0), 32, NULL)) {
+	if (fire(info(0), SIG_PING, NULL)) {
 		swrite("\tblocked\n");
 		sigunblock();
-		fire(info(0), 32, NULL);
+		fire(info(0), SIG_PING, NULL);
 	}
-	wait(32);
+	wait(SIG_PING);
 	swrite("\tunblocked\n");
 	mb[0] = malloc(0x1000);
 	strcpy((char*) mb[0], "\tgrants\n");
-	fire(info(0), 16, mb[0]);
+	fire(info(0), SIG_WRITE, mb[0]);
 
 	swrite("\n");
 

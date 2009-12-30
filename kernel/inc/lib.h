@@ -3,7 +3,7 @@
 #ifndef LIB_H
 #define LIB_H
 
-#include <khaos/config.h>
+#include <config.h>
 #include <stdint.h>
 
 /***** I/O, ETC. *****/

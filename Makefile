@@ -1,7 +1,7 @@
 BUILDDIR=$(PWD)
 
-DRV_DIRS=driver/console driver/pci driver/floppy driver/ata
-LIB_DIRS=libkhaos libc $(DRV_DIRS)
+DRV_DIRS=driver/console
+LIB_DIRS=libc $(DRV_DIRS)
 BIN_DIRS=kernel init
 
 CC := /usr/khaos/bin/i586-elf-gcc

@@ -5,7 +5,7 @@
 #include <signal.h>
 #include <khaos.h>
 #include "../../libc/libc.h"
-#include <khaos/driver.h>
+#include <driver.h>
 #include <driver/console.h>
 
 #define VMEM 0xB8000

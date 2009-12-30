@@ -1,5 +1,5 @@
-#ifndef LIBDRIVER_H
-#define LIBDRIVER_H
+#ifndef DRIVER_H
+#define DRIVER_H
 
 #include <stdint.h>
 
@@ -13,11 +13,6 @@ void outw(uint16_t port, uint16_t value);
 void outd(uint16_t port, uint32_t value);
 
 void iodelay(uint32_t usec);
-
-/***** REMOTE MEMORY ACCESS *****/
-int32_t push_call(uint32_t target, uint32_t dest, uint32_t src, uint32_t size);
-int32_t pull_call(uint32_t target, uint32_t src, uint32_t dest, uint32_t size);
-uintptr_t phys_call(uintptr_t addr);
 
 /***** DRIVER INTERFACE STRUCTURE *****/
 

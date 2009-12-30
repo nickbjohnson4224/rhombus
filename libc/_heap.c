@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
-#include <khaos/config.h>
+#include <config.h>
 
 #include "libc.h"
 

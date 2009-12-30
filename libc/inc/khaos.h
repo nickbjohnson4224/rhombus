@@ -40,9 +40,44 @@ void		_exit(uint32_t value);
 #define CTRL_IRQMASK	0xFF000000
 #define CTRL_IRQ(n)		(((n) & 0xFF) << 24)
 
+#define SSIG_FAULT	0
+#define SSIG_ENTER	1
+#define SSIG_PAGE	2
+#define SSIG_IRQ	3
+#define SSIG_KILL	4
+#define SSIG_IMAGE	5
+#define SSIG_FLOAT	6
+#define SSIG_DEATH	7
+
+#define SIG_READ	16
+#define SIG_WRITE	17
+#define SIG_INFO	18
+#define SIG_CTRL	19
+#define SIG_PING	20
+#define SIG_REPLY	32
+
 /***** API FUNCTIONS *****/
 
 void block(void);
 void unblock(void);
+
+typedef struct {
+	uint32_t task;
+	uint32_t resource;
+	uint32_t fpos;
+} file_t;
+
+typedef struct {
+	uint8_t resource	[4];
+	uint8_t data_size	[2];
+	uint8_t transaction	[2];
+	uint8_t checksum	[4];
+	uint8_t data_off	[2];
+	uint8_t header_type	[2];
+	uint8_t file_off	[16];
+} request_t;
+
+size_t read(file_t *fd, char *buffer, size_t count);
+size_t write(file_t *fd, char *buffer, size_t count);
 
 #endif

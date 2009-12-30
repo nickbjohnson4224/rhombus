@@ -1,6 +1,6 @@
 /* Copyright 2009 Nick Johnson */
 
-#include <khaos/config.h>
+#include <config.h>
 #include <stdint.h>
 #include <lib.h>
 #include <mem.h>
