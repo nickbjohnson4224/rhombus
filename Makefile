@@ -19,9 +19,9 @@ ARFLAGS := rcs
 
 export BUILDDIR CC LD AR AS CFLAGS LDFLAGS ARFLAGS
 
-.PHONY: $(LIB_DIRS) $(BIN_DIRS) clean test cd distclean
+.PHONY: $(LIB_DIRS) $(BIN_DIRS) clean test cd distclean makedirs
 
-all: $(LIB_DIRS) $(BIN_DIRS)
+all: makedirs $(LIB_DIRS) $(BIN_DIRS)
 
 $(BIN_DIRS): $(LIB_DIRS)
 	@ echo " MAKE	" $@
@@ -60,3 +60,6 @@ cd:	all image
 	export BUILDDIR
 	run/makecd.sh
 
+makedirs:
+	mkdir -p $(BUILDDIR)/lib
+	mkdir -p $(BUILDDIR)/inc
