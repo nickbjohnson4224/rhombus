@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include <khaos.h>
+#include <flux.h>
 #include <config.h> 
 
 void block() {

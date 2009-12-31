@@ -1,4 +1,4 @@
-Khaos Operating System 0.2
+Flux Operating System 0.2a
 User Manual Section I - ABI
 ==============================
 
@@ -12,7 +12,7 @@ V	- Executable Loading
 
 I	- Process Control
 ==============================
-Khaos provides the same two basic system calls for process creation and 
+Flux provides the same two basic system calls for process creation and 
 destruction as UNIX: fork and exit. However, a few small differences exist.
 
 fork: int 0x66
@@ -80,8 +80,8 @@ info: int 0x64
 
 II	- Memory Management
 ==============================
-All Khaos memory management is done through a single mulitplexed call: mmap. 
-Khaos does not allow any memory to be mapped in multiple address spaces, for
+All Flux memory management is done through a single mulitplexed call: mmap. 
+Flux does not allow any memory to be mapped in multiple address spaces, for
 stability and security reasons. However, this does not mean it cannot take
 advantage of the paging system it requires: signals can grant pages to other 
 processes with the help of this call.
@@ -111,7 +111,7 @@ mmap: int 0x65
 
 III	- Interprocess Communication
 ==============================
-Khaos has only one basic IPC facility: signals. Signals can be described as a 
+Flux has only one basic IPC facility: signals. Signals can be described as a 
 form of asynchronous unqueued pure message passing, with an interface similar
 to UNIX signals, which create a preemptive handler context in the target 
 process. Signals are also used by the kernel to notify processes of internal
@@ -162,7 +162,7 @@ drop: int 0x61
 
 IV	- Driver Interfaces
 ==============================
-Drivers in Khaos are individual processes, which have special privileges. Init
+Drivers in Flux are individual processes, which have special privileges. Init
 spawns a process called devd, the device daemon, which analyzes the hardware 
 and spawns drivers. Drivers have the CTRL_SUPER flag set, which allows them to 
 request port access and map frames directly, through the CTRL_PORTS and 
@@ -203,7 +203,7 @@ using signal 32: SIG_REPLY.
 
 V	- Executable Loading
 ==============================
-The Khaos kernel is clearly lacking in an exec system call. It also does not 
+The Flux kernel is clearly lacking in an exec system call. It also does not 
 have adequate facilities for drivers to load executables for processes. So, all
 executables are loaded directly by the calling process, with help from a 
 library. Linking with different of these libraries, or "libexec"s, enables 

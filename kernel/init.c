@@ -6,13 +6,13 @@
 #include <task.h>
 #include <init.h>
 
-#define KHAOS_VERSION_MAJOR 0
-#define KHAOS_VERSION_MINOR 1
-#define KHAOS_KERNEL_REVISN 2
+#define FLUX_VERSION_MAJOR 0
+#define FLUX_VERSION_MINOR 2
+#define FLUX_KERNEL_REVISN 1
 
 __attribute__ ((section(".tdata"))) 
 const char *stamp = "\
-Khaos Operating System v%d.%d\n\
+Flux Operating System v%d.%d\n\
 Copyright 2009 Nick Johnson\n\n";
 
 typedef void (*init_t)(void);
@@ -36,7 +36,7 @@ void init(void *mboot_ptr, uint32_t mboot_magic) {
 	uint32_t i;
 
 	cleark(); 
-	printk(stamp, KHAOS_VERSION_MAJOR, KHAOS_VERSION_MINOR);
+	printk(stamp, FLUX_VERSION_MAJOR, FLUX_VERSION_MINOR);
 
 	if (mboot_magic != 0x2BADB002) {
 		panic("Bootloader is not multiboot compliant");

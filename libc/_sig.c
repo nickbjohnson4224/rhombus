@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <signal.h>
-#include <khaos.h>
+#include <flux.h>
 
 static signal_handler_t sighandlers[MAXSIGNAL];
 static volatile uint8_t sigcount[MAXSIGNAL]; /* Used for waiting */

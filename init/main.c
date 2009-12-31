@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <signal.h>
-#include <khaos.h>
+#include <flux.h>
 
 #include <driver.h>
 #include <config.h>
@@ -18,7 +18,7 @@ void swrite(const char *message) {
 }
 
 static void print_bootsplash() {
-swrite("\n\
+/*swrite("\n\
 \t\t\t\t\t\t\t           '^a,\n\
 \t\t\t\t\t\t\t        ,.    'b.\n\
 \t\t\t\t\t\t\t      .d'       b.\n\
@@ -30,7 +30,10 @@ swrite("\n\
 \t\t\t\t\t| |/ / | |_| | |___  | |  _  | |  ___|\n\
 \t\t\t\t\t|   <  |  _  | |  _  | | |_| | |___  |\n\
 \t\t\t\t\t|_|\\_\\ |_| |_| |_____| |_____| |_____|\n\
-\t\t\t\t\t          -= Version 0.2a =-\n\n\n");
+\t\t\t\t\t          -= Version 0.2a =-\n\n\n"); */
+swrite("\n\
+Welcome to FLUX 0.2a\n\
+Written by Nick Johnson\n\n");
 }
 
 void xwrite(uint32_t addr) {

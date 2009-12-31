@@ -1,4 +1,4 @@
-Khaos Operating System v0.2a
+Flux Operating System v0.2a
 Build Instructions
 ================================
 
@@ -43,13 +43,11 @@ Bochs x86 emulator (or other VM - scripts will have to be modified)
 Build Instructions:
 
 To make each piece of the operating system, simply type "make 
-<subproject>", or just "make" to make everything. The kernel, libkhaos,
-init, libc, and at least basic drivers must be built for the system to 
-boot correctly. Toolchain and coreutils are required for normal operation. 
-Libc and toolchain/libqill contain headers linked to by coreutils, so 
-coreutils must be updated after both of them are rebuilt. "make -C 
-<subproject> clean" will remove all object files from the subprojects' 
-directories, and "make clean" will remove all object files.
+<subproject>", or just "make" to make everything. The kernel, init, 
+libc, and at least basic drivers must be built for the system to boot 
+correctly. "make -C <subproject> clean" will remove all object files 
+from the subprojects' directories, and "make clean" will remove all 
+object files.
 
 Test Instructions:
 

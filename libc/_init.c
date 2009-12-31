@@ -2,7 +2,7 @@
 
 #include "libc.h"
 #include <signal.h>
-#include <khaos.h>
+#include <flux.h>
 
 static void __exit(uint32_t source, void *grant) {
 	_exit(1);

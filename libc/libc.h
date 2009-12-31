@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <khaos.h>
+#include <flux.h>
 
 /*** Memory Management ***/
 
