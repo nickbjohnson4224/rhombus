@@ -16,43 +16,43 @@
 #define HEIGHT 25
 #define TAB 4
 
-static int console_init(device_t selector);
-static int console_sleep(void);
-static int console_halt(void);
+static int terminal_init(device_t selector);
+static int terminal_sleep(void);
+static int terminal_halt(void);
 
-static int console_read (struct request *r, callback_t cb);
-static int console_write(struct request *r, callback_t cb);
-static int console_ctrl (struct request *r, callback_t cb);
-static int console_info (struct request *r, callback_t cb);
+static int terminal_read (struct request *r, callback_t cb);
+static int terminal_write(struct request *r, callback_t cb);
+static int terminal_ctrl (struct request *r, callback_t cb);
+static int terminal_info (struct request *r, callback_t cb);
 
-static void console_work(void);
-static void console_handler(void);
+static void terminal_work(void);
+static void terminal_handler(void);
 
 static device_t dev;
 static uint16_t *vbuf;
 static uint16_t c_base = 0;
 static uint16_t cursor = 0;
 static uint16_t buffer = 0;
-static void cwrite(char c);
+static void char_write(char c);
 
-struct driver_interface console = {
-	console_init,
-	console_sleep,
-	console_halt,
+struct driver_interface terminal = {
+	terminal_init,
+	terminal_sleep,
+	terminal_halt,
 
-	console_read,
-	console_write,
-	console_ctrl,
-	console_info,
+	terminal_read,
+	terminal_write,
+	terminal_ctrl,
+	terminal_info,
 
-	console_work,
+	terminal_work,
 	0,
 
-	console_handler,
+	terminal_handler,
 	-1,
 };
 
-static int console_init(device_t selector) {
+static int terminal_init(device_t selector) {
 	int i;
 
 	dev = selector;
@@ -64,22 +64,22 @@ static int console_init(device_t selector) {
 		vbuf[i] = 0x0F20;
 	}
 
-	return 0;
+	return DRV_DONE;
 }
 
-static int console_sleep(void) {
+static int terminal_sleep(void) {
 	return DRV_ERROR;
 }
 
-static int console_halt(void) {
+static int terminal_halt(void) {
 	return DRV_ERROR;
 }
 
-static int console_read (struct request *r, callback_t cb) {
+static int terminal_read (struct request *r, callback_t cb) {
 	return DRV_ERROR;
 }
 
-static int console_write(struct request *r, callback_t cb) {
+static int terminal_write(struct request *r, callback_t cb) {
 	struct localrequest l;
 	char *cdata;
 	int *idata;
@@ -90,7 +90,7 @@ static int console_write(struct request *r, callback_t cb) {
 	idata = l.data;
 
 	for (i = 0; i < l.datasize; i++) {
-		cwrite(cdata[i]);
+		char_write(cdata[i]);
 	}
 
 	outb(0x3D4, 14);
@@ -107,23 +107,23 @@ static int console_write(struct request *r, callback_t cb) {
 	return DRV_DONE;
 }
 
-static int console_ctrl (struct request *r, callback_t cb) {
+static int terminal_ctrl (struct request *r, callback_t cb) {
 	return DRV_ERROR;
 }
 
-static int console_info (struct request *r, callback_t cb) {
+static int terminal_info (struct request *r, callback_t cb) {
 	return DRV_ERROR;
 }
 
-static void console_work(void) {
+static void terminal_work(void) {
 	return;
 }
 
-static void console_handler(void) {
+static void terminal_handler(void) {
 	return;
 }
 
-static void cwrite(char c) {
+static void char_write(char c) {
 	uint16_t i;
 
 	if (cursor >= WIDTH * HEIGHT) {
@@ -177,31 +177,4 @@ static void cwrite(char c) {
 	}
 }
 
-/*const char keymap[] = 
-"\0\0331234567890-=\b\tqwertyuiop[]\n\0asdfghjkl;\'`\0\\zxcvbnm,./\0*\0 ";
 
-const char upkmap[] = 
-"\0\033!@#$%^&*()_+\b\0QWERTYUIOP{}\n\0ASDFGHJKL:\"~\0|ZXCVBNM<>?\0*\0 ";
-
-bool shift = false;
-
-static void console_handler(uint32_t source, void *grant) {
-	size_t c = inb(0x60);
-	source = 0;
-
-	if (c & 0x80) {
-		if (keymap[c & 0x7F] == '\0') shift = false;
-		return;
-	}
-
-	if (keymap[c & 0x7F] == '\0') shift = true;
-	c = (size_t) ((shift) ? upkmap[c] : keymap[c]);
-
-	fire(info(0), 0x20, NULL);
-
-	cwrite(c);
-}
-
-static int console_halt(void) {
-	return 0;
-} */

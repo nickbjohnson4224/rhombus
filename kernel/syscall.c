@@ -7,16 +7,45 @@
 
 /***** IRQ HANDLERS *****/
 
+static uint8_t held_irq[15];
+static uint16_t held_count;
+
 /* Handles IRQ 0, and advances a simple counter used as a clock */
+/* If an IRQ was held, it is redirected */
 uint32_t tick = 0;
 image_t *pit_handler(image_t *image) {
+	size_t i;
+	task_t *holder;
+
 	if (image->cs | 1) tick++;
+
+	if (held_count) {
+		for (i = 0; i < 16; i++) {
+			if (held_irq[i]) {
+				holder = task_get(irq_holder[i]);
+				if (!holder || (holder->flags & TF_SBLOK)) {
+					continue;
+				}
+				held_irq[i]--;
+				held_count--;
+				return signal(irq_holder[i], S_IRQ, NULL, TF_NOERR);
+			}
+		}
+	}
 
 	/* Switch to next scheduled task */
 	return task_switch(task_next(0));
 }
 
 image_t *irq_redirect(image_t *image) {
+	task_t *holder;
+
+	holder = task_get(irq_holder[DEIRQ(image->num)]);
+	if (holder->flags & TF_SBLOK) {
+		held_irq[DEIRQ(image->num)]++;
+		held_count++;
+		return image;
+	}
 
 	/* Send S_IRQ signal to the task registered with the IRQ */
 	return signal(irq_holder[DEIRQ(image->num)], S_IRQ, NULL, TF_NOERR);
@@ -78,7 +107,7 @@ image_t *fault_double(image_t *image) {
 }
 
 /***** System Calls *****/
-/* See section I of the Flux manual for details */
+/* See section II of the Flux manual for details */
 
 image_t *fire(image_t *image) {
 	return signal(image->eax, image->ecx, (void*) image->ebx, 0);

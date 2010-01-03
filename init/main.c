@@ -13,7 +13,7 @@
 #include <driver/console.h>
 
 void swrite(const char *message) {
-	extern void console_write(char*, size_t);
+	extern size_t console_write(char*, size_t);
 	console_write((char*) message, strlen(message));
 }
 
@@ -65,9 +65,13 @@ void writehand(uint32_t source, void *grant) {
 
 int main() {
 	extern void console_init(void);
+	extern size_t console_read(char*, size_t);
+	extern size_t console_write(char*, size_t);
 	size_t i, j;
 	int32_t pid;
 	static uint32_t *mb[1024];
+	char *buffer;
+	size_t bufsize;
 
 	sigregister(SSIG_FAULT, segfault);
 	sigregister(SSIG_PAGE, segfault);
@@ -122,6 +126,8 @@ int main() {
 	fire(info(0), SIG_WRITE, mb[0]);
 
 	swrite("\n");
+
+	sigblock();
 
 	swrite("Allocator test:\n");
 	for (i = 0; i < 1; i++) {
@@ -194,7 +200,14 @@ int main() {
 	}
 	swrite("Done. \n");
 
+	sigunblock();
+
 	swrite("\nAll tests passed.\n");
+
+	bufsize = 100;
+	buffer = malloc(bufsize);
+	bufsize = console_read(buffer, bufsize);
+	console_write(buffer, bufsize);
 
 	for(;;);
 	return 0;

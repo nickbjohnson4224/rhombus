@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <config.h>
+#include <signal.h>
 
 #include "libc.h"
 

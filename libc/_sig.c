@@ -7,6 +7,7 @@
 
 static signal_handler_t sighandlers[MAXSIGNAL];
 static volatile uint8_t sigcount[MAXSIGNAL]; /* Used for waiting */
+static volatile uint8_t block_count = 0;
 
 void siginit(void) {
 	extern void sighand(void);
@@ -15,11 +16,23 @@ void siginit(void) {
 }
 
 void sigblock(void) {
-	_ctrl(CTRL_SIGNAL, CTRL_SIGNAL); 
+	_ctrl(CTRL_SIGNAL, CTRL_SIGNAL);
+	block_count++;
+
+	if (block_count != 1) {
+		_ctrl(CTRL_NONE, CTRL_SIGNAL); 
+	}
 }
 
 void sigunblock(void) {
-	_ctrl(CTRL_NONE, CTRL_SIGNAL);
+	if (block_count == 0) return;
+	
+	_ctrl(CTRL_SIGNAL, CTRL_SIGNAL);
+	block_count--;
+
+	if (block_count == 0) {
+		_ctrl(CTRL_NONE, CTRL_SIGNAL);
+	}
 }
 
 int fire(uint32_t target, uint16_t signal, void *grant) {
