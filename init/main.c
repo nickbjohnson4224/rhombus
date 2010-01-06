@@ -10,30 +10,14 @@
 #include <driver.h>
 #include <config.h>
 
-#include <driver/console.h>
-
 void swrite(const char *message) {
 	extern size_t console_write(char*, size_t);
 	console_write((char*) message, strlen(message));
 }
 
 static void print_bootsplash() {
-/*swrite("\n\
-\t\t\t\t\t\t\t           '^a,\n\
-\t\t\t\t\t\t\t        ,.    'b.\n\
-\t\t\t\t\t\t\t      .d'       b.\n\
-\t\t\t\t\t\t\t      S:        a:\n\
-\t\t\t\t\t\t\t      'q,       p'\n\
-\t\t\t\t\t\t\t        \"'    .p'\n\
-\t\t\t\t\t\t\t           .,a'\n\
-\t\t\t\t\t _  _   _   _   _____   _____   _____ \n\
-\t\t\t\t\t| |/ / | |_| | |___  | |  _  | |  ___|\n\
-\t\t\t\t\t|   <  |  _  | |  _  | | |_| | |___  |\n\
-\t\t\t\t\t|_|\\_\\ |_| |_| |_____| |_____| |_____|\n\
-\t\t\t\t\t          -= Version 0.2a =-\n\n\n"); */
-swrite("\n\
-Welcome to Flux 0.2a\n\
-Written by Nick Johnson\n\n");
+	swrite("Welcome to Flux 0.2a\n");
+	swrite("Written by Nick Johnson\n\n");
 }
 
 void xwrite(uint32_t addr) {

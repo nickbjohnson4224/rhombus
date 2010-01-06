@@ -64,7 +64,7 @@ image_t *task_switch(task_t *t) {
 	if (t == curr_task) return curr_task->image;
 
 	/* Save FPU state */
-	if (curr_task->flags & TF_FLOAT) {
+	if (curr_task->flags & CTRL_FLOAT) {
 		fpu_save(curr_task->image->fxdata);
 	}
 
@@ -74,7 +74,7 @@ image_t *task_switch(task_t *t) {
 	map_load(t->map);
 
 	/* Load FPU state */
-	if (curr_task->flags & TF_FLOAT) {
+	if (curr_task->flags & CTRL_FLOAT) {
 		fpu_load(curr_task->image->fxdata);
 	}
 

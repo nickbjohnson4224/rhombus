@@ -3,7 +3,7 @@
 #ifndef MEM_H
 #define MEM_H
 
-/* General virtual memory map:
+/* General virtual memory map: ***** OUT OF DATE *****
 0x00000000 - 0xF7FFFFFF: userspace 		(user, read-write, cloned)
 	0x00001000: process image
 	0xF0000000: libc image
@@ -26,6 +26,17 @@
 #include <config.h> /* Contains macros for VM layout */
 
 /***** PAGE FLAGS *****/
+
+/* MMAP flags */
+#define MMAP_CMASK	0x03B /* Capability mask */
+
+#define MMAP_READ	0x001
+#define MMAP_WRITE	0x002
+#define MMAP_EXEC	0x004
+#define MMAP_FREE	0x008
+#define MMAP_FRAME	0x010
+#define MMAP_PHYS	0x020
+#define MMAP_MOVE	0x040
 
 /* Normal page flags */
 #define PF_PRES 0x1		/* Is present */
@@ -52,7 +63,7 @@ typedef uint32_t map_t;
 void  map_temp(map_t map);				/* Puts a map in temporary space */
 map_t map_alloc(void);					/* Allocates a new map */
 map_t map_free(map_t map);				/* Frees a map (does not clean) */
-map_t map_clean(map_t map);				/* Cleans a map (frees all *user* memory) */
+map_t map_clean(map_t map);				/* Cleans a map (frees user memory) */
 map_t map_clone(void);					/* Clones the current map */
 extern map_t map_load(map_t map);		/* Activates a new map */
 void map_gc(uint32_t page);				/* Frees unused page tables */
@@ -60,12 +71,12 @@ void map_gc(uint32_t page);				/* Frees unused page tables */
 /***** FRAME.C ******/
 extern pool_t *fpool;
 
-#define frame_new() (pool_alloc(fpool) << 12)			/* Allocates a new frame	 */
+#define frame_new() (pool_alloc(fpool) << 12)	/* Allocates a new frame */
 #define frame_free(addr) (pool_free(fpool, addr >> 12))	/* Frees a frame */
 
 /***** PAGE.C *****/
-extern ptbl_t *cmap, *tmap;					/* Address of current page directory */
-extern page_t *ctbl, *ttbl;					/* Base of current page tables */
+extern ptbl_t *cmap, *tmap;		/* Address of current page directory */
+extern page_t *ctbl, *ttbl;		/* Base of current page tables */
 extern uint32_t *tsrc, *tdst;
 
 void   mem_alloc(uintptr_t base, uintptr_t size, uint16_t flags);
@@ -75,12 +86,20 @@ void   page_touch(uint32_t page);				/* Makes sure a page exists */
 void   page_set(uint32_t page, page_t value);	/* Sets the value of a page */
 page_t page_get(uint32_t page);					/* Returns the value of a page */
 void   page_flush(uint32_t addr);				/* Flushes the TLB for a page */
-void   temp_touch(uint32_t page);				/* Makes sure a temporary page exists */
-void   temp_set(uint32_t page, page_t value);	/* Sets the value of a temporary page */
-page_t temp_get(uint32_t page);					/* Returns the value of a temporary page */
+void   temp_touch(uint32_t page);				/* Make temporary page */
+void   temp_set(uint32_t page, page_t value);	/* Sets a temporary page */
+page_t temp_get(uint32_t page);					/* Returns a temporary page */
+
 #define page_fmt(base,flags) (((base)&0xFFFFF000)|((flags)&PF_MASK))
 #define page_ufmt(page) ((page)&0xFFFFF000)
-#define p_alloc(addr, flags) (page_set(addr, page_fmt(frame_new(), (flags & PF_MASK) | PF_PRES)))
-#define p_free(addr) do { frame_free(page_ufmt(page_get(addr))); page_set(addr, 0); } while(0);
+
+#define p_alloc(addr, flags) \
+	(page_set(addr, page_fmt(frame_new(), (flags & PF_MASK) | PF_PRES)))
+	
+#define p_free(addr) \
+	do { \
+		frame_free(page_ufmt(page_get(addr))); \
+		page_set(addr, 0); \
+	} while(0);
 
 #endif /*MEM_H*/

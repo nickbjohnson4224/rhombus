@@ -1,4 +1,4 @@
-/* Copyright 2009 Nick Johnson */
+/* Copyright 2009, 2010 Nick Johnson */
 
 #ifndef INT_H
 #define INT_H
@@ -7,8 +7,8 @@
 /* Stored in the task image stack (TIS), used during signals and interrupts */
 typedef struct image {
 	uint32_t fxdata[128];
-	uint32_t pad[1];
-	uint32_t grant, mg, ds, edi, esi, ebp, esp, ebx, edx, ecx, eax;
+	uint32_t flags, grant, mg;
+	uint32_t ds, edi, esi, ebp, esp, ebx, edx, ecx, eax;
 	uint32_t num, caller, err, eip, cs, eflags, useresp, ss;
 } __attribute__ ((packed)) image_t;
 

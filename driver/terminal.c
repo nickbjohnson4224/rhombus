@@ -9,7 +9,7 @@
 #include <mmap.h>
 #include <driver.h>
 
-#include <driver/console.h>
+#include <driver/terminal.h>
 
 #define VMEM 0xB8000
 #define WIDTH 80

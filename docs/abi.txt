@@ -48,17 +48,26 @@ ctrl: int 0x63
 - returns current flag values
 - sets flags marked in flag mask to values in flag values
 - currently assigned flags
-	- bit 0: CTRL_SCHED: block scheduling
-	- bit 1: CTRL_SIGNAL: block signals
-	- bit 2: CTRL_ENTER: signal on reentry
-	- bit 3: CTRL_SUPER: super (super only)
-	- bit 4: CTRL_PORTS: port i/o (super only)
-	- bit 5: CTRL_IRQRD: set irq redirect (super only)
-	- bit 6: CTRL_FLOAT: use FPU/SSE extensions
-	- bit 7: CTRL_RENICE: change scheduling priority
-	- bits 8-11: scheduling priority (bit 8 super only)
-	- bits 12-23: unassigned
-	- bits 24-31: irq number (super only)
+	- bit 0: 		CTRL_BLOCK: block scheduling
+	- bit 1: 		CTRL_CLEAR: block signals (name? think x86 CLI)
+	- bit 2: 		CTRL_ENTER: signal on reentry
+	- bit 3: 		CTRL_SUPER: super (super only)
+	- bit 4: 		CTRL_PORTS: port i/o (super only)
+	- bit 5: 		CTRL_IRQRD: set irq redirect (super only)
+	- bit 6: 		CTRL_FLOAT: use FPU/SSE extensions
+	- bit 7: 		CTRL_RNICE: change scheduling priority
+	- bits 8-11: 	scheduling priority (bit 8 super only)
+	- bit 12: 		CTRL_CBLOCK: clear CTRL_BLOCK when catching signal
+	- bit 13:		CTRL_CCLEAR: set CTRL_CLEAR when catching signal
+	- bits 14-15:	unassigned
+	- bit 16:		CTRL_DBLOCK: clear CTRL_BLOCK when dropping
+	- bit 17:		CTRL_DCLEAR: set CTRL_CLEAR when dropping
+	- bits 18-19:	unassigned
+	- bit 20:		CTRL_ASYNC: signals run as separate threads
+	- bit 21:		CTRL_MULTI: enable multiple processors
+	- bit 22:		CTRL_QUEUE: queue signals if possible in kernel
+	- bit 23:		CTRL_MMCLR:	clear mapped pages (super only)
+	- bits 24-31: 	irq number (super only)
 
 hand: int 0x62
 ------------------------------
@@ -73,11 +82,20 @@ info: int 0x64
 	- eax: selector
 - returns requested data
 - assigned selectors
-	- 0: current PID
-	- 1: parent PID
-	- 2: ticks elapsed
-	- 3: kernel version
-	- 4: kernel base address
+	- 0: 	INFO_CPID:	current PID
+	- 1: 	INFO_PPID:	parent PID
+	- 2: 	INFO_TICK:	ticks elapsed
+	- 3: 	INFO_ABIV:	kernel abi version
+	- 4: 	INFO_USER:	highest user address
+	- 5: 	INFO_CTRL:	enabled ctrl flags
+	- 6: 	INFO_MMAP:	enabled mmap flags
+	- 7: 	INFO_ARCH:	architecture ID
+		- 0: 	unknown
+		- 1: 	x86-32
+		- 2: 	x86-64
+	- 8: 	INFO_PAGE:	page size
+	- 9: 	INFO_CPUN:	number of logical CPUs
+	- 10:	INFO_LOAD:	system load
 
 II	- Memory Management
 ==============================
@@ -138,20 +156,20 @@ fire: int 0x60
 	- ebp set to previous context image address (read-only)
 - grants page if non-null
 - currently assigned signals:
-	- 0: SSIG_FAULT: general exception
-	- 1: SSIG_ENTER: reentry
-	- 2: SSIG_PAGE: page fault
-	- 3: SSIG_IRQ: registered IRQ
-	- 4: SSIG_KILL: kill signal
-	- 5: SSIG_IMAGE: image overflow
-	- 6: SSIG_FLOAT: floating point exception
-	- 7: SSIG_DEATH: child death
-	- 16: SIG_READ: driver read request
-	- 17: SIG_WRITE: driver write request
-	- 18: SIG_INFO: driver info request
-	- 19: SIG_CTRL: driver control request
-	- 20: SIG_PING: ping request
-	- 32: SIG_REPLY: generic reply
+	- 0: SSIG_FAULT:	general exception
+	- 1: SSIG_ENTER:	reentry
+	- 2: SSIG_PAGE:		page fault
+	- 3: SSIG_IRQ:		registered IRQ
+	- 4: SSIG_KILL:		kill signal
+	- 5: SSIG_IMAGE:	image overflow
+	- 6: SSIG_FLOAT:	floating point exception
+	- 7: SSIG_DEATH:	child death
+	- 16: SIG_READ:		driver read request
+	- 17: SIG_WRITE:	driver write request
+	- 18: SIG_INFO:		driver info request
+	- 19: SIG_CTRL:		driver control request
+	- 20: SIG_PING:		ping request
+	- 32: SIG_REPLY:	generic reply
 
 drop: int 0x61
 ------------------------------

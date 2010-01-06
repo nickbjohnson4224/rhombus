@@ -3,11 +3,11 @@ BUILDDIR=$(PWD)
 LIB_DIRS=libc driver # libc must be first 
 BIN_DIRS=kernel init
 
-CC := /usr/khaos/bin/i586-elf-gcc
-LD := /usr/khaos/bin/i586-elf-ld
-AR := /usr/khaos/bin/i586-elf-ar
+CC := /usr/flux-cross/bin/i586-elf-gcc
+LD := /usr/flux-cross/bin/i586-elf-ld
+AR := /usr/flux-cross/bin/i586-elf-ar
 AS := nasm
-PP := /usr/khaos/bin/i586-elf-cpp
+PP := /usr/flux-cross/bin/i586-elf-cpp
 
 CFLAGS	:= -march=i586 -pipe -Wall -Werror -Wextra -pedantic
 CFLAGS	+= -Wpointer-arith -Wcast-align -Wwrite-strings

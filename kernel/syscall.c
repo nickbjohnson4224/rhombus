@@ -23,12 +23,12 @@ image_t *pit_handler(image_t *image) {
 		for (i = 0; i < 16; i++) {
 			if (held_irq[i]) {
 				holder = task_get(irq_holder[i]);
-				if (!holder || (holder->flags & TF_SBLOK)) {
+				if (!holder || (holder->flags & CTRL_CLEAR)) {
 					continue;
 				}
 				held_irq[i]--;
 				held_count--;
-				return signal(irq_holder[i], S_IRQ, NULL, TF_NOERR);
+				return signal(irq_holder[i], SSIG_IRQ, NULL, NOERR);
 			}
 		}
 	}
@@ -41,14 +41,14 @@ image_t *irq_redirect(image_t *image) {
 	task_t *holder;
 
 	holder = task_get(irq_holder[DEIRQ(image->num)]);
-	if (holder->flags & TF_SBLOK) {
+	if (holder->flags & CTRL_CLEAR) {
 		held_irq[DEIRQ(image->num)]++;
 		held_count++;
 		return image;
 	}
 
 	/* Send S_IRQ signal to the task registered with the IRQ */
-	return signal(irq_holder[DEIRQ(image->num)], S_IRQ, NULL, TF_NOERR);
+	return signal(irq_holder[DEIRQ(image->num)], SSIG_IRQ, NULL, NOERR);
 }
 
 /***** FAULT HANDLERS *****/
@@ -63,7 +63,7 @@ image_t *fault_generic(image_t *image) {
 	}
 
 	/* If in userspace, redirect to signal S_GEN */
-	return signal(curr_pid, S_GEN, NULL, TF_NOERR | TF_EKILL);
+	return signal(curr_pid, SSIG_FAULT, NULL, NOERR | EKILL);
 }
 
 /* Page fault */
@@ -81,7 +81,7 @@ image_t *fault_page(image_t *image) {
 	}
 
 	/* If in userspace, redirect to signal S_PAG, with faulting address */
-	return signal(curr_pid, S_PAG, NULL, TF_NOERR | TF_EKILL);
+	return signal(curr_pid, SSIG_PAGE, NULL, NOERR | EKILL);
 }
 
 /* Floating point exception */
@@ -93,7 +93,7 @@ image_t *fault_float(image_t *image) {
 	}
 
 	/* If in userspace, redirect to signal S_FPE */
-	return signal(curr_pid, S_FPE, NULL, TF_NOERR | TF_EKILL);
+	return signal(curr_pid, SSIG_FLOAT, NULL, NOERR | EKILL);
 }
 
 /* Double fault */
@@ -132,21 +132,21 @@ image_t *ctrl(image_t *image) {
 	uint8_t irq;
 
 	/* Stop the modification of protected flags if not super */
-	if ((curr_task->flags & TF_SUPER) == 0) {
-		mask &= TF_SMASK;
+	if ((curr_task->flags & CTRL_SUPER) == 0) {
+		mask &= CTRL_SMASK;
 	}
 
 	/* Set flags */
 	curr_task->flags = (curr_task->flags & ~mask) | (flags & mask);
 
 	/* Unset CTRL_FLOAT if FPU is disabled */
-	if ((flags & mask & TF_FLOAT) && (can_use_fpu == 0)) {
-		curr_task->flags &= ~TF_FLOAT;
+	if ((flags & mask & CTRL_FLOAT) && (can_use_fpu == 0)) {
+		curr_task->flags &= ~CTRL_FLOAT;
 	}
 
 	/* Update IRQ redirect if CTRL_IRQRD is changed */
-	if (mask & TF_IRQRD) {
-		if (flags & TF_IRQRD) {
+	if (mask & CTRL_IRQRD) {
+		if (flags & CTRL_IRQRD) {
 			/* Set IRQ redirect */
 			irq = (flags >> 24) & 0xFF;
 			if (irq < 15) {
@@ -174,8 +174,11 @@ image_t *info(image_t *image) {
 	case 0: ret(image, curr_pid);
 	case 1: ret(image, curr_task->parent);
 	case 2: ret(image, tick);
-	case 3: ret(image, 2);
+	case 3: ret(image, 0x0002);
 	case 4: ret(image, KSPACE);
+	case 5: ret(image, 
+		(curr_task->flags & CTRL_SUPER) ? CTRL_CMASK : CTRL_CMASK & CTRL_SMASK);
+	case 6: ret(image, MMAP_CMASK);
 	default: ret(image, -1);
 	}
 }
@@ -187,22 +190,22 @@ image_t *mmap(image_t *image) {
 	uint32_t frame = image->edx & ~0xFFF;
 	uint16_t pflags = 0;
 
-	if (addr & 0xFFF) ret(image, -1);
-	if (addr >= KSPACE) ret(image, -1);
-	if (count > 1024) ret(image, -1);
+	if (addr & 0xFFF) ret(image, -1);	/* Reject unaligned requests */
+	if (addr >= KSPACE) ret(image, -1);	/* Reject out of bounds requests */
+	if (count > 1024) ret(image, -1);	/* Reject requests > 4MB */
 
-	if (flags & 0x08) {
+	if (flags & MMAP_FREE) {
 		mem_free(addr, count * PAGESZ);
 		ret(image, 0);
 	}
 	
-	pflags |= PF_USER;
-	if (flags & 0x01) pflags |= PF_PRES;
-	if (flags & 0x02) pflags |= PF_RW;
-	if (flags & 0x04) pflags |= PF_PRES;
+	pflags |= (PF_USER | PF_PRES);
+	if (flags & MMAP_READ) 	pflags |= PF_PRES;
+	if (flags & MMAP_WRITE)	pflags |= PF_RW;
+	if (flags & MMAP_EXEC) 	pflags |= PF_PRES;
 
-	if (flags & 0x10) {
-		if ((curr_task->flags & TF_SUPER) || curr_task->grant == frame) {
+	if (flags & MMAP_FRAME) {
+		if ((curr_task->flags & CTRL_SUPER) || curr_task->grant == frame) {
 			p_free(addr);
 			page_set(addr, page_fmt(frame, pflags));
 			if (curr_task->grant == frame) {
@@ -215,7 +218,7 @@ image_t *mmap(image_t *image) {
 		}
 	}
 
-	if (flags & 0x20) {
+	if (flags & MMAP_PHYS) {
 		mem_alloc(addr, PAGESZ, pflags);
 		ret(image, page_ufmt(page_get(addr)));
 	}
@@ -269,12 +272,12 @@ image_t *exit(image_t *image) {
 	task_rem(curr_task);		/* Clear metadata and relinquish PID */
 
 	t = task_get(catcher);
-	if (!t || !t->shandler || t->flags & TF_SBLOK) {
+	if (!t || !t->shandler || t->flags & CTRL_CLEAR) {
 		/* Parent will not accept - reschedule */
 		return task_switch(task_next(0));
 	}
 	else {
 		/* Send S_DTH signal to parent with return value */
-		return signal(catcher, S_DTH, NULL, TF_NOERR);
+		return signal(catcher, SSIG_DEATH, NULL, NOERR);
 	}
 }

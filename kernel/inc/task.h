@@ -1,4 +1,4 @@
-/* Copyright 2009 Nick Johnson */
+/* Copyright 2009, 2010 Nick Johnson */
 
 #ifndef TASK_H
 #define TASK_H
@@ -11,31 +11,25 @@ typedef uint16_t pid_t;
 
 /***** SIGNALS *****/
 
-/* Signals (system) (sig < 16) (esi = sig #) */
-#define S_GEN 0	/* Generic fault 	(ebx = fault #, ecx = errcode) */
-#define S_ENT 1	/* Reentrance		(ebx = tick) */
-#define S_PAG 2	/* Page fault		(ebx = address, ecx = flags) */
-#define S_IRQ 3	/* Registered IRQ	(IRQ number) */
-#define S_KIL 4	/* Kill signal		(ebx = identifier) */
-#define S_IMG 5	/* Image overflow	() */
-#define S_FPE 6 /* FP exception		(ebx = eip) */
-#define S_DTH 7 /* Child death		(eax = child pid, ebx = exit value) */
+/* Signals (system) (sig < 16) */
+#define SSIG_FAULT	0	/* Generic fault */
+#define SSIG_ENTER	1	/* Reentrance */
+#define SSIG_PAGE	2	/* Page fault */
+#define SSIG_IRQ	3	/* Registered IRQ */
+#define SSIG_KILL	4	/* System kill signal */
+#define SSIG_IMAGE	5	/* Image overflow */
+#define SSIG_FLOAT	6	/* FPU exception */
+#define SSIG_DEATH	7	/* Child death */
 
-/* This is the most complex, and most important, system call. It sends signal
-type to task task with various arguments and is controlled by flags. Arguments
-to this function are in the order shown as registers */
+#define UNBLK 0x01
+#define NOERR 0x02
+#define EKILL 0x04
 
 image_t *signal(uint16_t task, uint16_t sig, void* grant, uint8_t flags);
 image_t *sret(image_t *image);
 
-/* The signal table is mapped in all address spaces */
-extern uint32_t *signal_table;
-extern uint32_t *signal_map;
-#define SF_SYS 2
-#define SF_USE 1
-#define SF_NIL 0
-
 /***** TASK TABLE *****/
+
 /* Size must be a divisor of 4096 */
 typedef struct task {
 	map_t map;
@@ -50,20 +44,27 @@ typedef struct task {
 	uint32_t grant;
 } task_t;
 
-#define TF_SMASK 0x47
-#define TF_READY 0x00
-#define TF_BLOCK 0x01
-#define TF_SBLOK 0x02
-#define TF_ENTER 0x04
-#define TF_SUPER 0x08
-#define TF_PORTS 0x10
-#define TF_IRQRD 0x20
-#define TF_FLOAT 0x40
-#define TF_RNICE 0x80
+#define CTRL_CMASK	0xFF833FFF
+#define CTRL_SMASK 	0x00773047
+#define CTRL_RMASK	0x00000003
 
-#define TF_UNBLK 0x02
-#define TF_NOERR 0x04
-#define TF_EKILL 0x08
+#define CTRL_READY 	0x00000000
+#define CTRL_BLOCK 	0x00000001
+#define CTRL_CLEAR 	0x00000002
+#define CTRL_ENTER 	0x00000004
+#define CTRL_SUPER 	0x00000008
+#define CTRL_PORTS 	0x00000010
+#define CTRL_IRQRD 	0x00000020
+#define CTRL_FLOAT 	0x00000040
+#define CTRL_RNICE 	0x00000080
+#define CTRL_CBLOCK	0x00001000
+#define CTRL_CCLEAR	0x00002000
+#define CTRL_DBLOCK	0x00010000
+#define CTRL_DCLEAR	0x00020000
+#define CTRL_ASYNC	0x00100000
+#define CTRL_MULTI	0x00200000
+#define CTRL_QUEUE	0x00400000
+#define CTRL_MMCLR	0x00800000
 
 void task_touch(pid_t pid);
 task_t *task_get(pid_t pid);
@@ -81,11 +82,6 @@ extern task_t *curr_task;	/* Currently loaded task pointer */
 extern pid_t irq_holder[15];
 
 /***** SCHEDULER *****/
-
-extern struct sched_queue {
-	pid_t next;
-	pid_t last;
-} queue;
 
 void sched_ins(pid_t pid);
 void sched_rem(pid_t pid);

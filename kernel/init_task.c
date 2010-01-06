@@ -1,4 +1,4 @@
-/* Copyright 2009 Nick Johnson */
+/* Copyright 2009, 2010 Nick Johnson */
 
 #include <lib.h>
 #include <task.h>
@@ -23,7 +23,7 @@ void init_task() {
 		idle = task_get(0);
 		idle->pid = (pid_t) pool_alloc(tpool);
 		idle->map = get_cr3();
-		idle->flags = TF_READY | TF_SUPER;
+		idle->flags = CTRL_READY | CTRL_SUPER;
 
 		task_switch(task_new(task_get(0))); /* Fork task 1 and switch */
 		idle->magic = 0;					/* Mark task 0 as invalid */
