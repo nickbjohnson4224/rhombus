@@ -11,10 +11,8 @@
 
 #include <driver/keyboard.h>
 
-struct charbuffer {
-	char ch;
-	struct charbuffer *next;
-};
+static char buffer[1024];
+static size_t buffer_top;
 
 static int keyboard_init(device_t selector);
 static int keyboard_sleep(void);
@@ -34,7 +32,6 @@ static const char upkmap[] =
 "\0\033!@#$%^&*()_+\b\0QWERTYUIOP{}\n\0ASDFGHJKL:\"~\0|ZXCVBNM<>?\0*\0 ";
 
 static bool shift = false;
-static struct charbuffer *queue_bot, *queue_top;
 
 struct driver_interface keyboard = {
 	keyboard_init,
@@ -67,40 +64,30 @@ static int keyboard_halt(void) {
 
 static int keyboard_read (struct request *r, callback_t cb) {
 	struct localrequest l;
-	struct charbuffer *node;
-	char *cdata;
 	size_t *idata;
-	size_t i, size;
+	size_t size;
 
 	req_decode(r, &l);
-	cdata = l.data;
 	idata = l.data;
 	size = *idata;
 
 	sigblock();
 
-	for (i = 0; i < size; i++) {
-		if (!queue_bot) {
-			break;
-		}
+	if (size > buffer_top) {
+		size = buffer_top;
+	}
 
-		node = queue_bot;
-		cdata[i] = node->ch;
-
-		if (queue_top == node) {
-			queue_top = queue_bot = NULL;
-			break;
-		}
-
-		queue_bot = queue_bot->next;
-		free(node);
+	memcpy(l.data, buffer, sizeof(char) * size);
+	
+	l.datasize = size;
+	req_encode(&l, r);
+	
+	if (size == buffer_top) {
+		buffer_top = 0;
 	}
 
 	sigunblock();
 
-	l.datasize = i;
-	req_encode(&l, r);
-	
 	if (cb) cb(r);
 
 	return DRV_DONE;
@@ -123,7 +110,6 @@ static void keyboard_work(void) {
 }
 
 static void keyboard_handler(void) {
-	struct charbuffer *node = malloc(sizeof(struct charbuffer));
 	uint8_t scan = inb(0x60);
 
 	if (scan & 0x80) {
@@ -137,14 +123,9 @@ static void keyboard_handler(void) {
 		shift = true;
 	}
 
-	node->ch = ((shift) ? upkmap[scan] : dnkmap[scan]);
-	node->next = NULL;
+	sigblock();
 
-	if (queue_top) {
-		queue_top->next = node;
-		queue_top = node;
-	}
-	else {
-		queue_top = queue_bot = node;
-	}
+	buffer[buffer_top++] = ((shift) ? upkmap[scan] : dnkmap[scan]);
+
+	sigunblock();
 }

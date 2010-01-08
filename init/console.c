@@ -9,12 +9,12 @@
 #include <driver/terminal.h>
 #include <driver/keyboard.h>
 
+extern void swrite(const char*);
+
 static void callback_save(struct request *r);
 static volatile struct request *saved = NULL;
 
 void console_handler(uint32_t caller, void *grant) {
-	extern void swrite(const char*);
-	swrite("*");
 	keyboard.handler();
 }
 
@@ -55,6 +55,7 @@ size_t console_read(char *buffer, size_t length) {
 	struct request *r = req_alloc();
 	struct localrequest l;
 	uint8_t *data = (void*) ((uintptr_t) r + sizeof(struct request));
+	uint32_t oldlength = length;
 
 	l.resource = 0;
 	l.transaction = 0;
@@ -73,6 +74,12 @@ size_t console_read(char *buffer, size_t length) {
 
 	free((void*) saved);
 	saved = NULL;
+
+	if (length == 0) {
+		wreset(SSIG_IRQ);
+		wait(SSIG_IRQ);
+		return console_read(buffer, oldlength);
+	}
 
 	return length;
 }

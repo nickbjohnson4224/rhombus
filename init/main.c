@@ -54,7 +54,7 @@ int main() {
 	size_t i, j;
 	int32_t pid;
 	static uint32_t *mb[1024];
-	char *buffer;
+	char buffer[10];
 	size_t bufsize;
 
 	sigregister(SSIG_FAULT, segfault);
@@ -110,8 +110,6 @@ int main() {
 	fire(info(0), SIG_WRITE, mb[0]);
 
 	swrite("\n");
-
-	sigblock();
 
 	swrite("Allocator test:\n");
 	for (i = 0; i < 1; i++) {
@@ -184,14 +182,12 @@ int main() {
 	}
 	swrite("Done. \n");
 
-	sigunblock();
-
 	swrite("\nAll tests passed.\n");
 
-	bufsize = 100;
-	buffer = malloc(bufsize);
-	bufsize = console_read(buffer, bufsize);
-	console_write(buffer, bufsize);
+	while (1) {
+		bufsize = console_read(buffer, 10);
+		console_write(buffer, bufsize);
+	}
 
 	for(;;);
 	return 0;

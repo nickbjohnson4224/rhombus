@@ -37,7 +37,7 @@ distclean: clean
 	@ echo " CLEAN	" $(shell find inc/*)
 	@ rm -r inc/*
 	@ echo " CLEAN	" run/floppy.img run/khaos.iso
-	@ rm run/floppy.img run/khaos.iso
+	@ rm run/floppy.img run/flux.iso
 	@ echo " CLEAN	" $(shell find . -name "*.swp")
 	@ rm $(shell find . -name "*.swp")
 
