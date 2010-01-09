@@ -18,27 +18,38 @@ void *calloc(size_t nmemb, size_t size) {
 void *malloc(size_t size) {
 	void *ptr;
 
-/*	sigblock(); */
+	sigblock();
 	ptr = _heap_alloc(size);
-/*	sigunblock(); */
+	sigunblock();
 
 	return ptr;
 }
 
 void free(void *ptr) {
-/*	sigblock(); */
+	sigblock();
 	_heap_free(ptr);
-/*	sigunblock(); */
+	sigunblock();
 }
 
 void *realloc(void *ptr, size_t size) {
 	void *new;
 
-/*	sigblock(); */
+	sigblock();
 	new = _heap_alloc(size);
 	memcpy(new, ptr, _heap_size(ptr));
 	_heap_free(ptr);
-/*	sigunblock(); */
+	sigunblock();
 
 	return new;
+}
+
+int atoi(const char *nptr) {
+	int i, sum;
+
+	for (sum = 0, i = strlen(nptr) - 1; i >= 0; i--) {
+		sum *= 10;
+		sum += nptr[i] - '0';
+	}
+
+	return sum;
 }

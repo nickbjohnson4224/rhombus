@@ -110,6 +110,7 @@ static void keyboard_work(void) {
 }
 
 static void keyboard_handler(void) {
+	extern size_t console_write(char *buffer, size_t length);
 	uint8_t scan = inb(0x60);
 
 	if (scan & 0x80) {
@@ -125,7 +126,9 @@ static void keyboard_handler(void) {
 
 	sigblock();
 
-	buffer[buffer_top++] = ((shift) ? upkmap[scan] : dnkmap[scan]);
+	buffer[buffer_top] = ((shift) ? upkmap[scan] : dnkmap[scan]);
+	console_write(&buffer[buffer_top], 1);
+	buffer_top++;
 
 	sigunblock();
 }

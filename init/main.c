@@ -51,11 +51,12 @@ int main() {
 	extern void console_init(void);
 	extern size_t console_read(char*, size_t);
 	extern size_t console_write(char*, size_t);
-	size_t i, j;
+	extern void shell(void);
+/*	size_t i, j;
 	int32_t pid;
-	static uint32_t *mb[1024];
-	char buffer[10];
-	size_t bufsize;
+	static uint32_t *mb[1024]; */
+/*	char buffer[10];
+	size_t bufsize; */
 
 	sigregister(SSIG_FAULT, segfault);
 	sigregister(SSIG_PAGE, segfault);
@@ -64,7 +65,7 @@ int main() {
 	console_init();
 	print_bootsplash();
 
-	swrite("Fork test:\n");
+/*	swrite("Fork test:\n");
 	swrite("\tspawning 16 tasks:\t");
 	for (i = 0; i < 16; i++) {
 		pid = fork();
@@ -182,12 +183,9 @@ int main() {
 	}
 	swrite("Done. \n");
 
-	swrite("\nAll tests passed.\n");
+	swrite("\nAll tests passed.\n"); */
 
-	while (1) {
-		bufsize = console_read(buffer, 10);
-		console_write(buffer, bufsize);
-	}
+	shell();
 
 	for(;;);
 	return 0;
