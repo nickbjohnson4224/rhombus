@@ -3,7 +3,7 @@ SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
 HEADERS := $(shell find inc -name "*.h") inc/link.ld
 SUBDIR	:= libc
 TARGET	:= libc.a
-CFLAGS  += -ffreestanding -I$(BUILDDIR)/$(SUBDIR)/inc
+CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
 LDFLAGS += -r -lkernel
 ASFLAGS := -felf
 

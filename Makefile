@@ -1,7 +1,6 @@
 BUILDDIR=$(PWD)
 
-DRV_DIRS=driver/console
-LIB_DIRS=libc $(DRV_DIRS) # libc must be first 
+LIB_DIRS=libc driver # libc must be first 
 BIN_DIRS=kernel init
 
 CC := /usr/khaos/bin/i586-elf-gcc
@@ -13,7 +12,7 @@ CFLAGS  := -march=i586 -pipe -Wall -Werror -Wextra -pedantic
 CFLAGS  += -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-unused-parameter
 CFLAGS	+= -Wno-array-bounds
 CFLAGS  += -O3 -fomit-frame-pointer
-CFLAGS	+= -I$(BUILDDIR)/inc
+CFLAGS	+= -ffreestanding -I$(BUILDDIR)/inc
 LDFLAGS := -L$(BUILDDIR)/lib
 ARFLAGS := rcs
 

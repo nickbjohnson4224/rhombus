@@ -2,7 +2,7 @@ SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
 SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
 SUBDIR	:= init
 TARGET	:= init
-CFLAGS  += -ffreestanding -I$(BUILDDIR)/$(SUBDIR)/inc
+CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
 LDFLAGS += -lconsole -lc -T$(BUILDDIR)/inc/link.ld
 ASFLAGS := -felf
 

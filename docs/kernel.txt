@@ -2,28 +2,27 @@ Flux Operating System 0.2a
 User Manual Section II - Kernel
 ==============================
 
-***** WARNING: THIS DOCUMENT IS UNFINISHED AND OUT OF DATE *****
-
 Introduction
 ==============================
-The purpose of this manual is to help users of the Khaos operating system 
+The purpose of this manual is to help users of the Flux operating system 
 understand and manipulate the kernel source code. It covers both the general 
 structure of the main kernel systems as well as specific information about the 
 functions that make them up.
 
 Contents:
 ==============================
-I 	- Kernel architecture
-II 	- Hardware support
-III	- The init system
-IV	- Memory management
-V	- Interrupt handling
-VI	- Signals and IPC
-VII	- Task management
-IIX	- The libsys
-IX	- System call ABI
-X	- I/O architecture
-XI	- Configuration
+I	- Memory Management
+II	- Interrupt Handling
+III	- Signals and IPC
+IV	- Multitasking
+V	- Modifications
+
+I	- Memory Management
+==============================
+Flux makes use of a paging based memory management scheme, which requires
+hardware support. 
+
+***** OUT OF DATE MATERIAL *****
 
 I - Kernel Architecture
 ==============================

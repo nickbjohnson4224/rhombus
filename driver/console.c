@@ -6,7 +6,7 @@
 #include <string.h>
 #include <signal.h>
 #include <flux.h>
-#include "../../libc/libc.h"
+#include "../libc/libc.h"
 #include <driver.h>
 #include <driver/console.h>
 
