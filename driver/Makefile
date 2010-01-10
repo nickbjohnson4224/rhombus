@@ -7,14 +7,14 @@ LDFLAGS += -r
 
 .PHONY: $(HEADERS) clean install
 
-all: install $(SOURCES) $(DRIVERS) $(HEADERS)
+all: $(HEADERS) $(SOURCES) $(DRIVERS) install
 
 $(HEADERS):
 	@ echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/inc/driver
 	@ mkdir -p $(BUILDDIR)/inc/driver
 	@ cp $@ $(BUILDDIR)/inc/driver
 
-.c.o:
+.c.o: $(HEADERS)
 	@ echo " CC	" $(SUBDIR)/$<
 	@ $(CC) $(CFLAGS) -c $< -o $@
 

@@ -46,15 +46,12 @@ NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL,
 /* IRQs */
 int32,	int33, 	int34, 	int35, 	int36, 	int37, 	int38, 	int39, 
 int40,	int41, 	int42, 	int43, 	int44, 	int45, 	int46, 	int47, 
+
 NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
 NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
-
-/* User system calls */
-int64, 	int65, 	int66, 	int67, 	int68, 	int69, 	int70, 	int71,
-int72, 	int73, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL,
-
-/* Administrative System Calls */
-int80, 	int81, 	int82, 	int83,	int84,	NULL,	NULL,	NULL,
+NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
+NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
+NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
 NULL, 	NULL, 	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
 
 /* ABI 2 system calls */

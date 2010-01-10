@@ -58,24 +58,6 @@ INTN	46
 INTN	47
 
 ; System calls
-INTN	64 ; fork
-INTN	65 ; exit
-INTN	66 ; gpid
-INTN	67 ; tblk
-INTN	68 ; mmap
-INTN	69 ; umap
-INTN	70 ; ssnd
-INTN	71 ; sret
-INTN	72 ; sblk
-INTN	73 ; sreg
-
-INTN	80 ; ireg
-INTN	81 ; irel
-INTN	82 ; push
-INTN	83 ; pull
-INTN	84 ; eout
-
-; ABI 2 system calls
 INTN	96  ; fire
 INTN	97  ; drop
 INTN	98  ; hand
