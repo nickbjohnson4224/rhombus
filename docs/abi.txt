@@ -223,14 +223,13 @@ Resource 0 should represent the entire device.
 Data is given to drivers through granted pages. These pages have a standard
 header format that takes up the first 32 bytes, which will specify the exact
 action that should be taken by the driver. Here is a draft of the format:
-- bits 000-031: resource ID		(resource ID == inode for block devices)
-- bits 032-047: data size		(less than page size)
-- bits 048-063: transaction ID	(defined by caller, used for reply)
-- bits 064-095: checksum		(of everything but checksum, byte product)
+- bits 000-031: checksum		(bit parity dword)
+- bits 032-063: resource ID		(resource ID == inode for block devices)
+- bits 064-079: data size		(less than page size)
+- bits 080-095: transaction ID	(defined by caller, used for reply)
 - bits 096-111: internal offset	(from start of header)
 - bits 112-127: header format	(0 = basic (this); others undefined)
-- bits 128-255: offset			(screw you if files are > 2^128 bytes)
-All numbers are in NETWORK BYTE ORDER! (big endian).
+- bits 128-255: file offset		(screw you if files are > 2^128 bytes)
 
 When an action finishes, the driver should reply with a signal which has a 
 granted page with a header containing the same transaction ID as was sent, 
