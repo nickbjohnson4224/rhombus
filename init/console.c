@@ -28,22 +28,17 @@ void console_init() {
 
 size_t console_write(char *buffer, size_t length) {
 	struct request *r = req_alloc();
-	struct localrequest l;
-	uint8_t *data = (void*) ((uintptr_t) r + sizeof(struct request));
 
-	l.resource = 0;
-	l.transaction = 0;
-	l.offset = 0;
-	l.datasize = length;
-	l.data = data;
+	r->resource   = 0;
+	r->datasize   = length;
+	r->format     = REQ_WRITE;
 
-	memcpy(data, buffer, length);
+	memcpy(r->reqdata, buffer, length);
 
-	req_encode(&l, r);
+	req_checksum(r);
 	terminal.write(r, callback_save);
 
-	req_decode((void*) saved, &l);
-	length = *((size_t*) l.data);
+	length = r->datasize;
 
 	free((void*) saved);
 	saved = NULL;
@@ -53,24 +48,17 @@ size_t console_write(char *buffer, size_t length) {
 
 size_t console_read(char *buffer, size_t length) {
 	struct request *r = req_alloc();
-	struct localrequest l;
-	uint8_t *data = (void*) ((uintptr_t) r + sizeof(struct request));
-	uint32_t oldlength = length;
+	size_t oldlength = length;
 
-	l.resource = 0;
-	l.transaction = 0;
-	l.offset = 0;
-	l.datasize = 4;
-	l.data = data;
+	r->resource   = 0;
+	r->datasize   = length;
+	r->format     = REQ_READ;
 
-	*((size_t*) data) = length;
-	
-	req_encode(&l, r);
+	req_checksum(r);
 	keyboard.read(r, callback_save);
 
-	req_decode((void*) saved, &l);
-	memcpy(buffer, l.data, l.datasize);
-	length = l.datasize;
+	memcpy(buffer, r->reqdata, r->datasize);
+	length = r->datasize;
 
 	free((void*) saved);
 	saved = NULL;

@@ -75,6 +75,7 @@ static void pci(int argc, char **argv);
 static void scan(int argc, char **argv);
 static void cd(int argc, char **argv);
 static void ls(int argc, char **argv);
+static void halt(int argc, char **argv);
 
 static const char *cmdlist[] = {
 	"echo",
@@ -82,6 +83,7 @@ static const char *cmdlist[] = {
 	"scan",
 	"cd",
 	"ls",
+	"halt",
 	NULL,
 };
 
@@ -91,6 +93,7 @@ static void (*cmd[])(int, char**) = {
 	scan,
 	cd,
 	ls,
+	halt,
 };
 
 static int vexec(char *name, int argc, char **argv) {
@@ -181,7 +184,8 @@ static void scan(int argc, char **argv) {
 	slot = atoi(argv[2]);
 
 	for (i = 0; i < 64; i += 4) {
-		printf("0x%x:\t%x\t%x\n", i, pci_read(bus, slot, 0, i + 2), pci_read(bus, slot, 0, i));
+		printf("0x%x:\t%x\t%x\n", i, 
+			pci_read(bus, slot, 0, i + 2), pci_read(bus, slot, 0, i));
 	}
 }
 
@@ -193,4 +197,8 @@ static void cd(int argc, char **argv) {
 
 static void ls(int argc, char **argv) {
 	printf("\n");
+}
+
+static void halt(int argc, char **argv) {
+	outb(0x64, 0xFE);
 }

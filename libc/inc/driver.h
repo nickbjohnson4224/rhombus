@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <config.h>
 
 /***** PORT ACCESS *****/
 uint8_t inb(uint16_t port);
@@ -27,7 +28,7 @@ void iodelay(uint32_t usec);
 
 typedef int32_t device_t;
 
-bool dev_check(device_t dev);
+bool     dev_check(device_t dev);
 uint16_t dev_getdevice(device_t dev);
 uint16_t dev_getvendor(device_t dev);
 uint16_t dev_getclass(device_t dev);
@@ -39,27 +40,23 @@ uint16_t dev_command(device_t dev, uint16_t command);
 /***** REQUEST STRUCTURE *****/
 
 struct request {
-	uint8_t checksum	[4]; /* Checksum (byte parity) */
-	uint8_t resource	[4]; /* Resource ID */
-	uint8_t datasize	[2]; /* Size of request data */
-	uint8_t transaction	[2]; /* Transaction ID */
-	uint8_t dataoff		[2]; /* Offset of request data */ 
-	uint8_t format		[2]; /* Header format */
-	uint8_t fileoff		[16]; /* File offset */
-};
+	uint32_t checksum;				/* Checksum (bit parity) */
+	uint32_t resource;				/* Resource ID */
+	uint16_t datasize;				/* Size of request data */
+	uint16_t transid;				/* Transaction ID */
+	uint16_t dataoff;				/* Offset of request data */
+	uint16_t format;				/* Header format */
+	uint32_t fileoff[4];			/* File offset */
+	uint8_t  reqdata[PAGESZ-32];	/* Request data area */
+} __attribute__ ((packed));
 
-/* locally accessible decoding of request structure */
-struct localrequest {
-	uint32_t resource;
-	uint16_t transaction;
-	uint32_t offset;
-	void *data;
-	size_t datasize;
-};
-
-void req_decode(struct request *r, struct localrequest *l);
-void req_encode(struct localrequest *l, struct request *r);
 struct request *req_alloc(void);
+struct request *req_catch(uintptr_t grant);
+struct request *req_checksum(struct request *r);
+bool            req_check(struct request *r);
+
+#define REQ_READ 0
+#define REQ_WRITE 1
 
 /***** DRIVER INTERFACE STRUCTURE *****/ 
 

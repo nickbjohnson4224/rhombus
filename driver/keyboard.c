@@ -63,26 +63,16 @@ static int keyboard_halt(void) {
 }
 
 static int keyboard_read (struct request *r, callback_t cb) {
-	struct localrequest l;
-	size_t *idata;
-	size_t size;
-
-	req_decode(r, &l);
-	idata = l.data;
-	size = *idata;
 
 	sigblock();
 
-	if (size > buffer_top) {
-		size = buffer_top;
+	if (r->datasize > buffer_top) {
+		r->datasize = buffer_top;
 	}
 
-	memcpy(l.data, buffer, sizeof(char) * size);
+	memcpy(r->reqdata, buffer, sizeof(char) * r->datasize);
 	
-	l.datasize = size;
-	req_encode(&l, r);
-	
-	if (size == buffer_top) {
+	if (r->datasize == buffer_top) {
 		buffer_top = 0;
 	}
 

@@ -80,17 +80,10 @@ static int terminal_read (struct request *r, callback_t cb) {
 }
 
 static int terminal_write(struct request *r, callback_t cb) {
-	struct localrequest l;
-	char *cdata;
-	int *idata;
 	size_t i;
 
-	req_decode(r, &l);
-	cdata = l.data;
-	idata = l.data;
-
-	for (i = 0; i < l.datasize; i++) {
-		char_write(cdata[i]);
+	for (i = 0; i < r->datasize; i++) {
+		char_write(r->reqdata[i] + r->dataoff);
 	}
 
 	outb(0x3D4, 14);
@@ -98,9 +91,7 @@ static int terminal_write(struct request *r, callback_t cb) {
 	outb(0x3D4, 15);
 	outb(0x3D5, cursor & 0xFF);
 
-	l.datasize = 4;
-	*idata = i;
-	req_encode(&l, r);
+	r->datasize = i;
 
 	if (cb) cb(r);
 

@@ -14,6 +14,42 @@ void unblock() {
 	_ctrl(CTRL_NONE, CTRL_SCHED);
 }
 
+struct request *req_alloc(void) {
+	return malloc(PAGESZ);
+}
+
+struct request *req_catch(uintptr_t grant) {
+	void *vaddr = malloc(PAGESZ);
+	_mmap((uintptr_t) vaddr, MMAP_READ | MMAP_WRITE | MMAP_FRAME, grant);
+	return vaddr;
+}
+
+struct request *req_checksum(struct request *r) {
+	uint32_t *reqflat = (void*) r;
+	size_t i;
+	uint32_t checksum = 0;
+
+	for (i = 1; i < sizeof(struct request) / sizeof(uint32_t); i++) {
+		checksum ^= reqflat[i];
+	}
+
+	r->checksum = checksum;
+	return r;
+}
+
+bool req_check(struct request *r) {
+	uint32_t *reqflat = (void*) r;
+	uint32_t checksum = 0;
+	size_t i;
+
+	for (i = 0; i < sizeof(struct request) / sizeof(uint32_t); i++) {
+		checksum ^= reqflat[i];
+	}
+
+	return ((checksum) ? false : true);
+}
+
+/*
 uint16_t ntohs(uint8_t *s);
 uint32_t ntohl(uint8_t *s);
 void htons(uint8_t *d, uint16_t n);
@@ -68,4 +104,4 @@ void htonl(uint8_t *d, uint32_t n){
 	d[2] = (n >> 8 ) & 0xFF;
 	d[1] = (n >> 16) & 0xFF;
 	d[0] = (n >> 24) & 0xFF;
-}
+} */
