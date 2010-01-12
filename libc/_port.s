@@ -10,19 +10,18 @@ global ind
 
 inb:
 	mov dx, [esp+4]
-	mov al, [esp+8]
+	xor eax, eax
 	in al, dx
 	ret
 
 inw:
 	mov dx, [esp+4]
-	mov ax, [esp+8]
+	xor eax, eax
 	in ax, dx
 	ret
 
 ind:
 	mov dx, [esp+4]
-	mov eax, [esp+8]
 	in eax, dx
 	ret
 

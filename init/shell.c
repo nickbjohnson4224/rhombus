@@ -151,8 +151,7 @@ static uint16_t pci_read(uint32_t bus, uint32_t slot, uint32_t func, uint32_t of
 	addr = (bus << 16) | (slot << 11) | (func << 8) | (off & 0xFC) | 0x80000000;
 	outd(0xCF8, addr);
 
-	addr = (uint16_t) (ind(0xCFC) >> ((off & 2) * 8));
-	return addr;
+	return (ind(0xCFC) >> ((off & 0x2) * 8));
 }
 
 static void pci(int argc, char **argv) {
@@ -183,9 +182,8 @@ static void scan(int argc, char **argv) {
 	bus = atoi(argv[1]);
 	slot = atoi(argv[2]);
 
-	for (i = 0; i < 64; i += 4) {
-		printf("0x%x:\t%x\t%x\n", i, 
-			pci_read(bus, slot, 0, i + 2), pci_read(bus, slot, 0, i));
+	for (i = 0; i < 16; i += 4) {
+		printf("0x%x: \t%x   \t%x\n", i, pci_read(bus, slot, 0, i + 2), pci_read(bus, slot, 0, i));
 	}
 }
 
