@@ -55,7 +55,7 @@ image:	all
 	export BUILDDIR
 	sudo run/image.sh
 
-test:	all image
+test:	all cd
 	export BUILDDIR
 	run/run.sh
 

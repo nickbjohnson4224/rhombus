@@ -49,59 +49,58 @@ bool req_check(struct request *r) {
 	return ((checksum) ? false : true);
 }
 
-/*
-uint16_t ntohs(uint8_t *s);
-uint32_t ntohl(uint8_t *s);
-void htons(uint8_t *d, uint16_t n);
-void htonl(uint8_t *d, uint32_t n);
+uint16_t dev_getdevice(device_t dev) {
+	uint8_t type = (dev >> 24) & 0x7F;
 
-void req_decode(struct request *r, struct localrequest *l) {
-	l->resource = 		ntohl(r->resource);
-	l->transaction = 	ntohs(r->transaction);
-	l->offset =			ntohl(r->fileoff);
-	l->data = &((uint8_t*) r)[ntohs(r->dataoff)];
-	l->datasize =		ntohs(r->datasize);
-}
-
-void req_encode(struct localrequest *l, struct request *r) {
-	uint8_t *headerdata = (void*) ((uintptr_t) r + 4);
-	uint16_t checksum = 0;
-	size_t i;
-
-	htonl(r->resource, l->resource);
-	htons(r->datasize, l->datasize);
-	htons(r->transaction, l->transaction);
-	htons(r->dataoff, (uintptr_t) l->data - (uintptr_t) r);
-	htons(r->format, 0x0000);
-	htonl(r->fileoff, l->offset);
-
-	for (i = 0; i < sizeof(struct request) - 4; i++) {
-		checksum ^= headerdata[i];
+	switch (type) {
+	case 0:
+	case 1:
+	default: return 0;
 	}
-
-	htonl(r->checksum, checksum);
 }
 
-struct request *req_alloc() {
-	return malloc(0x1000);
+uint16_t dev_getiobase(device_t dev, int bar) {
+	uint8_t type = (dev >> 24) & 0x7F;
+
+	switch (type) {
+	case 1:
+		switch ((dev >> 8) & 0xFF) {
+		case 0: return (bar) ? 0x1F0 : 0x3F6;
+		case 1: return (bar) ? 0x170 : 0x376;
+		case 2: return (bar) ? 0x1E8 : 0x3E6;
+		case 3: return (bar) ? 0x168 : 0x366;
+		}
+	case 0:
+	default: return 0;
+	}
 }
 
-uint16_t ntohs(uint8_t *s) {
-	return (s[0] << 8) | s[1];
+uint16_t dev_getiolimit(device_t dev, int bar) {
+	uint8_t type = (dev >> 24) & 0x7F;
+
+	switch (type) {
+	case 1:
+		switch ((dev >> 8) & 0xFF) {
+		case 0: return (bar) ? 0x1F7 : 0x3F6;
+		case 1: return (bar) ? 0x177 : 0x376;
+		case 2: return (bar) ? 0x1E7 : 0x3E6;
+		case 3: return (bar) ? 0x167 : 0x366;
+		}
+	case 0:
+	default: return 0;
+	}
 }
 
-uint32_t ntohl(uint8_t *s) {
-	return (s[0] << 24) | (s[1] << 16) | (s[2] << 8) | s[3];
-}
+uint16_t dev_getirqnum(device_t dev) {
+	uint8_t type = (dev >> 24) & 0x7F;
 
-void htons(uint8_t *d, uint16_t n){
-	d[1] = (n >> 0) & 0xFF;
-	d[0] = (n >> 8) & 0xFF;
+	switch (type) {
+	case 1:
+		switch ((dev >> 8) & 0xFF) {
+		case 0: return 14;
+		case 1: return 15;
+		}
+	case 0:
+	default: return 0;
+	}
 }
-
-void htonl(uint8_t *d, uint32_t n){
-	d[3] = (n >> 0 ) & 0xFF;
-	d[2] = (n >> 8 ) & 0xFF;
-	d[1] = (n >> 16) & 0xFF;
-	d[0] = (n >> 24) & 0xFF;
-} */

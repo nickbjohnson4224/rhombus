@@ -22,18 +22,17 @@ void iodelay(uint32_t usec);
  * 		bits 00-07: device number
  * 		bits 08-15: bus number
  * 		bits 16-23: reserved
- * 		bits 24-30: bus type
- * 		bit 31: validity bit
+ * 		bits 24-30: bus type (0 - PCI, 1 - ATA, 2 - ISA)
  */
 
 typedef int32_t device_t;
 
-bool     dev_check(device_t dev);
 uint16_t dev_getdevice(device_t dev);
 uint16_t dev_getvendor(device_t dev);
 uint16_t dev_getclass(device_t dev);
 uint16_t dev_getiobase(device_t dev, int bar);
 uint16_t dev_getiolimit(device_t dev, int bar);
+uint16_t dev_getirqnum(device_t dev);
 uint16_t dev_getstatus(device_t dev);
 uint16_t dev_command(device_t dev, uint16_t command);
 
