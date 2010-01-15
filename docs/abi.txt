@@ -4,13 +4,13 @@ User Manual Section I - ABI
 
 Contents:
 ==============================
-I	- Process Control
-II	- Memory Management
-III	- Interprocess Communication
-IV	- Driver Interfaces
-V	- Executable Loading
+1 - Process Control
+2 - Memory Management
+3 - Interprocess Communication
+4 - Driver Interfaces
+5 - Executable Loading
 
-I	- Process Control
+1 - Process Control
 ==============================
 Flux provides the same two basic system calls for process creation and 
 destruction as UNIX: fork and exit. However, a few small differences exist.
@@ -91,13 +91,13 @@ info: int 0x64
 	- 6: 	INFO_MMAP:	enabled mmap flags
 	- 7: 	INFO_ARCH:	architecture ID
 		- 0: 	unknown
-		- 1: 	x86-32
+		- 1: 	x86-321
 		- 2: 	x86-64
 	- 8: 	INFO_PAGE:	page size
 	- 9: 	INFO_CPUN:	number of logical CPUs
 	- 10:	INFO_LOAD:	system load
 
-II	- Memory Management
+2 - Memory Management
 ==============================
 All Flux memory management is done through a single mulitplexed call: mmap. 
 Flux does not allow any memory to be mapped in multiple address spaces, for
@@ -128,7 +128,7 @@ mmap: int 0x65
 - returns 0 on success, negative on failure
 - maps memory with the requested flags into the requested frames
 
-III	- Interprocess Communication
+3 - Interprocess Communication
 ==============================
 Flux has only one basic IPC facility: signals. Signals can be described as a 
 form of asynchronous unqueued pure message passing, with an interface similar
@@ -179,7 +179,7 @@ drop: int 0x61
 - signal handling context destroyed
 - preempted context resumed immediately
 
-IV	- Driver Interfaces
+4 - Driver Interfaces
 ==============================
 Drivers in Flux are individual processes, which have special privileges. Init
 spawns a process called devd, the device daemon, which analyzes the hardware 
@@ -235,7 +235,7 @@ When an action finishes, the driver should reply with a signal which has a
 granted page with a header containing the same transaction ID as was sent, 
 using signal 32: SIG_REPLY.
 
-V	- Executable Loading
+5 - Executable Loading
 ==============================
 The Flux kernel is clearly lacking in an exec system call. It also does not 
 have adequate facilities for drivers to load executables for processes. So, all

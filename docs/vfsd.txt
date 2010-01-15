@@ -1,0 +1,46 @@
+Flux Operating System 0.2a
+User Manual Section 6 - System Daemons
+==============================
+
+Contents:
+==============================
+1 - Query Format
+2 - File Operations
+3 - Directory Operations
+3 - Permission
+4 - Driver Synchronization
+
+1 - Query Format
+==============================
+The system daemons use a text based query format like many databases. A query is 
+a series of commands separated by semicolons. A command is made of a command 
+name and some number of arguments, separated by whitespace (tabs or spaces). A
+command is terminated by a null byte, as well as specified in size by the
+request structure.
+
+A request does however have more power than most database queries. It can be
+thought of instead like a simple script. It can create and set variables via
+the 'set' command that hold the address of a single filesystem structure. It
+can specify the data sent in the reply to the caller using the 'ret' command
+as well.
+
+To specify a specific file or directory, three different addressing schemes
+may be used. The first is the standard UNIX format, with the '/' character as
+a separator. If the path begins with a '/', it is absolute; otherwise, it is
+relative to an "org" command specified earlier in the same request. The root
+directory is specified as a single point, and other filesystems are 'mounted'
+at different positions in the filesystem heirarchy. The second has a similar
+format, but is relative to a specific device instead of the root - each device
+is specified either by its driver's hexadecimal PID or an arbitrarily assigned 
+device letter. The third specifies both a device and a hexadecimal value
+representing a specific file or directory - an "inode" in UNIX parlance. These
+are in order from slowest to fastest in terms of transaction speed and brevity.
+
+To locate a filesystem structure within a directory, a regular expression can
+be used to search using the 'find' command. These regular expressions are in
+Flux standard format, specified in Section 8 of the User Manual.
+
+Here is an example of a query:
+
+org /home/flux
+

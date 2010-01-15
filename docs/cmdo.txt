@@ -1,0 +1,32 @@
+Flux Operating System 0.2a
+User Manual Section X - cmdo
+==============================
+
+Contents:
+==============================
+I	- Overview
+II	- Commands
+III	- Input
+IV	- Output
+V	- Graphics
+VI	- Configuration
+
+I	- Overview
+==============================
+In order to keep the user interface consistent for both user and programmer,
+Flux has a single implementation of both CLI and GUI - Commando, or cmdo for
+short. Commando is more than a console, but less than a full windowing engine
+like X. Essentially a VT100 independent console implementation with graphics.
+It is used a lot like the "virtual desktops" seen on X, "teletypes" seen
+on UNIX systems, or "tabs" in web browsers. Each program running in commando
+has its own full screen upon which to draw either text or graphics. Commando 
+can be configured to switch and group these screens using keyboard shortcuts 
+in a variety of ways.
+
+II	- Commands
+==============================
+Commando works in a completely stream oriented fashion, even for graphics. It
+uses
+
+A complete commando command is composed of a starting '\:', a command letter
+('m', 'g', 'e', 'd', 'x'), a set of colon-separated
