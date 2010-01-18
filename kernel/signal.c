@@ -18,8 +18,6 @@ image_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 		ret(src_t->image, (flags & NOERR) ? targ : ERROR);
 	}
 
-/*	printk("SIG %d %d->%d %x\n", sig, curr_pid, targ, grant); */
-
 	/* Get frame of grant */
 	if (grant) {
 		addr = (uintptr_t) grant;

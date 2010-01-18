@@ -12,24 +12,28 @@ static void pint(int n, int b) {
 	char a[11];
 	size_t i;
 
-	for (i = 0; i < 11; i++) {
+	for (i = 11; i; i--) {
 		a[i] = d[n % b];
 		n = n / b;
 		if (!n) break;
 	}
 
-	for (;; i--) {
+	console_write(&a[i], 12-i);
+/*	for (;; i--) {
 		console_write(&a[i], 1);
 		if (i == 0) break;
-	}
+	} */
 }
 
 static void printf(const char *fmt, ...) {
 	uint32_t *nv = (void*) ((uintptr_t) &fmt + sizeof(const char*));
-	size_t i, v;
+	char *buffer = malloc(strlen(fmt));
+	size_t b, i, v;
 
-	for (v = 0, i = 0; fmt[i]; i++) {
+	for (b = 0, v = 0, i = 0; fmt[i]; i++) {
 		if (fmt[i] == '%') {
+			console_write(buffer, b);
+			b = 0;
 			switch (fmt[i+1]) {
 			case 'x':
 				pint(nv[v++], 16);
@@ -46,8 +50,9 @@ static void printf(const char *fmt, ...) {
 			}
 			i += 2;
 		}
-		console_write((char*) &fmt[i], 1);
+		buffer[b++] = fmt[i];
 	}
+	console_write(buffer, b);
 }
 
 static char *gets(char *buffer) {
