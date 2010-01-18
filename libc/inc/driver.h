@@ -21,8 +21,29 @@ void iodelay(uint32_t usec);
 /* 	device_t specifics:
  * 		bits 00-07: device number
  * 		bits 08-15: bus number
- * 		bits 16-23: reserved
- * 		bits 24-30: bus type (0 - PCI, 1 - ATA, 2 - ISA)
+ * 		bits 16-23: device type
+ * 		bits 24-30: bus type (0 - native, 1 - PCI)
+ */
+
+/* "native" (non-PCI) device numbers:
+ * 0 - ATA controller 0
+ * 1 - ATA controller 1
+ * 2 - ATA controller 2
+ * 3 - ATA controller 3
+ * 4 - keyboard
+ * 5 - VGA controller
+ * 6 - floppy controller
+ */
+
+/* device types:
+ * 0 - keyboard input
+ * 1 - mouse input
+ * 2 - text/serial output
+ * 3 - graphical output
+ * 4 - floppy disk
+ * 5 - ATA disk
+ * 6 - SCSI disk
+ * 7 - network device
  */
 
 typedef int32_t device_t;
@@ -50,7 +71,8 @@ struct request {
 } __attribute__ ((packed));
 
 struct request *req_alloc(void);
-struct request *req_catch(uintptr_t grant);
+void			req_free(struct request *r);
+struct request *req_catch(void *grant);
 struct request *req_checksum(struct request *r);
 bool            req_check(struct request *r);
 
@@ -59,26 +81,13 @@ bool            req_check(struct request *r);
 
 /***** DRIVER INTERFACE STRUCTURE *****/ 
 
-#define DRV_DONE 0
-#define DRV_ERROR -1
-#define DRV_WAIT 1
-
 typedef void (*callback_t)(struct request *r);
 struct driver_interface {
-	int (*init) (device_t dev);	/* Initialize driver on device */
-	int (*sleep) (void);		/* Put device into powersave */
-	int (*halt) (void);			/* De-initialize device */
+	void (*init) (device_t dev);	/* Initialize driver on device */
+	void (*halt) (void);			/* De-initialize device */
 
-	int (*read) (struct request *, callback_t);	/* Read request */
-	int (*write)(struct request *, callback_t); /* Write request */
-	int (*ctrl) (struct request *, callback_t); /* Control request */
-	int (*info) (struct request *, callback_t); /* Information request */
-
-	void (*work) (void);	/* Do background work */
-	int jobs;				/* Number of background jobs to complete */
-
-	void (*handler) (void);	/* To be called on IRQs */
-	int16_t irq;			/* IRQ to be caught (-1 means none) */
+	void (*work) (void);			/* Do background work */
+	size_t jobs;					/* Number of background jobs to complete */
 };
 
 #endif

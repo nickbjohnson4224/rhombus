@@ -183,7 +183,7 @@ static void *_heap_valloc(size_t size) {
 	return (void*) addr;
 }
 
-static void _heap_vfree(void* ptr) {
+static void _heap_vfree(void *ptr) {
 	size_t idx = ((uintptr_t) ptr - _HEAP_START) / BLOCKSZ;
 
 	bmap[idx >> 3] &= ~(1 << (idx & 0x7));
@@ -194,6 +194,14 @@ static void _heap_vfree(void* ptr) {
 
 void _heap_init(void) {
 	__mmap(_BMAP_START, _BMAP_SIZE, MMAP_WRITE | MMAP_READ);
+}
+
+struct request *_heap_req_alloc(void) {
+	return _heap_alloc(PAGESZ);
+}
+
+void _heap_req_free(struct request *r) {
+	_heap_vfree(r);
 }
 
 void *_heap_alloc(size_t size) {

@@ -4,7 +4,9 @@
 #include <stdlib.h>
 #include <flux.h>
 #include <driver.h>
-#include <config.h> 
+#include <config.h>
+#include <mmap.h>
+#include "libc.h"
 
 void block() {
 	_ctrl(CTRL_SCHED, CTRL_SCHED);
@@ -15,12 +17,16 @@ void unblock() {
 }
 
 struct request *req_alloc(void) {
-	return malloc(PAGESZ);
+	return _heap_req_alloc();
 }
 
-struct request *req_catch(uintptr_t grant) {
-	void *vaddr = malloc(PAGESZ);
-	_mmap((uintptr_t) vaddr, MMAP_READ | MMAP_WRITE | MMAP_FRAME, grant);
+void req_free(struct request *r) {
+	_heap_req_free(r);
+}
+
+struct request *req_catch(void *grant) {
+	void *vaddr = _heap_req_alloc();
+	emap(vaddr, (uintptr_t) grant, PROT_READ | PROT_WRITE);
 	return vaddr;
 }
 
@@ -63,14 +69,15 @@ uint16_t dev_getiobase(device_t dev, int bar) {
 	uint8_t type = (dev >> 24) & 0x7F;
 
 	switch (type) {
-	case 1:
+	case 0:
 		switch ((dev >> 8) & 0xFF) {
 		case 0: return (bar) ? 0x1F0 : 0x3F6;
 		case 1: return (bar) ? 0x170 : 0x376;
 		case 2: return (bar) ? 0x1E8 : 0x3E6;
 		case 3: return (bar) ? 0x168 : 0x366;
+		case 4: return 0x60;
 		}
-	case 0:
+	case 1:
 	default: return 0;
 	}
 }
@@ -79,14 +86,15 @@ uint16_t dev_getiolimit(device_t dev, int bar) {
 	uint8_t type = (dev >> 24) & 0x7F;
 
 	switch (type) {
-	case 1:
+	case 0:
 		switch ((dev >> 8) & 0xFF) {
 		case 0: return (bar) ? 0x1F7 : 0x3F6;
 		case 1: return (bar) ? 0x177 : 0x376;
 		case 2: return (bar) ? 0x1E7 : 0x3E6;
 		case 3: return (bar) ? 0x167 : 0x366;
+		case 4: return 0x60;
 		}
-	case 0:
+	case 1:
 	default: return 0;
 	}
 }
@@ -95,12 +103,14 @@ uint16_t dev_getirqnum(device_t dev) {
 	uint8_t type = (dev >> 24) & 0x7F;
 
 	switch (type) {
-	case 1:
+	case 0:
 		switch ((dev >> 8) & 0xFF) {
 		case 0: return 14;
 		case 1: return 15;
+		case 4: return 1;
+		case 6: return 6;
 		}
-	case 0:
+	case 1:
 	default: return 0;
 	}
 }

@@ -1,11 +1,11 @@
-/* Copyright 2009 Nick Johnson */
+/* Copyright 2009, 2010 Nick Johnson */
 
 #include <stdint.h>
 #include <string.h>
 #include <signal.h>
 #include <flux.h>
 
-static signal_handler_t sighandlers[MAXSIGNAL];
+static volatile signal_handler_t sighandlers[MAXSIGNAL];
 static volatile uint8_t sigcount[MAXSIGNAL]; /* Used for waiting */
 static volatile uint8_t block_count = 0;
 
@@ -49,6 +49,9 @@ void sigredirect(uint32_t source, uint32_t signal, void *grant) {
 
 	if (sighandlers[signal]) {
 		sighandlers[signal](source, grant);
+	}
+	else if (signal != SIG_ERROR && source != info(0)) {
+		fire(source, SIG_ERROR, NULL);
 	}
 }
 

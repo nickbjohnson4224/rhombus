@@ -27,6 +27,9 @@ void  *_heap_alloc(size_t size);
 void   _heap_free(void *ptr);
 size_t _heap_size(void *ptr);
 
+struct request *_heap_req_alloc(void);
+void _heap_req_free(struct request *);
+
 /*** File Handles ***/
 
 typedef uint32_t _file_des_t;

@@ -63,6 +63,7 @@ void		_exit(uint32_t value);
 #define SIG_INFO	18
 #define SIG_CTRL	19
 #define SIG_PING	20
+#define SIG_ERROR	21
 #define SIG_REPLY	32
 
 /***** API FUNCTIONS *****/
@@ -75,18 +76,6 @@ typedef struct {
 	uint32_t resource;
 	uint32_t fpos;
 } file_t;
-
-/*
-typedef struct {
-	uint8_t resource	[4];
-	uint8_t data_size	[2];
-	uint8_t transaction	[2];
-	uint8_t checksum	[4];
-	uint8_t data_off	[2];
-	uint8_t header_type	[2];
-	uint8_t file_off	[16];
-} request_t;
-*/
 
 size_t read(file_t *fd, char *buffer, size_t count);
 size_t write(file_t *fd, char *buffer, size_t count);

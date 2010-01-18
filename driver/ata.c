@@ -3,85 +3,37 @@
 #include <driver.h>
 #include <flux.h>
 #include <stdlib.h>
+#include <signal.h>
 
 #include <driver/ata.h>
 
-#define ATA0_BASE 0x1F0
-#define ATA1_BASE 0x170
-#define ATA0_IRQ 14
-#define ATA1_IRQ 15
-
-static int ata_init(device_t selector);
-static int ata_sleep(void);
-static int ata_halt(void);
-
-static int ata_read (struct request *r, callback_t cb);
-static int ata_write(struct request *r, callback_t cb);
-static int ata_ctrl (struct request *r, callback_t cb);
-static int ata_info (struct request *r, callback_t cb);
-
-static void ata_work(void);
-static void ata_handler(void);
+static void ata_init(device_t selector);
+static void ata_halt(void);
+static void ata_hand(uint32_t caller, void *grant);
 
 static device_t dev;
-static uint16_t port_status;
-static uint16_t port_base;
+static uint16_t port;
 
 struct driver_interface ata = {
 	ata_init,
-	ata_sleep,
 	ata_halt,
 
-	ata_read,
-	ata_write,
-	ata_ctrl,
-	ata_info,
-
-	ata_work,
-	0,
-
-	ata_handler,
-	-1,
+	NULL, 0,
 };
 
-static int ata_init(device_t selector) {	
-	dev = selector;
+static void ata_init(device_t selector) {
+	dev 	= selector;
 
-	ata.irq = dev_getirqnum(dev);
-	port_status = dev_getiobase(dev, 1);
-	port_base = dev_getiobase(dev, 0);
+	rirq(dev_getirqnum(dev));
+	sigregister(SSIG_IRQ, ata_hand);
 
-	return DRV_DONE;
+	port = dev_getiobase(dev, 0);
 }
 
-static int ata_sleep(void) {
-	return DRV_ERROR;
-}
-
-static int ata_halt(void) {
-	return DRV_ERROR;
-}
-
-static int ata_read(struct request *r, callback_t cb) {
-	return DRV_ERROR;
-}
-
-static int ata_write(struct request *r, callback_t cb) {
-	return DRV_ERROR;
-}
-
-static int ata_ctrl(struct request *r, callback_t cb) {
-	return DRV_ERROR;
-}
-
-static int ata_info(struct request *r, callback_t cb) {
-	return DRV_ERROR;
-}
-
-static void ata_work(void) {
+static void ata_halt(void) {
 	return;
 }
 
-static void ata_handler(void) {
+static void ata_hand(uint32_t caller, void *grant) {
 	return;
 }

@@ -16,19 +16,10 @@
 #define HEIGHT 25
 #define TAB 4
 
-static int terminal_init(device_t selector);
-static int terminal_sleep(void);
-static int terminal_halt(void);
+static void terminal_init (device_t selector);
+static void terminal_halt (void);
+static void terminal_write(uint32_t caller, void *grant);
 
-static int terminal_read (struct request *r, callback_t cb);
-static int terminal_write(struct request *r, callback_t cb);
-static int terminal_ctrl (struct request *r, callback_t cb);
-static int terminal_info (struct request *r, callback_t cb);
-
-static void terminal_work(void);
-static void terminal_handler(void);
-
-static device_t dev;
 static uint16_t *vbuf;
 static uint16_t c_base = 0;
 static uint16_t cursor = 0;
@@ -37,25 +28,14 @@ static void char_write(char c);
 
 struct driver_interface terminal = {
 	terminal_init,
-	terminal_sleep,
 	terminal_halt,
 
-	terminal_read,
-	terminal_write,
-	terminal_ctrl,
-	terminal_info,
-
-	terminal_work,
+	NULL,
 	0,
-
-	terminal_handler,
-	-1,
 };
 
-static int terminal_init(device_t selector) {
-	int i;
-
-	dev = selector;
+static void terminal_init(device_t selector) {
+	size_t i;
 
 	vbuf = malloc(0x1000);
 	emap(vbuf, VMEM, PROT_READ | PROT_WRITE);
@@ -64,26 +44,25 @@ static int terminal_init(device_t selector) {
 		vbuf[i] = 0x0F20;
 	}
 
-	return DRV_DONE;
+	sigregister(SIG_WRITE, terminal_write);
 }
 
-static int terminal_sleep(void) {
-	return DRV_ERROR;
+static void terminal_halt(void) {
+	return;
 }
 
-static int terminal_halt(void) {
-	return DRV_ERROR;
-}
-
-static int terminal_read (struct request *r, callback_t cb) {
-	return DRV_ERROR;
-}
-
-static int terminal_write(struct request *r, callback_t cb) {
+static void terminal_write(uint32_t caller, void *grant) {
+	struct request *r = req_catch(grant);
 	size_t i;
 
+	if (!req_check(r)) {
+		fire(caller, SIG_ERROR, NULL);
+		req_free(r);
+		return;
+	}
+
 	for (i = 0; i < r->datasize; i++) {
-		char_write(r->reqdata[i] + r->dataoff);
+		char_write(r->reqdata[i]);
 	}
 
 	outb(0x3D4, 14);
@@ -92,26 +71,10 @@ static int terminal_write(struct request *r, callback_t cb) {
 	outb(0x3D5, cursor & 0xFF);
 
 	r->datasize = i;
-
-	if (cb) cb(r);
-
-	return DRV_DONE;
-}
-
-static int terminal_ctrl (struct request *r, callback_t cb) {
-	return DRV_ERROR;
-}
-
-static int terminal_info (struct request *r, callback_t cb) {
-	return DRV_ERROR;
-}
-
-static void terminal_work(void) {
-	return;
-}
-
-static void terminal_handler(void) {
-	return;
+	r->format = REQ_READ;
+	r = req_checksum(r);
+	fire(caller, SIG_REPLY, r);
+	req_free(r);
 }
 
 static void char_write(char c) {
@@ -167,5 +130,3 @@ static void char_write(char c) {
 		cursor -= WIDTH;
 	}
 }
-
-

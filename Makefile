@@ -12,7 +12,7 @@ PP := /usr/flux-cross/bin/i586-elf-cpp
 CFLAGS	:= -march=i586 -pipe -Wall -Werror -Wextra -pedantic
 CFLAGS	+= -Wpointer-arith -Wcast-align -Wwrite-strings
 CFLAGS	+= -Wno-array-bounds -Wno-unused-parameter
-CFLAGS	+= -O0 -fomit-frame-pointer
+CFLAGS	+= -O3 -fomit-frame-pointer
 CFLAGS	+= -ffreestanding -I$(BUILDDIR)/inc
 LDFLAGS := -L$(BUILDDIR)/lib
 ARFLAGS := rcs

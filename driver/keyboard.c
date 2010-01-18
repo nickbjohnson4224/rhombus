@@ -1,4 +1,4 @@
-/* Copyright 2009 Nick Johnson */
+/* Copyright 2009, 2010 Nick Johnson */
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -11,58 +11,43 @@
 
 #include <driver/keyboard.h>
 
-static char buffer[1024];
-static size_t buffer_top;
+static void keyboard_init(device_t selector);
+static void keyboard_halt(void);
 
-static int keyboard_init(device_t selector);
-static int keyboard_sleep(void);
-static int keyboard_halt(void);
-
-static int keyboard_read (struct request *r, callback_t cb);
-static int keyboard_write(struct request *r, callback_t cb);
-static int keyboard_ctrl (struct request *r, callback_t cb);
-static int keyboard_info (struct request *r, callback_t cb);
-
-static void keyboard_work(void);
-static void keyboard_handler(void);
+static void keyboard_read(uint32_t caller, void *grant);
+static void keyboard_hand(uint32_t caller, void *grant);
 
 static const char dnkmap[] = 
 "\0\0331234567890-=\b\tqwertyuiop[]\n\0asdfghjkl;\'`\0\\zxcvbnm,./\0*\0 ";
 static const char upkmap[] = 
 "\0\033!@#$%^&*()_+\b\0QWERTYUIOP{}\n\0ASDFGHJKL:\"~\0|ZXCVBNM<>?\0*\0 ";
 
+static char buffer[1024];
+static size_t buffer_top;
 static bool shift = false;
 
 struct driver_interface keyboard = {
 	keyboard_init,
-	keyboard_sleep,
 	keyboard_halt,
 
-	keyboard_read,
-	keyboard_write,
-	keyboard_ctrl,
-	keyboard_info,
-
-	keyboard_work,
+	NULL,
 	0,
-
-	keyboard_handler,
-	1,
 };
 
-static int keyboard_init(device_t selector) {
-	return DRV_DONE;
+static void keyboard_init(device_t selector) {
+	rirq(0);
+	sigregister(SSIG_IRQ, keyboard_hand);
+	sigregister(SIG_READ, keyboard_read);
 }
 
-static int keyboard_sleep(void) {
-	return DRV_DONE;
+static void keyboard_halt(void) {
+	return;
 }
 
-static int keyboard_halt(void) {
-	return DRV_DONE;
-}
+static void keyboard_read (uint32_t caller, void *grant) {
+	struct request *r = req_catch(grant);
 
-static int keyboard_read (struct request *r, callback_t cb) {
+	if (!req_check(r)) return;
 
 	sigblock();
 
@@ -78,29 +63,12 @@ static int keyboard_read (struct request *r, callback_t cb) {
 
 	sigunblock();
 
-	if (cb) cb(r);
-
-	return DRV_DONE;
+	r->format = REQ_WRITE;
+	fire(caller, SIG_REPLY, r);
+	free(r);
 }
 
-static int keyboard_write(struct request *r, callback_t cb) {
-	return DRV_ERROR;
-}
-
-static int keyboard_ctrl (struct request *r, callback_t cb) {
-	return DRV_ERROR;
-}
-
-static int keyboard_info (struct request *r, callback_t cb) {
-	return DRV_ERROR;
-}
-
-static void keyboard_work(void) {
-	return;
-}
-
-static void keyboard_handler(void) {
-	extern size_t console_write(char *buffer, size_t length);
+static void keyboard_hand(uint32_t caller, void *grant) {
 	uint8_t scan = inb(0x60);
 
 	if (scan & 0x80) {
@@ -117,7 +85,6 @@ static void keyboard_handler(void) {
 	sigblock();
 
 	buffer[buffer_top] = ((shift) ? upkmap[scan] : dnkmap[scan]);
-	console_write(&buffer[buffer_top], 1);
 	buffer_top++;
 
 	sigunblock();

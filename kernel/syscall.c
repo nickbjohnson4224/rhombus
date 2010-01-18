@@ -1,4 +1,4 @@
-/* Copyright 2009 Nick Johnson */
+/* Copyright 2009, 2010 Nick Johnson */
 
 #include <lib.h>
 #include <int.h>
@@ -74,11 +74,11 @@ image_t *fault_page(image_t *image) {
 	asm volatile ("movl %%cr2, %0" : "=r" (cr2));
 
 	/* If in kernelspace, panic */
-	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */
+/*	if ((image->cs & 0x3) == 0) {  */ /* i.e. if it was kernelmode */
 		printk("page fault at %x, ip = %x frame %x task %d\n", 
 			cr2, image->eip, page_get(cr2), curr_pid);
 		panic("page fault exception");
-	}
+/*	} */
 
 	/* If in userspace, redirect to signal S_PAG, with faulting address */
 	return signal(curr_pid, SSIG_PAGE, NULL, NOERR | EKILL);

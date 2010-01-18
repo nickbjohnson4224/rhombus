@@ -1,3 +1,5 @@
+/* Copyright 2010 Nick Johnson */
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,69 +11,48 @@
 #include <driver/terminal.h>
 #include <driver/keyboard.h>
 
-extern void swrite(const char*);
+static uint32_t console_pid;
+static volatile struct request *reply = NULL;
 
-static void callback_save(struct request *r);
-static volatile struct request *saved = NULL;
-
-void console_handler(uint32_t caller, void *grant) {
-	keyboard.handler();
+void console_hand(uint32_t caller, void *grant) {
+	if (caller != console_pid) return;
+	if (grant) reply = req_catch(grant);
 }
 
 void console_init() {
-	terminal.init(0);
-	keyboard.init(0);
+	int32_t pid = fork();
 
-	rirq(keyboard.irq);
-	sigregister(SSIG_IRQ, console_handler);
-}
+	sigregister(SIG_REPLY, console_hand);
 
-size_t console_write(char *buffer, size_t length) {
-	struct request *r = req_alloc();
-
-	r->resource   = 0;
-	r->datasize   = length;
-	r->format     = REQ_WRITE;
-
-	memcpy(r->reqdata, buffer, length);
-
-	req_checksum(r);
-	terminal.write(r, callback_save);
-
-	length = r->datasize;
-
-	free((void*) saved);
-	saved = NULL;
-
-	return length;
-}
-
-size_t console_read(char *buffer, size_t length) {
-	struct request *r = req_alloc();
-	size_t oldlength = length;
-
-	r->resource   = 0;
-	r->datasize   = length;
-	r->format     = REQ_READ;
-
-	req_checksum(r);
-	keyboard.read(r, callback_save);
-
-	memcpy(buffer, r->reqdata, r->datasize);
-	length = r->datasize;
-
-	free((void*) saved);
-	saved = NULL;
-
-	if (length == 0) {
-		wreset(SSIG_IRQ);
-		wait(SSIG_IRQ);
-		return console_read(buffer, oldlength);
+	if (pid < 0) {
+		terminal.init(0);
+		keyboard.init(0);
+		fire(-pid, SIG_REPLY, NULL);
+		for(;;);
 	}
-
-	return length;
+	else {
+		console_pid = pid;
+		wait(SIG_REPLY);
+	}
 }
 
-static void callback_save(struct request *r) {
-	saved = r;
+size_t console_write(char *buffer, size_t size) {
+	struct request *r = req_alloc();
+
+	r->datasize = size;
+	r->dataoff 	= 0;
+	r->format 	= REQ_WRITE;
+
+	memcpy(r->reqdata, buffer, size);
+
+	r = req_checksum(r);
+
+	reply = NULL;
+	fire(console_pid, SIG_WRITE, r);
+	req_free(r);
+	while (!reply);
+	size = reply->datasize;
+	req_free((void*) reply);
+
+	return size;
 }
