@@ -147,6 +147,8 @@ fire: int 0x60
 	- ecx: signal number
 		- limited to 16 bits
 		- first 16 reserved for system
+	- edx: flags
+		- bit 0: FIRE_TAIL:	drop before firing
 - returns 0 on success, negative on failure
 - fires a signal to another process
 	- signal is created in new signal handling context

@@ -20,6 +20,9 @@ void sigunblock(void);
 /* Send a signal */
 int fire(uint32_t target, uint16_t signal, void *grant);
 
+/* Send a tail signal */
+void tail(uint32_t target, uint16_t signal, void *grant);
+
 /* Register a signal handler */
 void sigregister(uint16_t signal, signal_handler_t handler);
 

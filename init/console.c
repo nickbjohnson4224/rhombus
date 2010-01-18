@@ -11,29 +11,38 @@
 #include <driver/terminal.h>
 #include <driver/keyboard.h>
 
-static uint32_t console_pid;
+static uint32_t terminal_pid, keyboard_pid;
 static volatile struct request *reply = NULL;
 
 void console_hand(uint32_t caller, void *grant) {
-	if (caller != console_pid) return;
-	if (grant) reply = req_catch(grant);
+	if (reply) req_free((void*) reply);
+	reply = req_catch(grant);
 }
 
 void console_init() {
-	int32_t pid = fork();
+	int32_t pid;
 
 	sigregister(SIG_REPLY, console_hand);
 
+	pid = fork();
 	if (pid < 0) {
 		terminal.init(0);
-		keyboard.init(0);
 		fire(-pid, SIG_REPLY, NULL);
+		block();
 		for(;;);
 	}
-	else {
-		console_pid = pid;
-		wait(SIG_REPLY);
+	terminal_pid = pid;
+	wait(SIG_REPLY);
+
+	pid = fork();
+	if (pid < 0) {
+		keyboard.init(0);
+		fire(-pid, SIG_REPLY, NULL);
+		block();
+		for(;;);
 	}
+	keyboard_pid = pid;
+	wait(SIG_REPLY);
 }
 
 size_t console_write(char *buffer, size_t size) {
@@ -48,11 +57,39 @@ size_t console_write(char *buffer, size_t size) {
 	r = req_checksum(r);
 
 	reply = NULL;
-	fire(console_pid, SIG_WRITE, r);
+	fire(terminal_pid, SIG_WRITE, r);
 	req_free(r);
-	while (!reply);
+	wait(SIG_REPLY);
 	size = reply->datasize;
-	req_free((void*) reply);
 
 	return size;
+}
+
+size_t console_read(char *buffer, size_t size) {
+	struct request *r;
+	size_t oldsize = size;
+
+	while (size) {
+
+		r = req_alloc();
+		r->datasize = size;
+		r->dataoff	= 0;
+		r->format	= REQ_READ;
+		r = req_checksum(r);
+
+		reply = NULL;
+		fire(keyboard_pid, SIG_READ, r);
+		req_free(r);
+		wait(SIG_REPLY);
+		r = (void*) reply;
+
+		memcpy(buffer, r->reqdata, r->datasize);
+
+		buffer += r->datasize;
+		size -= r->datasize;
+		req_free(r);
+
+	}
+
+	return oldsize;
 }

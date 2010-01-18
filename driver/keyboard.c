@@ -22,9 +22,9 @@ static const char dnkmap[] =
 static const char upkmap[] = 
 "\0\033!@#$%^&*()_+\b\0QWERTYUIOP{}\n\0ASDFGHJKL:\"~\0|ZXCVBNM<>?\0*\0 ";
 
-static char buffer[1024];
-static size_t buffer_top;
-static bool shift = false;
+static volatile char buffer[1024];
+static volatile size_t buffer_top;
+static volatile bool shift = false;
 
 struct driver_interface keyboard = {
 	keyboard_init,
@@ -35,7 +35,7 @@ struct driver_interface keyboard = {
 };
 
 static void keyboard_init(device_t selector) {
-	rirq(0);
+	rirq(1);
 	sigregister(SSIG_IRQ, keyboard_hand);
 	sigregister(SIG_READ, keyboard_read);
 }
@@ -47,7 +47,11 @@ static void keyboard_halt(void) {
 static void keyboard_read (uint32_t caller, void *grant) {
 	struct request *r = req_catch(grant);
 
-	if (!req_check(r)) return;
+	if (!req_check(r)) {
+		tail(caller, SIG_ERROR, NULL);
+	}
+
+	while (!buffer_top);
 
 	sigblock();
 
@@ -55,7 +59,7 @@ static void keyboard_read (uint32_t caller, void *grant) {
 		r->datasize = buffer_top;
 	}
 
-	memcpy(r->reqdata, buffer, sizeof(char) * r->datasize);
+	memcpy(r->reqdata, (void*) buffer, sizeof(char) * r->datasize);
 	
 	if (r->datasize == buffer_top) {
 		buffer_top = 0;
@@ -64,8 +68,7 @@ static void keyboard_read (uint32_t caller, void *grant) {
 	sigunblock();
 
 	r->format = REQ_WRITE;
-	fire(caller, SIG_REPLY, r);
-	free(r);
+	tail(caller, SIG_REPLY, r);
 }
 
 static void keyboard_hand(uint32_t caller, void *grant) {
@@ -82,10 +85,6 @@ static void keyboard_hand(uint32_t caller, void *grant) {
 		shift = true;
 	}
 
-	sigblock();
-
 	buffer[buffer_top] = ((shift) ? upkmap[scan] : dnkmap[scan]);
 	buffer_top++;
-
-	sigunblock();
 }

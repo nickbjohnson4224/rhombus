@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 /***** SYSTEM CALLS *****/
-int32_t		_fire(uint32_t pid, uint16_t signal, void *grant);
+int32_t		_fire(uint32_t pid, uint16_t signal, void *grant, uint32_t flags);
 void		_drop(void);
 uintptr_t	_hand(uintptr_t handler);
 uint32_t	_ctrl(uint32_t flags, uint32_t mask);
@@ -17,6 +17,9 @@ void		_exit(uint32_t value);
 #define exit _exit
 #define info _info
 #define ctrl _ctrl
+
+#define FIRE_NONE	0x0000
+#define FIRE_TAIL	0x0001
 
 #define MMAP_READ	0x001
 #define MMAP_WRITE	0x002

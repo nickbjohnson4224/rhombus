@@ -36,7 +36,11 @@ void sigunblock(void) {
 }
 
 int fire(uint32_t target, uint16_t signal, void *grant) {
-	return _fire(target, signal, grant);
+	return _fire(target, signal, grant, 0);
+}
+
+void tail(uint32_t target, uint16_t signal, void *grant) {
+	while (_fire(target, signal, grant, FIRE_TAIL));
 }
 
 void sigregister(uint16_t signal, signal_handler_t handler) {

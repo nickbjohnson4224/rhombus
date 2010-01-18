@@ -56,9 +56,7 @@ static void terminal_write(uint32_t caller, void *grant) {
 	size_t i;
 
 	if (!req_check(r)) {
-		fire(caller, SIG_ERROR, NULL);
-		req_free(r);
-		return;
+		tail(caller, SIG_ERROR, NULL);
 	}
 
 	for (i = 0; i < r->datasize; i++) {
@@ -73,8 +71,7 @@ static void terminal_write(uint32_t caller, void *grant) {
 	r->datasize = i;
 	r->format = REQ_READ;
 	r = req_checksum(r);
-	fire(caller, SIG_REPLY, r);
-	req_free(r);
+	tail(caller, SIG_REPLY, r);
 }
 
 static void char_write(char c) {

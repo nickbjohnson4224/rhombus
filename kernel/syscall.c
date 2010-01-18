@@ -74,11 +74,11 @@ image_t *fault_page(image_t *image) {
 	asm volatile ("movl %%cr2, %0" : "=r" (cr2));
 
 	/* If in kernelspace, panic */
-/*	if ((image->cs & 0x3) == 0) {  */ /* i.e. if it was kernelmode */
+	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */
 		printk("page fault at %x, ip = %x frame %x task %d\n", 
 			cr2, image->eip, page_get(cr2), curr_pid);
 		panic("page fault exception");
-/*	} */
+	}
 
 	/* If in userspace, redirect to signal S_PAG, with faulting address */
 	return signal(curr_pid, SSIG_PAGE, NULL, NOERR | EKILL);
@@ -110,7 +110,21 @@ image_t *fault_double(image_t *image) {
 /* See section II of the Flux manual for details */
 
 image_t *fire(image_t *image) {
-	return signal(image->eax, image->ecx, (void*) image->ebx, 0);
+	uint32_t targ = image->eax;
+	uint32_t sig = image->ecx;
+	uint32_t grant = image->ebx;
+	uint32_t flags = image->edx;
+	task_t *dst_t = task_get(targ);
+
+	if (!dst_t || !dst_t->shandler || (dst_t->flags & CTRL_CLEAR)) {
+		ret(image, ERROR);
+	}
+
+	if (flags & 0x1) {
+		image = sret(image);
+	}
+
+	return signal(targ, sig, (void*) grant, 0);
 }
 
 image_t *drop(image_t *image) {

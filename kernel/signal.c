@@ -18,6 +18,8 @@ image_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 		ret(src_t->image, (flags & NOERR) ? targ : ERROR);
 	}
 
+/*	printk("SIG %d %d->%d %x\n", sig, curr_pid, targ, grant); */
+
 	/* Get frame of grant */
 	if (grant) {
 		addr = (uintptr_t) grant;
@@ -37,7 +39,7 @@ image_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 	if ((uintptr_t) dst_t->image < SSTACK_BSE + 2 * sizeof(image_t)) {
 
 		/* Check for a second offense */
-		if (flags & CTRL_SUPER) {
+		if ((uintptr_t) dst_t->image < SSTACK_BSE + sizeof(image_t)) {
 			return exit(dst_t->image);
 		}
 
@@ -55,6 +57,9 @@ image_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 	/* Modify flags */
 	if (dst_t->flags & CTRL_CBLOCK) {
 		dst_t->flags |= CTRL_BLOCK;
+	}
+	else {
+		dst_t->flags &= ~CTRL_BLOCK;
 	}
 
 	if (dst_t->flags & CTRL_CCLEAR) {

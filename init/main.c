@@ -16,18 +16,23 @@ void swrite(const char *message) {
 }
 
 void segfault(uint32_t source, void *grant) {
+	swrite("Segmentation Fault\n");
 	exit(1);
+}
+
+void tisoverflow(uint32_t source, void *grant) {
 }
 
 int main() {
 	extern void console_init(void);
+	extern void shell(void);
 
 	sigregister(SSIG_FAULT, segfault);
-	sigregister(SSIG_PAGE, segfault);
+	sigregister(SSIG_PAGE, 	segfault);
+	sigregister(SSIG_IMAGE, tisoverflow);
 
 	console_init();
-	swrite("hello, world!\n");
-	swrite("potato cannon!\n");
+	shell();
 
 	block();
 	for(;;);
