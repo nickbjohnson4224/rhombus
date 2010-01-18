@@ -70,8 +70,7 @@ static void terminal_write(uint32_t caller, void *grant) {
 
 	r->datasize = i;
 	r->format = REQ_READ;
-	r = req_checksum(r);
-	tail(caller, SIG_REPLY, r);
+	tail(caller, SIG_REPLY, req_checksum(r));
 }
 
 static void char_write(char c) {

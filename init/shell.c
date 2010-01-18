@@ -19,10 +19,6 @@ static void pint(int n, int b) {
 	}
 
 	console_write(&a[i], 12-i);
-/*	for (;; i--) {
-		console_write(&a[i], 1);
-		if (i == 0) break;
-	} */
 }
 
 static void printf(const char *fmt, ...) {

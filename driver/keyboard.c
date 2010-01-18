@@ -68,7 +68,7 @@ static void keyboard_read (uint32_t caller, void *grant) {
 	sigunblock();
 
 	r->format = REQ_WRITE;
-	tail(caller, SIG_REPLY, r);
+	tail(caller, SIG_REPLY, req_checksum(r));
 }
 
 static void keyboard_hand(uint32_t caller, void *grant) {
@@ -85,6 +85,10 @@ static void keyboard_hand(uint32_t caller, void *grant) {
 		shift = true;
 	}
 
+	sigblock();
+
 	buffer[buffer_top] = ((shift) ? upkmap[scan] : dnkmap[scan]);
 	buffer_top++;
+
+	sigunblock();
 }

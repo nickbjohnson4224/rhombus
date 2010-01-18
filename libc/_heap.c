@@ -201,7 +201,9 @@ struct request *_heap_req_alloc(void) {
 }
 
 void _heap_req_free(struct request *r) {
-	_heap_vfree(r);
+	size_t idx = ((uintptr_t) r - _HEAP_START) / BLOCKSZ;
+
+	bmap[idx >> 3] &= ~(1 << (idx & 0x7));
 }
 
 void *_heap_alloc(size_t size) {

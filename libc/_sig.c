@@ -4,6 +4,7 @@
 #include <string.h>
 #include <signal.h>
 #include <flux.h>
+#include <driver.h>
 
 static volatile signal_handler_t sighandlers[MAXSIGNAL];
 static volatile uint8_t sigcount[MAXSIGNAL]; /* Used for waiting */
@@ -36,10 +37,13 @@ void sigunblock(void) {
 }
 
 int fire(uint32_t target, uint16_t signal, void *grant) {
-	return _fire(target, signal, grant, 0);
+	int ret = _fire(target, signal, grant, 0);
+	if (grant) req_free(grant);
+	return ret;
 }
 
 void tail(uint32_t target, uint16_t signal, void *grant) {
+	if (grant) req_free(grant);
 	while (_fire(target, signal, grant, FIRE_TAIL));
 }
 
