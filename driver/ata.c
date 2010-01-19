@@ -9,7 +9,7 @@
 
 static void ata_init(device_t selector);
 static void ata_halt(void);
-static void ata_hand(uint32_t caller, void *grant);
+static void ata_hand(uint32_t caller, struct request *req);
 
 static device_t dev;
 static uint16_t port;
@@ -34,6 +34,8 @@ static void ata_halt(void) {
 	return;
 }
 
-static void ata_hand(uint32_t caller, void *grant) {
+static void ata_hand(uint32_t caller, struct request *req) {
+	if (req) req_free(req);
+
 	return;
 }

@@ -74,13 +74,4 @@ void		_exit(uint32_t value);
 void block(void);
 void unblock(void);
 
-typedef struct {
-	uint32_t task;
-	uint32_t resource;
-	uint32_t fpos;
-} file_t;
-
-size_t read(file_t *fd, char *buffer, size_t count);
-size_t write(file_t *fd, char *buffer, size_t count);
-
 #endif

@@ -14,9 +14,9 @@
 static uint32_t terminal_pid, keyboard_pid;
 static volatile struct request *reply = NULL;
 
-void console_hand(uint32_t caller, void *grant) {
+void console_hand(uint32_t caller, struct request *req) {
 	if (reply) req_free((void*) reply);
-	reply = req_catch(grant);
+	reply = req;
 }
 
 void console_init() {

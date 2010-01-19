@@ -4,11 +4,13 @@
 #include <signal.h>
 #include <flux.h>
 
-static void __exit(uint32_t source, void *grant) {
+static void __exit(uint32_t source, struct request *req) {
 	_exit(1);
 }
 
 void _cini() {
+	extern void siginit(void);
+
 	/* Heap */
 	_heap_init();
 

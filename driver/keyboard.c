@@ -14,8 +14,8 @@
 static void keyboard_init(device_t selector);
 static void keyboard_halt(void);
 
-static void keyboard_read(uint32_t caller, void *grant);
-static void keyboard_hand(uint32_t caller, void *grant);
+static void keyboard_read(uint32_t caller, struct request *req);
+static void keyboard_hand(uint32_t caller, struct request *req);
 
 static const char dnkmap[] = 
 "\0\0331234567890-=\b\tqwertyuiop[]\n\0asdfghjkl;\'`\0\\zxcvbnm,./\0*\0 ";
@@ -29,7 +29,6 @@ static volatile bool shift = false;
 struct driver_interface keyboard = {
 	keyboard_init,
 	keyboard_halt,
-
 	NULL,
 	0,
 };
@@ -44,10 +43,10 @@ static void keyboard_halt(void) {
 	return;
 }
 
-static void keyboard_read (uint32_t caller, void *grant) {
-	struct request *r = req_catch(grant);
+static void keyboard_read (uint32_t caller, struct request *req) {
 
-	if (!req_check(r)) {
+	if (!req || !req_check(req)) {
+		if (req) req_free(req);
 		tail(caller, SIG_ERROR, NULL);
 	}
 
@@ -55,24 +54,26 @@ static void keyboard_read (uint32_t caller, void *grant) {
 
 	sigblock();
 
-	if (r->datasize > buffer_top) {
-		r->datasize = buffer_top;
+	if (req->datasize > buffer_top) {
+		req->datasize = buffer_top;
 	}
 
-	memcpy(r->reqdata, (void*) buffer, sizeof(char) * r->datasize);
+	memcpy(req->reqdata, (void*) buffer, sizeof(char) * req->datasize);
 	
-	if (r->datasize == buffer_top) {
+	if (req->datasize == buffer_top) {
 		buffer_top = 0;
 	}
 
 	sigunblock();
 
-	r->format = REQ_WRITE;
-	tail(caller, SIG_REPLY, req_checksum(r));
+	req->format = REQ_WRITE;
+	tail(caller, SIG_REPLY, req_checksum(req));
 }
 
-static void keyboard_hand(uint32_t caller, void *grant) {
+static void keyboard_hand(uint32_t caller, struct request *req) {
 	uint8_t scan = inb(0x60);
+
+	if (req) req_free(req);
 
 	if (scan & 0x80) {
 		if (dnkmap[scan & 0x7F] == '\0') {

@@ -4,9 +4,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <config.h>
+#include <signal.h>
 
 /***** PORT ACCESS *****/
-uint8_t inb(uint16_t port);
+uint8_t  inb(uint16_t port);
 uint16_t inw(uint16_t port);
 uint32_t ind(uint16_t port);
 
@@ -57,37 +58,18 @@ uint16_t dev_getirqnum(device_t dev);
 uint16_t dev_getstatus(device_t dev);
 uint16_t dev_command(device_t dev, uint16_t command);
 
-/***** REQUEST STRUCTURE *****/
-
-struct request {
-	uint32_t checksum;				/* Checksum (bit parity) */
-	uint32_t resource;				/* Resource ID */
-	uint16_t datasize;				/* Size of request data */
-	uint16_t transid;				/* Transaction ID */
-	uint16_t dataoff;				/* Offset of request data */
-	uint16_t format;				/* Header format */
-	uint32_t fileoff[4];			/* File offset */
-	uint8_t  reqdata[PAGESZ-32];	/* Request data area */
-} __attribute__ ((packed));
-
-struct request *req_alloc(void);
-void			req_free(struct request *r);
-struct request *req_catch(void *grant);
-struct request *req_checksum(struct request *r);
-bool            req_check(struct request *r);
-
-#define REQ_READ 0
-#define REQ_WRITE 1
-
 /***** DRIVER INTERFACE STRUCTURE *****/ 
 
 typedef void (*callback_t)(struct request *r);
 struct driver_interface {
 	void (*init) (device_t dev);	/* Initialize driver on device */
 	void (*halt) (void);			/* De-initialize device */
-
 	void (*work) (void);			/* Do background work */
 	size_t jobs;					/* Number of background jobs to complete */
 };
+
+/***** IRQ REDIRECTION *****/
+
+void rirq(uint8_t irq);
 
 #endif

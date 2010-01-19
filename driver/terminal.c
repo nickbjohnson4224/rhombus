@@ -18,7 +18,7 @@
 
 static void terminal_init (device_t selector);
 static void terminal_halt (void);
-static void terminal_write(uint32_t caller, void *grant);
+static void terminal_write(uint32_t caller, struct request *req);
 
 static uint16_t *vbuf;
 static uint16_t c_base = 0;
@@ -51,8 +51,7 @@ static void terminal_halt(void) {
 	return;
 }
 
-static void terminal_write(uint32_t caller, void *grant) {
-	struct request *r = req_catch(grant);
+static void terminal_write(uint32_t caller, struct request *r) {
 	size_t i;
 
 	if (!req_check(r)) {

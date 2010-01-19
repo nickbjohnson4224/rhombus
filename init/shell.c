@@ -10,15 +10,17 @@ extern size_t console_write(char *, size_t);
 static void pint(int n, int b) {
 	const char d[] = "0123456789ABCDEF";
 	char a[11];
-	size_t i;
+	int i;
 
-	for (i = 11; i; i--) {
+	for (i = 0; i < 11; i++) {
 		a[i] = d[n % b];
 		n = n / b;
 		if (!n) break;
 	}
 
-	console_write(&a[i], 12-i);
+	for (; i >= 0; i--) {
+		console_write(&a[i], 1);
+	}
 }
 
 static void printf(const char *fmt, ...) {
@@ -119,7 +121,7 @@ void shell(void) {
 
 	char *pwd = (char*) "/";
 
-	printf("Flux Initialization SHell rev. 1\n");
+	printf("Flux 0.2a\n");
 
 	while (1) {
 		printf("fish %s $ ", pwd);
@@ -184,8 +186,14 @@ static void scan(int argc, char **argv) {
 	bus = atoi(argv[1]);
 	slot = atoi(argv[2]);
 
+	if (pci_read(bus, slot, 0, 0) == 0xFFFF) {
+		printf("bus %d slot %d: no such device\n", bus, slot);
+		return;
+	}
+
 	for (i = 0; i < 16; i += 4) {
-		printf("0x%x: \t%x   \t%x\n", i, pci_read(bus, slot, 0, i + 2), pci_read(bus, slot, 0, i));
+		printf("0x%x: \t%x   \t%x\n", i, 
+			pci_read(bus, slot, 0, i + 2), pci_read(bus, slot, 0, i));
 	}
 }
 

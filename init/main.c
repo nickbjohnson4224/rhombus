@@ -15,12 +15,11 @@ void swrite(const char *message) {
 	console_write((char*) message, strlen(message));
 }
 
-void segfault(uint32_t source, void *grant) {
+void segfault(uint32_t source, struct request *req) {
+	if (req) req_free(req);
+
 	swrite("Segmentation Fault\n");
 	exit(1);
-}
-
-void tisoverflow(uint32_t source, void *grant) {
 }
 
 int main() {
@@ -29,7 +28,6 @@ int main() {
 
 	sigregister(SSIG_FAULT, segfault);
 	sigregister(SSIG_PAGE, 	segfault);
-	sigregister(SSIG_IMAGE, tisoverflow);
 
 	console_init();
 	shell();
