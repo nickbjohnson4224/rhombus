@@ -7,11 +7,11 @@
 #include <flux.h>
 #include <driver.h>
 #include <signal.h>
+#include <stdio.h>
 
 #include <driver/terminal.h>
 #include <driver/keyboard.h>
 
-static uint32_t terminal_pid, keyboard_pid;
 static volatile struct request *reply = NULL;
 
 void console_hand(uint32_t caller, struct request *req) {
@@ -31,7 +31,9 @@ void console_init() {
 		block();
 		for(;;);
 	}
-	terminal_pid = pid;
+	stdout = malloc(sizeof(FILE));
+	stdout->target = pid;
+	stdout->wport = SIG_WRITE;
 	wait(SIG_REPLY);
 
 	pid = fork();
@@ -41,10 +43,13 @@ void console_init() {
 		block();
 		for(;;);
 	}
-	keyboard_pid = pid;
+	stdin = malloc(sizeof(FILE));
+	stdin->target = pid;
+	stdin->rport = SIG_READ;
 	wait(SIG_REPLY);
 }
 
+/*
 size_t console_write(char *buffer, size_t size) {
 	struct request *r = req_alloc();
 
@@ -58,11 +63,14 @@ size_t console_write(char *buffer, size_t size) {
 
 	reply = NULL;
 	fire(terminal_pid, SIG_WRITE, r);
-	req_free(r);
 	wait(SIG_REPLY);
 	size = reply->datasize;
 
 	return size;
+} */
+
+size_t console_write(char *buffer, size_t size) {
+	return fwrite(buffer, sizeof(char), size, stdout);
 }
 
 size_t console_read(char *buffer, size_t size) {
@@ -78,8 +86,7 @@ size_t console_read(char *buffer, size_t size) {
 		r = req_checksum(r);
 
 		reply = NULL;
-		fire(keyboard_pid, SIG_READ, r);
-		req_free(r);
+		fire(stdin->target, stdin->rport, r);
 		wait(SIG_REPLY);
 		r = (void*) reply;
 

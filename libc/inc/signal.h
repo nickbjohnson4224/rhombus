@@ -9,15 +9,17 @@
 
 /*** Flux Request Protocol ***/
 
+#define REQSZ (PAGESZ - 32)
+
 struct request {
-	uint32_t checksum;				/* Checksum (bit parity) */
-	uint32_t resource;				/* Resource ID */
-	uint16_t datasize;				/* Size of request data */
-	uint16_t transid;				/* Transaction ID */
-	uint16_t dataoff;				/* Offset of request data */
-	uint16_t format;				/* Header format */
-	uint32_t fileoff[4];			/* File offset */
-	uint8_t  reqdata[PAGESZ-32];	/* Request data area */
+	uint32_t checksum;			/* Checksum (bit parity) */
+	uint32_t resource;			/* Resource ID */
+	uint16_t datasize;			/* Size of request data */
+	uint16_t transid;			/* Transaction ID */
+	uint16_t dataoff;			/* Offset of request data */
+	uint16_t format;			/* Header format */
+	uint32_t fileoff[4];		/* File offset */
+	uint8_t  reqdata[REQSZ];	/* Request data area */
 } __attribute__ ((packed));
 
 struct request *req_alloc(void);

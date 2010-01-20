@@ -25,13 +25,10 @@ static void pint(int n, int b) {
 
 static void printf(const char *fmt, ...) {
 	uint32_t *nv = (void*) ((uintptr_t) &fmt + sizeof(const char*));
-	char *buffer = malloc(strlen(fmt));
-	size_t b, i, v;
+	size_t i, v;
 
-	for (b = 0, v = 0, i = 0; fmt[i]; i++) {
+	for (v = 0, i = 0; fmt[i]; i++) {
 		if (fmt[i] == '%') {
-			console_write(buffer, b);
-			b = 0;
 			switch (fmt[i+1]) {
 			case 'x':
 				pint(nv[v++], 16);
@@ -48,9 +45,8 @@ static void printf(const char *fmt, ...) {
 			}
 			i += 2;
 		}
-		buffer[b++] = fmt[i];
+		console_write((void*) &fmt[i], 1);
 	}
-	console_write(buffer, b);
 }
 
 static char *gets(char *buffer) {
