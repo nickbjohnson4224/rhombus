@@ -3,13 +3,15 @@ BUILDDIR=$(PWD)
 LIB_DIRS=libc driver # libc must be first 
 BIN_DIRS=kernel init
 
+#CC := tcc -march=i586
+#CC := clang -Wno-unknown-warning-option
 CC := /usr/flux-cross/bin/i586-elf-gcc
 LD := /usr/flux-cross/bin/i586-elf-ld
 AR := /usr/flux-cross/bin/i586-elf-ar
 AS := nasm
 PP := /usr/flux-cross/bin/i586-elf-cpp
 
-CFLAGS	:= -march=i586 -pipe -Wall -Werror -Wextra -pedantic
+#CFLAGS	:= -pipe -Wall -Werror -Wextra -pedantic
 CFLAGS	+= -Wpointer-arith -Wcast-align -Wwrite-strings
 CFLAGS	+= -Wno-array-bounds -Wno-unused-parameter
 CFLAGS	+= -O3 -fomit-frame-pointer
