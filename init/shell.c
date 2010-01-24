@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <driver.h>
+#include <stdarg.h>
 
 extern size_t console_read(char *, size_t);
 extern size_t console_write(char *, size_t);
@@ -24,20 +25,22 @@ static void pint(int n, int b) {
 }
 
 static void printf(const char *fmt, ...) {
-	uint32_t *nv = (void*) ((uintptr_t) &fmt + sizeof(const char*) * 3);
+	va_list nv;
 	size_t i, v;
+
+	va_start(nv, fmt);
 
 	for (v = 0, i = 0; fmt[i]; i++) {
 		if (fmt[i] == '%') {
 			switch (fmt[i+1]) {
 			case 'x':
-				pint(nv[v++], 16);
+				pint(va_arg(nv, int), 16);
 				break;
 			case 'd':
-				pint(nv[v++], 10);
+				pint(va_arg(nv, int), 10);
 				break;
 			case 'o':
-				pint(nv[v++], 8);
+				pint(va_arg(nv, int), 8);
 				break;
 			case 's':
 				printf((const char*) nv[v++]);
