@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <signal.h>
-#include "libc.h"
+#include <_libc.h>
 #include <mmap.h>
 
 static volatile signal_handler_t sighandlers[MAXSIGNAL];

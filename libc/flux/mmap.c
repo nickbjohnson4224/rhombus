@@ -1,5 +1,5 @@
 #include <mmap.h>
-#include "libc.h"
+#include <_libc.h>
 
 int mmap(void *addr, size_t length, int prot) {
 	return __mmap((uint32_t) addr, length, prot);

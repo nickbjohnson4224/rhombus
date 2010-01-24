@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <signal.h>
-#include "libc.h"
+#include <_libc.h>
 
 void *calloc(size_t nmemb, size_t size) {
 	void *ptr;

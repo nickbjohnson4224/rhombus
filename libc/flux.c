@@ -6,7 +6,7 @@
 #include <driver.h>
 #include <config.h>
 #include <mmap.h>
-#include "libc.h"
+#include <_libc.h>
 
 void block() {
 	_ctrl(CTRL_SCHED, CTRL_SCHED);

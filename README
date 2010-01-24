@@ -11,8 +11,8 @@ Bourne shell compatible shell
 
 C99 compliant C compiler
 	- tested: GCC 4.3.4
-		- i586 cross compiler or -march=i586
-	- tested: TCC 0.9.25 (deprecated)
+	- tested: TCC 0.9.25
+	- tested: CLang 1.0 (LLVM 2.6)
 
 The Netwide Assembler (NASM)
 	- tested: NASM 2.05.01
@@ -33,8 +33,6 @@ Linux 2.4 or greater with loopback support
 	- tested: Zen 2.6.31
 
 Bochs x86 emulator (or other VM - scripts will have to be modified)
-	- tested: Bochs 2.3, i586 emulation level (deprecated)
-	- tested: Bochs 2.3.7, i586 emulation level (deprecated)
 	- tested: Bochs 2.4.1, i586 emulation level
 	- tested: VirtualBox OSE 2.2.2, on Celeron-M (PIII clone) (deprecated)
 

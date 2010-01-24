@@ -6,8 +6,7 @@
 #include <stdbool.h>
 #include <config.h>
 #include <signal.h>
-
-#include "libc.h"
+#include <_libc.h>
 
 /* abmalloc - The AfterBurner Memory Allocator
  * Copyright 2009 Nick Johnson

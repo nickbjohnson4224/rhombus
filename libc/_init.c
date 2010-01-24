@@ -1,6 +1,6 @@
 /* Copyright 2009 Nick Johnson */
 
-#include "libc.h"
+#include <_libc.h>
 #include <signal.h>
 #include <flux.h>
 
