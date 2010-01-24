@@ -1,12 +1,14 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+/********** GLOBAL OPTIONS **********/
+
+	/* Enable checks on privileged code */
+/*	#define PARANOID */
+
 /********** KERNEL OPTIONS **********/
 
 	/***** TASKING SUBSYSTEM *****/
-
-	/* Enable various checks */
-	#define PARANOID
 
 	/* Maximum number of tasks, must be less than 65536 */
 	#define MAX_TASKS 4096
@@ -50,6 +52,9 @@
 	/* Exec bootstrap location */
 	#define EXEC_STRAP	(SSPACE - 0x100000)
 
+	/* Remove init code after boot (experimental) */
+/*	#define KERNEL_GC */
+
 /********** DRIVER OPTIONS **********/
 
 	/***** DEVICE DETECTION *****/
@@ -57,9 +62,6 @@
 	/* Bus scanning */
 	#define SCAN_PCI
 /*	#define SCAN_ISA */
-/*	#define SCAN_EISA */
-/*	#define SCAN_AGP */
-/*	#define SCAN_PCIE */
 	#define SCAN_ATA
 
 	/***** VIDEO SETTINGS *****/

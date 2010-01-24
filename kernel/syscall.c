@@ -72,10 +72,11 @@ image_t *fault_generic(image_t *image) {
 image_t *fault_page(image_t *image) {
 
 	#ifdef PARANOID
+	extern uint32_t get_cr2(void);
 	uint32_t cr2;
 
 	/* Get faulting address from register CR2 */
-	asm volatile ("movl %%cr2, %0" : "=r" (cr2));
+	cr2 = get_cr2();
 
 	/* If in kernelspace, panic */
 	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */

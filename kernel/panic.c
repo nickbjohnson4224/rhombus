@@ -3,8 +3,9 @@
 #include <lib.h>
 
 void panic(const char *message) {
+	extern void halt(void);
+
 	colork(0x7);
 	printk("Kernel panic: %s\n", message);
-	asm volatile ("cli");
-	asm volatile ("hlt");
+	halt();
 }
