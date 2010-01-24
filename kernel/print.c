@@ -1,4 +1,4 @@
-/* Copyright 2009 Nick Johnson */
+/* Copyright 2009, 2010 Nick Johnson */
 
 #include <lib.h>
 #include <mem.h>
@@ -52,7 +52,9 @@ static void printk_list(const char *fmt, uint32_t *argv) {
 			}
 			i++;
 		}
-		else cwrite(fmt[i]);
+		else {
+			cwrite(fmt[i]);
+		}
 	}
 	outb(0x3D4, 14);
 	outb(0x3D5, (uint8_t) (cursor >> 8));
@@ -61,7 +63,7 @@ static void printk_list(const char *fmt, uint32_t *argv) {
 }
 
 void printk(const char *fmt, ...) {
-	printk_list(fmt, (uint32_t*) &fmt + 1);
+	printk_list(fmt, (void*) ((uintptr_t) &fmt + sizeof(const char*) * 4));
 }
 
 void colork(uint8_t color) {

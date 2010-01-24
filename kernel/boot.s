@@ -1,4 +1,4 @@
-; Copyright 2009 Nick Johnson
+; Copyright 2009, 2010 Nick Johnson
 
 #include <config.h>
 
@@ -114,7 +114,7 @@ start:
 	call init
 
 	; Create saved images at some empty space
-	mov esp, USTACK_INI - 0x1000
+	mov esp, SSTACK_INI - 0x1000
 
 	sti
 	jmp $

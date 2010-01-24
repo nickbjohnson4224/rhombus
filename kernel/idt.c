@@ -1,4 +1,4 @@
-/* Copyright 2009 Nick Johnson */
+/* Copyright 2009, 2010 Nick Johnson */
 
 #include <lib.h>
 #include <int.h>
@@ -27,10 +27,8 @@ extern void
 int14(void), int15(void), int16(void), int17(void), int18(void), int32(void), int33(void), 
 int34(void), int35(void), int36(void), int37(void), int38(void), int39(void), int40(void), 
 int41(void), int42(void), int43(void), int44(void), int45(void), int46(void), int47(void),
-int64(void), int65(void), int66(void), int67(void), int68(void), int69(void), int70(void), 
-int71(void), int72(void), int73(void), int80(void), int81(void), int82(void), int83(void), 
-int84(void), int96(void), int97(void), int98(void), int99(void), int100(void), int101(void),
-int102(void), int103(void);
+int96(void), int97(void), int98(void), int99(void), int100(void), int101(void), int102(void), 
+int103(void);
 
 /* Handlers to be put into the IDT, in order */
 typedef void (*int_handler_t) (void);
@@ -63,10 +61,11 @@ NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL
 };
 
 /* Create the IDT from idt_raw[] */
-__attribute__ ((section(".itext")))
+/*__attribute__ ((section(".itext"))) */
 void init_idt() {
 	extern void idt_flush(void);
-	uint8_t i;
+	extern void halt(void);
+	size_t i;
 
 	memclr(int_handlers, sizeof(handler_t) * 128);
 	memclr(idt, sizeof(struct idt_entry) * 128);
@@ -75,9 +74,9 @@ void init_idt() {
 	for (i = 0; i < 48; i++) {
 		if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0x8E);
 	}
-	
+
 	/* Write usermode interrupt handlers (syscalls) */
-	for (i = 64;i< 128; i++) {
+	for (i = 96;i< 128; i++) {
 		if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0xEE);
 	}
 
@@ -120,15 +119,17 @@ void *int_handler(image_t *image) {
 		image = int_handlers[image->num](image);
 	}
 
+	#ifdef PARANOID
 	/* Check image checksum */
 	if (!page_get((uintptr_t) &image->mg) || image->mg != 0x42242442) {
 		printk("%x: \n", image);
 		printk("%x\n", page_get((uintptr_t) (image + 0x1000)));
 		panic("invalid image");
 	}
+	#endif
 
 	/* Set TSS to generate images in the proper position */
-	tss_set_esp((uintptr_t) image + sizeof(image_t));
+	tss_set_esp((uintptr_t) &image[1]);
 
 	return image;
 }
@@ -148,7 +149,7 @@ struct tss {
 extern uint8_t gdt[48];
 
 /* Initialize the TSS */
-__attribute__ ((section(".ttext")))
+__attribute__ ((section(".itext")))
 void init_tss() {
 	extern void tss_flush(void);
 	uint32_t base = (uint32_t) &tss;

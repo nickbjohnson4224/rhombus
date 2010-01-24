@@ -56,11 +56,13 @@ image_t *irq_redirect(image_t *image) {
 /* Generic fault */
 image_t *fault_generic(image_t *image) {
 
+	#ifdef PARANOID
 	/* If in kernelspace, panic */
 	if ((image->cs & 0x3) == 0) {
 		printk("EIP:%x NUM:%d ERR:%x\n", image->eip, image->num, image->err);
 		panic("unknown exception");
 	}
+	#endif
 
 	/* If in userspace, redirect to signal S_GEN */
 	return signal(curr_pid, SSIG_FAULT, NULL, NOERR | EKILL);
@@ -68,6 +70,8 @@ image_t *fault_generic(image_t *image) {
 
 /* Page fault */
 image_t *fault_page(image_t *image) {
+
+	#ifdef PARANOID
 	uint32_t cr2;
 
 	/* Get faulting address from register CR2 */
@@ -79,6 +83,7 @@ image_t *fault_page(image_t *image) {
 			cr2, image->eip, page_get(cr2), curr_pid);
 		panic("page fault exception");
 	}
+	#endif
 
 	/* If in userspace, redirect to signal S_PAG, with faulting address */
 	return signal(curr_pid, SSIG_PAGE, NULL, NOERR | EKILL);
@@ -87,10 +92,12 @@ image_t *fault_page(image_t *image) {
 /* Floating point exception */
 image_t *fault_float(image_t *image) {
 
+	#ifdef PARANOID
 	/* If in kernelspace, panic */
 	if ((image->cs & 0x3) == 0) {
 		panic("floating point exception");
 	}
+	#endif
 
 	/* If in userspace, redirect to signal S_FPE */
 	return signal(curr_pid, SSIG_FLOAT, NULL, NOERR | EKILL);

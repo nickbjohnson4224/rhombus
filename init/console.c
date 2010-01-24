@@ -49,26 +49,6 @@ void console_init() {
 	wait(SIG_REPLY);
 }
 
-/*
-size_t console_write(char *buffer, size_t size) {
-	struct request *r = req_alloc();
-
-	r->datasize = size;
-	r->dataoff 	= 0;
-	r->format 	= REQ_WRITE;
-
-	memcpy(r->reqdata, buffer, size);
-
-	r = req_checksum(r);
-
-	reply = NULL;
-	fire(terminal_pid, SIG_WRITE, r);
-	wait(SIG_REPLY);
-	size = reply->datasize;
-
-	return size;
-} */
-
 size_t console_write(char *buffer, size_t size) {
 	return fwrite(buffer, sizeof(char), size, stdout);
 }

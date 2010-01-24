@@ -41,7 +41,7 @@ static void terminal_init(device_t selector) {
 	emap(vbuf, VMEM, PROT_READ | PROT_WRITE);
 
 	for (i = 0; i < WIDTH * HEIGHT; i++) {
-		vbuf[i] = 0x0F20;
+		vbuf[i] = 0x0F00 | ' ';
 	}
 
 	sigregister(SIG_WRITE, terminal_write);

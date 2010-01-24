@@ -1,4 +1,4 @@
-/* Copyright 2009 Nick Johnson */
+/* Copyright 2009, 2010 Nick Johnson */
 
 #include <stdint.h>
 #include <string.h>

@@ -24,7 +24,7 @@ static void pint(int n, int b) {
 }
 
 static void printf(const char *fmt, ...) {
-	uint32_t *nv = (void*) ((uintptr_t) &fmt + sizeof(const char*));
+	uint32_t *nv = (void*) ((uintptr_t) &fmt + sizeof(const char*) * 3);
 	size_t i, v;
 
 	for (v = 0, i = 0; fmt[i]; i++) {

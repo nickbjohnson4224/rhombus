@@ -12,7 +12,7 @@
 
 __attribute__ ((section(".tdata"))) 
 const char *stamp = "\
-Flux Operating System v%d.%d\n\
+Flux Operating System v%x.%x\n\
 Copyright 2009 Nick Johnson\n\n";
 
 typedef void (*init_t)(void);
@@ -33,6 +33,7 @@ struct multiboot *mboot;
 typedef void (*entry_t)();
 
 void init(void *mboot_ptr, uint32_t mboot_magic) {
+	extern void halt(void);
 	uint32_t i;
 
 	cleark(); 
@@ -41,7 +42,7 @@ void init(void *mboot_ptr, uint32_t mboot_magic) {
 	if (mboot_magic != 0x2BADB002) {
 		panic("Bootloader is not multiboot compliant");
 	}
-	else mboot = mboot_ptr;
+	mboot = mboot_ptr;
 
 	for (i = 0; init_list[i]; i++) {
 		init_list[i]();

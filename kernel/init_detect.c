@@ -12,7 +12,7 @@ void init_detect() {
 	printk("Detected: memory: ");
 
 		/* This is quite lazy - it finds the free block directly above 0x100000 */
-		/* Fix for systems with > 1GB of RAM to get past ACPI pmapped space */
+		/* Fix for systems with > 1GB of RAM to get past ACPI mmapped space */
 		mem_map = (void*) (mboot->mmap_addr + KSPACE);
 		nmem_map = mboot->mmap_length / sizeof(struct memory_map);
 		for (i = 0; i < nmem_map; i++) {

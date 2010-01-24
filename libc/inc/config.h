@@ -5,6 +5,9 @@
 
 	/***** TASKING SUBSYSTEM *****/
 
+	/* Enable various checks */
+	#define PARANOID
+
 	/* Maximum number of tasks, must be less than 65536 */
 	#define MAX_TASKS 4096
 
