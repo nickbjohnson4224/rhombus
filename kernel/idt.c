@@ -85,7 +85,7 @@ void init_idt() {
 }
 
 /* Set an IDT entry to a value */
-__attribute__ ((section(".itext")))
+/*__attribute__ ((section(".itext"))) */
 void idt_set(uint8_t n, uint32_t base, uint16_t seg, uint8_t flags) {
 	if (!base) return; /* Ignore null handlers */
 	idt[n].base_l = (uint16_t) (base & 0xFFFF);

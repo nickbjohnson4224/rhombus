@@ -1,11 +1,13 @@
-/* Copyright 2009 Nick Johnson */
+/* Copyright 2009, 2010 Nick Johnson */
 
 #include <lib.h>
 #include <int.h>
 #include <task.h>
 #include <init.h>
 
-__attribute__ ((section(".ttext"))) 
+#ifdef KERNEL_GC
+__attribute__ ((section(".itext"))) 
+#endif
 void init_fault() {
 
 	/* Register all fault handlers */
@@ -31,7 +33,9 @@ void init_fault() {
 
 }
 
-__attribute__ ((section(".ttext"))) 
+#ifdef KERNEL_GC
+__attribute__ ((section(".itext"))) 
+#endif
 void init_pit() {
 	uint16_t divisor;
 	printk("  Kernel: system timer @ 256Hz");
@@ -52,7 +56,9 @@ void init_pit() {
 /* IRQ redirection table */
 uint16_t irq_holder[15];
 
-__attribute__ ((section(".ttext"))) 
+#ifdef KERNEL_GC
+__attribute__ ((section(".itext"))) 
+#endif
 void init_int() {
 	extern handler_t int_handlers[128];
 	extern void halt(void);

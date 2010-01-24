@@ -10,7 +10,9 @@
 #define FLUX_VERSION_MINOR 2
 #define FLUX_KERNEL_REVISN 1
 
-__attribute__ ((section(".tdata"))) 
+#ifdef KERNEL_GC
+__attribute__ ((section(".idata"))) 
+#endif
 const char *stamp = "\
 Flux Operating System v%x.%x\n\
 Copyright 2009 Nick Johnson\n\n";
@@ -23,7 +25,9 @@ init_mem,
 init_int,
 init_task,
 init_pit,
+#ifdef KERNEL_GC
 init_free,
+#endif
 init_fpu,
 NULL
 };

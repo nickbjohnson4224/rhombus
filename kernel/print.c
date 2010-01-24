@@ -63,7 +63,7 @@ static void printk_list(const char *fmt, uint32_t *argv) {
 }
 
 void printk(const char *fmt, ...) {
-	printk_list(fmt, (void*) ((uintptr_t) &fmt + sizeof(const char*) * 4));
+	printk_list(fmt, (void*) ((uintptr_t) &fmt + sizeof(const char*) * 3));
 }
 
 void colork(uint8_t color) {

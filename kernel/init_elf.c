@@ -5,7 +5,9 @@
 #include <task.h>
 #include <mem.h>
 
+#ifdef KERNEL_GC
 __attribute__ ((section(".itext")))
+#endif
 void elf_load_segment(uint8_t *src, elf_ph_t *seg) {
 	uint8_t *src_base, *dest_base;
 	uint32_t dest_limit, i;
@@ -32,7 +34,9 @@ void elf_load_segment(uint8_t *src, elf_ph_t *seg) {
 	memclr(dest_base + seg->p_filesz, seg->p_memsz - seg->p_filesz);
 }
 
+#ifdef KERNEL_GC
 __attribute__ ((section(".itext")))
+#endif
 int elf_check(uint8_t *src) {
 	elf_t *elf_header = (elf_t*) src;
 	if (elf_header->e_ident[0] != 0x7F)return 1;
@@ -45,7 +49,9 @@ int elf_check(uint8_t *src) {
 	return 0;
 }
 
+#ifdef KERNEL_GC
 __attribute__ ((section(".itext")))
+#endif
 uint32_t elf_load(uint8_t *src) {
 	uint32_t i, n;
 	elf_t *elf_header = (elf_t*) src;

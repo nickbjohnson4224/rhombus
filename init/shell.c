@@ -115,12 +115,10 @@ void shell(void) {
 	char *argv[10];
 	size_t i, n;
 
-	char *pwd = (char*) "/";
-
 	printf("Flux 0.2a\n");
 
 	while (1) {
-		printf("fish %s $ ", pwd);
+		printf("fish $ ");
 		gets(lnbuffer);
 
 		argv[0] = lnbuffer;

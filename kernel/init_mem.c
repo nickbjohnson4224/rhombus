@@ -1,4 +1,4 @@
-/* Copyright 2009 Nick Johnson */
+/* Copyright 2009, 2010 Nick Johnson */
 
 #include <lib.h>
 #include <init.h>
@@ -6,7 +6,9 @@
 
 uint32_t memsize;
 
+#ifdef KERNEL_GC
 __attribute__ ((section(".itext"))) 
+#endif
 void init_mem() {
 	uint32_t i, z;
 

@@ -5,7 +5,9 @@
 #include <init.h>
 #include <elf.h>
 
-__attribute__ ((section(".itext"))) 
+#ifdef KERNEL_GC
+__attribute__ ((section(".itext")))
+#endif
 void init_task() {
 	extern uint32_t get_eflags(void);
 	extern uint32_t get_cr3(void);
