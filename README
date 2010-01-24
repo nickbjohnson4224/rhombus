@@ -32,7 +32,8 @@ Linux 2.4 or greater with loopback support
 	- tested: Zen 2.6.29-3
 	- tested: Zen 2.6.31
 
-Bochs x86 emulator (or other VM - scripts will have to be modified)
+QEMU emulator (or other VM - scripts will have to be modified)
+	- tested: QEMU 0.10.6, i386
 	- tested: Bochs 2.4.1, i586 emulation level
 	- tested: VirtualBox OSE 2.2.2, on Celeron-M (PIII clone) (deprecated)
 
@@ -60,6 +61,7 @@ Please make sure all builds continue to work on this list!
 
 Virtual Machines:
 Bochs 2.4.1 i586 - 1MHz Intel i586, 8MB RAM
+QEMU 0.10.6 i386
 
 Actual Machines:
 Asus Eee 900 - 900MHz Celeron M, 2048MB RAM

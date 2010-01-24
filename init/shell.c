@@ -26,11 +26,11 @@ static void pint(int n, int b) {
 
 static void printf(const char *fmt, ...) {
 	va_list nv;
-	size_t i, v;
+	size_t i;
 
 	va_start(nv, fmt);
 
-	for (v = 0, i = 0; fmt[i]; i++) {
+	for (i = 0; fmt[i]; i++) {
 		if (fmt[i] == '%') {
 			switch (fmt[i+1]) {
 			case 'x':
@@ -43,7 +43,7 @@ static void printf(const char *fmt, ...) {
 				pint(va_arg(nv, int), 8);
 				break;
 			case 's':
-				printf((const char*) nv[v++]);
+				printf(va_arg(nv, const char*));
 				break;
 			}
 			i += 2;
@@ -120,10 +120,12 @@ void shell(void) {
 	char *argv[10];
 	size_t i, n;
 
+	char *pwd = "/";
+
 	printf("Flux 0.2a\n");
 
 	while (1) {
-		printf("fish $ ");
+		printf("fish %s $ ", pwd);
 		gets(lnbuffer);
 
 		argv[0] = lnbuffer;

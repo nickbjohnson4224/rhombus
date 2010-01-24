@@ -51,7 +51,7 @@ void printk(const char *fmt, ...) {
 			switch (fmt[i+1]) {
 				case 'd': swrite(itoa(va_arg(nv, int), buffer, 10)); break;
 				case 'x': swrite(itoa(va_arg(nv, int), buffer, 16)); break;
-				case 'c': cwrite(va_arg(nv, char)); break;
+				case 'c': cwrite(va_arg(nv, int)); break;
 				case 's': swrite(va_arg(nv, const char*)); break;
 				case '%': cwrite('%'); break;
 			}
