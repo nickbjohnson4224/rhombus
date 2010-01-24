@@ -2,6 +2,7 @@
 
 #include <lib.h>
 #include <mem.h>
+#include <stdarg.h>
 
 static uint16_t *video_mem = (void*) (KSPACE + 0xB8000);
 static int c_base = 0;
@@ -38,16 +39,20 @@ void cleark() {
 	cursor = 0;
 }
 
-static void printk_list(const char *fmt, uint32_t *argv) {
+void printk(const char *fmt, ...) {
+	va_list nv;
 	char buffer[32];
-	int i, n = 0;
+	int i;
+	
+	va_start(nv, fmt);
+
 	for (i = 0; fmt[i]; i++) {
 		if (fmt[i] == '%') {
 			switch (fmt[i+1]) {
-				case 'd': swrite(itoa(argv[n++], buffer, 10)); break;
-				case 'x': swrite(itoa(argv[n++], buffer, 16)); break;
-				case 'c': cwrite((char) argv[n++]); break;
-				case 's': swrite((char*) argv[n++]); break;
+				case 'd': swrite(itoa(va_arg(nv, int), buffer, 10)); break;
+				case 'x': swrite(itoa(va_arg(nv, int), buffer, 16)); break;
+				case 'c': cwrite(va_arg(nv, char)); break;
+				case 's': swrite(va_arg(nv, const char*)); break;
 				case '%': cwrite('%'); break;
 			}
 			i++;
@@ -56,14 +61,13 @@ static void printk_list(const char *fmt, uint32_t *argv) {
 			cwrite(fmt[i]);
 		}
 	}
+
 	outb(0x3D4, 14);
 	outb(0x3D5, (uint8_t) (cursor >> 8));
 	outb(0x3D4, 15);
 	outb(0x3D5, (uint8_t) (cursor & 0xFF));
-}
 
-void printk(const char *fmt, ...) {
-	printk_list(fmt, (void*) ((uintptr_t) &fmt + sizeof(const char*) * 3));
+	va_end(nv);
 }
 
 void colork(uint8_t color) {

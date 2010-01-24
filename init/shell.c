@@ -50,6 +50,8 @@ static void printf(const char *fmt, ...) {
 		}
 		console_write((void*) &fmt[i], 1);
 	}
+
+	va_end(nv);
 }
 
 static char *gets(char *buffer) {
