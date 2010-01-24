@@ -7,7 +7,7 @@
 image_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 	task_t *dst_t = task_get(targ);
 	task_t *src_t = curr_task;
-	uintptr_t addr;
+	uintptr_t addr, pflags;
 
 	/* Check target (for existence) */
 	if (!dst_t || !dst_t->shandler) {
@@ -22,7 +22,9 @@ image_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 	if (grant) {
 		addr = (uintptr_t) grant;
 		grant = (void*) (page_get(addr) & ~0xFFF);
+		pflags = page_get(addr) & 0xFFF;
 		page_set(addr, 0);
+		p_alloc(addr, pflags);
 	}
 
 	/* Switch to target task */

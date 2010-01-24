@@ -73,5 +73,6 @@ void		_exit(uint32_t value);
 
 void block(void);
 void unblock(void);
+void sleep(void);
 
 #endif

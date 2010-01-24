@@ -11,7 +11,7 @@ static uint8_t held_irq[15];
 static uint16_t held_count;
 
 /* Handles IRQ 0, and advances a simple counter used as a clock */
-/* If an IRQ was held, it is redirected */
+/* If an IRQ was held, it is redirected now */
 uint32_t tick = 0;
 image_t *pit_handler(image_t *image) {
 	size_t i;
@@ -126,6 +126,10 @@ image_t *fire(image_t *image) {
 
 	if (!dst_t || !dst_t->shandler || (dst_t->flags & CTRL_CLEAR)) {
 		ret(image, ERROR);
+	}
+
+	if (targ == 0) {
+		return task_switch(task_next(0));
 	}
 
 	if (flags & 0x1) {

@@ -15,3 +15,7 @@ void block() {
 void unblock() {
 	_ctrl(CTRL_NONE, CTRL_SCHED);
 }
+
+void sleep() {
+	_fire(0, 0, NULL, 0);
+}

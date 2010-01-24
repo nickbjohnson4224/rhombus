@@ -44,7 +44,7 @@ int fire(uint32_t target, uint16_t signal, struct request *req) {
 
 void tail(uint32_t target, uint16_t signal, struct request *req) {
 	if (req) req_free(req);
-	while (_fire(target, signal, req, FIRE_TAIL));
+	while (_fire(target, signal, req, FIRE_TAIL)) sleep();
 }
 
 void sigregister(uint16_t signal, signal_handler_t handler) {
@@ -68,7 +68,7 @@ void wreset(uint16_t signal) {
 }
 
 void wait(uint16_t signal) {
-	while (!sigcount[signal]);
+	while (!sigcount[signal]) sleep();
 	sigcount[signal]--;
 }
 
