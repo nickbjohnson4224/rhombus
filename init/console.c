@@ -49,32 +49,5 @@ size_t console_write(char *buffer, size_t size) {
 }
 
 size_t console_read(char *buffer, size_t size) {
-	struct request *r;
-	size_t oldsize = size;
-
-	sighold(SIG_REPLY);
-
-	while (size) {
-
-		r = req_alloc();
-		r->datasize = size;
-		r->dataoff	= 0;
-		r->format	= REQ_READ;
-		r = req_checksum(r);
-
-		fire(stdin->target, stdin->rport, r);
-
-		r = sigpull(SIG_REPLY);
-
-		memcpy(buffer, r->reqdata, r->datasize);
-
-		buffer += r->datasize;
-		size -= r->datasize;
-		req_free(r);
-
-	}
-
-	sigfree(SIG_REPLY);
-
-	return oldsize;
+	return fread(buffer, sizeof(char), size, stdin);
 }
