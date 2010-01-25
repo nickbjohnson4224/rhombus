@@ -78,6 +78,9 @@ int puts(const char *s);
 #define putc fputc
 #define putchar(c) (fputc(c, stdout))
 
+int fprintf(FILE *stream, const char *format, ...);
+int printf(const char *format, ...);
+
 /*** File Control Operations ***/
 
 int    fseek(FILE *stream, fpos_t offset, int whence);

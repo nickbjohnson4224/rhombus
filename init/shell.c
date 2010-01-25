@@ -2,64 +2,16 @@
 #include <string.h>
 #include <driver.h>
 #include <stdarg.h>
-
-extern size_t console_read(char *, size_t);
-extern size_t console_write(char *, size_t);
+#include <stdio.h>
 
 /***** HELPER ROUTINES *****/
-
-static void pint(int n, int b) {
-	const char d[] = "0123456789ABCDEF";
-	char a[11];
-	int i;
-
-	for (i = 0; i < 11; i++) {
-		a[i] = d[n % b];
-		n = n / b;
-		if (!n) break;
-	}
-
-	for (; i >= 0; i--) {
-		console_write(&a[i], 1);
-	}
-}
-
-static void printf(const char *fmt, ...) {
-	va_list nv;
-	size_t i;
-
-	va_start(nv, fmt);
-
-	for (i = 0; fmt[i]; i++) {
-		if (fmt[i] == '%') {
-			switch (fmt[i+1]) {
-			case 'x':
-				pint(va_arg(nv, int), 16);
-				break;
-			case 'd':
-				pint(va_arg(nv, int), 10);
-				break;
-			case 'o':
-				pint(va_arg(nv, int), 8);
-				break;
-			case 's':
-				printf(va_arg(nv, const char*));
-				break;
-			}
-			i += 2;
-		}
-		console_write((void*) &fmt[i], 1);
-	}
-
-	va_end(nv);
-}
 
 static char *gets(char *buffer) {
 	char ch;
 	size_t i = 0;
 
 	while (1) {
-		console_read(&ch, 1);
+		ch = getc(stdin);
 		if (ch == '\n') break;
 		if (ch == '\b') {
 			i--;
