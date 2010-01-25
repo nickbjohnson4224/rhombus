@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+#include <stdio.h>
 #include <flux.h>
 #include <mmap.h>
 #include <driver.h>
@@ -50,7 +51,7 @@ static void keyboard_read (uint32_t caller, struct request *req) {
 		tail(caller, SIG_ERROR, NULL);
 	}
 
-	while (!buffer_top);
+	while (!buffer_top) sleep();
 
 	sigblock();
 
@@ -71,25 +72,31 @@ static void keyboard_read (uint32_t caller, struct request *req) {
 }
 
 static void keyboard_hand(uint32_t caller, struct request *req) {
-	uint8_t scan = inb(0x60);
+	uint8_t scan;
+	
+	sigblock();
 
-	if (req) req_free(req);
+	scan = inb(0x60);
 
 	if (scan & 0x80) {
 		if (dnkmap[scan & 0x7F] == '\0') {
 			shift = false;
 		}
-		return;
 	}
 
-	if (dnkmap[scan & 0x7F] == '\0') {
+	else if (dnkmap[scan & 0x7F] == '\0') {
 		shift = true;
 	}
 
-	sigblock();
+	else {
+		buffer[buffer_top] = ((shift) ? upkmap[scan] : dnkmap[scan]);
+		buffer_top++;
 
-	buffer[buffer_top] = ((shift) ? upkmap[scan] : dnkmap[scan]);
-	buffer_top++;
+		sigunblock();
+		fwrite((char*) &buffer[buffer_top-1], 1, 1, stdout);
+		sigblock();
+	}
 
 	sigunblock();
+	return;
 }

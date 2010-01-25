@@ -12,17 +12,10 @@
 #include <driver/terminal.h>
 #include <driver/keyboard.h>
 
-static volatile struct request *reply = NULL;
-
-void console_hand(uint32_t caller, struct request *req) {
-	if (reply) req_free((void*) reply);
-	reply = req;
-}
-
 void console_init() {
 	int32_t pid;
 
-	sigregister(SIG_REPLY, console_hand);
+	sighold(SIG_REPLY);
 
 	pid = fork();
 	if (pid < 0) {
@@ -34,7 +27,7 @@ void console_init() {
 	stdout = malloc(sizeof(FILE));
 	stdout->target = pid;
 	stdout->wport = SIG_WRITE;
-	wait(SIG_REPLY);
+	sigpull(SIG_REPLY);
 
 	pid = fork();
 	if (pid < 0) {
@@ -46,7 +39,9 @@ void console_init() {
 	stdin = malloc(sizeof(FILE));
 	stdin->target = pid;
 	stdin->rport = SIG_READ;
-	wait(SIG_REPLY);
+	sigpull(SIG_REPLY);
+
+	sigfree(SIG_REPLY);
 }
 
 size_t console_write(char *buffer, size_t size) {
@@ -57,6 +52,8 @@ size_t console_read(char *buffer, size_t size) {
 	struct request *r;
 	size_t oldsize = size;
 
+	sighold(SIG_REPLY);
+
 	while (size) {
 
 		r = req_alloc();
@@ -65,10 +62,9 @@ size_t console_read(char *buffer, size_t size) {
 		r->format	= REQ_READ;
 		r = req_checksum(r);
 
-		reply = NULL;
 		fire(stdin->target, stdin->rport, r);
-		wait(SIG_REPLY);
-		r = (void*) reply;
+
+		r = sigpull(SIG_REPLY);
 
 		memcpy(buffer, r->reqdata, r->datasize);
 
@@ -77,6 +73,8 @@ size_t console_read(char *buffer, size_t size) {
 		req_free(r);
 
 	}
+
+	sigfree(SIG_REPLY);
 
 	return oldsize;
 }

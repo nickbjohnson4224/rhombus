@@ -24,7 +24,7 @@ size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 }
 
 size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
-	struct request *req;
+	struct request *req = req_alloc(), *res;
 	uint8_t *data = (void*) ptr;
 	uint16_t datasize;
 	uint32_t oldsize, i = 0;
@@ -32,13 +32,11 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
 	size *= nmemb;
 	oldsize = size;
 
-	wreset(SIG_REPLY);
+	sighold(SIG_REPLY);
 
 	while (size) {
 		datasize = (size > REQSZ) ? REQSZ : size;
-		size -= datasize;
 
-		req = req_alloc();
 		req->resource = stream->resource;
 		req->datasize = datasize;
 		req->transid  = i;
@@ -52,11 +50,16 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
 		memcpy(req->reqdata, data, datasize);
 
 		fire(stream->target, stream->wport, req_checksum(req));
-		wait(SIG_REPLY);
 
-		data = &data[datasize];
+		res = sigpull(SIG_REPLY);
+
+		data = &data[res->datasize];
+		size -= res->datasize;
+		req_free(res);
 		i++;
 	}
+
+	sigfree(SIG_REPLY);
 
 	return oldsize;
 }

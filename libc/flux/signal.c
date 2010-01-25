@@ -3,12 +3,21 @@
 #include <stdint.h>
 #include <string.h>
 #include <signal.h>
+#include <stdlib.h>
 #include <_libc.h>
 #include <mmap.h>
 
-static volatile signal_handler_t sighandlers[MAXSIGNAL];
-static volatile uint8_t sigcount[MAXSIGNAL]; /* Used for waiting */
-static volatile uint8_t block_count = 0;
+static volatile struct held_signal {
+	struct request *req;
+	uint32_t caller;
+	uint32_t signal;
+	uint32_t transid;
+	struct held_signal *next;
+} *sigheld[MAXSIGNAL];
+
+static volatile signal_handler_t 	sighandlers[MAXSIGNAL];
+static volatile bool 			 	sigholders[MAXSIGNAL];
+static volatile uint8_t 		 	block_count = 0;
 
 void siginit(void) {
 	extern void sighand(void);
@@ -37,9 +46,7 @@ void sigunblock(void) {
 }
 
 int fire(uint32_t target, uint16_t signal, struct request *req) {
-	int ret = _fire(target, signal, req, 0);
-	if (req) req_free(req);
-	return ret;
+	return _fire(target, signal, req, 0);
 }
 
 void tail(uint32_t target, uint16_t signal, struct request *req) {
@@ -52,24 +59,56 @@ void sigregister(uint16_t signal, signal_handler_t handler) {
 }
 
 void sigredirect(uint32_t source, uint32_t signal, void *grant) {
-	if (signal > MAXSIGNAL) return;
-	sigcount[signal]++;
+	struct request *req = req_catch(grant);
+	struct held_signal *hs = NULL;
 
-	if (sighandlers[signal]) {
-		sighandlers[signal](source, req_catch(grant));
+	if (sigholders[signal] == true) {
+		sigblock();
+
+		hs = malloc(sizeof(struct held_signal));
+
+		hs->req = req;
+		hs->caller = source;
+		hs->signal = signal;
+		hs->transid = req->transid;
+
+		hs->next = (void*) sigheld[signal];
+		sigheld[signal] = hs;
+
+		sigunblock();
+	}
+	else if (sighandlers[signal]) {
+		sighandlers[signal](source, req);
 	}
 	else if (signal != SIG_ERROR && source != info(0)) {
 		tail(source, SIG_ERROR, NULL);
 	}
 }
 
-void wreset(uint16_t signal) {
-	sigcount[signal] = 0;
+struct request *sigpull(uint16_t signal) {
+	struct held_signal *hs;
+	struct request *req;
+
+	while (!sigheld[signal]) sleep();
+
+	sigblock();
+
+	hs = (void*) sigheld[signal];
+	req = hs->req;
+	sigheld[signal] = hs->next;
+	free(hs);
+
+	sigunblock();
+
+	return req;
 }
 
-void wait(uint16_t signal) {
-	while (!sigcount[signal]) sleep();
-	sigcount[signal]--;
+void sighold(uint16_t signal) {
+	sigholders[signal] = true;
+}
+
+void sigfree(uint16_t signal) {
+	sigholders[signal] = false;
 }
 
 struct request *req_alloc(void) {

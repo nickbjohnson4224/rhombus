@@ -42,7 +42,8 @@ void tail(uint32_t target, uint16_t signal, struct request *req);
 typedef void (*signal_handler_t) (uint32_t caller, struct request *req);
 void sigregister(uint16_t signal, signal_handler_t handler);
 
-void wreset(uint16_t signal); 	/* Reset wait counter */
-void wait(uint16_t signal);		/* Wait for signal */
+void sighold(uint16_t signal);	/* Hold signal */
+void sigfree(uint16_t signal);	/* Stop holding signal */
+struct request *sigpull(uint16_t signal);	/* Get held signal */
 
 #endif

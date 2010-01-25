@@ -30,9 +30,9 @@ int main() {
 	sigregister(SSIG_PAGE, 	segfault);
 
 	console_init();
+
 	shell();
 
-	block();
 	for(;;);
 	return 0;
 }

@@ -27,6 +27,9 @@ image_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 		p_alloc(addr, pflags);
 	}
 
+	/* Return 0 in source task */
+	src_t->image->eax = 0;
+
 	/* Switch to target task */
 	task_switch(dst_t);
 

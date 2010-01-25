@@ -60,7 +60,6 @@ static char *gets(char *buffer) {
 
 	while (1) {
 		console_read(&ch, 1);
-		console_write(&ch, 1);
 		if (ch == '\n') break;
 		if (ch == '\b') {
 			i--;

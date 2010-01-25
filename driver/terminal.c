@@ -58,6 +58,8 @@ static void terminal_write(uint32_t caller, struct request *r) {
 		tail(caller, SIG_ERROR, NULL);
 	}
 
+	sigblock();
+
 	for (i = 0; i < r->datasize; i++) {
 		char_write(r->reqdata[i]);
 	}
@@ -66,6 +68,8 @@ static void terminal_write(uint32_t caller, struct request *r) {
 	outb(0x3D5, cursor >> 8);
 	outb(0x3D4, 15);
 	outb(0x3D5, cursor & 0xFF);
+
+	sigunblock();
 
 	r->datasize = i;
 	r->format = REQ_READ;
