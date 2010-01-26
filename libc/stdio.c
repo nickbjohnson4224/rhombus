@@ -11,22 +11,14 @@ FILE *stdin  = NULL;
 FILE *stdout = NULL;
 FILE *stderr = NULL;
 
-int fclose(FILE *stream) {
-	if (stream->buffer) {
-		free(stream->buffer);
-	}
-	free(stream);
+/***** Low Level I/O *****/
 
-	return 0;
-}
-
-size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+static size_t read(void *ptr, size_t size, FILE *stream) {
 	struct request *req, *res;
 	uint8_t *data = (void*) ptr;
 	uint16_t datasize;
 	size_t oldsize, i = 0;
 
-	size *= nmemb;
 	oldsize = size;
 
 	sighold(SIG_REPLY);
@@ -64,13 +56,12 @@ size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 	return oldsize;
 }
 
-size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
+static size_t write(const void *ptr, size_t size, FILE *stream) {
 	struct request *req, *res;
 	uint8_t *data = (void*) ptr;
 	uint16_t datasize;
 	size_t oldsize, i = 0;
 
-	size *= nmemb;
 	oldsize = size;
 
 	sighold(SIG_REPLY);
@@ -109,17 +100,230 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
 	return oldsize;
 }
 
-int fputc(int c, FILE *stream) {
-	fwrite(&c, 1, sizeof(char), stream);
+/***** File Operations *****/
+
+int fclose(FILE *stream) {
+
+	if (stream->buffer) {
+		free(stream->buffer);
+	}
+
+	free(stream);
+
 	return 0;
 }
+
+FILE *fsetup(uint32_t targ, uint32_t resource, const char *mode) {
+	FILE *new = malloc(sizeof(FILE));
+
+	new->target   = targ;
+	new->resource = resource;
+	new->wport    = SIG_WRITE;
+	new->rport    = SIG_READ;
+	new->position = 0;
+	new->size     = -1;
+	new->buffer   = NULL;
+	new->buffsize = 0;
+	new->buffpos  = 0;
+	new->revbuf   = EOF;
+	new->flags    = FILE_NBF | FILE_READ | FILE_WRITE;
+
+	return new;
+}
+
+int fflush(FILE *stream) {
+	fwrite(stream->buffer, stream->buffpos, sizeof(char), stream);
+	stream->buffpos = 0;
+
+	return 0;
+}
+
+int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
+	
+	fflush(stream);
+
+	switch (mode) {
+	case _IONBF:
+		if (stream->buffer) {
+			free(stream->buffer);
+			stream->buffer = NULL;
+		}
+		stream->buffsize = 0;
+		break;
+	case _IOLBF:
+	case _IOFBF:
+		if (stream->buffer) {
+			free(stream->buffer);
+		}
+		if (buf) {
+			stream->buffer = (uint8_t*) buf;
+		}
+		else {
+			stream->buffer = malloc(size);
+		}
+		stream->buffsize = size;
+		stream->buffpos = 0;
+		break;
+	default:
+		return -1;
+	}
+
+	stream->flags &= ~(FILE_FBF | FILE_LBF | FILE_NBF);
+
+	switch (mode) {
+	case _IONBF:
+		stream->flags |= FILE_NBF;
+		break;
+	case _IOLBF:
+		stream->flags |= FILE_LBF;
+		break;
+	case _IOFBF:
+		stream->flags |= FILE_FBF;
+		break;
+	}
+
+	return 0;
+}
+
+void setbuf(FILE *stream, char *buf) {
+	setvbuf(stream, buf, (buf) ? _IOFBF : _IONBF, BUFSIZ);
+}
+
+/***** File Control Operations *****/
+
+int fseek(FILE *stream, fpos_t offset, int whence) {
+	
+	switch (whence) {
+	case SEEK_CUR:
+		stream->position += offset;
+		break;
+	case SEEK_END:
+		stream->position = stream->size - offset;
+		break;
+	case SEEK_SET:
+		stream->position = offset;
+		break;
+	}
+
+	return 0;
+}
+
+fpos_t ftell(FILE *stream) {
+	return stream->position;
+}
+
+void rewind(FILE *stream) {
+	stream->position = 0;
+}
+
+int fgetpos(FILE *stream, fpos_t *pos) {
+	*pos = stream->position;
+
+	return 0;
+}
+
+int fsetpos(FILE *stream, fpos_t *pos) {
+	stream->position = *pos;
+
+	return 0;
+}
+
+void clearerr(FILE *stream) {
+	stream->flags &= ~(FILE_EOF | FILE_ERROR);
+}
+
+int feof(FILE *stream) {
+	return (stream->flags & FILE_EOF);
+}
+
+int ferror(FILE *stream) {
+	return (stream->flags & FILE_ERROR);
+}
+
+/***** Standard I/O Operations *****/
+
+size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+	return read(ptr, size * nmemb, stream);
+}
+
+size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
+	const uint8_t *data = ptr;
+	size_t i;
+
+	if (stream->flags & FILE_NBF) {
+		return write(data, size * nmemb, stream);
+	}
+
+	for (i = 0; i < size * nmemb; i++) {
+		stream->buffer[stream->buffpos++] = data[i];
+
+		if (stream->flags & FILE_LBF) {
+			if (data[i] == '\n') fflush(stream);
+		}
+
+		if (stream->flags & FILE_FBF) {
+			if (stream->buffpos >= stream->buffsize) fflush(stream);
+		}
+	}
+
+	return (size * nmemb);
+}
+
+/***** High Level Input *****/
 
 int fgetc(FILE *stream) {
 	char buffer[1];
 
-	fread(buffer, 1, sizeof(char), stream);
+	if (fread(buffer, 1, sizeof(char), stream) == 0) {
+		return EOF;
+	}
 
 	return buffer[0];
+}
+
+char *fgets(char *s, int size, FILE *stream) {
+	size_t i;
+	int ch;
+
+	for (i = 0; i < size; i++) {
+		ch = fgetc(stream);
+		if (ch == EOF || ch == '\n') break;
+		
+		s[i] = ch;
+	}
+
+	s[i] = '\0';
+	return s;
+}
+
+int ungetc(int c, FILE *stream) {
+
+	if (stream->revbuf != EOF) {
+		return -1;;
+	}
+
+	stream->revbuf = c;
+	return 0;
+}
+
+/***** High Level Output *****/
+
+int fputc(int c, FILE *stream) {
+	if (fwrite(&c, 1, sizeof(char), stream) == 0) {
+		return -1;
+	}
+	return 0;
+}
+
+int fputs(const char *s, FILE *stream) {
+	if (fwrite(s, strlen(s), sizeof(char), stream) == 0) {
+		return -1;
+	}
+	return 0;
+}
+
+int puts(const char *s) {
+	return fputs(s, stdout);
 }
 
 static void itoa(char *buffer, int n, int b) {
@@ -153,40 +357,37 @@ static void itoa(char *buffer, int n, int b) {
 	size = i;
 
 	for (i = 0; i < (size / 2); i++) {
-		temp = buffer[size - i];
-		buffer[size - i] = buffer[i];
+		temp = buffer[size - i - 1];
+		buffer[size - i - 1] = buffer[i];
 		buffer[i] = temp;
 	}
 }
 
-int fprintf(FILE *stream, const char *format, ...) {
-	va_list nv;
+int vfprintf(FILE *stream, const char *format, va_list ap) {
 	size_t i;
 	char buffer[12];
 	const char *str;
-	
-	va_start(nv, format);
 
 	for (i = 0; format[i]; i++) {
 		if (format[i] == '%') {
 			switch (format[i+1]) {
 			case 'x':
 			case 'X':
-				itoa(buffer, va_arg(nv, int), 16);
+				itoa(buffer, va_arg(ap, int), 16);
 				fwrite(buffer, strlen(buffer), sizeof(char), stream);
 				break;
 			case 'd':
 			case 'i':
-				itoa(buffer, va_arg(nv, int), 10);
+				itoa(buffer, va_arg(ap, int), 10);
 				fwrite(buffer, strlen(buffer), sizeof(char), stream);
 				break;
 			case 'o':
 			case 'O':
-				itoa(buffer, va_arg(nv, int), 8);
+				itoa(buffer, va_arg(ap, int), 8);
 				fwrite(buffer, strlen(buffer), sizeof(char), stream);
 				break;
 			case 's':
-				str = va_arg(nv, const char*);
+				str = va_arg(ap, const char*);
 				fwrite(str, strlen(str), sizeof(char), stream);
 			}
 			i += 2;
@@ -194,47 +395,33 @@ int fprintf(FILE *stream, const char *format, ...) {
 		fputc(format[i], stream);
 	}
 
-	va_end(nv);
-
 	return 0;
+}
+
+int fprintf(FILE *stream, const char *format, ...) {
+	va_list ap;
+	int ret;
+
+	va_start(ap, format);
+	ret = vfprintf(stream, format, ap);
+	va_end(ap);
+
+	return ret;
+}
+
+int vprintf(const char *format, va_list ap) {
+	return vfprintf(stdout, format, ap);
 }
 
 int printf(const char *format, ...) {
 	va_list nv;
-	size_t i;
-	char buffer[12];
-	const char *str;
+	int ret;
 	
 	va_start(nv, format);
-
-	for (i = 0; format[i]; i++) {
-		if (format[i] == '%') {
-			switch (format[i+1]) {
-			case 'x':
-			case 'X':
-				itoa(buffer, va_arg(nv, int), 16);
-				fwrite(buffer, strlen(buffer), sizeof(char), stdout);
-				break;
-			case 'd':
-			case 'i':
-				itoa(buffer, va_arg(nv, int), 10);
-				fwrite(buffer, strlen(buffer), sizeof(char), stdout);
-				break;
-			case 'o':
-			case 'O':
-				itoa(buffer, va_arg(nv, int), 8);
-				fwrite(buffer, strlen(buffer), sizeof(char), stdout);
-				break;
-			case 's':
-				str = va_arg(nv, const char*);
-				fwrite(str, strlen(str), sizeof(char), stdout);
-			}
-			i += 2;
-		}
-		fputc(format[i], stdout);
-	}
-
+	ret = vfprintf(stdout, format, nv);
 	va_end(nv);
 
-	return 0;
+	return ret;
 }
+
+

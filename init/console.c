@@ -24,9 +24,8 @@ void console_init() {
 		block();
 		for(;;);
 	}
-	stdout = malloc(sizeof(FILE));
-	stdout->target = pid;
-	stdout->wport = SIG_WRITE;
+
+	stdout = fsetup(pid, 0, "a");
 	sigpull(SIG_REPLY);
 
 	pid = fork();
@@ -36,9 +35,9 @@ void console_init() {
 		block();
 		for(;;);
 	}
-	stdin = malloc(sizeof(FILE));
-	stdin->target = pid;
-	stdin->rport = SIG_READ;
+
+	stdin = fsetup(pid, 0, "r");
+	setvbuf(stdin, NULL, _IOLBF, BUFSIZ);
 	sigpull(SIG_REPLY);
 
 	sigfree(SIG_REPLY);

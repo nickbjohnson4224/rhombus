@@ -16,10 +16,13 @@ typedef struct _file {
 	uint16_t wport, rport;	/* Read and Write ports */
 
 	fpos_t position;		/* File position */
+	fpos_t size;			/* File size */
 
 	uint8_t *buffer;		/* Stream buffer */
 	size_t buffpos;			/* Position in stream buffer */
 	size_t buffsize;		/* Size of stream buffer */
+
+	int revbuf;				/* ungetc() reverse buffer */
 
 	uint8_t flags;			/* EOF/Error/various flags */
 } FILE;
@@ -28,9 +31,9 @@ typedef struct _file {
 #define FILE_ERROR	0x02	/* File Error */
 #define FILE_FBF	0x04	/* Fully Buffered */
 #define FILE_LBF	0x08	/* Line Buffered */
-#define FILE_NBF	0x00	/* Not Buffered */
-#define FILE_READ	0x10	/* Read Access */
-#define FILE_WRITE	0x20	/* Write Access */
+#define FILE_NBF	0x10	/* Not Buffered */
+#define FILE_READ	0x20	/* Read Access */
+#define FILE_WRITE	0x40	/* Write Access */
 
 /*** Constants ***/
 
@@ -45,7 +48,6 @@ typedef struct _file {
 #define _IOFBF		2
 
 #define BUFSIZ		(PAGESZ - 256)
-#define FOPEN_MAX	128
 
 /*** Standard Streams ***/
 
@@ -58,6 +60,11 @@ extern FILE *stderr;
 int   fclose(FILE *stream);
 FILE *fopen(const char *path, const char *mode);
 FILE *freopen(const char *path, const char *mode, FILE *stream);
+FILE *fsetup(uint32_t targ, uint32_t resource, const char *mode);
+
+int  fflush(FILE *stream);
+int  setvbuf(FILE *stream, char *buf, int mode, size_t size);
+void setbuf(FILE *stream, char *buf);
 
 /*** I/O Operations ***/
 
@@ -77,6 +84,7 @@ int puts(const char *s);
 
 #define putc fputc
 #define putchar(c) (fputc(c, stdout))
+#define fputchar(c) (fputc(c, stdout))
 
 int fprintf(FILE *stream, const char *format, ...);
 int printf(const char *format, ...);
@@ -92,6 +100,5 @@ int    fsetpos(FILE *stream, fpos_t *pos);
 void   clearerr(FILE *stream);
 int    feof(FILE *stream);
 int    ferror(FILE *stream);
-int    fileno(FILE *stream);
 
 #endif
