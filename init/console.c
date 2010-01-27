@@ -37,7 +37,6 @@ void console_init() {
 	}
 
 	stdin = fsetup(pid, 0, "r");
-	setvbuf(stdin, NULL, _IOLBF, BUFSIZ);
 	sigpull(SIG_REPLY);
 
 	sigfree(SIG_REPLY);

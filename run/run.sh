@@ -2,5 +2,4 @@
 
 export BUILDDIR=${PWD}
 
-#echo "c" | bochs -f ${BUILDDIR}/run/bochsrc.txt -q
-qemu -cdrom ${BUILDDIR}/run/flux.iso -no-reboot
+qemu -cdrom ${BUILDDIR}/run/flux.iso -hda ${BUILDDIR}/run/hd.img -no-reboot

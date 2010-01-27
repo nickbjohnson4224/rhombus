@@ -326,7 +326,7 @@ int puts(const char *s) {
 	return fputs(s, stdout);
 }
 
-static void itoa(char *buffer, int n, int b) {
+static void itoa(char *buffer, unsigned int n, int b) {
 	const char d[] = "0123456789ABCDEF";
 	char temp;
 	size_t i, size;
@@ -342,11 +342,11 @@ static void itoa(char *buffer, int n, int b) {
 		return;
 	}
 
-	if (n < 0) {
+/*	if (n < 0) {
 		buffer[0] = '-';
 		buffer = &buffer[1];
 		n = -n;
-	}
+	} */
 
 	for (i = 0; i < 11 && n; i++) {
 		buffer[i] = d[n % b];
@@ -365,7 +365,7 @@ static void itoa(char *buffer, int n, int b) {
 
 int vfprintf(FILE *stream, const char *format, va_list ap) {
 	size_t i;
-	char buffer[12];
+	char buffer[13];
 	const char *str;
 
 	for (i = 0; format[i]; i++) {

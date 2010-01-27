@@ -63,6 +63,10 @@ cd:	all image
 	export BUILDDIR
 	run/makecd.sh
 
+hd:
+	export BUILDDIR
+	run/makehd.sh
+
 makedirs:
 	mkdir -p $(BUILDDIR)/lib
 	mkdir -p $(BUILDDIR)/inc

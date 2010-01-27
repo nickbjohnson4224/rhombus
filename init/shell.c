@@ -4,6 +4,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#include <driver/pci.h>
+
 /***** HELPER ROUTINES *****/
 
 static char *gets(char *buffer) {
@@ -11,7 +13,7 @@ static char *gets(char *buffer) {
 	size_t i = 0;
 
 	while (1) {
-		ch = getc(stdin);
+		ch = getchar();
 		if (ch == '\n') break;
 		if (ch == '\b') {
 			i--;
@@ -32,6 +34,7 @@ static void scan(int argc, char **argv);
 static void cd(int argc, char **argv);
 static void ls(int argc, char **argv);
 static void halt(int argc, char **argv);
+static void class(int argc, char **argv);
 
 static const char *cmdlist[] = {
 	"echo",
@@ -40,6 +43,7 @@ static const char *cmdlist[] = {
 	"cd",
 	"ls",
 	"halt",
+	"class",
 	NULL,
 };
 
@@ -50,6 +54,7 @@ static void (*cmd[])(int, char**) = {
 	cd,
 	ls,
 	halt,
+	class,
 };
 
 static int vexec(char *name, int argc, char **argv) {
@@ -101,17 +106,8 @@ static void echo(int argc, char **argv) {
 	printf("\n");
 }
 
-static uint16_t pci_read(uint32_t bus, uint32_t slot, uint32_t func, uint32_t off) {
-	uint32_t addr;
-
-	addr = (bus << 16) | (slot << 11) | (func << 8) | (off & 0xFC) | 0x80000000;
-	outd(0xCF8, addr);
-
-	return (ind(0xCFC) >> ((off & 0x2) * 8));
-}
-
 static void pci(int argc, char **argv) {
-	uint32_t bus, slot, func, off;
+	uint32_t bus, slot, func, off, dev;
 
 	if (argc != 5) {
 		printf("pci <bus> <slot> <function> <offset>\n");
@@ -122,30 +118,35 @@ static void pci(int argc, char **argv) {
 	bus = atoi(argv[1]);
 	slot = atoi(argv[2]);
 	off = atoi(argv[4]);
+
+	dev = pci_address_dev(bus, slot, func);
 	
 	printf("bus %d slot %d function %d offset 0x%x: %x\n", 
-		bus, slot, func, off, pci_read(bus, slot, func, off));
+		bus, slot, func, off, pci_config_inw(dev, off));
 }
 
 static void scan(int argc, char **argv) {
-	uint32_t bus, slot, i;
+	uint32_t bus, slot, func, dev, i;
 
-	if (argc != 3) {
-		printf("scan <bus> <slot>\n");
+	if (argc != 4) {
+		printf("scan <bus> <slot> <func>\n");
 		return;
 	}
 
 	bus = atoi(argv[1]);
 	slot = atoi(argv[2]);
+	func = atoi(argv[3]);
 
-	if (pci_read(bus, slot, 0, 0) == 0xFFFF) {
-		printf("bus %d slot %d: no such device\n", bus, slot);
+	dev = pci_address_dev(bus, slot, func);
+
+	if (!pci_check_dev(dev)) {
+		printf("bus %d slot %d func %d: no such device\n", bus, slot, func);
 		return;
 	}
 
 	for (i = 0; i < 16; i += 4) {
 		printf("0x%x: \t%x   \t%x\n", i, 
-			pci_read(bus, slot, 0, i + 2), pci_read(bus, slot, 0, i));
+			pci_config_inw(dev, i + 2), pci_config_inw(dev, i));
 	}
 }
 
@@ -161,4 +162,20 @@ static void ls(int argc, char **argv) {
 
 static void halt(int argc, char **argv) {
 	outb(0x64, 0xFE);
+}
+
+static void class(int argc, char **argv) {
+	uint8_t class;
+	uint32_t dev;
+
+	class = atoi(argv[1]);
+
+	dev = pci_find_class(class, 0);
+
+	if (dev) {
+		printf("found on bus %x\n", (dev >> 16) & 0xFF);
+	}
+	else {
+		printf("no match\n");
+	}
 }
