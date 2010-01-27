@@ -8,15 +8,20 @@
 #define PCI_VENDOR  	0x00
 #define PCI_DEVICE  	0x02
 #define PCI_COMMAND 	0x04
-#define PCI_STATUS		0x08
-#define PCI_REVISION	0x0A
-#define PCI_PROG_IF		0x0B
-#define PCI_SUBCLASS	0x0C
-#define PCI_CLASS		0x0D
+#define PCI_STATUS		0x06
+#define PCI_REVISION	0x08
+#define PCI_PROG_IF		0x09
+#define PCI_SUBCLASS	0x0A
+#define PCI_CLASS		0x0B
 
 /* Low Level Manipulation Functions */
 
 uint32_t pci_address_dev(uint8_t bus, uint8_t slot, uint8_t func);
+uint32_t pci_dev_triple(uint32_t dev);
+
+#define PCI_BUS(t)  ((t >> 16) & 0xFF)
+#define PCI_SLOT(t) ((t >> 11) & 0x1F)
+#define PCI_FUNC(t) ((t >> 8)  & 0x07)
 
 uint32_t pci_config_ind(uint32_t dev, uint8_t off);
 uint16_t pci_config_inw(uint32_t dev, uint8_t off);

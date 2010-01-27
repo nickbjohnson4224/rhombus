@@ -165,17 +165,42 @@ static void halt(int argc, char **argv) {
 }
 
 static void class(int argc, char **argv) {
-	uint8_t class;
+	uint8_t class, subclass;
 	uint32_t dev;
 
-	class = atoi(argv[1]);
+	switch (argc) {
+	case 2:
+		class = atoi(argv[1]);
+		dev = 0;
 
-	dev = pci_find_class(class, 0);
+		while (1) {
+			dev = pci_find_class(class, dev);
+			if (dev) {
+				printf("found at %x\n", dev);
+			}
+			else {
+				break;
+			}
+		}
 
-	if (dev) {
-		printf("found on bus %x\n", (dev >> 16) & 0xFF);
-	}
-	else {
-		printf("no match\n");
+		break;
+	case 3:
+		class = atoi(argv[1]);
+		subclass = atoi(argv[2]);
+		dev = 0;
+
+		while (1) {
+			dev = pci_find_subclass(class, subclass, dev);
+			if (dev) {
+				printf("found at %x\n", dev);
+			}
+			else {
+				break;
+			}
+		}
+
+		break;
+	default:
+		printf("class <class> | class <class> <sublclass>\n");
 	}
 }
