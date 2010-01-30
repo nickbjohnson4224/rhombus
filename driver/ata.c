@@ -4,8 +4,10 @@
 #include <flux.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <stdio.h>
 
 #include <driver/ata.h>
+#include <driver/pci.h>
 
 #define ATA0_IRQ 14
 #define ATA1_IRQ 15
@@ -42,12 +44,15 @@
 
 static void ata_init(device_t selector);
 static void ata_halt(void);
+
+static uint32_t dev;
 static uint16_t port;
 
 /*** Helper Routines ***/
 
 static void ata_reset(void) {
 	uint8_t astat;
+
 	astat = inb(port + ASTAT);
 	outb(port + ASTAT, astat | ASTAT_RESET);
 	outb(port + ASTAT, astat);
@@ -57,6 +62,17 @@ static void ata_select(int drive) {
 	
 }
 
+/*** Request Handlers ***/
+
+static void ata_read(uint32_t caller, struct request *req) {
+	printf("ATA: attempted read at %x size %x\n", req->fileoff[0], req->datasize);
+
+	req->format = REQ_WRITE;
+	tail(caller, SIG_REPLY, req); 
+}
+
+/*** Driver Interface ***/
+
 struct driver_interface ata = {
 	ata_init,
 	ata_halt,
@@ -64,13 +80,10 @@ struct driver_interface ata = {
 	NULL, 0,
 };
 
-static void ata_init(device_t selector) {
+static void ata_init(device_t dev) {
+	printf("ATA: initializing %x:%x.%x\n", dev.bus, dev.slot, dev.sub);
 
-	/* currently only supports ATA1 master */
-	rirq(ATA1_IRQ);
-	port = ATA1_BASE;
-
-	inb(port + RSTAT);
+	sigregister(SIG_READ, ata_read);
 }
 
 static void ata_halt(void) {

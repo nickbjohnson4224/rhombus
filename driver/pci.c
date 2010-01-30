@@ -4,7 +4,7 @@
 
 #include <driver/pci.h>
 
-uint32_t pci_address_dev(uint8_t bus, uint8_t slot, uint8_t func) {
+uint32_t pci_address(uint8_t bus, uint8_t slot, uint8_t func) {
 	uint32_t addr = 0x80000000;
 
 	addr |= ((uint32_t) bus) << 16;
@@ -14,112 +14,162 @@ uint32_t pci_address_dev(uint8_t bus, uint8_t slot, uint8_t func) {
 	return addr;
 }
 
-uint32_t pci_dev_triple(uint32_t dev) {
-	uint32_t triple = 0;
+device_t pci_to_dev(uint32_t pci) {
+	device_t dev;
 
-	triple |= (dev >> 16) & 0xFF;
-	triple <<= 8;
-	triple |= (dev >> 11) & 0x1F;
-	triple <<= 8;
-	triple |= (dev >> 8)  & 0x07;
+	dev.type = DEV_TYPE_PCI;
+	dev.bus  = (pci >> 16) & 0xFF;
+	dev.slot = (pci >> 11) & 0x1F;
+	dev.sub  = (pci >> 8)  & 0x07;
 
-	return triple;
+	return dev;
 }
 
-uint32_t pci_config_ind(uint32_t dev, uint8_t off) {
-	
-	dev |= off & 0xFC;
-	outd(0xCF8, dev);
+uint32_t dev_to_pci(device_t dev) {
+	uint32_t pci = 0x80000000;
+
+	pci |= (uint32_t) dev.bus  << 16;
+	pci |= (uint32_t) dev.slot << 11;
+	pci |= (uint32_t) dev.sub  << 8;
+
+	return pci;
+}
+
+uint32_t pci_config_ind(device_t dev, uint8_t off) {
+	uint32_t pci = dev_to_pci(dev);
+
+	printf("%x\n", pci);
+
+	pci |= off & 0xFC;
+	outd(0xCF8, pci);
 
 	return ind(0xCFC);
 }
 
-uint16_t pci_config_inw(uint32_t dev, uint8_t off) {
+uint16_t pci_config_inw(device_t dev, uint8_t off) {
+	uint32_t pci = dev_to_pci(dev);
 
-	dev |= off & 0xFC;
-	outd(0xCF8, dev);
+	pci |= off & 0xFC;
+	outd(0xCF8, pci);
 
 	return ((ind(0xCFC) >> ((off & 0x2) * 8)) & 0xFFFF);
 }
 
-uint8_t pci_config_inb(uint32_t dev, uint8_t off) {
+uint8_t pci_config_inb(device_t dev, uint8_t off) {
+	uint32_t pci = dev_to_pci(dev);
 	
-	dev |= off & 0xFC;
-	outd(0xCF8, dev);
+	pci |= off & 0xFC;
+	outd(0xCF8, pci);
 
 	return ((ind(0xCFC) >> ((off & 0x3) * 8)) & 0xFF);
 }
 
-int pci_check_dev(uint32_t dev) {
-	return (pci_config_ind(dev, 0) == 0xFFFFFFFF) ? 0 : 1;
+int pci_check(device_t dev) {
+	if (dev.type != DEV_TYPE_PCI) return 0;
+	return (pci_config_inw(dev, 0) == 0xFFFF) ? 0 : 1;
 }
 
-uint32_t pci_find_class(uint8_t class, uint32_t start) {
-	uint32_t bus, slot, func, dev, end;
+device_t pci_findb(uint8_t val, uint8_t off, device_t start) {
+	device_t dev;
 
-	if (!start) {
-		bus = 0;
-		slot = 0;
-		func = 0;
+	if (start.type != DEV_TYPE_PCI) {
+		dev.type = DEV_TYPE_PCI;
+		dev.bus  = 0;
+		dev.slot = 0;
+		dev.sub  = 0;
 	}
 	else {
-		bus  = (start >> 16) & 0xFF;
-		slot = (start >> 11) & 0x1F;
-		func = ((start >> 8) & 0x07) + 1;
+		dev = start;
+		dev.sub++;
 	}
 
-	while (pci_check_dev(pci_address_dev(bus, slot, func))) {
-	 while (pci_check_dev(pci_address_dev(bus, slot, func))) {
-	  while (pci_check_dev(pci_address_dev(bus, slot, func))) {
+	while (dev.bus < 8) {
+		while (dev.slot < 0x1F) {
+			while (pci_check(dev)) {
 
-		if (pci_config_inb(pci_address_dev(bus, slot, func), PCI_CLASS) == class) {
-			return pci_address_dev(bus, slot, func);
+				if (pci_config_inb(dev, off) == val) {
+					return dev;
+				}
+
+				dev.sub++;
+			}
+			dev.sub = 0;
+			dev.slot++;
 		}
-
-		func++;		
-	  }
-	  func = 0;
-	  slot++;
-	 }
-	 slot = 0;
-	 bus++;
+		dev.slot = 0;
+		dev.bus++;
 	}
 
-	return 0;
+	dev.type = -1;
+	return dev;
 }
 
-uint32_t pci_find_subclass(uint8_t class, uint8_t subclass, uint32_t start) {
-	uint32_t bus, slot, func, dev, end;
+device_t pci_findw(uint16_t val, uint8_t off, device_t start) {
+	device_t dev;
 
-	if (!start) {
-		bus = 0;
-		slot = 0;
-		func = 0;
+	if (start.type != DEV_TYPE_PCI) {
+		dev.type = DEV_TYPE_PCI;
+		dev.bus  = 0;
+		dev.slot = 0;
+		dev.sub  = 0;
 	}
 	else {
-		bus  = (start >> 16) & 0xFF;
-		slot = (start >> 11) & 0x1F;
-		func = ((start >> 8) & 0x07) + 1;
+		dev = start;
+		dev.sub++;
 	}
 
-	while (pci_check_dev(pci_address_dev(bus, slot, func))) {
-	 while (pci_check_dev(pci_address_dev(bus, slot, func))) {
-	  while (pci_check_dev(pci_address_dev(bus, slot, func))) {
+	while (pci_check(dev)) {
+		while (pci_check(dev)) {
+			while (pci_check(dev)) {
 
-		dev = pci_address_dev(bus, slot, func);
-		if (pci_config_inw(dev, PCI_SUBCLASS) == 
-				((uint32_t) class << 8) | (uint32_t) subclass) {
-			return dev;
+				if (pci_config_inw(dev, off) == val) {
+					return dev;
+				}
+
+				dev.sub++;
+			}
+			dev.sub = 0;
+			dev.slot++;
 		}
-
-		func++;		
-	  }
-	  func = 0;
-	  slot++;
-	 }
-	 slot = 0;
-	 bus++;
+		dev.slot = 0;
+		dev.bus++;
 	}
 
-	return 0;
+	dev.type = -1;
+	return dev;
+}
+
+device_t pci_findd(uint32_t val, uint8_t off, device_t start) {
+	device_t dev;
+
+	if (start.type != DEV_TYPE_PCI) {
+		dev.type = DEV_TYPE_PCI;
+		dev.bus  = 0;
+		dev.slot = 0;
+		dev.sub  = 0;
+	}
+	else {
+		dev = start;
+		dev.sub++;
+	}
+
+	while (pci_check(dev)) {
+		while (pci_check(dev)) {
+			while (pci_check(dev)) {
+
+				if (pci_config_ind(dev, off) == val) {
+					return dev;
+				}
+
+				dev.sub++;
+			}
+			dev.sub = 0;
+			dev.slot++;
+		}
+		dev.slot = 0;
+		dev.bus++;
+	}
+
+	dev.type = -1;
+	return dev;
 }

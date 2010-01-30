@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <config.h>
 #include <stdbool.h>
+#include <flux.h>
 
 #define MAXSIGNAL 256
 

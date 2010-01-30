@@ -20,44 +20,16 @@ void iodelay(uint32_t usec);
 
 /***** DEVICE DESCRIPTOR *****/
 
-/* 	device_t specifics:
- * 		bits 00-07: device number
- * 		bits 08-15: bus number
- * 		bits 16-23: device type
- * 		bits 24-30: bus type (0 - native, 1 - PCI)
- */
+typedef struct device {
+	uint8_t type;
+	uint8_t bus;
+	uint8_t slot;
+	uint8_t sub;
+} device_t;
 
-/* "native" (non-PCI) device numbers:
- * 0 - ATA controller 0
- * 1 - ATA controller 1
- * 2 - ATA controller 2
- * 3 - ATA controller 3
- * 4 - keyboard
- * 5 - VGA controller
- * 6 - floppy controller
- */
-
-/* device types:
- * 0 - keyboard input
- * 1 - mouse input
- * 2 - text/serial output
- * 3 - graphical output
- * 4 - floppy disk
- * 5 - ATA disk
- * 6 - SCSI disk
- * 7 - network device
- */
-
-typedef int32_t device_t;
-
-uint16_t dev_getdevice(device_t dev);
-uint16_t dev_getvendor(device_t dev);
-uint16_t dev_getclass(device_t dev);
-uint16_t dev_getiobase(device_t dev, int bar);
-uint16_t dev_getiolimit(device_t dev, int bar);
-uint16_t dev_getirqnum(device_t dev);
-uint16_t dev_getstatus(device_t dev);
-uint16_t dev_command(device_t dev, uint16_t command);
+#define DEV_TYPE_NATIVE	0
+#define DEV_TYPE_PCI	1
+#define DEV_TYPE_FREE	2
 
 /***** DRIVER INTERFACE STRUCTURE *****/ 
 

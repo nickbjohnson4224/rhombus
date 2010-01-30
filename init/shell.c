@@ -6,6 +6,8 @@
 
 #include <driver/pci.h>
 
+extern FILE *disk;
+
 /***** HELPER ROUTINES *****/
 
 static char *gets(char *buffer) {
@@ -44,6 +46,7 @@ static const char *cmdlist[] = {
 	"ls",
 	"halt",
 	"class",
+	"read",
 	NULL,
 };
 
@@ -78,7 +81,7 @@ void shell(void) {
 
 	char *pwd = "/";
 
-	printf("Flux 0.2a\n");
+	printf("\nLaunching Flux Init SHell\n");
 
 	while (1) {
 		printf("fish %s $ ", pwd);
@@ -107,7 +110,8 @@ static void echo(int argc, char **argv) {
 }
 
 static void pci(int argc, char **argv) {
-	uint32_t bus, slot, func, off, dev;
+	uint32_t bus, slot, func, off;
+	device_t dev;
 
 	if (argc != 5) {
 		printf("pci <bus> <slot> <function> <offset>\n");
@@ -119,14 +123,15 @@ static void pci(int argc, char **argv) {
 	slot = atoi(argv[2]);
 	off = atoi(argv[4]);
 
-	dev = pci_address_dev(bus, slot, func);
+	dev = pci_to_dev(pci_address(bus, slot, func));
 	
 	printf("bus %d slot %d function %d offset 0x%x: %x\n", 
 		bus, slot, func, off, pci_config_inw(dev, off));
 }
 
 static void scan(int argc, char **argv) {
-	uint32_t bus, slot, func, dev, i;
+	uint32_t bus, slot, func, i;
+	device_t dev;
 
 	if (argc != 4) {
 		printf("scan <bus> <slot> <func>\n");
@@ -137,9 +142,9 @@ static void scan(int argc, char **argv) {
 	slot = atoi(argv[2]);
 	func = atoi(argv[3]);
 
-	dev = pci_address_dev(bus, slot, func);
+	dev = pci_to_dev(pci_address(bus, slot, func));
 
-	if (!pci_check_dev(dev)) {
+	if (!pci_check(dev)) {
 		printf("bus %d slot %d func %d: no such device\n", bus, slot, func);
 		return;
 	}
@@ -166,17 +171,17 @@ static void halt(int argc, char **argv) {
 
 static void class(int argc, char **argv) {
 	uint8_t class, subclass;
-	uint32_t dev;
+	device_t dev;
 
 	switch (argc) {
 	case 2:
 		class = atoi(argv[1]);
-		dev = 0;
+		dev.type = -1;
 
 		while (1) {
-			dev = pci_find_class(class, dev);
-			if (dev) {
-				printf("found at %x\n", dev);
+			dev = pci_findb(class, PCI_CLASS, dev);
+			if (dev.type == DEV_TYPE_PCI) {
+				printf("found at %x:%x.%x\n", dev.bus, dev.slot, dev.sub);
 			}
 			else {
 				break;
@@ -187,12 +192,12 @@ static void class(int argc, char **argv) {
 	case 3:
 		class = atoi(argv[1]);
 		subclass = atoi(argv[2]);
-		dev = 0;
+		dev.type = -1;
 
 		while (1) {
-			dev = pci_find_subclass(class, subclass, dev);
-			if (dev) {
-				printf("found at %x\n", dev);
+			dev = pci_findw(CLASSCODE(class, subclass), PCI_CLASSCODE, dev);
+			if (dev.type != -1) {
+				printf("found at %x %x %x\n", dev.bus, dev.slot, dev.sub);
 			}
 			else {
 				break;
@@ -203,4 +208,19 @@ static void class(int argc, char **argv) {
 	default:
 		printf("class <class> | class <class> <sublclass>\n");
 	}
+}
+
+static void read(int argc, char **argv) {
+	size_t size;
+	char *buffer;
+
+	size = 42;
+
+	buffer = malloc(size + 1);
+	fread(buffer, sizeof(char), size, disk);
+
+	buffer[size] = '\0';
+	printf("read \"%s\"\n", buffer);
+
+	free(buffer);
 }

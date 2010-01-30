@@ -3,6 +3,8 @@
 #ifndef PCI_H
 #define PCI_H
 
+#include <driver.h>
+
 /* Configuration Space Layout */
 
 #define PCI_VENDOR  	0x00
@@ -11,31 +13,44 @@
 #define PCI_STATUS		0x06
 #define PCI_REVISION	0x08
 #define PCI_PROG_IF		0x09
+#define PCI_CLASSCODE	0x0A
 #define PCI_SUBCLASS	0x0A
 #define PCI_CLASS		0x0B
 
+#define PCI_HTYPE		0x0E
+
+#define PCI_BAR(n) 		(0x10 + ((n) << 2))
+#define PCI_BAR0		0x10
+#define PCI_BAR1		0x14
+#define PCI_BAR2		0x18
+#define PCI_BAR3		0x1C
+#define PCI_BAR4		0x20
+#define PCI_BAR5		0x24
+
 /* Low Level Manipulation Functions */
 
-uint32_t pci_address_dev(uint8_t bus, uint8_t slot, uint8_t func);
-uint32_t pci_dev_triple(uint32_t dev);
+uint32_t pci_address(uint8_t bus, uint8_t slot, uint8_t func);
 
-#define PCI_BUS(t)  ((t >> 16) & 0xFF)
-#define PCI_SLOT(t) ((t >> 11) & 0x1F)
-#define PCI_FUNC(t) ((t >> 8)  & 0x07)
+device_t pci_to_dev(uint32_t pci);
+uint32_t dev_to_pci(device_t dev);
 
-uint32_t pci_config_ind(uint32_t dev, uint8_t off);
-uint16_t pci_config_inw(uint32_t dev, uint8_t off);
-uint8_t  pci_config_inb(uint32_t dev, uint8_t off);
+uint32_t pci_config_ind(device_t dev, uint8_t off);
+uint16_t pci_config_inw(device_t dev, uint8_t off);
+uint8_t  pci_config_inb(device_t dev, uint8_t off);
 
-void pci_config_outd(uint32_t dev, uint8_t off, uint32_t val);
-void pci_config_outw(uint32_t dev, uint8_t off, uint16_t val);
-void pci_config_outb(uint32_t dev, uint8_t off, uint16_t val);
+void pci_config_outd(device_t dev, uint8_t off, uint32_t val);
+void pci_config_outw(device_t dev, uint8_t off, uint16_t val);
+void pci_config_outb(device_t dev, uint8_t off, uint16_t val);
 
 /* High Level Search Functions */
 
-int      pci_check_dev(uint32_t dev);
-uint32_t pci_find_class(uint8_t class, uint32_t start);
-uint32_t pci_find_subclass(uint8_t class, uint8_t subclass, uint32_t start);
+int      pci_check(device_t dev);
+
+device_t pci_findb(uint8_t  val, uint8_t off, device_t start);
+device_t pci_findw(uint16_t val, uint8_t off, device_t start);
+device_t pci_findd(uint32_t val, uint8_t off, device_t start);
+
+#define CLASSCODE(class, subclass) (((class) << 8) | (subclass))
 
 #define CLASS_UNKNOWN		0x00
 #define CLASS_STORAGE		0x01

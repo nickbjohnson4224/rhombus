@@ -14,12 +14,13 @@
 
 void console_init() {
 	int32_t pid;
+	device_t dev;
 
 	sighold(SIG_REPLY);
 
 	pid = fork();
 	if (pid < 0) {
-		terminal.init(0);
+		terminal.init(dev);
 		fire(-pid, SIG_REPLY, NULL);
 		block();
 		for(;;);
@@ -30,7 +31,7 @@ void console_init() {
 
 	pid = fork();
 	if (pid < 0) {
-		keyboard.init(0);
+		keyboard.init(dev);
 		fire(-pid, SIG_REPLY, NULL);
 		block();
 		for(;;);
