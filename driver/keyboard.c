@@ -59,7 +59,8 @@ static void keyboard_read (uint32_t caller, struct request *req) {
 		req->datasize = buffer_top;
 	}
 
-	memcpy(req->reqdata, (void*) buffer, sizeof(char) * req->datasize);
+	req->dataoff = STDOFF;
+	memcpy(&req->reqdata[req->dataoff - HDRSZ], (void*) buffer, req->datasize);
 	
 	if (req->datasize == buffer_top) {
 		buffer_top = 0;

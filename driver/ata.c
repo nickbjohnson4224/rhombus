@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <driver/ata.h>
 #include <driver/pci.h>
@@ -142,9 +143,9 @@ static void ata_read(uint32_t caller, struct request *req) {
 		req->resource >> 1, (req->resource & 1) ? "slave" : "master",
 		req->fileoff[0], req->datasize);
 
-	req->format = REQ_WRITE;
-	req->datasize = 1;
-	req->reqdata[0] = 'Q';
+	req->format  = REQ_WRITE;
+	req->dataoff = STDOFF;
+	memset(&req->reqdata[req->dataoff - HDRSZ], 'Q', req->datasize);
 	tail(caller, SIG_REPLY, req);
 }
 

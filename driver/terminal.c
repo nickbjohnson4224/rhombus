@@ -61,7 +61,7 @@ static void terminal_write(uint32_t caller, struct request *r) {
 	sigblock();
 
 	for (i = 0; i < r->datasize; i++) {
-		char_write(r->reqdata[i]);
+		char_write(r->reqdata[i + r->dataoff - HDRSZ]);
 	}
 
 	outb(0x3D4, 14);

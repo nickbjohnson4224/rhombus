@@ -10,7 +10,11 @@
 
 /*** Flux Request Protocol ***/
 
-#define REQSZ (PAGESZ - 32)
+#define HDRSZ 512
+#define REQSZ (PAGESZ - HDRSZ)
+
+#define MINOFF HDRSZ
+#define STDOFF 512
 
 struct request {
 	uint32_t checksum;			/* Checksum (bit parity) */

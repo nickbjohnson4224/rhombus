@@ -177,7 +177,7 @@ static void *_heap_valloc(size_t size) {
 	}
 	
 	addr = _HEAP_START + (idx * BLOCKSZ);
-	__mmap(addr, BLOCKSZ, MMAP_READ | MMAP_WRITE);
+	__mmap(addr, size - size % BLOCKSZ + BLOCKSZ, MMAP_READ | MMAP_WRITE);
 
 	return (void*) addr;
 }

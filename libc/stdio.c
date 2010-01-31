@@ -41,7 +41,7 @@ static size_t read(void *ptr, size_t size, FILE *stream) {
 
 		res = sigpull(SIG_REPLY);
 
-		memcpy(data, res->reqdata, res->datasize);
+		memcpy(data, &res->reqdata[res->dataoff - HDRSZ], res->datasize);
 
 		data = &data[res->datasize];
 		size -= res->datasize;
@@ -75,14 +75,14 @@ static size_t write(const void *ptr, size_t size, FILE *stream) {
 		req->resource = stream->resource;
 		req->datasize = datasize;
 		req->transid  = i;
-		req->dataoff  = 0;
+		req->dataoff  = STDOFF;
 		req->format   = REQ_WRITE;
 		req->fileoff[0] = stream->position;
 		req->fileoff[1] = 0;
 		req->fileoff[2] = 0;
 		req->fileoff[3] = 0;
 
-		memcpy(req->reqdata, data, datasize);
+		memcpy(&req->reqdata[req->dataoff - HDRSZ], data, datasize);
 
 		fire(stream->target, stream->wport, req_checksum(req));
 
