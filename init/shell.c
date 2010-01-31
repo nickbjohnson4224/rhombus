@@ -37,6 +37,8 @@ static void cd(int argc, char **argv);
 static void ls(int argc, char **argv);
 static void halt(int argc, char **argv);
 static void class(int argc, char **argv);
+static void read(int argc, char **argv);
+static void bar(int argc, char **argv);
 
 static const char *cmdlist[] = {
 	"echo",
@@ -47,6 +49,7 @@ static const char *cmdlist[] = {
 	"halt",
 	"class",
 	"read",
+	"bar",
 	NULL,
 };
 
@@ -58,6 +61,8 @@ static void (*cmd[])(int, char**) = {
 	ls,
 	halt,
 	class,
+	read,
+	bar,
 };
 
 static int vexec(char *name, int argc, char **argv) {
@@ -214,7 +219,9 @@ static void read(int argc, char **argv) {
 	size_t size;
 	char *buffer;
 
-	size = 42;
+	if (argc <= 1) return;
+
+	size = atoi(argv[1]);
 
 	buffer = malloc(size + 1);
 	fread(buffer, sizeof(char), size, disk);
@@ -223,4 +230,23 @@ static void read(int argc, char **argv) {
 	printf("read \"%s\"\n", buffer);
 
 	free(buffer);
+}
+
+static void bar(int argc, char **argv) {
+	device_t dev;
+	int i;
+
+	if (argc != 4) {
+		printf("bar <bus> <slot> <func>\n");	
+		return;
+	}
+
+	dev.type = DEV_TYPE_PCI;
+	dev.bus  = atoi(argv[1]);
+	dev.slot = atoi(argv[2]);
+	dev.sub  = atoi(argv[3]);
+
+	for (i = 0; i < 6; i++) {
+		printf("BAR %d: %x\n", i, pci_config_ind(dev, PCI_BAR(i)));
+	}
 }

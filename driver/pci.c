@@ -1,6 +1,5 @@
 #include <driver.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #include <driver/pci.h>
 
@@ -37,8 +36,6 @@ uint32_t dev_to_pci(device_t dev) {
 
 uint32_t pci_config_ind(device_t dev, uint8_t off) {
 	uint32_t pci = dev_to_pci(dev);
-
-	printf("%x\n", pci);
 
 	pci |= off & 0xFC;
 	outd(0xCF8, pci);
@@ -172,4 +169,26 @@ device_t pci_findd(uint32_t val, uint8_t off, device_t start) {
 
 	dev.type = -1;
 	return dev;
+}
+
+uint32_t pci_config_barbase(device_t dev, uint8_t index) {
+	uint32_t bar = pci_config_ind(dev, PCI_BAR(index));
+
+	if (bar & 0x1) {
+		return (bar & ~0x3);
+	}
+	else {
+		return (bar & ~0xF);
+	}
+}
+
+uint32_t pci_config_bartype(device_t dev, uint8_t index) {
+	uint32_t bar = pci_config_ind(dev, PCI_BAR(index));
+
+	if (bar & 0x1) {
+		return (bar & 0x1);
+	}
+	else {
+		return (bar & 0x7);
+	}
 }

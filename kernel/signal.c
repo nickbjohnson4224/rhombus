@@ -58,12 +58,7 @@ image_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 	dst_t->image[1].flags = dst_t->flags;
 
 	/* Modify flags */
-	if (dst_t->flags & CTRL_CBLOCK) {
-		dst_t->flags |= CTRL_BLOCK;
-	}
-	else {
-		dst_t->flags &= ~CTRL_BLOCK;
-	}
+	dst_t->flags &= ~CTRL_BLOCK;
 
 	if (dst_t->flags & CTRL_CCLEAR) {
 		dst_t->flags ^= CTRL_CLEAR;

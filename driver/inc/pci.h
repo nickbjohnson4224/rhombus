@@ -27,6 +27,9 @@
 #define PCI_BAR4		0x20
 #define PCI_BAR5		0x24
 
+#define PCI_INTLINE		0x3C
+#define PCI_INTPIN		0x3D
+
 /* Low Level Manipulation Functions */
 
 uint32_t pci_address(uint8_t bus, uint8_t slot, uint8_t func);
@@ -41,6 +44,9 @@ uint8_t  pci_config_inb(device_t dev, uint8_t off);
 void pci_config_outd(device_t dev, uint8_t off, uint32_t val);
 void pci_config_outw(device_t dev, uint8_t off, uint16_t val);
 void pci_config_outb(device_t dev, uint8_t off, uint16_t val);
+
+uint32_t pci_config_barbase(device_t dev, uint8_t index);
+uint32_t pci_config_bartype(device_t dev, uint8_t index);
 
 /* High Level Search Functions */
 

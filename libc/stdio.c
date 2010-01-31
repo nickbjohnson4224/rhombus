@@ -45,6 +45,7 @@ static size_t read(void *ptr, size_t size, FILE *stream) {
 
 		data = &data[res->datasize];
 		size -= res->datasize;
+		stream->position += res->datasize;
 		req_free(res);
 
 		i++;
