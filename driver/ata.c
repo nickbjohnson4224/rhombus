@@ -65,22 +65,21 @@
 #define CTRL_HIGHBYTE		0x80
 
 #define ID_TYPE				0x00
-#define ID_CYLINDERS		0x02
-#define ID_HEADS			0x06
-#define ID_SECTORS			0x0C
-#define ID_SERIAL			0x14
-#define ID_MODEL			0x36
-#define ID_CAPABILITIES		0x62
-#define ID_FIELDVALID		0x6A
-#define ID_MAX_LBA			0x78
-#define ID_COMMANDSETS		0xA4
-#define ID_MAX_LBA_EXT		0xC8
+#define ID_CYLINDERS		0x01
+#define ID_HEADS			0x03
+#define ID_SECTORS			0x06
+#define ID_SERIAL			0x0A
+#define ID_MODEL			0x1B
+#define ID_CAPABILITIES		0x31
+#define ID_FIELDVALID		0x35
+#define ID_MAX_LBA			0x3C
+#define ID_COMMANDSETS		0x52
+#define ID_MAX_LBA_EXT		0x64
 
 #define FLAG_EXIST			0x01
 #define FLAG_DMA			0x02
 #define FLAG_ATAPI			0x04
-#define FLAG_LBA			0x08
-#define FLAG_LONG			0x10
+#define FLAG_LONG			0x08
 
 static void ata_init(device_t selector);
 static void ata_halt(void);
@@ -91,13 +90,12 @@ static device_t ata_controller;
 
 static struct drive {
 	uint8_t  flags; /* see FLAG_* */
-	uint8_t  index; /* bit 0 - master/slave; bit 1 - primary/secondary */
 	uint16_t signature;
 	uint16_t capabilities;
 	uint16_t commandsets;
 	uint32_t size[2];
 	char model[41];
-} drives[4];
+} drive[4];
 
 static uint32_t dev;
 
@@ -132,6 +130,11 @@ static void sleep400(uint8_t drive) {
 	inb(ata_ctrl[CHANNEL(drive)] + REG_ALTSTATUS);
 }
 
+static void select(uint8_t drive) {
+	ata_out(drive, REG_HDDEVSEL, (SELECTOR(drive)) ? 0xB0 : 0xA0);
+	sleep400(drive);
+}
+
 /*** High Level I/O Routines ***/
 
 static uint8_t *get_block(uint8_t drive, uint32_t off);
@@ -159,6 +162,11 @@ struct driver_interface ata = {
 };
 
 static void ata_init(device_t dev) {
+	size_t i, j;
+	uint8_t err, status, cl, ch;
+	uint16_t c;
+	uint16_t buffer[256];
+
 	printf("ATA: initializing %x:%x.%x\n", dev.bus, dev.slot, dev.sub);
 
 	ata_controller = dev;
@@ -177,10 +185,99 @@ static void ata_init(device_t dev) {
 	if (!ata_base[1]) ata_base[1] = 0x170;
 	if (!ata_ctrl[1]) ata_ctrl[1] = 0x374;
 
+	/* reset drives */
+	ata_out(ATA0_MASTER, REG_CONTROL, CTRL_RESET);
+	ata_out(ATA0_MASTER, REG_CONTROL, 0);
+	
 	/* disable controller IRQs */
 	ata_out(ATA0_MASTER, REG_CONTROL, CTRL_NEIN);
 	ata_out(ATA1_MASTER, REG_CONTROL, CTRL_NEIN);
 
+
+	/* detect ATA drives */
+	for (i = 0; i < 4; i++) {
+		select(i);
+		drive[i].flags = 0;
+
+		/* send IDENTIFY command */
+		ata_out(i, REG_COMMAND, CMD_IDENTIFY);
+		sleep400(i);
+
+		/* read status */
+		status = ata_in(i, REG_STATUS);
+
+		/* check for drive response */
+		if (!status) {
+			continue;
+		}
+		else {
+			drive[i].flags |= FLAG_EXIST;
+		}
+
+		/* poll for response */
+		while (1) {
+			status = ata_in(i, REG_STATUS);
+			if (status & STAT_ERROR) {
+				err = 1;
+				break;
+			}
+			if (!(status & STAT_BUSY) && (status & STAT_DATAREQ)) {
+				err = 0;
+				break;
+			}
+		}
+
+		/* try to catch ATAPI devices */
+		if (err) {
+			cl = ata_in(i, REG_LBA1);
+			ch = ata_in(i, REG_LBA2);
+			c = cl | (ch << 8);
+
+			if (c == 0xEB14 || c == 0x9669) {
+				drive[i].flags |= FLAG_ATAPI;
+			}
+			else {
+				drive[i].flags = 0;
+				continue;
+			}
+
+			ata_out(i, REG_COMMAND, CMD_IDENTIFY_PACKET);
+			sleep400(i);
+		}
+
+		/* read in IDENTIFY space */
+		for (j = 0; j < 256; j++) {
+			buffer[j] = inw(ata_base[CHANNEL(i)] + REG_DATA);
+		}
+
+		drive[i].signature    = *((uint16_t*) &buffer[ID_TYPE]);
+		drive[i].capabilities = *((uint16_t*) &buffer[ID_CAPABILITIES]);
+		drive[i].commandsets  = *((uint32_t*) &buffer[ID_COMMANDSETS]);
+
+		if (drive[i].commandsets & (1 << 26)) {
+			drive[i].flags |= FLAG_LONG;
+			drive[i].size[0] = *((uint32_t*) &buffer[ID_MAX_LBA_EXT]);
+			drive[i].size[1] = *((uint16_t*) &buffer[ID_MAX_LBA_EXT + 4]);
+		}
+		else {
+			drive[i].size[0] = *((uint32_t*) &buffer[ID_MAX_LBA]);
+			drive[i].size[1] = 0;
+		}
+
+		for (j = 0; j < 40; j += 2) {
+			drive[i].model[j]   = buffer[ID_MODEL + (j / 2)] >> 8;
+			drive[i].model[j+1] = buffer[ID_MODEL + (j / 2)] & 0xFF;
+		}
+		drive[i].model[40] = '\0';
+
+		printf("found drive %d: ", i);
+		printf((drive[i].flags & FLAG_LONG) ? "LBA48 " : "LBA28 ");
+		printf((drive[i].flags & FLAG_ATAPI) ? "ATAPI " : "ATA ");
+		printf("model %s ", drive[i].model);
+		printf("\n");
+	}
+
+	/* register interface handler */
 	sigregister(SIG_READ, ata_read);
 }
 
