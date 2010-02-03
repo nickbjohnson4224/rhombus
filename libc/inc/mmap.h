@@ -14,5 +14,6 @@
 int mmap(void *addr, size_t length, int prot);
 int umap(void *addr, size_t length);
 int emap(void *addr, uint32_t frame, int prot);
+uintptr_t pmap(void *addr, int prot);
 
 #endif/*MMAP_H*/

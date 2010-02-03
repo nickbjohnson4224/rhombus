@@ -12,3 +12,7 @@ int umap(void *addr, size_t length) {
 int emap(void *addr, uint32_t frame, int prot) {
 	return __emap((uint32_t) addr, frame, prot);
 }
+
+uintptr_t pmap(void *addr, int prot) {
+	return __pmap((uint32_t) addr, prot);
+}
