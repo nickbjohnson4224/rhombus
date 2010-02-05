@@ -1,0 +1,203 @@
+Flux Operating System 0.2a
+User Manual Section 3 - API
+==============================
+
+Contents:
+==============================
+1 - Overview
+2 - Process Control
+3 - Memory Management
+4 - Interprocess Communication
+5 - Request Protocol
+6 - Driver API
+
+1 - Overview
+==============================
+The Flux API provides a C interface to the functionality of the Flux system.
+This includes process control, low level memory management, interprocess
+communication, and driver interfaces, as well as constants that are necessary
+for their use. The Flux API is implemented in the system C library alongside 
+standard functions, and provides the header file <flux.h> for access to these 
+functions.
+
+2 - Process Control
+==============================
+These API functions have the same behavior as their underlying system calls. 
+The only change is the interface through C:
+
+int32_t fork(void);
+------------------------------
+- takes no arguments
+- returns either
+	- 0 on failure
+	- positive of child PID if parent
+	- negative of parent PID if child
+- creates a new process from the current one
+	- same memory contents
+	- same process flags
+	- new PID and address space
+
+void exit(req_t *msg);
+------------------------------
+- takes one argument
+	- req_t *msg: exit request
+- does not return
+- destroys current process
+- sends signal to parent
+	- sig 7: SSIG_DEATH
+	- exit request sent with signal
+
+uint32_t ctrl(uint32_t flags, uint32_t mask);
+------------------------------
+- takes two arguments
+	- uint32_t flags: flag values
+	- uint32_t mask: flag bits to be changed
+- returns resulting flag values
+- sets flags marked in mask to values in flags
+- currently assigned flags
+	- bit 0: 		CTRL_BLOCK: block scheduling
+	- bit 1: 		CTRL_CLEAR: block signals (name? think x86 CLI)
+	- bit 2: 		CTRL_ENTER: signal on reentry
+	- bit 3: 		CTRL_SUPER: super (super only)
+	- bit 4: 		CTRL_PORTS: port i/o (super only)
+	- bit 5: 		CTRL_IRQRD: set irq redirect (super only)
+	- bit 6: 		CTRL_FLOAT: use FPU/SSE extensions
+	- bit 7: 		CTRL_RNICE: change scheduling priority
+	- bits 8-11: 	scheduling priority (bit 8 super only)
+	- bit 12: 		CTRL_CBLOCK: clear CTRL_BLOCK when catching signal
+	- bit 13:		CTRL_CCLEAR: set CTRL_CLEAR when catching signal
+	- bits 14-15:	unassigned
+	- bit 16:		CTRL_DBLOCK: clear CTRL_BLOCK when dropping
+	- bit 17:		CTRL_DCLEAR: set CTRL_CLEAR when dropping
+	- bits 18-19:	unassigned
+	- bit 20:		CTRL_ASYNC: signals run as separate threads
+	- bit 21:		CTRL_MULTI: enable multiple processors
+	- bit 22:		CTRL_QUEUE: queue signals if possible in kernel
+	- bit 23:		CTRL_MMCLR:	clear mapped pages (super only)
+	- bits 24-31: 	irq number (super only)
+
+uint32_t info(uint32_t selector);
+------------------------------
+- takes one argument
+	- uint32_t selector
+- returns requested data
+	- all ones on error
+- assigned selectors
+	- 0: 	INFO_CPID:	current PID
+	- 1: 	INFO_PPID:	parent PID
+	- 2: 	INFO_TICK:	ticks elapsed
+	- 3: 	INFO_ABIV:	kernel abi version
+	- 4: 	INFO_USER:	highest user address
+	- 5: 	INFO_CTRL:	enabled ctrl flags
+	- 6: 	INFO_MMAP:	enabled mmap flags
+	- 7: 	INFO_ARCH:	architecture ID
+		- 0: 	unknown
+		- 1: 	x86-32
+		- 2: 	x86-64
+	- 8: 	INFO_PAGE:	page size
+	- 9: 	INFO_CPUN:	number of logical CPUs
+	- 10:	INFO_LOAD:	system load
+
+3 - Memory Management
+==============================
+
+4 - Interprocess Communication
+==============================
+
+5 - Request Protocol
+==============================
+The Flux Standard Request Protocol (FRP) is a single header format used for
+all I/O requests. It takes up exactly 32 bytes, but any extension forming a
+superset of it may take up to 512 bytes. Because of the way that signals use
+the paging system, the total amount of space in the header and data areas is
+exactly the system page size (4096 bytes on the x86). It may be used over a
+network; however, it does not use network byte order, and instead uses *only*
+the byte order used on the local machine.
+
+This is the definition of the header in C:
+
+struct request {
+	uint32_t checksum;			/* Checksum (bit parity) */
+	uint32_t resource;			/* Resource ID */
+	uint16_t datasize;			/* Size of request data */
+	uint16_t transid;			/* Transaction ID */
+	uint16_t dataoff;			/* Offset of request data */
+	uint16_t format;			/* Header format */
+	uint32_t fileoff[4];		/* File offset */
+};
+
+It is guaranteed to be defined both as the struct request and the typedef req_t.
+Request structures, with associated data area, may be allocated only using the
+function req_alloc(), and freed only using the function req_free(). To turn a
+grant pointer given by a signal into a request, use the function req_catch().
+
+req_t *req_alloc(void);
+------------------------------
+- takes no arguments
+- returns a pointer to a request structure
+- guaranteed to allocate exactly one page
+- result is suitable for sending via signals
+
+void req_free(req_t *r);
+------------------------------
+- takes one argument
+	- req_t *r: request to be freed
+- returns nothing
+- request memory is still valid until next memory allocation
+
+req_t *req_catch(void *grant);
+------------------------------
+- takes one argument
+	- void *grant: grant pointer from signal
+- returns a pointer to a request structure from the grant pointer
+- result is suitable for sending via signals
+
+Each individual field is now to be discussed:
+
+uint32_t checksum
+------------------------------
+A 4 byte unsigned integer that represents the original parity of each bit when
+the entire request (header and data minus the checksum field itself) is
+interpreted as an array of 4 byte unsigned integers. If each element of this array
+interpretation is exclusive-or'ed together, the result should therefore be 0
+if no corruption has occurred.
+
+uint32_t resource
+------------------------------
+An integer representing some subset of the target driver. This corresponds to
+inodes for filesystems, drives for ATA controllers, individual pipes, etc.
+
+uint16_t datasize
+------------------------------
+If format is REQ_READ, this is the requested number of bytes to be read and
+returned by a request. If format is REQ_WRITE, this is the size of the data
+buffer sent by the request.
+
+uint16_t transid
+------------------------------
+An integer representing the ID of the transaction this request represents.
+This ID is arbitrary for the initial sender, but must be echoed by any process
+that recieves and reroutes or replies to it.
+
+uint16_t dataoff
+------------------------------
+An integer offset from the beginning of the beginning of the request header
+that represents the beginning of the data buffer. The value of STDOFF is
+guaranteed to be a valid value for this field.
+
+uint16_t format
+------------------------------
+An integer representing the type of header the request is using. There are two
+accepted valued for this, REQ_READ and REQ_WRITE, which should be obvious. All
+other values represent non-standard header formats, that are guaranteed to be
+supersets of the standard header format. 
+
+uint32_t fileoff[4]
+------------------------------
+A 128 bit little endian integer representing the offset within a resource of a 
+driver. This is usually a simple offset, but sometimes can refer to another level 
+of multiplexing, like the IP address for a network driver.
+
+6 - Driver API
+==============================
+
