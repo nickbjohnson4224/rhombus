@@ -22,7 +22,7 @@ void disk_init(void) {
 	if (pid < 0) {
 		ata.init(dev);
 		fire(-pid, SIG_REPLY, NULL);
-		block();
+/*		block(true); */
 		for(;;);
 	}
 

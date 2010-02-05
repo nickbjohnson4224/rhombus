@@ -5,8 +5,8 @@
 #include <string.h>
 #include <stdbool.h>
 #include <config.h>
-#include <signal.h>
 #include <_libc.h>
+#include <stdio.h>
 
 /* abmalloc - The AfterBurner Memory Allocator
  * Copyright 2009 Nick Johnson
@@ -250,7 +250,9 @@ void _heap_free(void *ptr) {
 
 	slab_free(s, ptr);
 
-	if (s->refc == 0) {
+	/* XXX - Major bug in following block; infinite loop can occur */
+
+/*	if (s->refc == 0) {
 		bidx = s->esize / sizeof(void*);
 		x = bucket[bidx];
 		if (x == s) {
@@ -266,7 +268,7 @@ void _heap_free(void *ptr) {
 			}
 		}
 		del_slab(s);
-	}
+	} */
 }
 
 size_t _heap_size(void *ptr) {

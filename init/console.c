@@ -22,22 +22,21 @@ void console_init() {
 	if (pid < 0) {
 		terminal.init(dev);
 		fire(-pid, SIG_REPLY, NULL);
-		block();
+		block(true);
 		for(;;);
 	}
-
 	stdout = fsetup(pid, 0, "a");
-	sigpull(SIG_REPLY);
 
 	pid = fork();
 	if (pid < 0) {
 		keyboard.init(dev);
 		fire(-pid, SIG_REPLY, NULL);
-		block();
+		block(true);
 		for(;;);
 	}
-
 	stdin = fsetup(pid, 0, "r");
+
+	sigpull(SIG_REPLY);
 	sigpull(SIG_REPLY);
 
 	sigfree(SIG_REPLY);

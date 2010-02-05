@@ -9,7 +9,7 @@ AR := /usr/flux-cross/bin/i586-elf-ar
 AS := nasm
 PP := /usr/flux-cross/bin/i586-elf-cpp
 
-CFLAGS	:= -pipe -Wall -Werror -Wextra -pedantic
+CFLAGS	:= -pipe -Wall -Werror -Wextra -pedantic -std=c99
 CFLAGS	+= -Wpointer-arith -Wcast-align -Wwrite-strings
 CFLAGS	+= -Wno-unused-parameter
 CFLAGS	+= -O3 -fomit-frame-pointer

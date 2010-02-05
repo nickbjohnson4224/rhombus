@@ -1,9 +1,7 @@
 /* Copyright 2010 Nick Johnson */
 
-#include <driver.h>
 #include <flux.h>
 #include <stdlib.h>
-#include <signal.h>
 #include <mmap.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -13,20 +11,31 @@
 #include <driver/ata.h>
 #include <driver/pci.h>
 
+/* configuration flags */
+#define ATACONF_ATAPI		/* Support ATAPI commands */
+/*#define ATACONF_DMA  */	/* Use DMA if possible */
+/*#define ATACONF_LONG */	/* Enable 48 bit LBAs */
+/*#define ATACONF_IRQ  */	/* Use IRQs instead of polling */
+ 
+/* size of a single sector */
 #define SECTSIZE			0x200
 
+/* controllers */
 #define ATA0				0x00
 #define ATA1				0x02
 
+/* drives */
 #define ATA00				0x00
 #define ATA01				0x01
 #define ATA10				0x02
 #define ATA11				0x03
 
+/* drive selector */
 #define SEL(d) ((d) & 1)
 #define MASTER				0
 #define SLAVE				1
 
+/* ATA base registers */
 #define REG_DATA			0x00
 #define REG_ERR				0x01
 #define REG_FEATURE			0x01
@@ -42,13 +51,16 @@
 #define REG_LBA4			0x0A
 #define REG_LBA5			0x0B
 
+/* ATA control register */
 #define REG_CTRL			0x02
 #define REG_ASTAT			0x02
 
+/* ATA DMA registers */
 #define REG_DMA_CMD			0x00
 #define REG_DMA_STAT		0x02
 #define REG_DMA_ADDR		0x04
 
+/* ATA/ATAPI commands */
 #define CMD_READ_PIO		0x20
 #define CMD_READ_PIO48		0x24
 #define CMD_READ_DMA		0xC8
@@ -65,6 +77,7 @@
 #define CMD_EJECT_ATAPI		0x1B
 #define CMD_ATAPI			0xA0
 
+/* ATA status bits */
 #define STAT_ERROR			0x01
 #define STAT_DRQ			0x08
 #define STAT_SERVICE		0x10
@@ -72,10 +85,12 @@
 #define STAT_READY			0x40
 #define STAT_BUSY			0x80
 
+/* ATA control bits */
 #define CTRL_NEIN			0x02
 #define CTRL_RESET			0x04
 #define CTRL_HBYTE			0x80
 
+/* ATA IDENTIFY offsets */
 #define ID_TYPE				0x00
 #define ID_SERIAL			0x0A
 #define ID_MODEL			0x1B
@@ -85,6 +100,7 @@
 #define ID_CMDSET			0x52
 #define ID_MAX_LBA48		0x64
 
+/* ATA DMA commands */
 #define DMA_CMD_RUN			0x01
 #define DMA_CMD_RW			0x08
 #define DMA_STAT_READY		0x01
@@ -93,6 +109,7 @@
 #define DMA_STAT_MDMA		0x20
 #define DMA_STAT_SDMA		0x40
 
+/* drive structure flags */
 #define FLAG_EXIST			0x01
 #define FLAG_DMA			0x02
 #define FLAG_ATAPI			0x04
@@ -103,19 +120,20 @@ static void ata_halt(void);
 
 /*** Device Information ***/
 
+/* ATA controller managed by this driver */
 static device_t ata_controller;
 
+/* drive information structure */
 static struct drive {
-	uint8_t  flags; /* see FLAG_* */
+	uint8_t  flags;			 /* see FLAG_* */
 	uint16_t signature;
 	uint16_t capabilities;
 	uint16_t commandsets;
-	uint32_t size[2];
-	char     model[41];
+	uint32_t size[2];		/* size in sectors of the entire drive */
+	char     model[41];		/* model name as reported by IDENTIFY */
 } drive[4];
 
-static uint32_t dev;
-
+/* I/O port BARs and IRQs */
 static uint16_t ata_base[4];
 static uint16_t ata_ctrl[4];
 static uint16_t ata_dma [4];
@@ -137,20 +155,26 @@ static void select(uint8_t drive) {
 	sleep400(drive);
 }
 
-/*** PIO ***/
+/*** Port I/O (slow, use DMA if possible) ***/
 
 static void pio_read_sector(uint8_t drive, uint32_t sector, uint16_t *buffer) {
 	size_t i;
 	uint8_t err;
 	uint8_t lba[3], head;
 
+	/* must not be interrupted */
+	sigblock(true);
+
+	/* format LBA bytes from sector index */
 	lba[0] = (sector >> 0)  & 0xFF;
 	lba[1] = (sector >> 8)  & 0xFF;
 	lba[2] = (sector >> 16) & 0xFF;
 	head   = (sector >> 24) & 0xF;
 
+	/* wait for drive to be ready */
 	while (inb(ata_base[drive] + REG_STAT) & STAT_BUSY);
 
+	/* select drive, send LBA, and send read command */
 	outb(ata_base[drive] + REG_SELECT, (SEL(drive) ? 0xF0 : 0xE0) | head);
 	outb(ata_base[drive] + REG_COUNT0, 0x01);
 	outb(ata_base[drive] + REG_LBA0, lba[0]);
@@ -158,11 +182,14 @@ static void pio_read_sector(uint8_t drive, uint32_t sector, uint16_t *buffer) {
 	outb(ata_base[drive] + REG_LBA2, lba[2]);
 	outb(ata_base[drive] + REG_CMD, CMD_READ_PIO);
 
+	/* read in one sector of words */
 	for (i = 0; i < SECTSIZE / sizeof(uint16_t); i++) {
 		sleep400(drive);
 		while (inb(ata_base[drive] + REG_STAT) & STAT_BUSY);
 		buffer[i] = inw(ata_base[drive] + REG_DATA);
 	}
+
+	sigblock(false);
 }
 
 static void pio_write_sector(uint8_t drive, uint32_t sector, uint16_t *buffer) {
@@ -170,13 +197,19 @@ static void pio_write_sector(uint8_t drive, uint32_t sector, uint16_t *buffer) {
 	uint8_t err;
 	uint8_t lba[3], head;
 
+	/* must not be interrupted */
+	sigblock(true);
+
+	/* format LBA bytes from sector index */
 	lba[0] = (sector >> 0)  & 0xFF;
 	lba[1] = (sector >> 8)  & 0xFF;
 	lba[2] = (sector >> 16) & 0xFF;
 	head   = (sector >> 24) & 0xF;
 
+	/* wait for drive to be ready */
 	while (inb(ata_base[drive] + REG_STAT) & STAT_BUSY);
 
+	/* select drive, send LBA, and send write command */
 	outb(ata_base[drive] + REG_SELECT, (SEL(drive) ? 0xF0 : 0xE0) | head);
 	outb(ata_base[drive] + REG_COUNT0, 0x01);
 	outb(ata_base[drive] + REG_LBA0, lba[0]);
@@ -184,19 +217,25 @@ static void pio_write_sector(uint8_t drive, uint32_t sector, uint16_t *buffer) {
 	outb(ata_base[drive] + REG_LBA2, lba[2]);
 	outb(ata_base[drive] + REG_CMD, CMD_WRITE_PIO);
 
+	/* write one sector of words */
 	for (i = 0; i < SECTSIZE / sizeof(uint16_t); i++) {
 		sleep400(drive);
 		while (inb(ata_base[drive] + REG_STAT) & STAT_BUSY);
 		outw(ata_base[drive] + REG_DATA, buffer[i]);
 	}
 
+	/* flush write cache */
 	outb(ata_base[drive] + REG_CMD, CMD_CACHE_FLUSH);
 	while (inb(ata_base[drive] + REG_STAT) & STAT_BUSY);
+
+	sigblock(false);
 }
 
 /*** DMA ***/
 
-/*static uint32_t *ata_prdt[4];
+#ifdef ATACONF_DMA
+
+static uint32_t *ata_prdt[4];
 static uintptr_t ata_prdt_phys[4];
 static uint8_t  *ata_buff[4];
 static uintptr_t ata_buff_phys[4];
@@ -228,31 +267,38 @@ static void dma_init(void) {
 }
 
 static void dma_read_sector28(uint8_t drive, uint32_t sector);
-static void dma_write_sector28(uint8_t drive, uint32_t sector); */
+static void dma_write_sector28(uint8_t drive, uint32_t sector);
+
+#endif
 
 /*** Request Handlers ***/
 
-static void ata_read(uint32_t caller, struct request *req) {
+static void ata_read(uint32_t caller, req_t *req) {
 	uint32_t sector, size, offset;
 	uint8_t dr;
 
-	if (!req) tail(caller, SIG_ERROR, NULL);
+	/* reject bad requests */
+	if (!req_check(req)) tail(caller, SIG_ERROR, NULL);
 
+	/* calculate command */
 	dr = req->resource;
 	offset = req->fileoff[0] % SECTSIZE;
 	sector = req->fileoff[0] - offset;
 	size = (req->datasize + offset > SECTSIZE) ? SECTSIZE - offset : req->datasize;
 
-	if (!(drive[dr].flags & FLAG_EXIST)) {
+	/* reject requests to nonexistent drives */
+	if (dr > 4 || !(drive[dr].flags & FLAG_EXIST)) {
 		tail(caller, SIG_ERROR, NULL);
 	}
 
-	pio_read_sector(dr, sector, (uint16_t*) &req->reqdata[STDOFF - HDRSZ]);
+	/* do read command */
+	req_setbuf(req, STDOFF, size);
+	pio_read_sector(dr, sector, (uint16_t*) req_getbuf(req));
+	req_setbuf(req, STDOFF + offset, size);
 
-	req->format   = REQ_WRITE;
-	req->dataoff  = STDOFF + offset;
-	req->datasize = size;
-	tail(caller, SIG_REPLY, req);
+	/* send reply */
+	req->format = REQ_WRITE;
+	tail(caller, SIG_REPLY, req_cksum(req));
 }
 
 static void ata_write(uint32_t caller, struct request *req) {
@@ -260,29 +306,31 @@ static void ata_write(uint32_t caller, struct request *req) {
 	uint8_t *buffer;
 	uint8_t dr;
 
-	if (!req) tail(caller, SIG_ERROR, NULL);
+	/* reject bad requests */
+	if (!req_check(req)) tail(caller, SIG_ERROR, NULL);
 
+	/* calculate command */
 	dr = req->resource;
 	offset = req->fileoff[0] % SECTSIZE;
 	sector = req->fileoff[0] - offset;
 	size = (req->datasize + offset > SECTSIZE) ? SECTSIZE - offset : req->datasize;
 
+	/* reject requests to nonexistent drives */
 	if (!(drive[dr].flags & FLAG_EXIST)) {
 		tail(caller, SIG_ERROR, NULL);
 	}
 
+	/* do write command */
 	buffer = malloc(SECTSIZE);
-
 	pio_read_sector (dr, sector, (uint16_t*) buffer);
-	memcpy(&buffer[offset], &req->reqdata[req->dataoff - HDRSZ], size);
+	memcpy(&buffer[offset], req_getbuf(req), size);
 	pio_write_sector(dr, sector, (uint16_t*) buffer);
-
 	free(buffer);
 
+	/* send reply */
 	req->format   = REQ_READ;
-	req->dataoff  = STDOFF;
 	req->datasize = size;
-	tail(caller, SIG_REPLY, req);
+	tail(caller, SIG_REPLY, req_cksum(req));
 }
 
 /*** Driver Interface ***/
@@ -384,6 +432,7 @@ static void ata_init(device_t dev) {
 			}
 		}
 
+#ifdef ATACONF_ATAPI
 		/* try to catch ATAPI devices */
 		if (err) {
 			cl = inb(ata_base[dr] + REG_LBA1);
@@ -403,6 +452,12 @@ static void ata_init(device_t dev) {
 			outb(ata_base[dr] + REG_CMD, CMD_ID_ATAPI);
 			sleep400(dr);
 		}
+#else
+		if (err) {
+			drive[dr].flags = 0;
+			continue;
+		}
+#endif
 
 		/* read in IDENTIFY space */
 		for (i = 0; i < 256; i++) {
@@ -413,6 +468,7 @@ static void ata_init(device_t dev) {
 		drive[dr].capabilities = *((uint16_t*) &buffer[ID_CAP]);
 		drive[dr].commandsets  = *((uint32_t*) &buffer[ID_CMDSET]);
 
+#ifdef ATACONF_LONG
 		/* get LBA mode and disk size */
 		if (drive[dr].commandsets & (1 << 26)) {
 			drive[dr].flags |= FLAG_LONG;
@@ -423,6 +479,10 @@ static void ata_init(device_t dev) {
 			drive[dr].size[0] = *((uint32_t*) &buffer[ID_MAX_LBA]);
 			drive[dr].size[1] = 0;
 		}
+#else
+		drive[dr].size[0] = *((uint32_t*) &buffer[ID_MAX_LBA]);
+		drive[dr].size[1] = 0;
+#endif	
 
 		/* get model string and null-terminate */
 		for (i = 0; i < 40; i += 2) {
@@ -441,14 +501,16 @@ static void ata_init(device_t dev) {
 			}
 		}
 
+#ifdef ATACONF_DMA
 		/* detect DMA capability */
-		/*status = inb(ata_dma[dr] + REG_DMA_STAT);
+		status = inb(ata_dma[dr] + REG_DMA_STAT);
 		if ((SEL(dr) == MASTER) && (status & DMA_STAT_MDMA)) {
 			drive[dr].flags |= FLAG_DMA;
 		}
 		if ((SEL(dr) == SLAVE)  && (status & DMA_STAT_SDMA)) {
 			drive[dr].flags |= FLAG_DMA;
-		}*/
+		}
+#endif
 
 		printf("found drive: ");
 
@@ -470,7 +532,8 @@ static void ata_init(device_t dev) {
 	}
 	
 	/* register interface handler */
-	sigregister(SIG_READ, ata_read);
+	sigregister(SIG_READ,  ata_read);
+	sigregister(SIG_WRITE, ata_write);
 }
 
 static void ata_halt(void) {

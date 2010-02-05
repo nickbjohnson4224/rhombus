@@ -28,8 +28,8 @@ static size_t read(void *ptr, size_t size, FILE *stream) {
 	while (size) {
 		datasize = (size > REQSZ) ? REQSZ : size;
 
+		req_setbuf(req, STDOFF, datasize);
 		req->resource = stream->resource;
-		req->datasize = datasize;
 		req->transid  = i;
 		req->format   = REQ_READ;
 		req->fileoff[0] = stream->position;
@@ -37,11 +37,11 @@ static size_t read(void *ptr, size_t size, FILE *stream) {
 		req->fileoff[2] = 0;
 		req->fileoff[3] = 0;
 
-		fire(stream->target, stream->rport, req_checksum(req));
+		fire(stream->target, stream->rport, req_cksum(req));
 
 		res = sigpull(SIG_REPLY);
 
-		memcpy(data, &res->reqdata[res->dataoff - HDRSZ], res->datasize);
+		memcpy(data, req_getbuf(res), res->datasize);
 
 		data = &data[res->datasize];
 		size -= res->datasize;
@@ -58,7 +58,7 @@ static size_t read(void *ptr, size_t size, FILE *stream) {
 }
 
 static size_t write(const void *ptr, size_t size, FILE *stream) {
-	struct request *req, *res;
+	req_t *req, *res;
 	uint8_t *data = (void*) ptr;
 	uint16_t datasize;
 	size_t oldsize, i = 0;
@@ -72,24 +72,26 @@ static size_t write(const void *ptr, size_t size, FILE *stream) {
 	while (size) {
 		datasize = (size > REQSZ) ? REQSZ : size;
 
+		req_setbuf(req, STDOFF, datasize);
 		req->resource = stream->resource;
-		req->datasize = datasize;
 		req->transid  = i;
-		req->dataoff  = STDOFF;
 		req->format   = REQ_WRITE;
 		req->fileoff[0] = stream->position;
 		req->fileoff[1] = 0;
 		req->fileoff[2] = 0;
 		req->fileoff[3] = 0;
 
-		memcpy(&req->reqdata[req->dataoff - HDRSZ], data, datasize);
+		memcpy(req_getbuf(req), data, datasize);
 
-		fire(stream->target, stream->wport, req_checksum(req));
+		fire(stream->target, stream->wport, req_cksum(req));
 
 		res = sigpull(SIG_REPLY);
 
 		data = &data[res->datasize];
 		size -= res->datasize;
+
+		stream->position += res->datasize;
+
 		req_free(res);
 		i++;
 	}

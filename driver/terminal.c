@@ -18,7 +18,7 @@
 
 static void terminal_init (device_t selector);
 static void terminal_halt (void);
-static void terminal_write(uint32_t caller, struct request *req);
+static void terminal_write(uint32_t caller, req_t *req);
 
 static uint16_t *vbuf;
 static uint16_t c_base = 0;
@@ -53,15 +53,19 @@ static void terminal_halt(void) {
 
 static void terminal_write(uint32_t caller, struct request *r) {
 	size_t i;
+	char *buffer;
 
 	if (!req_check(r)) {
+		req_free(r);
 		tail(caller, SIG_ERROR, NULL);
 	}
 
-	sigblock();
+	buffer = (void*) req_getbuf(r);
+
+	sigblock(true);
 
 	for (i = 0; i < r->datasize; i++) {
-		char_write(r->reqdata[i + r->dataoff - HDRSZ]);
+		char_write(buffer[i]);
 	}
 
 	outb(0x3D4, 14);
@@ -69,11 +73,11 @@ static void terminal_write(uint32_t caller, struct request *r) {
 	outb(0x3D4, 15);
 	outb(0x3D5, cursor & 0xFF);
 
-	sigunblock();
+	sigblock(false);
 
 	r->datasize = i;
 	r->format = REQ_READ;
-	tail(caller, SIG_REPLY, req_checksum(r));
+	tail(caller, SIG_REPLY, req_cksum(r));
 }
 
 static void char_write(char c) {

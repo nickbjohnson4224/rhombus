@@ -8,15 +8,14 @@
 #include <stdio.h>
 #include <flux.h>
 #include <mmap.h>
-#include <driver.h>
 
 #include <driver/keyboard.h>
 
 static void keyboard_init(device_t selector);
 static void keyboard_halt(void);
 
-static void keyboard_read(uint32_t caller, struct request *req);
-static void keyboard_hand(uint32_t caller, struct request *req);
+static void keyboard_read(uint32_t caller, req_t *req);
+static void keyboard_hand(uint32_t caller, req_t *req);
 
 static const char dnkmap[] = 
 "\0\0331234567890-=\b\tqwertyuiop[]\n\0asdfghjkl;\'`\0\\zxcvbnm,./\0*\0 ";
@@ -44,38 +43,38 @@ static void keyboard_halt(void) {
 	return;
 }
 
-static void keyboard_read (uint32_t caller, struct request *req) {
+static void keyboard_read (uint32_t caller, req_t *req) {
 
-	if (!req || !req_check(req)) {
+	if (!req_check(req)) {
 		if (req) req_free(req);
 		tail(caller, SIG_ERROR, NULL);
 	}
 
 	while (!buffer_top) sleep();
 
-	sigblock();
+	sigblock(true);
 
 	if (req->datasize > buffer_top) {
 		req->datasize = buffer_top;
 	}
 
 	req->dataoff = STDOFF;
-	memcpy(&req->reqdata[req->dataoff - HDRSZ], (void*) buffer, req->datasize);
+	memcpy(req_getbuf(req), (void*) buffer, req->datasize);
 	
 	if (req->datasize == buffer_top) {
 		buffer_top = 0;
 	}
 
-	sigunblock();
+	sigblock(false);
 
 	req->format = REQ_WRITE;
-	tail(caller, SIG_REPLY, req_checksum(req));
+	tail(caller, SIG_REPLY, req_cksum(req));
 }
 
 static void keyboard_hand(uint32_t caller, struct request *req) {
 	uint8_t scan;
 	
-	sigblock();
+	sigblock(true);
 
 	scan = inb(0x60);
 
@@ -93,11 +92,12 @@ static void keyboard_hand(uint32_t caller, struct request *req) {
 		buffer[buffer_top] = ((shift) ? upkmap[scan] : dnkmap[scan]);
 		buffer_top++;
 
-		sigunblock();
+		sigblock(false);
 		fwrite((char*) &buffer[buffer_top-1], 1, 1, stdout);
-		sigblock();
+		sigblock(true);
 	}
 
-	sigunblock();
+	sigblock(false);
+
 	return;
 }
