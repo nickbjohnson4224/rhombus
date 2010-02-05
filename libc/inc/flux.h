@@ -81,7 +81,6 @@ typedef struct request {
 
 #define REQ_READ  0
 #define REQ_WRITE 1
-#define REQ_PING  2
 
 req_t *req_alloc(void);			/* Allocate request header and buffer */
 void   req_free (req_t *r);		/* Free request header and buffer */

@@ -1,5 +1,5 @@
 Flux Operating System 0.2a
-User Manual Section I - ABI
+User Manual Section 1 - ABI
 ==============================
 
 Contents:
@@ -25,7 +25,7 @@ fork: int 0x66
 - creates a new process from the current one
 	- same memory contents
 	- same process flags
-	- new PID
+	- new PID and address space
 
 exit: int 0x67
 ------------------------------
@@ -91,7 +91,7 @@ info: int 0x64
 	- 6: 	INFO_MMAP:	enabled mmap flags
 	- 7: 	INFO_ARCH:	architecture ID
 		- 0: 	unknown
-		- 1: 	x86-321
+		- 1: 	x86-32
 		- 2: 	x86-64
 	- 8: 	INFO_PAGE:	page size
 	- 9: 	INFO_CPUN:	number of logical CPUs
