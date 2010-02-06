@@ -114,11 +114,23 @@ void sigfree(uint16_t signal) {
 }
 
 req_t *req_alloc(void) {
-	return _heap_req_alloc();
+	req_t *r = NULL;
+
+	sigblock(true);
+	
+	r = _heap_req_alloc();
+
+	sigblock(false);
+
+	return r;
 }
 
 void req_free(req_t *r) {
+	sigblock(true);
+
 	_heap_req_free(r);
+
+	sigblock(false);
 }
 
 req_t *req_catch(void *grant) {

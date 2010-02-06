@@ -12,11 +12,18 @@
 #include <driver/pci.h>
 
 /* configuration flags */
-#define ATACONF_ATAPI		/* Support ATAPI commands */
+/*#define ATACONF_ATAPI*/	/* Support ATAPI commands */
 /*#define ATACONF_DMA  */	/* Use DMA if possible */
 /*#define ATACONF_LONG */	/* Enable 48 bit LBAs */
 /*#define ATACONF_IRQ  */	/* Use IRQs instead of polling */
- 
+
+/* ATAPI needs IRQs */
+#ifdef  ATACONF_ATAPI
+#ifndef ATACONF_IRQ
+#define ATACONF_IRQ
+#endif
+#endif
+
 /* size of a single sector */
 #define SECTSIZE			0x200
 
@@ -283,7 +290,7 @@ static void ata_read(uint32_t caller, req_t *req) {
 	/* calculate command */
 	dr = req->resource;
 	offset = req->fileoff[0] % SECTSIZE;
-	sector = req->fileoff[0] - offset;
+	sector = (req->fileoff[0] - offset) / SECTSIZE;
 	size = (req->datasize + offset > SECTSIZE) ? SECTSIZE - offset : req->datasize;
 
 	/* reject requests to nonexistent drives */
@@ -473,7 +480,7 @@ static void ata_init(device_t dev) {
 		if (drive[dr].commandsets & (1 << 26)) {
 			drive[dr].flags |= FLAG_LONG;
 			drive[dr].size[0] = *((uint32_t*) &buffer[ID_MAX_LBA48]);
-			drive[dr].size[1] = *((uint16_t*) &buffer[ID_MAX_LBA48 + 4]);
+			drive[dr].size[1] = *((uint32_t*) &buffer[ID_MAX_LBA48 + 4]);
 		}
 		else {
 			drive[dr].size[0] = *((uint32_t*) &buffer[ID_MAX_LBA]);
@@ -527,7 +534,9 @@ static void ata_init(device_t dev) {
 		printf((drive[dr].flags & FLAG_DMA) ? "DMA " : "");
 		printf("\n");
 
-		printf("\tsize: %x KB\n", drive[dr].size[0] * SECTSIZE / 1024);
+		printf("\tsize: %d MB (%d sectors)\n", 
+			drive[dr].size[0] * SECTSIZE / 1048576,
+			drive[dr].size[0]);
 		printf("\tmodel: %s\n", drive[dr].model);
 	}
 	

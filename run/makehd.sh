@@ -2,4 +2,4 @@
 
 export BUILDDIR=${PWD}
 
-qemu-img create ${BUILDDIR}/run/hd.img 10M
+qemu-img create ${BUILDDIR}/run/hd.img 100M
