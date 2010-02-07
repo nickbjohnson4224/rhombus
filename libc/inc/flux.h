@@ -26,6 +26,7 @@ void		_exit(uint32_t value);
 #define MMAP_FRAME	0x010
 #define MMAP_PHYS	0x020
 #define MMAP_MOVE	0x040
+#define MMAP_LEAVE	0x080
 
 #define CTRL_NONE		0x00000000
 #define CTRL_SCHED		0x00000001
@@ -62,6 +63,20 @@ void		_exit(uint32_t value);
 void block(bool v);		/* (Dis)allow scheduling */
 void sleep(void);		/* Relinquish timeslice */
 
+/*** Memory Management ***/
+
+#define MMAP_PAGESIZE PAGESZ
+
+#define PROT_NONE 0
+#define PROT_READ MMAP_READ
+#define PROT_WRITE MMAP_WRITE
+#define PROT_EXEC MMAP_EXEC
+
+int mmap(void *addr, size_t length, int prot);
+int umap(void *addr, size_t length);
+int emap(void *addr, uint32_t frame, int prot);
+uintptr_t phys(void *addr);
+
 /*** Flux Standard Request Protocol ***/
 
 #define REQSZ (PAGESZ - 512)
@@ -75,7 +90,8 @@ typedef struct request {
 	uint16_t transid;			/* Transaction ID */
 	uint16_t dataoff;			/* Offset of request data */
 	uint16_t format;			/* Header format */
-	uint32_t fileoff[4];		/* File offset */
+	uint64_t fileoff;			/* File offset */
+	uint64_t fileoff_ext;		/* Extended file offset */
 	uint8_t  reqdata[];			/* Request data area */
 } __attribute__ ((packed)) req_t;
 
@@ -91,6 +107,25 @@ bool   req_check(req_t *r);		/* Check request for validity */
 
 bool      req_setbuf(req_t *r, uint16_t offset, uint16_t size);
 uint8_t  *req_getbuf(req_t *r);
+
+/*** Flux Standard Metadata Space ***/
+
+typedef struct meta {
+	uint32_t resource;			/* Resource ID */
+	uint32_t type;				/* Resource Type */
+	uint8_t resv0[24];
+
+	uint64_t wrtetime;			/* Last data modification */
+	uint64_t readtime;			/* Last data access */
+	uint64_t ctrltime;			/* Last metadata modification */
+	uint64_t infotime;			/* Last metadata access */
+
+	uint32_t flags;				/* Various flags */
+	char filename[64];			/* File name */
+	uint64_t size;				/* File size */
+	uint64_t size_ext;			/* Extended file size */
+	uint8_t resv2[44];
+} __attribute__ ((packed)) meta_t;
 
 /*** Flux Signals ***/
 

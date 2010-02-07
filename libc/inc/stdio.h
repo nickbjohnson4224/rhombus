@@ -14,6 +14,7 @@ typedef struct _file {
 	uint32_t target;		/* PID of driver */
 	uint32_t resource;		/* Resource ID within driver */
 	uint16_t wport, rport;	/* Read and Write ports */
+	uint16_t iport, cport;	/* Info and Control ports */
 
 	fpos_t position;		/* File position */
 	fpos_t size;			/* File size */

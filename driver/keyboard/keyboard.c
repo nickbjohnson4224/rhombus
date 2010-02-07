@@ -7,7 +7,6 @@
 #include <signal.h>
 #include <stdio.h>
 #include <flux.h>
-#include <mmap.h>
 
 #include <driver/keyboard.h>
 
@@ -34,9 +33,10 @@ struct driver_interface keyboard = {
 };
 
 static void keyboard_init(device_t selector) {
-	rirq(1);
 	sigregister(SSIG_IRQ, keyboard_hand);
 	sigregister(SIG_READ, keyboard_read);
+
+	rirq(1);
 }
 
 static void keyboard_halt(void) {

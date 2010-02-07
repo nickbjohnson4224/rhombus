@@ -5,7 +5,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <_libc.h>
-#include <mmap.h>
 
 static volatile struct held_signal {
 	req_t *req;

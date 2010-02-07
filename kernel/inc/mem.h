@@ -28,7 +28,7 @@
 /***** PAGE FLAGS *****/
 
 /* MMAP flags */
-#define MMAP_CMASK	0x03B /* Capability mask */
+#define MMAP_CMASK	0x0BB /* Capability mask */
 
 #define MMAP_READ	0x001
 #define MMAP_WRITE	0x002
@@ -37,6 +37,7 @@
 #define MMAP_FRAME	0x010
 #define MMAP_PHYS	0x020
 #define MMAP_MOVE	0x040
+#define MMAP_LEAVE  0x080
 
 /* Normal page flags */
 #define PF_PRES 0x1		/* Is present */

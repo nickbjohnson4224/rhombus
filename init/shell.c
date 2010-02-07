@@ -36,7 +36,6 @@ static void ls(int argc, char **argv);
 static void halt(int argc, char **argv);
 static void read(int argc, char **argv);
 static void seek(int argc, char **argv);
-static void readln(int argc, char **argv);
 
 static const char *cmdlist[] = {
 	"echo",
@@ -45,7 +44,6 @@ static const char *cmdlist[] = {
 	"halt",
 	"read",
 	"seek",
-	"readln",
 	NULL,
 };
 
@@ -56,7 +54,6 @@ static void (*cmd[])(int, char**) = {
 	halt,
 	read,
 	seek,
-	readln,
 };
 
 static int vexec(char *name, int argc, char **argv) {
@@ -147,22 +144,4 @@ static void seek(int argc, char **argv) {
 	pos = atoi(argv[1]);
 
 	fseek(disk, pos, SEEK_SET);
-}
-
-static void readln(int argc, char **argv) {
-	char lnbuffer[100];
-	size_t count;
-
-	if (argc >= 1) {
-		count = atoi(argv[1]);
-	}
-	else {
-		count = 1;
-	}
-
-	while (count) {
-		fgets(lnbuffer, 100, disk);
-		printf("%d:\t%s\n", count, lnbuffer);
-		count--;
-	}
 }

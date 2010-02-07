@@ -32,10 +32,7 @@ static size_t read(void *ptr, size_t size, FILE *stream) {
 		req->resource = stream->resource;
 		req->transid  = i;
 		req->format   = REQ_READ;
-		req->fileoff[0] = stream->position;
-		req->fileoff[1] = 0;
-		req->fileoff[2] = 0;
-		req->fileoff[3] = 0;
+		req->fileoff  = stream->position;
 
 		fire(stream->target, stream->rport, req_cksum(req));
 
@@ -57,6 +54,35 @@ static size_t read(void *ptr, size_t size, FILE *stream) {
 	return oldsize;
 }
 
+static size_t einfo(void *ptr, size_t size, FILE *stream) {
+	struct request *req, *res;
+	uint8_t *data = (void*) ptr;
+
+	sighold(SIG_REPLY);
+
+	req = req_alloc();
+
+	size = (size > sizeof(meta_t)) ? sizeof(meta_t) : size;
+
+	req_setbuf(req, STDOFF, size);
+	req->resource = stream->resource;
+	req->format   = REQ_READ;
+	req->fileoff  = stream->position;
+
+	fire(stream->target, stream->iport, req_cksum(req));
+
+	res = sigpull(SIG_REPLY);
+
+	memcpy(data, req_getbuf(res), res->datasize);
+
+	req_free(res);
+	req_free(req);
+
+	sigfree(SIG_REPLY);
+
+	return size;
+}
+
 static size_t write(const void *ptr, size_t size, FILE *stream) {
 	req_t *req, *res;
 	uint8_t *data = (void*) ptr;
@@ -76,10 +102,7 @@ static size_t write(const void *ptr, size_t size, FILE *stream) {
 		req->resource = stream->resource;
 		req->transid  = i;
 		req->format   = REQ_WRITE;
-		req->fileoff[0] = stream->position;
-		req->fileoff[1] = 0;
-		req->fileoff[2] = 0;
-		req->fileoff[3] = 0;
+		req->fileoff  = stream->position;
 
 		memcpy(req_getbuf(req), data, datasize);
 
@@ -290,12 +313,12 @@ char *fgets(char *s, int size, FILE *stream) {
 
 	for (i = 0; i < size; i++) {
 		ch = fgetc(stream);
-		if (ch == EOF || ch == '\n') break;
-		
 		s[i] = ch;
+
+		if (ch == EOF || ch == '\n') break;
 	}
 
-	s[i] = '\0';
+	s[i+1] = '\0';
 	return s;
 }
 

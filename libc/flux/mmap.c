@@ -1,18 +1,37 @@
-#include <mmap.h>
-#include <_libc.h>
+#include <flux.h>
 
 int mmap(void *addr, size_t length, int prot) {
-	return __mmap((uint32_t) addr, length, prot);
+	addr = (void*) ((uintptr_t) addr &~ (PAGESZ - 1));
+
+	if (length % PAGESZ == 0) {
+		length /= PAGESZ;
+	}
+	else {
+		length = (length / PAGESZ) + 1;
+	}
+
+	return _mmap((uintptr_t) addr, length, prot & (PAGESZ - 1));
 }
 
 int umap(void *addr, size_t length) {
-	return __umap((uint32_t) addr, length);
+	addr = (void*) ((uintptr_t) addr &~ (PAGESZ - 1));
+
+	if (length % PAGESZ == 0) {
+		length /= PAGESZ;
+	}
+	else {
+		length = (length / PAGESZ) + 1;
+	}
+
+	return _mmap((uintptr_t) addr, length, MMAP_FREE);
 }
 
 int emap(void *addr, uint32_t frame, int prot) {
-	return __emap((uint32_t) addr, frame, prot);
+	return _mmap((uint32_t) addr, 1, (frame &~ (PAGESZ - 1)) | prot | MMAP_FRAME);
 }
 
-uintptr_t pmap(void *addr, int prot) {
-	return __pmap((uint32_t) addr, prot);
+uintptr_t phys(void *addr) {
+	addr = (void*) ((uintptr_t) addr &~ (PAGESZ - 1));
+
+	return _mmap((uint32_t) addr, 0, MMAP_PHYS);
 }

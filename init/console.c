@@ -3,41 +3,40 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <mmap.h>
 #include <flux.h>
-#include <driver.h>
-#include <signal.h>
 #include <stdio.h>
 
 #include <driver/terminal.h>
 #include <driver/keyboard.h>
 
 void console_init() {
-	int32_t pid;
+	int32_t tpid, kpid;
 	device_t dev;
 
 	sighold(SIG_REPLY);
 
-	pid = fork();
-	if (pid < 0) {
+	tpid = fork();
+	if (tpid < 0) {
+		sigfree(SIG_REPLY);
 		terminal.init(dev);
-		fire(-pid, SIG_REPLY, NULL);
+		fire(-tpid, SIG_REPLY, NULL);
 		block(true);
 		for(;;);
-	}
-	stdout = fsetup(pid, 0, "a");
+	}	
+	sigpull(SIG_REPLY);
+	stdout = fsetup(tpid, 0, "a");
 
-	pid = fork();
-	if (pid < 0) {
+	kpid = fork();
+	if (kpid < 0) {
+		sigfree(SIG_REPLY);
 		keyboard.init(dev);
-		fire(-pid, SIG_REPLY, NULL);
+		fire(-kpid, SIG_REPLY, NULL);
 		block(true);
 		for(;;);
 	}
-	stdin = fsetup(pid, 0, "r");
+	sigpull(SIG_REPLY);
 
-	sigpull(SIG_REPLY);
-	sigpull(SIG_REPLY);
+	stdin = fsetup(kpid, 0, "r");
 
 	sigfree(SIG_REPLY);
 }

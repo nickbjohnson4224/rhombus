@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 /* abmalloc - The AfterBurner Memory Allocator
- * Copyright 2009 Nick Johnson
+ * Copyright 2010 Nick Johnson
  *
  * abmalloc is a two layer virtual memory allocator.
  * The first layer is an implementation of valloc(),
@@ -177,7 +177,7 @@ static void *_heap_valloc(size_t size) {
 	}
 	
 	addr = _HEAP_START + (idx * BLOCKSZ);
-	__mmap(addr, size - size % BLOCKSZ + BLOCKSZ, MMAP_READ | MMAP_WRITE);
+	mmap((void*) addr, size, MMAP_READ | MMAP_WRITE);
 
 	return (void*) addr;
 }
@@ -186,13 +186,13 @@ static void _heap_vfree(void *ptr) {
 	size_t idx = ((uintptr_t) ptr - _HEAP_START) / BLOCKSZ;
 
 	bmap[idx >> 3] &= ~(1 << (idx & 0x7));
-	__umap((uintptr_t) ptr, BLOCKSZ);
+	umap(ptr, BLOCKSZ);
 }
 
 /*** The Heap Interface ***/
 
 void _heap_init(void) {
-	__mmap(_BMAP_START, _BMAP_SIZE, MMAP_WRITE | MMAP_READ);
+	mmap((void*) _BMAP_START, _BMAP_SIZE, MMAP_WRITE | MMAP_READ);
 }
 
 struct request *_heap_req_alloc(void) {

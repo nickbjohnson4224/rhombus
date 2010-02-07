@@ -115,7 +115,7 @@ image_t *fault_double(image_t *image) {
 }
 
 /***** System Calls *****/
-/* See section II of the Flux manual for details */
+/* See section I of the Flux manual for details */
 
 image_t *fire(image_t *image) {
 	uint32_t targ = image->eax;
@@ -211,14 +211,18 @@ image_t *info(image_t *image) {
 
 image_t *mmap(image_t *image) {
 	uintptr_t addr = image->ebx;
-	size_t count =   image->ecx;
+	size_t count   = image->ecx;
 	uint16_t flags = image->edx & 0xFFF;
 	uint32_t frame = image->edx & ~0xFFF;
 	uint16_t pflags = 0;
 
-	if (addr & 0xFFF) ret(image, -1);	/* Reject unaligned requests */
+	if (addr & 0xFFF)   ret(image, -1);	/* Reject unaligned requests */
 	if (addr >= KSPACE) ret(image, -1);	/* Reject out of bounds requests */
-	if (count > 1024) ret(image, -1);	/* Reject requests > 4MB */
+	if (count > 1024)   ret(image, -1);	/* Reject requests > 4MB */
+
+	if (flags & MMAP_PHYS) {
+		ret(image, page_ufmt(page_get(addr)));
+	}
 
 	if (flags & MMAP_FREE) {
 		mem_free(addr, count * PAGESZ);
@@ -242,11 +246,6 @@ image_t *mmap(image_t *image) {
 		else {
 			ret(image, -1);
 		}
-	}
-
-	if (flags & MMAP_PHYS) {
-		mem_alloc(addr, PAGESZ, pflags);
-		ret(image, page_ufmt(page_get(addr)));
 	}
 
 	mem_alloc(addr, count * PAGESZ, pflags);

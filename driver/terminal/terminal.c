@@ -6,7 +6,6 @@
 #include <string.h>
 #include <signal.h>
 #include <flux.h>
-#include <mmap.h>
 #include <driver.h>
 
 #include <driver/terminal.h>
