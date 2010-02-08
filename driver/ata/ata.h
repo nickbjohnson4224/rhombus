@@ -140,6 +140,10 @@ extern uint16_t ata_ctrl[4];
 extern uint16_t ata_dma [4];
 extern uint8_t  ata_irq [4];
 
+/*** Sector Addressing ***/
+
+bool ata_send_lba(uint8_t drive, uint64_t sector);
+
 /*** Port I/O ***/
 
 void pio_read_sector (uint8_t drive, uint64_t sector, uint16_t *buffer);
