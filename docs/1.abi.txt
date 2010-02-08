@@ -120,9 +120,8 @@ mmap: int 0x65
 			- bit 2: MMAP_EXEC:  page is executable
 			- bit 3: MMAP_FREE:  free page instead of allocating
 			- bit 4: MMAP_FRAME: try to use frame
-			- bit 5: MMAP_PHYS:  return frame of allocated page
+			- bit 5: MMAP_PHYS:  return frame of page instead of allocating
 			- bit 6: MMAP_MOVE:  move pages from address to address
-			- bit 7: MMAP_LEAVE: do not modify page (used with MMAP_PHYS)
 		- last 20 bits: grant page (if MMAP_FRAME)
 			- only allowed if super or if frame was granted
 			- also used as source address for MMAP_MOVE

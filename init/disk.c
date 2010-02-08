@@ -1,7 +1,7 @@
+/* Copyright 2010 Nick Johnson */
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <driver.h>
-#include <signal.h>
 #include <flux.h>
 
 #include <driver/ata.h>
@@ -22,7 +22,7 @@ void disk_init(void) {
 	if (pid < 0) {
 		ata.init(dev);
 		fire(-pid, SIG_REPLY, NULL);
-/*		block(true); */
+		block(true);
 		for(;;);
 	}
 

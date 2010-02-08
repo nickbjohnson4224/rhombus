@@ -3,12 +3,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#include <signal.h>
 #include <stdio.h>
 #include <flux.h>
-
-#include <driver.h>
-#include <config.h>
 
 void segfault(uint32_t source, struct request *req) {
 	if (req) req_free(req);

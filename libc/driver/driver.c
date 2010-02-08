@@ -1,6 +1,5 @@
 /* Copyright 2010 Nick Johnson */
 
-#include <driver.h>
 #include <flux.h>
 
 void rirq(uint8_t irq) {
