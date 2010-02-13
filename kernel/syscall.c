@@ -41,7 +41,7 @@ image_t *irq_redirect(image_t *image) {
 	task_t *holder;
 
 	holder = task_get(irq_holder[DEIRQ(image->num)]);
-	if (holder->flags & CTRL_CLEAR) {
+	if ((holder->flags & CTRL_CLEAR)) {
 		held_irq[DEIRQ(image->num)]++;
 		held_count++;
 		return image;
@@ -64,7 +64,6 @@ image_t *fault_generic(image_t *image) {
 	}
 	#endif
 
-	/* If in userspace, redirect to signal S_GEN */
 	return signal(curr_pid, SSIG_FAULT, NULL, NOERR | EKILL);
 }
 
@@ -86,7 +85,6 @@ image_t *fault_page(image_t *image) {
 	}
 	#endif
 
-	/* If in userspace, redirect to signal S_PAG, with faulting address */
 	return signal(curr_pid, SSIG_PAGE, NULL, NOERR | EKILL);
 }
 
@@ -100,7 +98,6 @@ image_t *fault_float(image_t *image) {
 	}
 	#endif
 
-	/* If in userspace, redirect to signal S_FPE */
 	return signal(curr_pid, SSIG_FLOAT, NULL, NOERR | EKILL);
 }
 
@@ -118,18 +115,20 @@ image_t *fault_double(image_t *image) {
 /* See section I of the Flux manual for details */
 
 image_t *fire(image_t *image) {
-	uint32_t targ = image->eax;
-	uint32_t sig = image->ecx;
+	uint32_t targ  = image->eax;
+	uint32_t sig   = image->ecx;
 	uint32_t grant = image->ebx;
 	uint32_t flags = image->edx;
-	task_t *dst_t = task_get(targ);
-
-	if (!dst_t || !dst_t->shandler || (dst_t->flags & CTRL_CLEAR)) {
-		ret(image, ERROR);
-	}
+	task_t *dst_t  = task_get(targ);
 
 	if (targ == 0) {
 		return task_switch(task_next(0));
+	}
+
+	if (!dst_t ||
+		!dst_t->shandler ||
+		(dst_t->flags & CTRL_CLEAR)) {
+			ret(image, ERROR);
 	}
 
 	if (flags & 0x1) {
@@ -154,43 +153,61 @@ image_t *hand(image_t *image) {
 image_t *ctrl(image_t *image) {
 	extern uint32_t can_use_fpu;
 	uint32_t flags = image->eax;
-	uint32_t mask = image->edx;
+	uint32_t mask  = image->edx;
+	uint32_t space = image->ecx;
 	uint8_t irq;
 
-	/* Stop the modification of protected flags if not super */
-	if ((curr_task->flags & CTRL_SUPER) == 0) {
-		mask &= CTRL_SMASK;
-	}
+	switch (space) {
+	case CTRL_PSPACE:
 
-	/* Set flags */
-	curr_task->flags = (curr_task->flags & ~mask) | (flags & mask);
+		/* Stop the modification of protected flags if not super */
+		if ((curr_task->flags & CTRL_SUPER) == 0) {
+			mask &= CTRL_SMASK;
+		}
 
-	/* Unset CTRL_FLOAT if FPU is disabled */
-	if ((flags & mask & CTRL_FLOAT) && (can_use_fpu == 0)) {
-		curr_task->flags &= ~CTRL_FLOAT;
-	}
+		/* Set flags */
+		curr_task->flags = (curr_task->flags & ~mask) | (flags & mask);
 
-	/* Update IRQ redirect if CTRL_IRQRD is changed */
-	if (mask & CTRL_IRQRD) {
-		if (flags & CTRL_IRQRD) {
-			/* Set IRQ redirect */
-			irq = (flags >> 24) & 0xFF;
-			if (irq < 15) {
-				irq_holder[irq] = curr_pid;
-				register_int(IRQ(irq), irq_redirect);
+		/* Unset CTRL_FLOAT if FPU is disabled */
+		if ((flags & mask & CTRL_FLOAT) && (can_use_fpu == 0)) {
+			curr_task->flags &= ~CTRL_FLOAT;
+		}
+
+		/* Update IRQ redirect if CTRL_IRQRD is changed */
+		if (mask & CTRL_IRQRD) {
+			if (flags & CTRL_IRQRD) {
+				/* Set IRQ redirect */
+				irq = (flags >> 24) & 0xFF;
+				if (irq < 15) {
+					irq_holder[irq] = curr_pid;
+					register_int(IRQ(irq), irq_redirect);
+					pic_mask(1 << irq);
+				}
+			}
+			else {
+				/* Unset IRQ redirect */
+				irq = (curr_task->flags >> 24) & 0xFF;
+				irq_holder[irq] = 0;
+				register_int(IRQ(irq), NULL);
 				pic_mask(1 << irq);
 			}
 		}
-		else {
-			/* Unset IRQ redirect */
-			irq = (curr_task->flags >> 24) & 0xFF;
-			irq_holder[irq] = 0;
-			register_int(IRQ(irq), NULL);
-			pic_mask(1 << irq);
-		}
-	}
 
-	ret(image, curr_task->flags);
+		ret(image, curr_task->flags);
+		break;
+
+	case CTRL_SSPACE:
+		
+		/* Set flags */
+		curr_task->sigflags = (curr_task->sigflags & ~mask) | (flags & mask);
+
+		ret(image, curr_task->sigflags);
+		break;
+
+	default:
+		ret(image, -1);
+		break;
+	}
 }
 
 image_t *info(image_t *image) {
@@ -200,11 +217,12 @@ image_t *info(image_t *image) {
 	case 0: ret(image, curr_pid);
 	case 1: ret(image, curr_task->parent);
 	case 2: ret(image, tick);
-	case 3: ret(image, 0x0002);
+	case 3: ret(image, 0x0003);
 	case 4: ret(image, KSPACE);
 	case 5: ret(image, 
 		(curr_task->flags & CTRL_SUPER) ? CTRL_CMASK : CTRL_CMASK & CTRL_SMASK);
 	case 6: ret(image, MMAP_CMASK);
+	case 7: ret(image, curr_task->sigflags);
 	default: ret(image, -1);
 	}
 }

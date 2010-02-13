@@ -59,7 +59,8 @@ ctrl: int 0x63
 	- bits 8-11: 	scheduling priority (bit 8 super only)
 	- bit 12: 		CTRL_CBLOCK: clear CTRL_BLOCK when catching signal
 	- bit 13:		CTRL_CCLEAR: set CTRL_CLEAR when catching signal
-	- bits 14-15:	unassigned
+	- bit 14:		CTRL_IRQST: unblock irq signals only
+	- bit 15:		unassigned
 	- bit 16:		CTRL_DBLOCK: clear CTRL_BLOCK when dropping
 	- bit 17:		CTRL_DCLEAR: set CTRL_CLEAR when dropping
 	- bits 18-19:	unassigned

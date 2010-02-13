@@ -11,7 +11,7 @@ bool ata_send_lba(uint8_t drive, uint64_t sector) {
 
 	/* format LBA bytes from sector index */
 	#ifdef ATACONF_LONG
-	if (sector > 0x10000000 && ata_drive[drive].flags & FLAG_LONG) {
+	if (sector >= 0x10000000 && ata_drive[drive].flags & FLAG_LONG) {
 		/* Use LBA48 */
 		lba48 = true;
 		lba[5] = (sector >> 40) & 0xFF;
@@ -34,7 +34,6 @@ bool ata_send_lba(uint8_t drive, uint64_t sector) {
 	lba[2] = (sector >> 16) & 0xFF;
 	lba[1] = (sector >> 8)  & 0xFF;
 	lba[0] = (sector >> 0)  & 0xFF;
-	
 
 	/* wait for drive to be ready */
 	while (inb(ata_base[drive] + REG_STAT) & STAT_BUSY);

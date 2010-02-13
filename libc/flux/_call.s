@@ -46,6 +46,7 @@ _hand:
 _ctrl:
 	mov eax, [esp+4]
 	mov edx, [esp+8]
+	mov ecx, [esp+12]
 	int 0x63
 
 	ret

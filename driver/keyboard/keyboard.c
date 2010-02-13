@@ -43,11 +43,12 @@ static void keyboard_halt(void) {
 	return;
 }
 
-static void keyboard_read (uint32_t caller, req_t *req) {
+static void keyboard_read(uint32_t caller, req_t *req) {
 
 	if (!req_check(req)) {
-		if (req) req_free(req);
-		tail(caller, SIG_ERROR, NULL);
+		if (!req) req = req_alloc();
+		req->format = REQ_ERROR;
+		tail(caller, SIG_REPLY, req_cksum(req));
 	}
 
 	while (!buffer_top) sleep();

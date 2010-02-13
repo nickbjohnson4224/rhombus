@@ -121,19 +121,26 @@ static void halt(int argc, char **argv) {
 
 static void read(int argc, char **argv) {
 	size_t size;
-	char *buffer;
+	char buffer[257];
 
-	if (argc <= 1) return;
+	if (argc != 2) {
+		printf("read <bytes>\n");
+		return;
+	}
 
 	size = atoi(argv[1]);
 
-	buffer = malloc(size + 1);
-	fread(buffer, sizeof(char), size, disk);
+	while (size) {
 
-	buffer[size] = '\0';
-	printf("read \"%s\"\n", buffer);
+		fread(buffer, sizeof(char), (size > 256) ? 256 : size, disk);
 
-	free(buffer);
+		buffer[256] = '\0';
+		printf(buffer);
+
+		size -= (size > 256) ? 256: size;
+	}
+
+	printf("\n");
 }
 
 static void seek(int argc, char **argv) {

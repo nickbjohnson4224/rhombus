@@ -6,8 +6,8 @@ extern struct driver_interface ata;
 /* configuration flags */
 #define ATACONF_ATAPI		/* Support ATAPI commands */
 /*#define ATACONF_DMA  */	/* Use DMA if possible */
-/*#define ATACONF_LONG */	/* Enable 48 bit LBAs */
-/*#define ATACONF_IRQ  */	/* Use IRQs instead of polling */
+#define ATACONF_LONG		/* Enable 48 bit LBAs */
+#define ATACONF_IRQ			/* Use IRQs instead of polling */
 /*#define ATACONF_SATA */	/* Support SATA commands */
 
 /* ATAPI needs IRQs */
@@ -16,9 +16,6 @@ extern struct driver_interface ata;
 #define ATACONF_IRQ
 #endif
 #endif
-
-/* size of a single sector */
-#define SECTSIZE			0x200
 
 /* controllers */
 #define ATA0				0x00
@@ -115,6 +112,7 @@ extern struct driver_interface ata;
 #define FLAG_ATAPI			0x04
 #define FLAG_LONG			0x08
 #define FLAG_SATA			0x10
+#define FLAG_LOCK			0x20
 
 /*** Helper Routines ***/
 
@@ -132,6 +130,7 @@ extern struct ata_drive {
 	uint16_t commandsets;
 	uint64_t size;			/* size in sectors of the entire drive */
 	char     model[41];		/* model name as reported by IDENTIFY */
+	uint16_t sectsize;
 } ata_drive[4];
 
 /* I/O port BARs and IRQs */

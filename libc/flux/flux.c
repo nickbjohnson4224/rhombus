@@ -5,10 +5,10 @@
 
 void block(bool v) {
 	if (v) {
-		_ctrl(CTRL_SCHED, CTRL_SCHED);
+		_ctrl(CTRL_BLOCK, CTRL_BLOCK, 0);
 	}
 	else {
-		_ctrl(CTRL_NONE, CTRL_SCHED);
+		_ctrl(CTRL_NONE, CTRL_BLOCK, 0);
 	}
 }
 

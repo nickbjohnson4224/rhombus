@@ -14,8 +14,10 @@ image_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 		ret(src_t->image, (flags & NOERR) ? targ : ERROR);
 	}
 
-	if ((dst_t->flags & CTRL_CLEAR) && (flags & CTRL_SUPER) == 0) {
-		ret(src_t->image, (flags & NOERR) ? targ : ERROR);
+	if (dst_t->flags & CTRL_CLEAR) {
+		if ((flags & CTRL_SUPER) == 0) {
+			ret(src_t->image, (flags & NOERR) ? targ : ERROR);
+		}
 	}
 
 	/* Get frame of grant */
@@ -53,16 +55,12 @@ image_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 
 	}
 
+	/* Make sure handler is unblocked */
+	dst_t->flags &= ~CTRL_BLOCK;
+
 	/* Save grant and flags */
 	dst_t->image[1].grant = dst_t->grant;
 	dst_t->image[1].flags = dst_t->flags;
-
-	/* Modify flags */
-	dst_t->flags &= ~CTRL_BLOCK;
-
-	if (dst_t->flags & CTRL_CCLEAR) {
-		dst_t->flags ^= CTRL_CLEAR;
-	}
 
 	/* Set registers to describe signal */
 
@@ -103,14 +101,6 @@ image_t *sret(image_t *image) {
 	flags = curr_task->flags;
 	curr_task->flags &= ~(CTRL_BLOCK | CTRL_CLEAR);
 	curr_task->flags |= curr_task->image->flags & (CTRL_BLOCK | CTRL_CLEAR);
-
-	if (flags & CTRL_DBLOCK) {
-		curr_task->flags |= CTRL_BLOCK;
-	}
-
-	if (flags & CTRL_DCLEAR) {
-		curr_task->flags ^= CTRL_CLEAR;
-	}
 
 	return curr_task->image;
 }

@@ -23,7 +23,6 @@ static void ata_pio_read(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 	uint8_t err;
 	bool lba48 = false;
 
-	/* must not be interrupted */
 	sigblock(true);
 
 	/* send LBA to controller */
@@ -37,11 +36,36 @@ static void ata_pio_read(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 	}
 
 	/* read in one sector of words */
-	for (i = 0; i < SECTSIZE / sizeof(uint16_t); i++) {
+	for (i = 0; i < (1 << ata_drive[drive].sectsize) >> 1; i++) {
 		ata_sleep400(drive);
 		while (inb(ata_base[drive] + REG_STAT) & STAT_BUSY);
 		buffer[i] = inw(ata_base[drive] + REG_DATA);
 	}
+
+	sigblock(false);
+}
+
+static void atapi_pio_read(uint8_t drive, uint64_t sector, uint16_t *buffer) {
+	uint8_t atapi_cmd[12];
+
+	atapi_cmd[0]  = CMD_READ_ATAPI;
+	atapi_cmd[1]  = 0;
+	atapi_cmd[2]  = (sector >> 24) & 0xFF;
+	atapi_cmd[3]  = (sector >> 16) & 0xFF;
+	atapi_cmd[4]  = (sector >> 8)  & 0xFF;
+	atapi_cmd[5]  = (sector >> 0)  & 0xFF;
+	atapi_cmd[6]  = 0;
+	atapi_cmd[7]  = 0;
+	atapi_cmd[8]  = 0;
+	atapi_cmd[9]  = 1;
+	atapi_cmd[10] = 0;
+	atapi_cmd[11] = 0;
+
+	sigblock(true);
+
+	ata_select(drive);
+
+
 
 	sigblock(false);
 }
@@ -64,7 +88,7 @@ static void ata_pio_write(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 	}
 
 	/* write one sector of words */
-	for (i = 0; i < SECTSIZE / sizeof(uint16_t); i++) {
+	for (i = 0; i < (1 << ata_drive[drive].sectsize) >> 1; i++) {
 		ata_sleep400(drive);
 		while (inb(ata_base[drive] + REG_STAT) & STAT_BUSY);
 		outw(ata_base[drive] + REG_DATA, buffer[i]);

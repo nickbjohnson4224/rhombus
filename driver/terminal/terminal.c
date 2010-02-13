@@ -48,20 +48,21 @@ static void terminal_halt(void) {
 	return;
 }
 
-static void terminal_write(uint32_t caller, struct request *r) {
+static void terminal_write(uint32_t caller, struct request *req) {
 	size_t i;
 	char *buffer;
 
-	if (!req_check(r)) {
-		req_free(r);
-		tail(caller, SIG_ERROR, NULL);
+	if (!req_check(req)) {
+		if (!req) req = req_alloc();
+		req->format = REQ_ERROR;
+		tail(caller, SIG_REPLY, req);
 	}
 
-	buffer = (void*) req_getbuf(r);
+	buffer = (void*) req_getbuf(req);
 
 	sigblock(true);
 
-	for (i = 0; i < r->datasize; i++) {
+	for (i = 0; i < req->datasize; i++) {
 		char_write(buffer[i]);
 	}
 
@@ -72,9 +73,9 @@ static void terminal_write(uint32_t caller, struct request *r) {
 
 	sigblock(false);
 
-	r->datasize = i;
-	r->format = REQ_READ;
-	tail(caller, SIG_REPLY, req_cksum(r));
+	req->datasize = i;
+	req->format = REQ_READ;
+	tail(caller, SIG_REPLY, req_cksum(req));
 }
 
 static void char_write(char c) {

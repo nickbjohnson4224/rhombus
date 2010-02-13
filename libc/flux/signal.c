@@ -27,30 +27,30 @@ void siginit(void) {
 void sigblock(bool v) {
 	if (v) {
 	
-		_ctrl(CTRL_SIGNAL, CTRL_SIGNAL);
+		_ctrl(CTRL_CLEAR, CTRL_CLEAR, 0);
 		block_count++;
 
 		if (block_count != 1) {
-			_ctrl(CTRL_NONE, CTRL_SIGNAL); 
+			_ctrl(CTRL_NONE, CTRL_CLEAR, 0); 
 		}
 	}
 	else {
 		if (block_count == 0) return;
 	
-		_ctrl(CTRL_SIGNAL, CTRL_SIGNAL);
+		_ctrl(CTRL_CLEAR, CTRL_CLEAR, 0);
 		block_count--;
 
 		if (block_count == 0) {
-			_ctrl(CTRL_NONE, CTRL_SIGNAL);
+			_ctrl(CTRL_NONE, CTRL_CLEAR, 0);
 		}
 	}
 }
 
-int fire(uint32_t target, uint16_t signal, struct request *req) {
+int fire(uint32_t target, uint8_t signal, struct request *req) {
 	return _fire(target, signal, req, 0);
 }
 
-void tail(uint32_t target, uint16_t signal, struct request *req) {
+void tail(uint32_t target, uint8_t signal, struct request *req) {
 	if (req) req_free(req);
 	while (_fire(target, signal, req, FIRE_TAIL)) sleep();
 }
@@ -81,8 +81,13 @@ void sigredirect(uint32_t source, uint32_t signal, void *grant) {
 	else if (sighandlers[signal]) {
 		sighandlers[signal](source, req);
 	}
-	else if (signal != SIG_ERROR && source != info(0)) {
-		tail(source, SIG_ERROR, NULL);
+	else if (signal != SIG_REPLY && source != info(0)) {
+		if (!req) {
+			req = req_alloc();
+		}
+
+		req->format = REQ_ERROR;
+		tail(source, SIG_REPLY, req_cksum(req));
 	}
 }
 
@@ -105,10 +110,18 @@ struct request *sigpull(uint16_t signal) {
 }
 
 void sighold(uint16_t signal) {
+	if (signal == SSIG_IRQ) {
+		_ctrl(CTRL_IRQST, CTRL_IRQST, 0);
+	}
+
 	sigholders[signal] = true;
 }
 
 void sigfree(uint16_t signal) {
+	if (signal == SSIG_IRQ) {
+		_ctrl(CTRL_IRQST, CTRL_NONE, 0);
+	}
+
 	sigholders[signal] = false;
 }
 

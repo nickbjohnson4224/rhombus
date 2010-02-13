@@ -17,11 +17,11 @@ static void dma_init(void) {
 	ata_buf[0]  = malloc(0x1000);
 
 	for (i = 1; i < 4; i++) {
-		ata_prdt[i] = &ata_prdt[0][i * SECTSIZE / sizeof(uint32_t)];
-		ata_buf[i]  = &ata_buf [0][i * SECTSIZE / sizeof(uint8_t)];
+		ata_prdt[i] = &ata_prdt[0][i * ata_drive[i].sectsize / sizeof(uint32_t)];
+		ata_buf[i]  = &ata_buf [0][i * ata_drive[i].sectsize / sizeof(uint8_t)];
 
 		ata_prdt[i][0] = phys(ata_buf[i]);
-		ata_prdt[i][1] = SECTSIZE | (0x1000 << 16);
+		ata_prdt[i][1] = ata_drive[i].sectsize | (0x1000 << 16);
 
 		if (ata_drive[i].flags & FLAG_EXIST) {
 			if (ata_drive[i].flags & FLAG_ATAPI) {

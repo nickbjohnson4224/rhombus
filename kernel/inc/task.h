@@ -30,7 +30,6 @@ image_t *sret(image_t *image);
 
 /***** TASK TABLE *****/
 
-/* Size must be a divisor of 4096 */
 typedef struct task {
 	map_t map;
 	image_t *image;
@@ -42,9 +41,13 @@ typedef struct task {
 	pid_t parent;
 	uint32_t shandler;
 	uint32_t grant;
+	uint32_t sigflags;
 } task_t;
 
-#define CTRL_CMASK	0xFF833FFF
+#define CTRL_PSPACE	0
+#define CTRL_SSPACE 1
+
+#define CTRL_CMASK	0xFF8000F9
 #define CTRL_SMASK 	0x00773047
 #define CTRL_RMASK	0x00000003
 
@@ -57,18 +60,12 @@ typedef struct task {
 #define CTRL_IRQRD 	0x00000020
 #define CTRL_FLOAT 	0x00000040
 #define CTRL_RNICE 	0x00000080
-#define CTRL_CBLOCK	0x00001000
-#define CTRL_CCLEAR	0x00002000
-#define CTRL_DBLOCK	0x00010000
-#define CTRL_DCLEAR	0x00020000
-#define CTRL_ASYNC	0x00100000
-#define CTRL_MULTI	0x00200000
 #define CTRL_QUEUE	0x00400000
 #define CTRL_MMCLR	0x00800000
 
-void task_touch(pid_t pid);
-task_t *task_get(pid_t pid);
-task_t *task_new(task_t *src);
+void     task_touch(pid_t pid);
+task_t  *task_get(pid_t pid);
+task_t  *task_new(task_t *src);
 uint32_t task_rem(task_t *t);
 image_t *task_switch(task_t *t);
 

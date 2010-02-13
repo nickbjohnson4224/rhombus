@@ -47,17 +47,24 @@ static void ata_read(uint32_t caller, req_t *req) {
 	uint8_t dr;
 
 	/* reject bad requests */
-	if (!req_check(req)) tail(caller, SIG_ERROR, NULL);
+	if (!req_check(req)) {
+		if (!req) req = req_alloc();
+		req->format = REQ_ERROR;
+		tail(caller, SIG_REPLY, req_cksum(req));
+	}
 
 	/* calculate command */
 	dr = req->resource;
-	offset = req->fileoff % SECTSIZE;
-	sector = (req->fileoff - offset) / SECTSIZE;
-	size = (req->datasize + offset > SECTSIZE) ? SECTSIZE - offset : req->datasize;
+	offset = req->fileoff & ((1 << ata_drive[dr].sectsize) - 1);
+	sector = req->fileoff >> ata_drive[dr].sectsize;
+	size = (req->datasize + offset > (1 << ata_drive[dr].sectsize)) 
+		? (1 << ata_drive[dr].sectsize) - offset
+		: req->datasize;
 
 	/* reject requests to nonexistent drives */
 	if (dr > 4 || !(ata_drive[dr].flags & FLAG_EXIST)) {
-		tail(caller, SIG_ERROR, NULL);
+		req->format = REQ_ERROR;
+		tail(caller, SIG_REPLY, req_cksum(req));
 	}
 
 	/* do read command */
@@ -76,21 +83,27 @@ static void ata_write(uint32_t caller, struct request *req) {
 	uint8_t dr;
 
 	/* reject bad requests */
-	if (!req_check(req)) tail(caller, SIG_ERROR, NULL);
+	if (!req_check(req)) {
+		req->format = REQ_ERROR;
+		tail(caller, SIG_REPLY, req_cksum(req));
+	}
 
 	/* calculate command */
 	dr = req->resource;
-	offset = req->fileoff % SECTSIZE;
-	sector = req->fileoff - offset;
-	size = (req->datasize + offset > SECTSIZE) ? SECTSIZE - offset : req->datasize;
+	offset = req->fileoff & ((1 << ata_drive[dr].sectsize) - 1);
+	sector = req->fileoff >> ata_drive[dr].sectsize;
+	size = (req->datasize + offset > ata_drive[dr].sectsize) 
+		? ata_drive[dr].sectsize - offset
+		: req->datasize;
 
 	/* reject requests to nonexistent drives */
 	if (!(ata_drive[dr].flags & FLAG_EXIST)) {
-		tail(caller, SIG_ERROR, NULL);
+		req->format = REQ_ERROR;
+		tail(caller, SIG_REPLY, req_cksum(req));
 	}
 
 	/* do write command */
-	buffer = malloc(SECTSIZE);
+	buffer = malloc(ata_drive[dr].sectsize);
 	pio_read_sector (dr, sector, (uint16_t*) buffer);
 	memcpy(&buffer[offset], req_getbuf(req), size);
 	pio_write_sector(dr, sector, (uint16_t*) buffer);
@@ -211,6 +224,7 @@ static void ata_init(device_t dev) {
 #ifdef ATACONF_ATAPI
 			if (c == 0xEB14 || c == 0x9669) {
 				ata_drive[dr].flags |= FLAG_ATAPI;
+				ata_drive[dr].sectsize = 11;
 
 				/* use packet-based IDENTIFY */
 				outb(ata_base[dr] + REG_CMD, CMD_ID_ATAPI);
@@ -227,7 +241,9 @@ static void ata_init(device_t dev) {
 				ata_drive[dr].flags = 0;
 				continue;
 			}
-
+		}
+		else {
+			ata_drive[dr].sectsize = 9;
 		}
 
 		/* read in IDENTIFY space */
@@ -296,8 +312,8 @@ static void ata_init(device_t dev) {
 		printf((ata_drive[dr].flags & FLAG_DMA) ? "DMA " : "");
 		printf("\n");
 
-		printf("\tsize: %d MB (%d sectors)\n", 
-			(uint32_t) ata_drive[dr].size * SECTSIZE / 1048576,
+		printf("\tsize: %d KB (%d sectors)\n", 
+			(uint32_t) ata_drive[dr].size * (1 << ata_drive[dr].sectsize) >> 10,
 			(uint32_t) ata_drive[dr].size);
 		printf("\tmodel: %s\n", ata_drive[dr].model);
 	}

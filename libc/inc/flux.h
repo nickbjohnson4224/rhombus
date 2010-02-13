@@ -10,7 +10,7 @@
 int32_t		_fire(uint32_t pid, uint16_t signal, void *grant, uint32_t flags);
 void		_drop(void);
 uintptr_t	_hand(uintptr_t handler);
-uint32_t	_ctrl(uint32_t flags, uint32_t mask);
+uint32_t	_ctrl(uint32_t flags, uint32_t mask, uint32_t space);
 uint32_t	_info(uint32_t selector);
 int32_t		_mmap(uintptr_t addr, uint32_t flags, uint32_t frame);
 int32_t		_fork(void);
@@ -26,11 +26,13 @@ void		_exit(uint32_t value);
 #define MMAP_FRAME	0x010
 #define MMAP_PHYS	0x020
 #define MMAP_MOVE	0x040
-#define MMAP_LEAVE	0x080
+
+#define CTRL_PSPACE 	0
+#define CTRL_SSPACE 	1
 
 #define CTRL_NONE		0x00000000
-#define CTRL_SCHED		0x00000001
-#define CTRL_SIGNAL		0x00000002
+#define CTRL_BLOCK		0x00000001
+#define CTRL_CLEAR		0x00000002
 #define CTRL_ENTER		0x00000004
 #define CTRL_SUPER		0x00000008
 #define CTRL_PORTS		0x00000010
@@ -39,12 +41,22 @@ void		_exit(uint32_t value);
 #define CTRL_RENICE		0x00000080
 #define CTRL_CBLOCK		0x00001000
 #define CTRL_CCLEAR		0x00002000
+#define CTRL_IRQST		0x00004000
 #define CTRL_DBLOCK		0x00010000
 #define CTRL_DCLEAR		0x00020000
 #define CTRL_ASYNC		0x00100000
 #define CTRL_MULTI		0x00200000
 #define CTRL_QUEUE		0x00400000
 #define CTRL_MMCLR		0x00800000
+
+#define INFO_GPID		0x00000001
+#define INFO_PPID		0x00000002
+#define INFO_TICK		0x00000003
+#define INFO_ABIVER		0x00000004
+#define INFO_LIMIT		0x00000005
+#define INFO_CTRL		0x00000006
+#define INFO_MMAP		0x00000007
+#define INFO_SFLAGS		0x00000008
 
 #define CTRL_NICEMASK	0x00000F00
 #define CTRL_NICE(n)	(((n) & 0xF) << 8)
@@ -97,6 +109,7 @@ typedef struct request {
 
 #define REQ_READ  0
 #define REQ_WRITE 1
+#define REQ_ERROR 2
 
 req_t *req_alloc(void);			/* Allocate request header and buffer */
 void   req_free (req_t *r);		/* Free request header and buffer */
@@ -129,12 +142,12 @@ typedef struct meta {
 
 /*** Flux Signals ***/
 
-#define MAXSIGNAL	256
+#define MAXSIGNAL	32
 
 void sigblock(bool v);	/* (Dis)allow signals */
 
-int  fire(uint32_t target, uint16_t signal, req_t *req);
-void tail(uint32_t target, uint16_t signal, req_t *req);
+int  fire(uint32_t target, uint8_t signal, req_t *req);
+void tail(uint32_t target, uint8_t signal, req_t *req);
 
 typedef void (*sig_handler_t) (uint32_t caller, req_t *req);
 void sigregister(uint16_t signal, sig_handler_t handler);
@@ -157,9 +170,8 @@ void   sigpush(uint16_t signal, req_t *r);	/* Re-hold signal request */
 #define SIG_WRITE	17
 #define SIG_INFO	18
 #define SIG_CTRL	19
-#define SIG_PING	20
-#define SIG_ERROR	21
-#define SIG_REPLY	32
+
+#define SIG_REPLY	31
 
 /***** Driver API *****/
 
