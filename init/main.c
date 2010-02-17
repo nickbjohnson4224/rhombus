@@ -35,7 +35,7 @@ static void launch_driver(FILE **hand, struct driver_interface *drv, device_t de
 }
 
 static void segfault(uint32_t source, struct request *req) {
-	if (req) req_free(req);
+	if (req) rfree(req);
 
 	printf("Segmentation Fault\n");
 	exit(1);

@@ -46,7 +46,7 @@ static void keyboard_halt(void) {
 static void keyboard_read(uint32_t caller, req_t *req) {
 
 	if (!req_check(req)) {
-		if (!req) req = req_alloc();
+		if (!req) req = ralloc();
 		req->format = REQ_ERROR;
 		tail(caller, SIG_REPLY, req_cksum(req));
 	}

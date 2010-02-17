@@ -53,7 +53,7 @@ static void terminal_write(uint32_t caller, struct request *req) {
 	char *buffer;
 
 	if (!req_check(req)) {
-		if (!req) req = req_alloc();
+		if (!req) req = ralloc();
 		req->format = REQ_ERROR;
 		tail(caller, SIG_REPLY, req);
 	}

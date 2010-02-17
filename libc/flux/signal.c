@@ -86,7 +86,7 @@ int fire(uint32_t target, uint8_t signal, struct request *req) {
 }
 
 void tail(uint32_t target, uint8_t signal, struct request *req) {
-	if (req) req_free(req);
+	if (req) rfree(req);
 	while (_fire(target, signal, req, FIRE_TAIL)) sleep();
 }
 
@@ -95,8 +95,11 @@ void sigregister(uint16_t signal, sig_handler_t handler) {
 }
 
 void sigredirect(uint32_t source, uint32_t signal, void *grant) {
-	req_t *req = req_catch(grant);
-	struct held_signal *hs = NULL;
+	req_t *req;
+	struct held_signal *hs;
+
+	req = ralloc();
+	emap(req, (uintptr_t) grant, PROT_READ | PROT_WRITE);
 
 	if (sighold_count[signal]) {
 		sigblock(true, VSIG_ALL);
@@ -120,7 +123,7 @@ void sigredirect(uint32_t source, uint32_t signal, void *grant) {
 	
 	else if (signal != SIG_REPLY && source != info(0)) {
 		if (!req) {
-			req = req_alloc();
+			req = ralloc();
 		}
 
 		req->format = REQ_ERROR;
@@ -154,18 +157,12 @@ void sigfree(uint16_t signal) {
 	sighold_count[signal]--;
 }
 
-req_t *req_alloc(void) {
+req_t *ralloc(void) {
 	return _heap_req_alloc();
 }
 
-void req_free(req_t *r) {
+void rfree(req_t *r) {
 	_heap_req_free(r);
-}
-
-req_t *req_catch(void *grant) {
-	void *vaddr = req_alloc();
-	emap(vaddr, (uintptr_t) grant, PROT_READ | PROT_WRITE);
-	return vaddr;
 }
 
 req_t *req_cksum(req_t *r) {

@@ -23,7 +23,7 @@ static size_t read(void *ptr, size_t size, FILE *stream) {
 
 	sighold(SIG_REPLY);
 
-	req = req_alloc();
+	req = ralloc();
 
 	while (size) {
 		datasize = (size > REQSZ) ? REQSZ : size;
@@ -43,12 +43,12 @@ static size_t read(void *ptr, size_t size, FILE *stream) {
 		data = &data[res->datasize];
 		size -= res->datasize;
 		stream->position += res->datasize;
-		req_free(res);
+		rfree(res);
 
 		i++;
 	}
 
-	req_free(req);
+	rfree(req);
 	sigfree(SIG_REPLY);
 
 	return oldsize;
@@ -60,7 +60,7 @@ static size_t einfo(void *ptr, size_t size, FILE *stream) {
 
 	sighold(SIG_REPLY);
 
-	req = req_alloc();
+	req = ralloc();
 
 	size = (size > sizeof(meta_t)) ? sizeof(meta_t) : size;
 
@@ -75,8 +75,8 @@ static size_t einfo(void *ptr, size_t size, FILE *stream) {
 
 	memcpy(data, req_getbuf(res), res->datasize);
 
-	req_free(res);
-	req_free(req);
+	rfree(res);
+	rfree(req);
 
 	sigfree(SIG_REPLY);
 
@@ -93,7 +93,7 @@ static size_t write(const void *ptr, size_t size, FILE *stream) {
 
 	sighold(SIG_REPLY);
 
-	req = req_alloc();
+	req = ralloc();
 
 	while (size) {
 		datasize = (size > REQSZ) ? REQSZ : size;
@@ -115,11 +115,11 @@ static size_t write(const void *ptr, size_t size, FILE *stream) {
 
 		stream->position += res->datasize;
 
-		req_free(res);
+		rfree(res);
 		i++;
 	}
 
-	req_free(req);
+	rfree(req);
 
 	sigfree(SIG_REPLY);
 

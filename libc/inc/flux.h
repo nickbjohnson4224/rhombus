@@ -111,9 +111,8 @@ typedef struct request {
 #define REQ_WRITE 1
 #define REQ_ERROR 2
 
-req_t *req_alloc(void);			/* Allocate request header and buffer */
-void   req_free (req_t *r);		/* Free request header and buffer */
-req_t *req_catch(void *grant);	/* Catch granted request page */
+req_t *ralloc(void);			/* Allocate request header and buffer */
+void   rfree (req_t *r);		/* Free request header and buffer */
 
 req_t *req_cksum(req_t *r);		/* Checksum request */
 bool   req_check(req_t *r);		/* Check request for validity */

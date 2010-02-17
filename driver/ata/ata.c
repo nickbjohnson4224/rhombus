@@ -48,7 +48,7 @@ static void ata_read(uint32_t caller, req_t *req) {
 
 	/* reject bad requests */
 	if (!req_check(req)) {
-		if (!req) req = req_alloc();
+		if (!req) req = ralloc();
 		req->format = REQ_ERROR;
 		tail(caller, SIG_REPLY, req_cksum(req));
 	}
@@ -84,6 +84,7 @@ static void ata_write(uint32_t caller, struct request *req) {
 
 	/* reject bad requests */
 	if (!req_check(req)) {
+		if (!req) req = ralloc();
 		req->format = REQ_ERROR;
 		tail(caller, SIG_REPLY, req_cksum(req));
 	}
