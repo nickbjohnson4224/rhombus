@@ -14,7 +14,7 @@ image_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 		ret(src_t->image, (flags & NOERR) ? targ : ERROR);
 	}
 
-	if (dst_t->flags & CTRL_CLEAR) {
+	if (dst_t->sigflags & (1 << sig)) {
 		if ((flags & CTRL_SUPER) == 0) {
 			ret(src_t->image, (flags & NOERR) ? targ : ERROR);
 		}
@@ -50,6 +50,7 @@ image_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 
 		else {
 			dst_t->flags |= CTRL_CLEAR;
+			dst_t->sigflags = 0xFFFFFFFF;
 			signal(targ, SSIG_IMAGE, NULL, CTRL_SUPER);
 		}
 

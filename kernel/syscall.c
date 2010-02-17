@@ -23,7 +23,9 @@ image_t *pit_handler(image_t *image) {
 		for (i = 0; i < 16; i++) {
 			if (held_irq[i]) {
 				holder = task_get(irq_holder[i]);
-				if (!holder || (holder->flags & CTRL_CLEAR)) {
+				if (!holder || 
+					(holder->flags & CTRL_CLEAR) || 
+					(holder->sigflags & CTRL_SIRQ)) {
 					continue;
 				}
 				held_irq[i]--;
@@ -41,7 +43,7 @@ image_t *irq_redirect(image_t *image) {
 	task_t *holder;
 
 	holder = task_get(irq_holder[DEIRQ(image->num)]);
-	if ((holder->flags & CTRL_CLEAR)) {
+	if ((holder->flags & CTRL_CLEAR) || (holder->flags & CTRL_SIRQ)) {
 		held_irq[DEIRQ(image->num)]++;
 		held_count++;
 		return image;
@@ -125,9 +127,7 @@ image_t *fire(image_t *image) {
 		return task_switch(task_next(0));
 	}
 
-	if (!dst_t ||
-		!dst_t->shandler ||
-		(dst_t->flags & CTRL_CLEAR)) {
+	if (!dst_t || !dst_t->shandler || (dst_t->sigflags & (1 << sig))) {
 			ret(image, ERROR);
 	}
 

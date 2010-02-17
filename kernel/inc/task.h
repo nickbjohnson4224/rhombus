@@ -47,7 +47,7 @@ typedef struct task {
 #define CTRL_PSPACE	0
 #define CTRL_SSPACE 1
 
-#define CTRL_CMASK	0xFF8000F9
+#define CTRL_CMASK	0xFF8000FF
 #define CTRL_SMASK 	0x00773047
 #define CTRL_RMASK	0x00000003
 
@@ -62,6 +62,15 @@ typedef struct task {
 #define CTRL_RNICE 	0x00000080
 #define CTRL_QUEUE	0x00400000
 #define CTRL_MMCLR	0x00800000
+
+#define CTRL_SFAULT	0x00000001
+#define CTRL_SENTER	0x00000002
+#define CTRL_SPAGE	0x00000004
+#define CTRL_SIRQ	0x00000008
+#define CTRL_SKILL	0x00000010
+#define CTRL_SIMAGE	0x00000020
+#define CTRL_SFLOAT	0x00000040
+#define CTRL_SDEATH	0x00000080
 
 void     task_touch(pid_t pid);
 task_t  *task_get(pid_t pid);

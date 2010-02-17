@@ -53,7 +53,8 @@ static void keyboard_read(uint32_t caller, req_t *req) {
 
 	while (!buffer_top) sleep();
 
-	sigblock(true);
+	sigblock(true, SSIG_IRQ);
+	sigblock(true, VSIG_REQ);
 
 	if (req->datasize > buffer_top) {
 		req->datasize = buffer_top;
@@ -66,7 +67,8 @@ static void keyboard_read(uint32_t caller, req_t *req) {
 		buffer_top = 0;
 	}
 
-	sigblock(false);
+	sigblock(false, VSIG_REQ);
+	sigblock(false, SSIG_IRQ);
 
 	req->format = REQ_WRITE;
 	tail(caller, SIG_REPLY, req_cksum(req));
@@ -75,7 +77,8 @@ static void keyboard_read(uint32_t caller, req_t *req) {
 static void keyboard_hand(uint32_t caller, struct request *req) {
 	uint8_t scan;
 	
-	sigblock(true);
+	sigblock(true, SSIG_IRQ);
+	sigblock(true, VSIG_REQ);
 
 	scan = inb(0x60);
 
@@ -93,12 +96,11 @@ static void keyboard_hand(uint32_t caller, struct request *req) {
 		buffer[buffer_top] = ((shift) ? upkmap[scan] : dnkmap[scan]);
 		buffer_top++;
 
-		sigblock(false);
 		fwrite((char*) &buffer[buffer_top-1], 1, 1, stdout);
-		sigblock(true);
 	}
 
-	sigblock(false);
+	sigblock(false, VSIG_REQ);
+	sigblock(false, SSIG_IRQ);
 
 	return;
 }

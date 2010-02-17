@@ -60,7 +60,7 @@ static void terminal_write(uint32_t caller, struct request *req) {
 
 	buffer = (void*) req_getbuf(req);
 
-	sigblock(true);
+	sigblock(true, VSIG_REQ);
 
 	for (i = 0; i < req->datasize; i++) {
 		char_write(buffer[i]);
@@ -71,7 +71,7 @@ static void terminal_write(uint32_t caller, struct request *req) {
 	outb(0x3D4, 15);
 	outb(0x3D5, cursor & 0xFF);
 
-	sigblock(false);
+	sigblock(false, VSIG_REQ);
 
 	req->datasize = i;
 	req->format = REQ_READ;

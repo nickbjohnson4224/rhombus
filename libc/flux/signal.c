@@ -12,11 +12,14 @@ static volatile struct held_signal {
 	uint32_t signal;
 	uint32_t transid;
 	struct held_signal *next;
-} *sigheld[MAXSIGNAL];
+} *sigqueue[MAXSIGNAL];
 
-static volatile sig_handler_t 	sighandlers[MAXSIGNAL];
-static volatile bool 		 	sigholders[MAXSIGNAL];
-static volatile uint8_t 	 	block_count = 0;
+static uint32_t sigmask(void);
+
+static volatile sig_handler_t 	sighandler    [MAXSIGNAL];
+static volatile uint8_t			sighold_count [MAXSIGNAL];
+static volatile uint8_t 	 	sigblock_count[MAXSIGNAL];
+static volatile uint8_t 		allblock_count = 0;
 
 void siginit(void) {
 	extern void sighand(void);
@@ -24,26 +27,58 @@ void siginit(void) {
 	_hand((uint32_t) sighand);
 }
 
-void sigblock(bool v) {
-	if (v) {
-	
-		_ctrl(CTRL_CLEAR, CTRL_CLEAR, 0);
-		block_count++;
+static uint32_t sigmask(void) {
+	uint32_t mask = 0;
+	size_t i;
 
-		if (block_count != 1) {
-			_ctrl(CTRL_NONE, CTRL_CLEAR, 0); 
+	if (allblock_count) {
+		return 0xFFFFFFFF;
+	}
+	
+	for (i = 0; i < MAXSIGNAL; i++) {
+		if (sigblock_count[i] && !sighold_count[i]) {
+			mask |= 1 << i;
 		}
 	}
+
+	return mask;
+}
+
+void sigblock(bool v, uint8_t signal) {
+	
+	_ctrl(0xFFFFFFFF, 0xFFFFFFFF, 1);
+
+	if (signal == VSIG_ALL) {
+		if (v) allblock_count++;
+		else   allblock_count--;
+	}
+
+	if (signal == VSIG_REQ) {
+		if (v) {
+			sigblock_count[SIG_READ] ++;
+			sigblock_count[SIG_WRITE]++;
+			sigblock_count[SIG_INFO] ++;
+			sigblock_count[SIG_CTRL] ++;
+		}
+		else {
+			sigblock_count[SIG_READ] --;
+			sigblock_count[SIG_WRITE]--;
+			sigblock_count[SIG_INFO] --;
+			sigblock_count[SIG_CTRL] --;
+		}
+	}
+
 	else {
-		if (block_count == 0) return;
-	
-		_ctrl(CTRL_CLEAR, CTRL_CLEAR, 0);
-		block_count--;
-
-		if (block_count == 0) {
-			_ctrl(CTRL_NONE, CTRL_CLEAR, 0);
+		if (signal > MAXSIGNAL) {
+			_ctrl(sigmask(), 0xFFFFFFFF, 1);
+			return;
 		}
+		if (v) sigblock_count[signal]++;
+		else   sigblock_count[signal]--;
 	}
+
+	_ctrl(sigmask(), 0xFFFFFFFF, 1);
+
 }
 
 int fire(uint32_t target, uint8_t signal, struct request *req) {
@@ -56,15 +91,15 @@ void tail(uint32_t target, uint8_t signal, struct request *req) {
 }
 
 void sigregister(uint16_t signal, sig_handler_t handler) {
-	sighandlers[signal] = handler;
+	sighandler[signal] = handler;
 }
 
 void sigredirect(uint32_t source, uint32_t signal, void *grant) {
 	req_t *req = req_catch(grant);
 	struct held_signal *hs = NULL;
 
-	if (sigholders[signal] == true) {
-		sigblock(true);
+	if (sighold_count[signal]) {
+		sigblock(true, VSIG_ALL);
 
 		hs = malloc(sizeof(struct held_signal));
 
@@ -73,14 +108,16 @@ void sigredirect(uint32_t source, uint32_t signal, void *grant) {
 		hs->signal = signal;
 		hs->transid = req->transid;
 
-		hs->next = (void*) sigheld[signal];
-		sigheld[signal] = hs;
+		hs->next = (void*) sigqueue[signal];
+		sigqueue[signal] = hs;
 
-		sigblock(false);
+		sigblock(false, VSIG_ALL);
 	}
-	else if (sighandlers[signal]) {
-		sighandlers[signal](source, req);
+
+	else if (sighandler[signal]) {
+		sighandler[signal](source, req);
 	}
+	
 	else if (signal != SIG_REPLY && source != info(0)) {
 		if (!req) {
 			req = req_alloc();
@@ -95,54 +132,34 @@ struct request *sigpull(uint16_t signal) {
 	struct held_signal *hs;
 	struct request *req;
 
-	while (!sigheld[signal]) sleep();
+	while (!sigqueue[signal]) sleep();
 
-	sigblock(true);
+	sigblock(true, VSIG_ALL);
 
-	hs = (void*) sigheld[signal];
+	hs = (void*) sigqueue[signal];
 	req = hs->req;
-	sigheld[signal] = hs->next;
+	sigqueue[signal] = hs->next;
 	free(hs);
 
-	sigblock(false);
+	sigblock(false, VSIG_ALL);
 
 	return req;
 }
 
 void sighold(uint16_t signal) {
-	if (signal == SSIG_IRQ) {
-		_ctrl(CTRL_IRQST, CTRL_IRQST, 0);
-	}
-
-	sigholders[signal] = true;
+	sighold_count[signal]++;
 }
 
 void sigfree(uint16_t signal) {
-	if (signal == SSIG_IRQ) {
-		_ctrl(CTRL_IRQST, CTRL_NONE, 0);
-	}
-
-	sigholders[signal] = false;
+	sighold_count[signal]--;
 }
 
 req_t *req_alloc(void) {
-	req_t *r = NULL;
-
-	sigblock(true);
-	
-	r = _heap_req_alloc();
-
-	sigblock(false);
-
-	return r;
+	return _heap_req_alloc();
 }
 
 void req_free(req_t *r) {
-	sigblock(true);
-
 	_heap_req_free(r);
-
-	sigblock(false);
 }
 
 req_t *req_catch(void *grant) {

@@ -1,4 +1,4 @@
-/* Copyright 2009 Nick Johnson */
+/* Copyright 2009, 2010 Nick Johnson */
 
 #include <flux.h>
 #include <stdlib.h>
@@ -16,36 +16,19 @@ void *calloc(size_t nmemb, size_t size) {
 }
 
 void *malloc(size_t size) {
-	void *ptr;
-
-	sigblock(true);
-
-	ptr = _heap_alloc(size);
-
-	sigblock(false);
-
-	return ptr;
+	return _heap_alloc(size);
 }
 
 void free(void *ptr) {
-
-	sigblock(true);
-
 	_heap_free(ptr);
-
-	sigblock(false);
 }
 
 void *realloc(void *ptr, size_t size) {
 	void *new;
-
-	sigblock(true);
 	
 	new = _heap_alloc(size);
 	memcpy(new, ptr, _heap_size(ptr));
 	_heap_free(ptr);
-
-	sigblock(false);
 
 	return new;
 }

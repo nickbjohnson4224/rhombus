@@ -144,7 +144,7 @@ typedef struct meta {
 
 #define MAXSIGNAL	32
 
-void sigblock(bool v);	/* (Dis)allow signals */
+void sigblock(bool v, uint8_t signal);	/* (Dis)allow signals */
 
 int  fire(uint32_t target, uint8_t signal, req_t *req);
 void tail(uint32_t target, uint8_t signal, req_t *req);
@@ -157,21 +157,23 @@ void   sigfree(uint16_t signal);			/* Stop holding signal */
 req_t *sigpull(uint16_t signal);			/* Get held signal request */
 void   sigpush(uint16_t signal, req_t *r);	/* Re-hold signal request */
 
-#define SSIG_FAULT	0
-#define SSIG_ENTER	1
-#define SSIG_PAGE	2
-#define SSIG_IRQ	3
-#define SSIG_KILL	4
-#define SSIG_IMAGE	5
-#define SSIG_FLOAT	6
-#define SSIG_DEATH	7
+#define SSIG_FAULT	0x00
+#define SSIG_ENTER	0x01
+#define SSIG_PAGE	0x02
+#define SSIG_IRQ	0x03
+#define SSIG_KILL	0x04
+#define SSIG_IMAGE	0x05
+#define SSIG_FLOAT	0x06
+#define SSIG_DEATH	0x07
 
-#define SIG_READ	16
-#define SIG_WRITE	17
-#define SIG_INFO	18
-#define SIG_CTRL	19
+#define SIG_READ	0x10
+#define SIG_WRITE	0x11
+#define SIG_INFO	0x12
+#define SIG_CTRL	0x13
+#define SIG_REPLY	0x1F
 
-#define SIG_REPLY	31
+#define VSIG_ALL	0xFF
+#define VSIG_REQ	0xFE
 
 /***** Driver API *****/
 

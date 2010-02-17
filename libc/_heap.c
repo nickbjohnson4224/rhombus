@@ -200,16 +200,24 @@ struct request *_heap_req_alloc(void) {
 }
 
 void _heap_req_free(struct request *r) {
-	size_t idx = ((uintptr_t) r - _HEAP_START) / BLOCKSZ;
+	size_t idx;
+	
+	sigblock(true, VSIG_ALL);
 
+	idx = ((uintptr_t) r - _HEAP_START) / BLOCKSZ;
 	bmap[idx >> 3] &= ~(1 << (idx & 0x7));
+
+	sigblock(false, VSIG_ALL);
 }
 
 void *_heap_alloc(size_t size) {
 	struct slab_header *slab;
 	size_t bidx;
 
+	sigblock(true, VSIG_ALL);
+
 	if (size > (BLOCKSZ / 2) - sizeof(struct slab_header)) {
+		sigblock(false, VSIG_ALL);
 		return _heap_valloc(size);
 	}
 	
@@ -230,6 +238,7 @@ void *_heap_alloc(size_t size) {
 		bucket[bidx] = slab;
 	}
 
+	sigblock(false, VSIG_ALL);
 	return slab_alloc(slab);
 }
 
@@ -237,7 +246,12 @@ void _heap_free(void *ptr) {
 	struct slab_header *s, *x;
 	size_t bidx;
 
+	sigblock(true, VSIG_ALL);
+
 	if ((uintptr_t) ptr < _HEAP_START || (uintptr_t) ptr > HEAP_MXBRK) {
+
+		sigblock(false, VSIG_ALL);
+
 		return;
 	}
 
@@ -245,12 +259,13 @@ void _heap_free(void *ptr) {
 
 	if (s == NULL) {
 		_heap_vfree(ptr);
+
+		sigblock(false, VSIG_ALL);
+
 		return;
 	}
 
 	slab_free(s, ptr);
-
-	/* XXX - Major bug in following block; infinite loop can occur */
 
 /*	if (s->refc == 0) {
 		bidx = s->esize / sizeof(void*);
@@ -269,12 +284,19 @@ void _heap_free(void *ptr) {
 		}
 		del_slab(s);
 	} */
+
+	sigblock(false, VSIG_ALL);
 }
 
 size_t _heap_size(void *ptr) {
 	struct slab_header *slab;
 
+	sigblock(true, VSIG_ALL);
+
 	slab = get_slab(ptr);
+
+	sigblock(false, VSIG_ALL);
+
 	if (slab == NULL) return BLOCKSZ;
 	
 	return slab->esize;

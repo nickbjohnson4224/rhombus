@@ -26,6 +26,7 @@ void init_task() {
 		idle->pid = (pid_t) pool_alloc(tpool);
 		idle->map = get_cr3();
 		idle->flags = CTRL_READY | CTRL_SUPER;
+		idle->sigflags = CTRL_SENTER;
 
 		task_switch(task_new(task_get(0))); /* Fork task 1 and switch */
 		idle->magic = 0;					/* Mark task 0 as invalid */
