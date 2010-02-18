@@ -1,7 +1,8 @@
 BUILDDIR=$(PWD)
 
-LIB_DIRS=libc driver # libc must be first 
-BIN_DIRS=kernel init
+LIB_DIRS  = libc libflux
+LIB_DIRS += driver
+BIN_DIRS  = kernel init
 
 CC := clang
 LD := /usr/flux-cross/bin/i586-elf-ld

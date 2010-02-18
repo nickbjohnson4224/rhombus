@@ -1,10 +1,9 @@
 #ifndef STDDEF_H
 #define STDDEF_H
 
-#define NULL ((void*) 0)
+#include <arch.h>
 
-typedef unsigned int size_t;
-typedef unsigned int ptrdiff_t;
-typedef short   wchar_t;
+typedef uintptr_t ptrdiff_t;
+typedef uint16_t  wchar_t;
 
 #endif/*STDDEF_H*/

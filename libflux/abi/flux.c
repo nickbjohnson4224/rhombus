@@ -1,6 +1,5 @@
 /* Copyright 2009, 2010 Nick Johnson */
 
-#include <stdint.h>
 #include <flux.h>
 
 void block(bool v) {

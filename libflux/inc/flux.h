@@ -1,9 +1,8 @@
 #ifndef FLUX_H
 #define FLUX_H
 
-#include <stdint.h>
-#include <stdbool.h>
 #include <config.h>
+#include <arch.h>
 
 /***** SYSTEM CALLS *****/
 
