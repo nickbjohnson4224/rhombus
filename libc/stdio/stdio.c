@@ -2,8 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <flux.h>
-#include <signal.h>
+#include <flux/flux.h>
 #include <string.h>
 #include <stdarg.h>
 

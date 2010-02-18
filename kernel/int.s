@@ -1,7 +1,7 @@
 ; Copyright 2009 Nick Johnson
 
 #define ASM
-#include <config.h>
+#include <flux/config.h>
 
 %macro INTN 1
   global int%1

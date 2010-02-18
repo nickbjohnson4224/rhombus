@@ -1,6 +1,6 @@
 /* Copyright 2010 Nick Johnson */
 
-#include <flux.h>
+#include <flux/flux.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>

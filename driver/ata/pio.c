@@ -1,7 +1,7 @@
 /* Copyright 2010 Nick Johnson */
 
 #include <stdint.h>
-#include <flux.h>
+#include <flux/flux.h>
 
 #include <driver/ata.h>
 

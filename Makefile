@@ -1,6 +1,6 @@
 BUILDDIR=$(PWD)
 
-LIB_DIRS  = libc libflux
+LIB_DIRS  = libflux libc
 LIB_DIRS += driver
 BIN_DIRS  = kernel init
 

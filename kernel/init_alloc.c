@@ -1,7 +1,5 @@
 /* Copyright 2009 Nick Johnson */
 
-#include <config.h>
-#include <stdint.h>
 #include <lib.h>
 #include <mem.h>
 

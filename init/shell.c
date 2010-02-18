@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include <flux.h>
+#include <flux/flux.h>
 #include <stdarg.h>
 #include <stdio.h>
 

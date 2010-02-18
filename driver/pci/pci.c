@@ -1,4 +1,4 @@
-#include <flux.h>
+#include <flux/flux.h>
 #include <stdint.h>
 
 #include <driver/pci.h>

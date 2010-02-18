@@ -1,7 +1,7 @@
 #ifndef STDIO_H
 #define STDIO_H
 
-#include <config.h>
+#include <flux/config.h>
 
 /*** Type Definitions ***/
 

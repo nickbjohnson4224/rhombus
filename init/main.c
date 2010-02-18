@@ -4,7 +4,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <flux.h>
+
+#include <flux/flux.h>
 
 #include <driver/terminal.h>
 #include <driver/keyboard.h>

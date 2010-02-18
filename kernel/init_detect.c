@@ -1,6 +1,5 @@
 /* Copyright 2009, 2010 Nick Johnson */
 
-#include <config.h>
 #include <lib.h>
 #include <init.h>
 

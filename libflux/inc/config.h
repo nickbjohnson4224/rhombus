@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include <arch.h>
+#include <flux/arch.h>
 
 /********** GLOBAL OPTIONS **********/
 

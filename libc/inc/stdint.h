@@ -2,6 +2,6 @@
 #define STDINT_H
 
 #include <stddef.h>
-#include <arch.h>
+#include <flux/arch.h>
 
 #endif

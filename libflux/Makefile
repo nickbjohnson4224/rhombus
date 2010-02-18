@@ -12,9 +12,9 @@ ASFLAGS := -felf
 all: $(TARGET)
 
 $(HEADERS):
-	echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/inc
-	@ mkdir -p $(BUILDDIR)/inc
-	@ cp $@ $(BUILDDIR)/inc
+	echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/inc/flux
+	@ mkdir -p $(BUILDDIR)/inc/flux
+	@ cp $@ $(BUILDDIR)/inc/flux
 
 $(TARGET): $(HEADERS) $(SOURCES)
 	echo " AR	" $(SUBDIR)/$(TARGET)

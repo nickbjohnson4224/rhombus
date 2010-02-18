@@ -3,7 +3,7 @@
 #ifndef PCI_H
 #define PCI_H
 
-#include <flux.h>
+#include <flux/flux.h>
 
 /* Configuration Space Layout */
 

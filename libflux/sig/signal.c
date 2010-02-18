@@ -1,9 +1,7 @@
 /* Copyright 2009, 2010 Nick Johnson */
 
-#include <flux.h>
-#include <string.h>
-#include <stdlib.h>
-#include <_libc.h>
+#include <flux/flux.h>
+#include <flux/heap.h>
 
 static volatile struct held_signal {
 	req_t *req;
@@ -103,7 +101,7 @@ void sigredirect(uint32_t source, uint32_t signal, void *grant) {
 	if (sighold_count[signal]) {
 		sigblock(true, VSIG_ALL);
 
-		hs = malloc(sizeof(struct held_signal));
+		hs = heap_malloc(sizeof(struct held_signal));
 
 		hs->req = req;
 		hs->caller = source;
@@ -141,7 +139,7 @@ struct request *sigpull(uint16_t signal) {
 	hs = (void*) sigqueue[signal];
 	req = hs->req;
 	sigqueue[signal] = hs->next;
-	free(hs);
+	heap_free(hs);
 
 	sigblock(false, VSIG_ALL);
 
@@ -154,14 +152,6 @@ void sighold(uint16_t signal) {
 
 void sigfree(uint16_t signal) {
 	sighold_count[signal]--;
-}
-
-req_t *ralloc(void) {
-	return _heap_req_alloc();
-}
-
-void rfree(req_t *r) {
-	_heap_req_free(r);
 }
 
 req_t *req_cksum(req_t *r) {

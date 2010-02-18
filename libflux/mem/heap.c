@@ -1,12 +1,9 @@
 /* Copyright 2009 Nick Johnson */
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdbool.h>
-#include <config.h>
-#include <_libc.h>
-#include <stdio.h>
+#include <flux/arch.h>
+#include <flux/config.h>
+#include <flux/flux.h>
+#include <flux/heap.h>
 
 /* abmalloc - The AfterBurner Memory Allocator
  * Copyright 2010 Nick Johnson
@@ -69,8 +66,7 @@ static size_t bmap_top = 0;
 static struct slab_header *bucket[BLOCKSZ / sizeof(void*)];
 static struct slab_header *slab_deathrow = NULL;
 
-static void *_heap_valloc(size_t size);
-static void _heap_vfree(void* ptr);
+static void heap_vfree(void* ptr);
 
 /*** Slab Allocator ***/
 
@@ -83,7 +79,7 @@ static void *new_slab(size_t size) {
 		slab_deathrow = NULL;
 	}
 	else {
-		slab = _heap_valloc(BLOCKSZ);
+		slab = heap_valloc(BLOCKSZ);
 	}
 
 	b = (void*) ((uintptr_t) slab + sizeof(struct slab_header));
@@ -109,7 +105,7 @@ static void del_slab(struct slab_header *slab) {
 	s = slab_deathrow;
 	slab_deathrow = slab;
 
-	if (s) _heap_vfree(s);
+	if (s) heap_vfree(s);
 }
 
 static struct slab_header *get_slab(void *ptr) {
@@ -147,7 +143,7 @@ static void slab_free(struct slab_header *slab, void *ptr) {
 
 /*** Block Allocator (vmalloc) ***/
 
-static void *_heap_valloc(size_t size) {
+void *heap_valloc(size_t size) {
 	size_t idx = 0, i;
 	uintptr_t addr;
 
@@ -182,7 +178,7 @@ static void *_heap_valloc(size_t size) {
 	return (void*) addr;
 }
 
-static void _heap_vfree(void *ptr) {
+static void heap_vfree(void *ptr) {
 	size_t idx = ((uintptr_t) ptr - _HEAP_START) / BLOCKSZ;
 
 	bmap[idx >> 3] &= ~(1 << (idx & 0x7));
@@ -191,15 +187,15 @@ static void _heap_vfree(void *ptr) {
 
 /*** The Heap Interface ***/
 
-void _heap_init(void) {
+void heap_init(void) {
 	mmap((void*) _BMAP_START, _BMAP_SIZE, MMAP_WRITE | MMAP_READ);
 }
 
-struct request *_heap_req_alloc(void) {
-	return _heap_alloc(PAGESZ);
+struct request *ralloc(void) {
+	return heap_valloc(PAGESZ);
 }
 
-void _heap_req_free(struct request *r) {
+void rfree(struct request *r) {
 	size_t idx;
 	
 	sigblock(true, VSIG_ALL);
@@ -210,7 +206,7 @@ void _heap_req_free(struct request *r) {
 	sigblock(false, VSIG_ALL);
 }
 
-void *_heap_alloc(size_t size) {
+void *heap_malloc(size_t size) {
 	struct slab_header *slab;
 	size_t bidx;
 
@@ -218,7 +214,7 @@ void *_heap_alloc(size_t size) {
 
 	if (size > (BLOCKSZ / 2) - sizeof(struct slab_header)) {
 		sigblock(false, VSIG_ALL);
-		return _heap_valloc(size);
+		return heap_valloc(size);
 	}
 	
 	if (size % sizeof(void*) != 0) {
@@ -242,7 +238,7 @@ void *_heap_alloc(size_t size) {
 	return slab_alloc(slab);
 }
 
-void _heap_free(void *ptr) {
+void heap_free(void *ptr) {
 	struct slab_header *s, *x;
 	size_t bidx;
 
@@ -258,7 +254,7 @@ void _heap_free(void *ptr) {
 	s = get_slab(ptr);
 
 	if (s == NULL) {
-		_heap_vfree(ptr);
+		heap_vfree(ptr);
 
 		sigblock(false, VSIG_ALL);
 
@@ -288,7 +284,7 @@ void _heap_free(void *ptr) {
 	sigblock(false, VSIG_ALL);
 }
 
-size_t _heap_size(void *ptr) {
+size_t heap_size(void *ptr) {
 	struct slab_header *slab;
 
 	sigblock(true, VSIG_ALL);

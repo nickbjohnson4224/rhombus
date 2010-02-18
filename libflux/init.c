@@ -1,8 +1,7 @@
-/* Copyright 2009 Nick Johnson */
+/* Copyright 2009, 2010 Nick Johnson */
 
-#include <_libc.h>
-#include <signal.h>
-#include <flux.h>
+#include <flux/flux.h>
+#include <flux/heap.h>
 
 static void __exit(uint32_t source, struct request *req) {
 	_exit(1);
@@ -12,7 +11,7 @@ void _cini() {
 	extern void siginit(void);
 
 	/* Heap */
-	_heap_init();
+	heap_init();
 
 	/* Fault handling */
 	siginit();

@@ -3,8 +3,8 @@
 #ifndef LIB_H
 #define LIB_H
 
-#include <config.h>
-#include <stdint.h>
+#include <flux/config.h>
+#include <flux/arch.h>
 
 /***** I/O, ETC. *****/
 void outb(uint16_t port, uint8_t val);

@@ -23,7 +23,7 @@
 	0xFFC00000: resident map
 */
 
-#include <config.h> /* Contains macros for VM layout */
+#include <flux/config.h> /* Contains macros for VM layout */
 
 /***** PAGE FLAGS *****/
 
