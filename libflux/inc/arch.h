@@ -1,16 +1,19 @@
 #ifndef ARCH_H
 #define ARCH_H
 
-/* Choose an architecture */
 #define ARCH_X86
 
 /*** Intel x86 configuration ***/
 #ifdef ARCH_X86
 
+#define PAGESZ 0x1000
+
 #define NULL ((void*) 0)
 
 #define INTBITS 32
 #define PTRBITS 32
+
+#ifndef ASM
 
 /* Precise size integers */
 typedef unsigned char			uint8_t;
@@ -57,6 +60,20 @@ typedef uint8_t 		bool;
 
 /* Various integer types */
 typedef uint32_t		size_t;
+
+#endif/*ASM*/
+
+/* Address space layout */
+
+#define EXEC_START	0x00400000
+#define HEAP_START	0x10000000
+#define HEAP_MXBRK	0x20000000
+
+/* These must remain in order */
+#define ESPACE	0xFC000000	/* Temporary space for exec data */
+#define SSPACE	0xFCF00000	/* Stack space (grows down from next address) */
+#define LSPACE	0xFD000000	/* Space for exec bootstrap */
+#define KSPACE 	0xFE000000	/* Kernel space */
 
 #endif/*ARCH_X86*/
 

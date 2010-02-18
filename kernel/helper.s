@@ -2,6 +2,7 @@
 
 [bits 32]
 
+#define ASM
 #include <config.h>
 
 section .text

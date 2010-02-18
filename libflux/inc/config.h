@@ -1,6 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <arch.h>
+
 /********** GLOBAL OPTIONS **********/
 
 	/* Enable checks on privileged code */
@@ -20,14 +22,8 @@
 
 	/***** MEMORY SUBSYSTEM *****/
 
-	#define PAGESZ 0x1000
-
-	/* These must remain in order */
-	#define ESPACE	0xFC000000	/* Temporary space for exec data */
-	#define SSPACE	0xFCF00000	/* Stack space (grows down from next address) */
-	#define LSPACE	0xFD000000	/* Space for exec bootstrap */
-	#define KSPACE 	0xFE000000	/* Kernel space */
-	#define KMALLOC 0xFE200000	/* Kernel init allocator */
+	/* Kernel init allocator */
+	#define KMALLOC (KSPACE + 0x200000)	
 
 	/* Two areas of 16 pages for temporary mappings */
 	#define TMP_DST 0xFF000000
@@ -61,22 +57,10 @@
 
 	/* Bus scanning */
 	#define SCAN_PCI
-/*	#define SCAN_ISA */
-	#define SCAN_ATA
 
 	/***** VIDEO SETTINGS *****/
 	
 	/* Video mode */
 	#define VIDEO_TEXT
-/*	#define VIDEO_VGA */
-/*	#define VIDEO_VESA */
-
-/********** C LIBRARY OPTIONS **********/
-
-	/***** HEAP *****/
-
-	#define EXEC_START 0x00400000
-	#define HEAP_START 0x10000000
-	#define HEAP_MXBRK 0x20000000
 
 #endif

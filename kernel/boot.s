@@ -1,5 +1,6 @@
 ; Copyright 2009, 2010 Nick Johnson
 
+#define ASM
 #include <config.h>
 
 [bits 32]

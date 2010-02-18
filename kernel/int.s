@@ -1,5 +1,6 @@
 ; Copyright 2009 Nick Johnson
 
+#define ASM
 #include <config.h>
 
 %macro INTN 1
