@@ -2,6 +2,7 @@
 #define STDIO_H
 
 #include <flux/config.h>
+#include <flux/io.h>
 
 /*** Type Definitions ***/
 
@@ -11,10 +12,7 @@ typedef size_t fpos_t;
 /*** File Structure ***/
 
 typedef struct _file {
-	uint32_t target;		/* PID of driver */
-	uint32_t resource;		/* Resource ID within driver */
-	uint16_t wport, rport;	/* Read and Write ports */
-	uint16_t iport, cport;	/* Info and Control ports */
+	struct file file;		/* File descriptor */	
 
 	fpos_t position;		/* File position */
 	fpos_t size;			/* File size */

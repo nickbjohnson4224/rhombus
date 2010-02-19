@@ -33,7 +33,7 @@ static void echo(int argc, char **argv);
 static void cd(int argc, char **argv);
 static void ls(int argc, char **argv);
 static void halt(int argc, char **argv);
-static void read(int argc, char **argv);
+static void ata_read(int argc, char **argv);
 static void seek(int argc, char **argv);
 
 static const char *cmdlist[] = {
@@ -51,7 +51,7 @@ static void (*cmd[])(int, char**) = {
 	cd,
 	ls,
 	halt,
-	read,
+	ata_read,
 	seek,
 };
 
@@ -118,7 +118,7 @@ static void halt(int argc, char **argv) {
 	outb(0x64, 0xFE);
 }
 
-static void read(int argc, char **argv) {
+static void ata_read(int argc, char **argv) {
 	size_t size;
 	char buffer[257];
 
