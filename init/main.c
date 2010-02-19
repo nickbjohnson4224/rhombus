@@ -1,11 +1,14 @@
 /* Copyright 2009, 2010 Nick Johnson */
 
+#include <flux/arch.h>
+#include <flux/signal.h>
+#include <flux/request.h>
+#include <flux/proc.h>
+
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-#include <flux/flux.h>
 
 #include <driver/terminal.h>
 #include <driver/keyboard.h>
@@ -54,7 +57,7 @@ int main() {
 	launch_driver(&stdout, &terminal, nulldev);
 	launch_driver(&stdin,  &keyboard, nulldev);
 
-	printf("Flux 0.2a booting...\n");
+	printf("Flux 0.3a booting...\n");
 
 	launch_driver(&disk,   &ata, pci_findb(CLASS_STORAGE, PCI_CLASS, nulldev));
 

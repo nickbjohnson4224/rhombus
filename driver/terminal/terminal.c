@@ -1,10 +1,15 @@
 /* Copyright 2009, 2010 Nick Johnson */
 
+#include <flux/arch.h>
+#include <flux/driver.h>
+#include <flux/signal.h>
+#include <flux/request.h>
+#include <flux/mmap.h>
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <flux/flux.h>
 
 #include <driver/terminal.h>
 

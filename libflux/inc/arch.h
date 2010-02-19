@@ -1,12 +1,19 @@
+/* Copyright 2010 Nick Johnson */
+
 #ifndef ARCH_H
 #define ARCH_H
 
 #define ARCH_X86
 
-/*** Intel x86 configuration ***/
+/***************************
+ *                         *
+ * Intel x86 configuration *
+ *                         *
+ ***************************/
+ 
 #ifdef ARCH_X86
 
-#define PAGESZ 0x1000
+/*** Integer and Pointer Types ***/
 
 #define NULL ((void*) 0)
 
@@ -61,7 +68,16 @@ typedef uint8_t 		bool;
 /* Various integer types */
 typedef uint32_t		size_t;
 
+/*** Architecture Optimized Functions ***/
+
+void x86_memcpy(void *dest, void *src, size_t size);
+void x86_memclr(void *s, size_t size);
+
 #endif/*ASM*/
+
+/*** Address Space Information ***/
+
+#define PAGESZ 0x1000
 
 /* Address space layout */
 

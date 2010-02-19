@@ -1,6 +1,9 @@
 #ifndef ATA_H
 #define ATA_H
 
+#include <flux/arch.h>
+#include <flux/driver.h>
+
 extern struct driver_interface ata;
 
 /* configuration flags */

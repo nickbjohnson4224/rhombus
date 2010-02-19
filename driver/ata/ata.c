@@ -1,6 +1,10 @@
 /* Copyright 2010 Nick Johnson */
 
-#include <flux/flux.h>
+#include <flux/arch.h>
+#include <flux/driver.h>
+#include <flux/signal.h>
+#include <flux/request.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>

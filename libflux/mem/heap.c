@@ -2,8 +2,9 @@
 
 #include <flux/arch.h>
 #include <flux/config.h>
-#include <flux/flux.h>
 #include <flux/heap.h>
+#include <flux/signal.h>
+#include <flux/mmap.h>
 
 /* abmalloc - The AfterBurner Memory Allocator
  * Copyright 2010 Nick Johnson

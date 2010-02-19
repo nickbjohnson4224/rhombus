@@ -1,7 +1,9 @@
 /* Copyright 2009, 2010 Nick Johnson */
 
-#include <flux/flux.h>
+#include <flux/arch.h>
 #include <flux/heap.h>
+#include <flux/abi.h>
+#include <flux/signal.h>
 
 static void __exit(uint32_t source, struct request *req) {
 	_exit(1);

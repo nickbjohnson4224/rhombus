@@ -2,9 +2,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <flux/flux.h>
 #include <string.h>
 #include <stdarg.h>
+
+#include <flux/signal.h>
+#include <flux/request.h>
+#include <flux/heap.h>
 
 FILE *stdin  = NULL;
 FILE *stdout = NULL;
@@ -51,35 +54,6 @@ static size_t read(void *ptr, size_t size, FILE *stream) {
 	sigfree(SIG_REPLY);
 
 	return oldsize;
-}
-
-static size_t einfo(void *ptr, size_t size, FILE *stream) {
-	struct request *req, *res;
-	uint8_t *data = (void*) ptr;
-
-	sighold(SIG_REPLY);
-
-	req = ralloc();
-
-	size = (size > sizeof(meta_t)) ? sizeof(meta_t) : size;
-
-	req_setbuf(req, STDOFF, size);
-	req->resource = stream->resource;
-	req->format   = REQ_READ;
-	req->fileoff  = stream->position;
-
-	fire(stream->target, stream->iport, req_cksum(req));
-
-	res = sigpull(SIG_REPLY);
-
-	memcpy(data, req_getbuf(res), res->datasize);
-
-	rfree(res);
-	rfree(req);
-
-	sigfree(SIG_REPLY);
-
-	return size;
 }
 
 static size_t write(const void *ptr, size_t size, FILE *stream) {

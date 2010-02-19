@@ -1,4 +1,8 @@
-#include <flux.h>
+/* Copyright 2010 Nick Johnson */
+
+#include <flux/arch.h>
+#include <flux/mmap.h>
+#include <flux/abi.h>
 
 int mmap(void *addr, size_t length, int prot) {
 	addr = (void*) ((uintptr_t) addr &~ (PAGESZ - 1));

@@ -1,6 +1,8 @@
 /* Copyright 2010 Nick Johnson */
 
-#include <flux/flux.h>
+#include <flux/arch.h>
+#include <flux/mmap.h>
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>

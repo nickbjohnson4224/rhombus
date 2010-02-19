@@ -1,7 +1,11 @@
 /* Copyright 2009, 2010 Nick Johnson */
 
-#include <flux/flux.h>
+#include <flux/arch.h>
+#include <flux/abi.h>
+#include <flux/signal.h>
 #include <flux/heap.h>
+#include <flux/proc.h>
+#include <flux/mmap.h>
 
 static volatile struct held_signal {
 	req_t *req;
@@ -118,7 +122,7 @@ void sigredirect(uint32_t source, uint32_t signal, void *grant) {
 		sighandler[signal](source, req);
 	}
 	
-	else if (signal != SIG_REPLY && source != info(0)) {
+	else if (signal != SIG_REPLY && source != pinfo(INFO_GPID)) {
 		if (!req) {
 			req = ralloc();
 		}

@@ -1,6 +1,7 @@
-#include <flux/flux.h>
-#include <stdint.h>
+/* Copyright 2010 Nick Johnson */
 
+#include <flux/arch.h>
+#include <flux/driver.h>
 #include <driver/pci.h>
 
 uint32_t pci_address(uint8_t bus, uint8_t slot, uint8_t func) {

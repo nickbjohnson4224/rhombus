@@ -1,11 +1,15 @@
 /* Copyright 2009, 2010 Nick Johnson */
 
+#include <flux/arch.h>
+#include <flux/signal.h>
+#include <flux/request.h>
+#include <flux/proc.h>
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <flux/flux.h>
 
 #include <driver/keyboard.h>
 

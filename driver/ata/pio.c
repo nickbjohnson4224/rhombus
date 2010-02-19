@@ -1,7 +1,9 @@
 /* Copyright 2010 Nick Johnson */
 
+#include <flux/arch.h>
+#include <flux/signal.h>
+
 #include <stdint.h>
-#include <flux/flux.h>
 
 #include <driver/ata.h>
 
@@ -64,8 +66,6 @@ static void atapi_pio_read(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 	sigblock(true, VSIG_REQ);
 
 	ata_select(drive);
-
-
 
 	sigblock(false, VSIG_REQ);
 }

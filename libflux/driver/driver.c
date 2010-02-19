@@ -1,7 +1,9 @@
 /* Copyright 2010 Nick Johnson */
 
-#include <flux.h>
+#include <flux/arch.h>
+#include <flux/driver.h>
+#include <flux/proc.h>
 
 void rirq(uint8_t irq) {
-	_ctrl(CTRL_IRQRD | CTRL_IRQ(irq), CTRL_IRQRD | CTRL_IRQMASK, 0);
+	pctrl(CTRL_IRQRD | CTRL_IRQ(irq), CTRL_IRQRD | CTRL_IRQMASK, 0);
 }
