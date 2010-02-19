@@ -1,4 +1,7 @@
-/* Copyright 2010 Nick Johnson */
+/* 
+ * Copyright 2010 Nick Johnson 
+ * ISC Licensed, see LICENSE for details
+ */
 
 #ifndef PCI_H
 #define PCI_H

@@ -1,5 +1,3 @@
-/* Copyright 2010 Nick Johnson */
-
 #ifndef TERMINAL_H
 #define TERMINAL_H
 

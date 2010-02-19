@@ -1,7 +1,6 @@
 BUILDDIR=$(PWD)
 
-LIB_DIRS  = libflux libc
-LIB_DIRS += driver
+LIB_DIRS  = driver
 BIN_DIRS  = kernel init
 
 CC := clang
@@ -21,16 +20,23 @@ PPFLAGS := -x assembler-with-cpp -I$(BUILDDIR)/inc
 
 export BUILDDIR CC LD AR AS PP CFLAGS LDFLAGS ARFLAGS PPFLAGS
 
-.PHONY: $(LIB_DIRS) $(BIN_DIRS) clean test cd distclean makedirs
+.PHONY: $(LIB_DIRS) $(BIN_DIRS) clean test cd distclean makedirs libc libflux
 
-all: makedirs $(LIB_DIRS) $(BIN_DIRS)
+all: makedirs $(LIB_DIRS) $(BIN_DIRS) libc libflux
 
-$(BIN_DIRS): $(LIB_DIRS)
+$(BIN_DIRS): $(LIB_DIRS) libc libflux
 	@ echo " MAKE	" $@
 	@ make -s -C $@
 
-$(LIB_DIRS):
-	@ export CFLAGS="$(CFLAGS) -fPIC"
+$(LIB_DIRS): libc libflux
+	@ echo " MAKE	" $@
+	@ make -s -C $@
+
+libflux:
+	@ echo " MAKE	" $@
+	@ make -s -C $@
+
+libc: libflux
 	@ echo " MAKE	" $@
 	@ make -s -C $@
 

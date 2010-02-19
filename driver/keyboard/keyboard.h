@@ -1,5 +1,3 @@
-/* Copyright 2010 Nick Johnson */
-
 #ifndef KEYBOARD_H
 #define KEYBOARD_H
 

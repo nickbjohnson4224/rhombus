@@ -1,3 +1,8 @@
+/* 
+ * Copyright 2010 Nick Johnson
+ * ISC Licensed, see LICENSE for details
+ */
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
