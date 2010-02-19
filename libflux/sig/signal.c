@@ -19,9 +19,10 @@ static volatile struct held_signal {
 static uint32_t sigmask(void);
 
 static volatile sig_handler_t 	sighandler    [MAXSIGNAL];
-static volatile uint8_t			sighold_count [MAXSIGNAL];
-static volatile uint8_t 	 	sigblock_count[MAXSIGNAL];
-static volatile uint8_t 		allblock_count = 0;
+
+static volatile uint8_t sighold_count [MAXSIGNAL];
+static volatile uint8_t sigblock_count[MAXSIGNAL];
+static volatile uint8_t allblock_count = 0;
 
 void siginit(void) {
 	extern void sighand(void);
@@ -133,15 +134,18 @@ void sigredirect(uint32_t source, uint32_t signal, void *grant) {
 	}
 }
 
-static struct request *sigfindt(uint16_t signal, uint32_t trans) {
+req_t *sigfind(uint16_t signal, uint32_t trans, uint32_t caller) {
 	struct held_signal *hs, *old;
 	struct request *req = NULL;
+
+	while (!sigqueue[signal]) sleep();
 
 	sigblock(true, signal);
 
 	hs = (void*) sigqueue[signal];
 
-	if (hs->transid == trans) {
+	if ((trans == 0 || hs->transid == trans) 
+			&& (caller == 0 || hs->caller == caller)) {
 		req = hs->req;
 		sigqueue[signal] = hs->next;
 	}
@@ -153,7 +157,8 @@ static struct request *sigfindt(uint16_t signal, uint32_t trans) {
 			return NULL;
 		}
 
-		if (hs->next->transid == trans) {
+		if ((trans == 0 || hs->next->transid == trans)
+				&& (caller == 0 || hs->caller == caller)) {
 			req = hs->next->req;
 			old = hs->next;
 			hs->next = old->next;
@@ -166,31 +171,24 @@ static struct request *sigfindt(uint16_t signal, uint32_t trans) {
 	return req;
 }
 
-struct request *sigpull(uint16_t signal) {
-	struct held_signal *hs;
-	struct request *req;
+req_t *sigpulltc(uint16_t signal, uint32_t trans, uint32_t caller) {
+	struct request *req = NULL;
 
-	while (!sigqueue[signal]) sleep();
-
-	sigblock(true, signal);
-
-	hs = (void*) sigqueue[signal];
-	req = hs->req;
-	sigqueue[signal] = hs->next;
-	heap_free(hs);
-
-	sigblock(false, signal);
+	while (!(req = sigfind(signal, trans, caller))) sleep();
 
 	return req;
 }
 
-struct request *sigpullt(uint16_t signal, uint32_t trans) {
-	struct request *req = NULL;
+struct request *sigpull(uint16_t signal) {
+	return sigpulltc(signal, 0, 0);
+}
 
-	while (!sigqueue[signal]) sleep();
-	while (!(req = sigfindt(signal, trans))) sleep();
+req_t *sigpullt(uint16_t signal, uint32_t trans) {
+	return sigpulltc(signal, trans, 0);
+}
 
-	return req;
+req_t *sigpullc(uint16_t signal, uint32_t caller) {
+	return sigpulltc(signal, 0, caller);
 }
 
 void sighold(uint16_t signal) {

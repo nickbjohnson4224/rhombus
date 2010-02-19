@@ -17,9 +17,12 @@ void sigregister(uint16_t signal, sig_handler_t handler);
 void   sighold(uint16_t signal);			/* Hold signal */
 void   sigfree(uint16_t signal);			/* Stop holding signal */
 
-req_t *sigpull(uint16_t signal);			/* Get held signal request */
+req_t *sigfind(uint16_t signal, uint32_t trans, uint32_t caller);
 
+req_t *sigpull(uint16_t signal);			/* Get held signal request */
 req_t *sigpullt(uint16_t signal, uint32_t trans);
+req_t *sigpullc(uint16_t signal, uint32_t caller);
+req_t *sigpulltc(uint16_t signal, uint32_t trans, uint32_t caller);
 
 void   sigpush(uint16_t signal, req_t *r);	/* Re-hold signal request */
 

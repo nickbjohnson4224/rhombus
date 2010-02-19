@@ -10,7 +10,7 @@ size_t read(struct file *fd, void *buf, size_t size, uint64_t offset) {
 	struct request *req, *res;
 	uint8_t *data = (void*) buf;
 	uint16_t datasize;
-	size_t oldsize, i = 0;
+	size_t oldsize, i = 1;
 
 	oldsize = size;
 
@@ -29,7 +29,7 @@ size_t read(struct file *fd, void *buf, size_t size, uint64_t offset) {
 
 		fire(fd->target, SIG_READ, req_cksum(req));
 
-		res = sigpullt(SIG_REPLY, i);
+		res = sigpulltc(SIG_REPLY, i, fd->target);
 
 		if (res->format == REQ_ERROR) {
 			return (oldsize - size);

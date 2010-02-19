@@ -31,7 +31,7 @@ size_t write(struct file *fd, void *buf, size_t size, uint64_t offset) {
 
 		fire(fd->target, SIG_WRITE, req_cksum(req));
 
-		res = sigpull(SIG_REPLY);
+		res = sigpulltc(SIG_REPLY, i, fd->target);
 
 		if (res->format == REQ_ERROR) {
 			return (oldsize - size);

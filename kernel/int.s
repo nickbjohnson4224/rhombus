@@ -1,4 +1,5 @@
 ; Copyright 2009 Nick Johnson
+; ISC Licensed, see LICENSE for details
 
 #define ASM
 #include <flux/config.h>
