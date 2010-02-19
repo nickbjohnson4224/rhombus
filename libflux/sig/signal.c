@@ -133,20 +133,62 @@ void sigredirect(uint32_t source, uint32_t signal, void *grant) {
 	}
 }
 
+static struct request *sigfindt(uint16_t signal, uint32_t trans) {
+	struct held_signal *hs, *old;
+	struct request *req = NULL;
+
+	sigblock(true, signal);
+
+	hs = (void*) sigqueue[signal];
+
+	if (hs->transid == trans) {
+		req = hs->req;
+		sigqueue[signal] = hs->next;
+	}
+
+	while (req == NULL) {
+
+		if (!hs->next) {
+			sigblock(false, signal);
+			return NULL;
+		}
+
+		if (hs->next->transid == trans) {
+			req = hs->next->req;
+			old = hs->next;
+			hs->next = old->next;
+			heap_free(old);
+		}
+	}
+
+	sigblock(false, signal);
+
+	return req;
+}
+
 struct request *sigpull(uint16_t signal) {
 	struct held_signal *hs;
 	struct request *req;
 
 	while (!sigqueue[signal]) sleep();
 
-	sigblock(true, VSIG_ALL);
+	sigblock(true, signal);
 
 	hs = (void*) sigqueue[signal];
 	req = hs->req;
 	sigqueue[signal] = hs->next;
 	heap_free(hs);
 
-	sigblock(false, VSIG_ALL);
+	sigblock(false, signal);
+
+	return req;
+}
+
+struct request *sigpullt(uint16_t signal, uint32_t trans) {
+	struct request *req = NULL;
+
+	while (!sigqueue[signal]) sleep();
+	while (!(req = sigfindt(signal, trans))) sleep();
 
 	return req;
 }

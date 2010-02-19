@@ -29,7 +29,7 @@ size_t read(struct file *fd, void *buf, size_t size, uint64_t offset) {
 
 		fire(fd->target, SIG_READ, req_cksum(req));
 
-		res = sigpull(SIG_REPLY);
+		res = sigpullt(SIG_REPLY, i);
 
 		if (res->format == REQ_ERROR) {
 			return (oldsize - size);

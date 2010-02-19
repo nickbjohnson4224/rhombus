@@ -341,5 +341,3 @@ int printf(const char *format, ...) {
 
 	return ret;
 }
-
-

@@ -16,7 +16,11 @@ void sigregister(uint16_t signal, sig_handler_t handler);
 
 void   sighold(uint16_t signal);			/* Hold signal */
 void   sigfree(uint16_t signal);			/* Stop holding signal */
+
 req_t *sigpull(uint16_t signal);			/* Get held signal request */
+
+req_t *sigpullt(uint16_t signal, uint32_t trans);
+
 void   sigpush(uint16_t signal, req_t *r);	/* Re-hold signal request */
 
 #define SSIG_FAULT	0x00
