@@ -5,11 +5,12 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 int atoi(const char *nptr) {
 	int i, sum;
 
-	for (sum = 0, i = 0; nptr[i]; i++) {
+	for (sum = 0, i = 0; isdigit(nptr[i]); i++) {
 		sum *= 10;
 		sum += nptr[i] - '0';
 	}

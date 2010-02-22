@@ -11,9 +11,9 @@ req_t *req_cksum(req_t *r) {
 	size_t i;
 	uint32_t checksum = 0;
 
-	for (i = 1; i < sizeof(struct request) / sizeof(uint32_t); i++) {
+/*	for (i = 1; i < sizeof(struct request) / sizeof(uint32_t); i++) {
 		checksum ^= reqflat[i];
-	}
+	} */
 
 	r->checksum = checksum;
 	return r;
@@ -28,9 +28,9 @@ bool req_check(req_t *r) {
 		return false;
 	}
 
-	for (i = 0; i < sizeof(struct request) / sizeof(uint32_t); i++) {
+/*	for (i = 0; i < sizeof(struct request) / sizeof(uint32_t); i++) {
 		checksum ^= reqflat[i];
-	}
+	} */
 
 	if (checksum) {
 		return false;

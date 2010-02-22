@@ -40,6 +40,7 @@ static void ls(int argc, char **argv);
 static void halt(int argc, char **argv);
 static void ata_read(int argc, char **argv);
 static void seek(int argc, char **argv);
+static void gen(int argc, char **argv);
 
 static const char *cmdlist[] = {
 	"echo",
@@ -48,6 +49,7 @@ static const char *cmdlist[] = {
 	"halt",
 	"read",
 	"seek",
+	"gen",
 	NULL,
 };
 
@@ -58,6 +60,7 @@ static void (*cmd[])(int, char**) = {
 	halt,
 	ata_read,
 	seek,
+	gen,
 };
 
 static int vexec(char *name, int argc, char **argv) {
@@ -75,7 +78,7 @@ static int vexec(char *name, int argc, char **argv) {
 /***** SHELL *****/
 
 void shell(void) {
-	char lnbuffer[100];
+	char lnbuffer[1000];
 	char *argv[10];
 	size_t i, n;
 
@@ -85,7 +88,7 @@ void shell(void) {
 
 	while (1) {
 		printf("fish %s $ ", pwd);
-		gets(lnbuffer);
+		fgets(lnbuffer, 1000, stdin);
 
 		argv[0] = lnbuffer;
 
@@ -124,7 +127,7 @@ static void halt(int argc, char **argv) {
 }
 
 static void ata_read(int argc, char **argv) {
-	size_t size;
+	size_t size, rsize;
 	char buffer[257];
 
 	if (argc != 2) {
@@ -136,12 +139,12 @@ static void ata_read(int argc, char **argv) {
 
 	while (size) {
 
-		fread(buffer, sizeof(char), (size > 256) ? 256 : size, disk);
+		rsize = fread(buffer, sizeof(char), (size > 256) ? 256 : size, disk);
 
-		buffer[256] = '\0';
+		buffer[rsize] = '\0';
 		printf(buffer);
 
-		size -= (size > 256) ? 256: size;
+		size -= (size > rsize) ? rsize: size;
 	}
 
 	printf("\n");
@@ -155,4 +158,16 @@ static void seek(int argc, char **argv) {
 	pos = atoi(argv[1]);
 
 	fseek(disk, pos, SEEK_SET);
+}
+
+static void gen(int argc, char **argv) {
+	size_t i, n;
+
+	n = atoi(argv[1]);
+
+	for (i = 0; i < n; i++) {
+		putchar('!');
+	}
+
+	printf("\n");
 }

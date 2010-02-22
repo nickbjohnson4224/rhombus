@@ -115,7 +115,7 @@ void sigredirect(uint32_t source, uint32_t signal, void *grant) {
 		hs->req = req;
 		hs->caller = source;
 		hs->signal = signal;
-		hs->transid = req->transid;
+		if (req) hs->transid = req->transid;
 
 		hs->next = (void*) sigqueue[signal];
 		sigqueue[signal] = hs;

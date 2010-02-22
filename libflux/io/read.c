@@ -35,6 +35,7 @@ size_t read(struct file *fd, void *buf, size_t size, uint64_t offset) {
 		res = sigpulltc(SIG_REPLY, i, fd->target);
 
 		if (res->format == REQ_ERROR) {
+			rfree(res);
 			return (oldsize - size);
 		}
 

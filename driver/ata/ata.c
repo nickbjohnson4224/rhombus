@@ -186,8 +186,8 @@ static void ata_init(device_t dev) {
 	ata_irq [ATA11] = ata_irq [ATA1];
 
 	/* disable controller IRQs */
-	outb(ata_base[ATA0] + REG_CTRL, CTRL_NEIN);
-	outb(ata_base[ATA1] + REG_CTRL, CTRL_NEIN);
+	outw(ata_ctrl[ATA0] + REG_CTRL, CTRL_NEIN);
+	outw(ata_ctrl[ATA1] + REG_CTRL, CTRL_NEIN);
 
 	/* detect ATA drives */
 	for (dr = 0; dr < 4; dr++) {

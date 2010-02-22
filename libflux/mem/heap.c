@@ -1,5 +1,5 @@
 /* 
- * Copyright 2009 Nick Johnson 
+ * Copyright 2010 Nick Johnson 
  * ISC Licensed, see LICENSE for details
  */
 
@@ -150,30 +150,31 @@ static void slab_free(struct slab_header *slab, void *ptr) {
 void *heap_valloc(size_t size) {
 	size_t idx = 0, i;
 	uintptr_t addr;
+	size_t nblocks = (size % BLOCKSZ) ? (size / BLOCKSZ) + 1 : size / BLOCKSZ;
 
 	if (size > BLOCKSZ) {
 		idx = bmap_top;
 		
-		for (i = 0; i < size / BLOCKSZ; i++, idx++) {
-			bmap[idx >> 3] |= (1 << (idx & 0x7));
+		for (i = 0; i < nblocks; i++, idx++) {
+			bmap[idx >> 4] |= (1 << (idx & 0xF));
 		}
 
-		bmap_top += (size / BLOCKSZ);
+		bmap_top += nblocks;
 	}
 	else {
 		while (idx < _HEAP_SIZE) {
-			if (bmap[idx >> 3] == 0xFF) {
-				idx += 8;
+			if (bmap[idx >> 4] == 0xFFFF) {
+				idx += 16;
 				continue;
 			}
-			if ((bmap[idx >> 3] & (1 << (idx & 0x7))) == 0) {
+			if ((bmap[idx >> 4] & (1 << (idx & 0xF))) == 0) {
 				break;
 			}
 			idx++;
 		}
 
 		if (idx >= bmap_top) bmap_top = idx + 1;
-		bmap[idx >> 3] |= (1 << (idx & 0x7));
+		bmap[idx >> 4] |= (1 << (idx & 0xF));
 	}
 	
 	addr = _HEAP_START + (idx * BLOCKSZ);
@@ -185,14 +186,20 @@ void *heap_valloc(size_t size) {
 static void heap_vfree(void *ptr) {
 	size_t idx = ((uintptr_t) ptr - _HEAP_START) / BLOCKSZ;
 
-	bmap[idx >> 3] &= ~(1 << (idx & 0x7));
+	bmap[idx >> 4] &= ~(1 << (idx & 0xF));
 	umap(ptr, BLOCKSZ);
 }
 
 /*** The Heap Interface ***/
 
 void heap_init(void) {
+	size_t i;
+
 	mmap((void*) _BMAP_START, _BMAP_SIZE, MMAP_WRITE | MMAP_READ);
+	
+	for (i = 0; i < _BMAP_SIZE / sizeof(uint16_t); i++) {
+		bmap[i] = 0;
+	}
 }
 
 struct request *ralloc(void) {
@@ -205,7 +212,7 @@ void rfree(struct request *r) {
 	sigblock(true, VSIG_ALL);
 
 	idx = ((uintptr_t) r - _HEAP_START) / BLOCKSZ;
-	bmap[idx >> 3] &= ~(1 << (idx & 0x7));
+	bmap[idx >> 4] &= ~(1 << (idx & 0xFFFF));
 
 	sigblock(false, VSIG_ALL);
 }
@@ -267,7 +274,7 @@ void heap_free(void *ptr) {
 
 	slab_free(s, ptr);
 
-/*	if (s->refc == 0) {
+	if (s->refc == 0) {
 		bidx = s->esize / sizeof(void*);
 		x = bucket[bidx];
 		if (x == s) {
@@ -283,7 +290,7 @@ void heap_free(void *ptr) {
 			}
 		}
 		del_slab(s);
-	} */
+	}
 
 	sigblock(false, VSIG_ALL);
 }
