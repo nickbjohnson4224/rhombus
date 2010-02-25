@@ -84,14 +84,6 @@ int main() {
 
 	launch_driver(&disk, &ata, pci_findb(CLASS_STORAGE, PCI_CLASS, nulldev));
 
-	launch_driver(&ping, &ping_driver, nulldev);
-
-	test = malloc(4000000);
-
-	for (i = 0; i < 16; i++) fwrite(test, 1, 4000000, ping);
-
-	free(test);
-
 	shell();
 
 	for(;;);
