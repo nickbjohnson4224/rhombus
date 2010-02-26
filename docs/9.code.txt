@@ -1,0 +1,92 @@
+Flux Operating System
+9 - Coding Guidelines
+==============================
+
+Contents:
+==============================
+0 - General Design Principles
+1 - C Style Guidelines
+
+0 - General Design Principles
+==============================
+Like its ancestor UNIX, one of the primary design principles of Flux is
+modularity through small, simple tools. If possible, split a program into
+many small pieces instead of making one large one. These are the conditions
+under which a program should be split, in order of descending importance:
+
+1. When a program does two unrelated tasks.
+2. When the mechanism of a program can be separated out.
+3. When two parts of one task may be run in parallel.
+
+Programs may be split in many ways. When two unrelated tasks have to be
+performed, a program should be split into two different binaries that run in
+parallel using generic I/O interfaces. When the mechanism of a program can be
+isolated, that mechanism should be put into a library accessible to the rest
+of the system.
+
+1 - C Style Guidelines
+==============================
+All code in the Flux base distribution is strictly subject to these style
+guidelines. It is recommended that code written specifically for the Flux
+operating system also follow these guidelines.
+
+Spacing
+------------------------------
+Use whitespace liberally. All binary operators must have spaces on both sides,
+and unary operators must have spaces before them. Keywords such as "if" and
+"for" must have spaces after them. Assume no order of operations in arithmetic
+expressions; always fully parenthesize.
+
+Incorrect example:
+
+for(i=0;i<42;i++){
+	x=i+2*47-3;
+}
+
+Correct example:
+for (i = 0; i < 42; i++) {
+	x = i + (2 * 47) - 3;
+}
+
+Also use blank lines liberally. Separate sections of code that are directly
+related into blocks within functions. Keep all local variable declarations in a
+single block at the beginning of each function.
+
+All lines must be tabbed using either 4-space tabs or equivalently effective 
+spaces. A 4-space tab width can be assumed for all text files and for all
+textual output from programs.
+
+Braces
+------------------------------
+Use K&R or "The One True Brace Style". All statements that are followed by an
+opening brace are followed by that brace on the same line. For example:
+
+for (i = 0; i < 42; i++) {
+	...
+}
+
+Naming
+------------------------------
+All symbol, type definition and local variable names must be entirely in lower 
+case, and optionally contain underscores as word separators. If possible,
+prefix function and global variable names with a word or character describing 
+the type of data they contain. For example:
+
+add(foo a, foo b);
+
+is not as good as:
+
+foo_add(foo a, foo b);
+
+Functions
+------------------------------
+Function prototypes are all on a single line, including return types. In
+header files, feel free to line up as much as possible within function
+prototypes. If you are using a modifier that would otherwise overflow the line, 
+that modifier may be moved to the preceding line.
+
+Example:
+
+int main(int argc, char **argv) {
+	...
+}
