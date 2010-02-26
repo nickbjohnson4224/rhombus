@@ -3,6 +3,8 @@
  * ISC Licensed, see LICENSE for details
  */
 
+#include <flux/arch.h>
+
 #include <string.h>
 #include <stdint.h>
 

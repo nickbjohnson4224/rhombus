@@ -70,8 +70,11 @@ typedef uint32_t		size_t;
 
 /*** Architecture Optimized Functions ***/
 
-void x86_memcpy(void *dest, void *src, size_t size);
-void x86_memclr(void *s, size_t size);
+void *x86_memcpy(void *dest, const void *src, size_t size);
+void *x86_memclr(void *s, size_t size);
+
+#define arch_memcpy x86_memcpy
+#define arch_memclr x86_memclr
 
 #endif/*ASM*/
 

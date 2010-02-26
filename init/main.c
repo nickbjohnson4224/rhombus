@@ -20,6 +20,8 @@
 #include <driver/pci.h>
 
 FILE *disk = NULL;
+
+/*
 FILE *ping = NULL;
 
 static void ping_write(uint32_t caller, req_t *req) {
@@ -36,7 +38,7 @@ static struct driver_interface ping_driver = {
 	NULL, 
 	NULL, 
 	0
-};
+};*/
 
 static void launch_driver(FILE **hand, struct driver_interface *drv, device_t dev) {
 	int32_t pid;
@@ -52,7 +54,7 @@ static void launch_driver(FILE **hand, struct driver_interface *drv, device_t de
 		block(true);
 		for(;;);
 	}
-	sigpull(SIG_REPLY);
+	sigpullc(SIG_REPLY, pid);
 
 	*hand = fsetup(pid, 0, "r");
 
@@ -68,8 +70,6 @@ static void segfault(uint32_t source, struct request *req) {
 
 int main() {
 	extern void shell(void);
-	void *test;
-	size_t i;
 
 	device_t nulldev;
 	nulldev.type = -1;

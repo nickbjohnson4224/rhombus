@@ -206,7 +206,7 @@ char *fgets(char *s, int size, FILE *stream) {
 	size_t i;
 	int ch;
 
-	for (i = 0; i < size; i++) {
+	for (i = 0; i < (size_t) size; i++) {
 		ch = fgetc(stream);
 		s[i] = ch;
 

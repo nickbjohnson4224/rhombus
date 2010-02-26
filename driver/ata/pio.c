@@ -17,7 +17,12 @@ static void atapi_pio_write(uint8_t drive, uint64_t sector, uint16_t *buffer);
 static void atapi_pio_read (uint8_t drive, uint64_t sector, uint16_t *buffer);
 
 void pio_write_sector(uint8_t drive, uint64_t sector, uint16_t *buffer) {
-	ata_pio_write(drive, sector, buffer);
+	if (ata_drive[drive].flags & FLAG_ATAPI) {
+		atapi_pio_write(drive, sector, buffer);
+	}
+	else {
+		ata_pio_write(drive, sector, buffer);
+	}
 }
 
 void pio_read_sector(uint8_t drive, uint64_t sector, uint16_t *buffer) {
@@ -31,7 +36,6 @@ void pio_read_sector(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 
 static void ata_pio_read(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 	size_t i;
-	uint8_t err;
 	bool lba48 = false;
 
 	sigblock(true, VSIG_REQ);
@@ -47,7 +51,7 @@ static void ata_pio_read(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 	}
 
 	/* read in one sector of words */
-	for (i = 0; i < (1 << ata_drive[drive].sectsize) >> 1; i++) {
+	for (i = 0; i < (uint32_t) (1 << ata_drive[drive].sectsize) >> 1; i++) {
 		ata_sleep400(drive);
 		while (inb(ata_base[drive] + REG_STAT) & STAT_BUSY);
 		buffer[i] = inw(ata_base[drive] + REG_DATA);
@@ -115,7 +119,6 @@ static void atapi_pio_read(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 
 static void ata_pio_write(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 	size_t i;
-	uint8_t err;
 	bool lba48 = false;
 
 	/* must not be interrupted */
@@ -131,7 +134,7 @@ static void ata_pio_write(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 	}
 
 	/* write one sector of words */
-	for (i = 0; i < (1 << ata_drive[drive].sectsize) >> 1; i++) {
+	for (i = 0; i < (uint32_t) (1 << ata_drive[drive].sectsize) >> 1; i++) {
 		ata_sleep400(drive);
 		while (inb(ata_base[drive] + REG_STAT) & STAT_BUSY);
 		outw(ata_base[drive] + REG_DATA, buffer[i]);
@@ -142,4 +145,7 @@ static void ata_pio_write(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 	while (inb(ata_base[drive] + REG_STAT) & STAT_BUSY);
 
 	sigblock(false, VSIG_REQ);
+}
+
+static void atapi_pio_write(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 }

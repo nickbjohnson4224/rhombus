@@ -3,11 +3,10 @@
  * ISC Licensed, see LICENSE for details
  */
 
+#include <flux/arch.h>
 #include <flux/io.h>
 #include <flux/signal.h>
 #include <flux/request.h>
-
-#include <string.h>
 
 size_t write(struct file *fd, void *buf, size_t size, uint64_t offset) {
 	req_t *req, *res;
@@ -30,7 +29,7 @@ size_t write(struct file *fd, void *buf, size_t size, uint64_t offset) {
 		req->format   = REQ_WRITE;
 		req->fileoff  = offset;
 
-		memcpy(req_getbuf(req), data, datasize);
+		arch_memcpy(req_getbuf(req), data, datasize);
 
 		fire(fd->target, SIG_WRITE, req_cksum(req));
 

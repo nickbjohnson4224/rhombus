@@ -82,13 +82,14 @@ void shell(void) {
 	char *argv[10];
 	size_t i, n;
 
-	char *pwd = "/";
+	char *pwd = (char*) "/";
 
 	printf("\nLaunching Flux Init SHell\n");
 
 	while (1) {
 		printf("fish %s $ ", pwd);
 		fgets(lnbuffer, 1000, stdin);
+		lnbuffer[strlen(lnbuffer) - 1] = '\0';
 
 		argv[0] = lnbuffer;
 

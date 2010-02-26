@@ -46,7 +46,7 @@ bool req_check(req_t *r) {
 }
 
 bool req_setbuf(req_t *r, uint16_t offset, uint16_t size) {
-	if (!req_check(r) || offset < 32 || offset + size > PAGESZ) {
+	if (!r || offset < 32 || offset + size > PAGESZ) {
 		return false;
 	}
 

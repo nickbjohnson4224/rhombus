@@ -11,7 +11,7 @@ PP := /usr/flux-cross/bin/i586-elf-cpp
 
 CFLAGS	:= -pipe -Wall -Werror -Wextra -pedantic -std=c99
 CFLAGS	+= -Wpointer-arith -Wcast-align -Wwrite-strings
-CFLAGS	+= -Wno-unused-parameter
+CFLAGS	+= -Wno-unused-parameter -Wno-unused-function
 CFLAGS	+= -O3 -fomit-frame-pointer
 CFLAGS	+= -ffreestanding -I$(BUILDDIR)/inc
 LDFLAGS := -L$(BUILDDIR)/lib
@@ -43,7 +43,7 @@ libc: libflux
 distclean: clean
 	@ echo " CLEAN	" $(shell find inc/*)
 	@ rm -r inc/*
-	@ echo " CLEAN	" run/floppy.img run/khaos.iso
+	@ echo " CLEAN	" run/floppy.img run/flux.iso
 	@ rm run/floppy.img run/flux.iso
 	@ echo " CLEAN	" $(shell find . -name "*.swp")
 	@ rm $(shell find . -name "*.swp")

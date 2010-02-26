@@ -195,9 +195,13 @@ req_t *sigpullc(uint16_t signal, uint32_t caller) {
 }
 
 void sighold(uint16_t signal) {
+	sigblock(true, VSIG_ALL);
 	sighold_count[signal]++;
+	sigblock(false, VSIG_ALL);
 }
 
 void sigfree(uint16_t signal) {
+	sigblock(true, VSIG_ALL);
 	sighold_count[signal]--;
+	sigblock(false, VSIG_ALL);
 }

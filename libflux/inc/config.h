@@ -6,7 +6,7 @@
 /********** GLOBAL OPTIONS **********/
 
 	/* Enable checks on privileged code */
-/*	#define PARANOID */
+	#define PARANOID
 
 /********** KERNEL OPTIONS **********/
 

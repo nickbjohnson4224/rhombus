@@ -31,7 +31,7 @@ static void cwrite(char c) {
 	}
 }
 
-static void swrite(char *s) {
+static void swrite(const char *s) {
 	while (*s != '\0') cwrite(*s++);
 }
 

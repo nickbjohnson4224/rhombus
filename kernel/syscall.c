@@ -23,7 +23,7 @@ image_t *pit_handler(image_t *image) {
 	if (image->cs | 1) tick++;
 
 	if (held_count) {
-		for (i = 0; i < 16; i++) {
+		for (i = 0; i < 15; i++) {
 			if (held_irq[i]) {
 				holder = task_get(irq_holder[i]);
 				if (!holder || 

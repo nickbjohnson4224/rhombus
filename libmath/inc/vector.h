@@ -1,7 +1,7 @@
 #ifndef MATH_VECTOR_H
 #define MATH_VECTOR_H
 
-#include <flux/arch.h>
+#include <stdint.h>
 
 typedef struct vector {
 	size_t vdim;	/* Vector dimension */

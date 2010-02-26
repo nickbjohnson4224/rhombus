@@ -10,7 +10,7 @@
 #include <init.h>
 
 #define FLUX_VERSION_MAJOR 0
-#define FLUX_VERSION_MINOR 2
+#define FLUX_VERSION_MINOR 3
 #define FLUX_KERNEL_REVISN 1
 
 #ifdef KERNEL_GC

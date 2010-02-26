@@ -64,7 +64,7 @@ static void ata_read(uint32_t caller, req_t *req) {
 	dr = req->resource;
 	offset = req->fileoff & ((1 << ata_drive[dr].sectsize) - 1);
 	sector = req->fileoff >> ata_drive[dr].sectsize;
-	size = (req->datasize + offset > (1 << ata_drive[dr].sectsize)) 
+	size = (req->datasize + offset > (uint32_t) (1 << ata_drive[dr].sectsize)) 
 		? (1 << ata_drive[dr].sectsize) - offset
 		: req->datasize;
 
@@ -133,7 +133,6 @@ struct driver_interface ata = {
 };
 
 static void ata_init(device_t dev) {
-	char *secbuffer;
 	size_t dr, i;
 	uint8_t err, status, cl, ch;
 	uint16_t c;

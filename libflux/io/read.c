@@ -3,11 +3,10 @@
  * ISC Licensed, see LICENSE for details 
  */
 
+#include <flux/arch.h>
 #include <flux/io.h>
 #include <flux/signal.h>
 #include <flux/request.h>
-
-#include <string.h>
 
 size_t read(struct file *fd, void *buf, size_t size, uint64_t offset) {
 	struct request *req, *res;
@@ -39,7 +38,7 @@ size_t read(struct file *fd, void *buf, size_t size, uint64_t offset) {
 			return (oldsize - size);
 		}
 
-		memcpy(data, req_getbuf(res), res->datasize);
+		arch_memcpy(data, req_getbuf(res), res->datasize);
 
 		data    = &data[res->datasize];
 		size   -= res->datasize;
