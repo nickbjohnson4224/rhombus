@@ -25,14 +25,14 @@ typedef uint16_t pid_t;
 #define NOERR 0x02
 #define EKILL 0x04
 
-image_t *signal(uint16_t task, uint16_t sig, void* grant, uint8_t flags);
-image_t *sret(image_t *image);
+thread_t *signal(uint16_t task, uint16_t sig, void* grant, uint8_t flags);
+thread_t *sret(thread_t *image);
 
 /***** TASK TABLE *****/
 
 typedef struct task {
 	map_t map;
-	image_t *image;
+	thread_t *image;
 	uint32_t flags;
 	uint8_t quanta;
 	uint16_t magic;
@@ -72,11 +72,11 @@ typedef struct task {
 #define CTRL_SFLOAT	0x00000040
 #define CTRL_SDEATH	0x00000080
 
-void     task_touch(pid_t pid);
-task_t  *task_get(pid_t pid);
-task_t  *task_new(task_t *src);
-uint32_t task_rem(task_t *t);
-image_t *task_switch(task_t *t);
+void      task_touch (pid_t pid);
+task_t   *task_get   (pid_t pid);
+task_t   *task_new   (task_t *src);
+uint32_t  task_rem   (task_t *t);
+thread_t *task_switch(task_t *t);
 
 extern pool_t *tpool;		/* Pool allocator for task structures */
 extern task_t *task; 		/* Array of task structures */
@@ -89,8 +89,8 @@ extern pid_t irq_holder[15];
 
 /***** SCHEDULER *****/
 
-void sched_ins(pid_t pid);
-void sched_rem(pid_t pid);
+void    sched_ins(pid_t pid);
+void    sched_rem(pid_t pid);
 task_t *task_next(uint8_t flags);
 
 #define SF_FORCED 0x00

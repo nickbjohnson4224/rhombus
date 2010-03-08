@@ -24,18 +24,18 @@ struct idt_entry {
 handler_t int_handlers[128];
 
 /* Assembly interrupt handler stubs to be registered in the IDT */
-extern void 
- int0(void),  int1(void),  int2(void),  int3(void),  int4(void),  int5(void),  int6(void),  
- int7(void),  int8(void),  int9(void), int10(void), int11(void), int12(void), int13(void), 
-int14(void), int15(void), int16(void), int17(void), int18(void), int32(void), int33(void), 
-int34(void), int35(void), int36(void), int37(void), int38(void), int39(void), int40(void), 
-int41(void), int42(void), int43(void), int44(void), int45(void), int46(void), int47(void),
-int96(void), int97(void), int98(void), int99(void), int100(void), int101(void), int102(void), 
-int103(void);
+extern void
+ int0(void),  int1(void),  int2(void),  int3(void),  int4(void),  int5(void),  
+ int6(void),  int7(void),  int8(void),  int9(void),  int10(void), int11(void), 
+ int12(void), int13(void), int14(void), int15(void), int16(void), int17(void), 
+ int18(void), int32(void), int33(void), int34(void), int35(void), int36(void), 
+ int37(void), int38(void), int39(void), int40(void), int41(void), int42(void), 
+ int43(void), int44(void), int45(void), int46(void), int47(void), int96(void), 
+ int97(void), int98(void), int99(void), int100(void), int101(void), int102(void), 
+ int103(void);
 
 /* Handlers to be put into the IDT, in order */
 typedef void (*int_handler_t) (void);
-__attribute__ ((section(".idata")))
 int_handler_t idt_raw[] = {
 
 /* Faults */
@@ -79,7 +79,7 @@ void init_idt() {
 	}
 
 	/* Write usermode interrupt handlers (syscalls) */
-	for (i = 96;i< 128; i++) {
+	for (i = 96; i < 128; i++) {
 		if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0xEE);
 	}
 
@@ -88,7 +88,6 @@ void init_idt() {
 }
 
 /* Set an IDT entry to a value */
-/*__attribute__ ((section(".itext"))) */
 void idt_set(uint8_t n, uint32_t base, uint16_t seg, uint8_t flags) {
 	if (!base) return; /* Ignore null handlers */
 	idt[n].base_l = (uint16_t) (base & 0xFFFF);
@@ -104,7 +103,7 @@ void register_int(uint8_t n, handler_t handler) {
 }
 
 /* C interrupt handler - called by assembly state-saving routine */
-void *int_handler(image_t *image) {
+thread_t *int_handler(thread_t *image) {
 
 	/* If userspace was interrupted, make sure its state is saved */
 	if (image->cs & 0x3) {
@@ -122,17 +121,8 @@ void *int_handler(image_t *image) {
 		image = int_handlers[image->num](image);
 	}
 
-	#ifdef PARANOID
-	/* Check image checksum */
-	if (!page_get((uintptr_t) &image->mg) || image->mg != 0x42242442) {
-		printk("%x: \n", image);
-		printk("%x\n", page_get((uintptr_t) (image + 0x1000)));
-		panic("invalid image");
-	}
-	#endif
-
 	/* Set TSS to generate images in the proper position */
-	tss_set_esp((uintptr_t) &image[1]);
+	tss_set_esp((uintptr_t) &image->tss_start);
 
 	return image;
 }
@@ -152,7 +142,6 @@ struct tss {
 extern uint8_t gdt[48];
 
 /* Initialize the TSS */
-__attribute__ ((section(".itext")))
 void init_tss() {
 	extern void tss_flush(void);
 	uint32_t base = (uint32_t) &tss;

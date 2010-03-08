@@ -15,8 +15,10 @@ static uint16_t held_count;
 
 /* Handles IRQ 0, and advances a simple counter used as a clock */
 /* If an IRQ was held, it is redirected now */
+
 uint32_t tick = 0;
-image_t *pit_handler(image_t *image) {
+
+thread_t *pit_handler(thread_t *image) {
 	size_t i;
 	task_t *holder;
 
@@ -42,7 +44,7 @@ image_t *pit_handler(image_t *image) {
 	return task_switch(task_next(0));
 }
 
-image_t *irq_redirect(image_t *image) {
+thread_t *irq_redirect(thread_t *image) {
 	task_t *holder;
 
 	holder = task_get(irq_holder[DEIRQ(image->num)]);
@@ -59,7 +61,7 @@ image_t *irq_redirect(image_t *image) {
 /***** FAULT HANDLERS *****/
 
 /* Generic fault */
-image_t *fault_generic(image_t *image) {
+thread_t *fault_generic(thread_t *image) {
 
 	#ifdef PARANOID
 	/* If in kernelspace, panic */
@@ -73,7 +75,7 @@ image_t *fault_generic(image_t *image) {
 }
 
 /* Page fault */
-image_t *fault_page(image_t *image) {
+thread_t *fault_page(thread_t *image) {
 
 	#ifdef PARANOID
 	extern uint32_t get_cr2(void);
@@ -94,7 +96,7 @@ image_t *fault_page(image_t *image) {
 }
 
 /* Floating point exception */
-image_t *fault_float(image_t *image) {
+thread_t *fault_float(thread_t *image) {
 
 	#ifdef PARANOID
 	/* If in kernelspace, panic */
@@ -107,7 +109,7 @@ image_t *fault_float(image_t *image) {
 }
 
 /* Double fault */
-image_t *fault_double(image_t *image) {
+thread_t *fault_double(thread_t *image) {
 
 	/* Can only come from kernel problems */
 	printk("DS:%x CS:%x\n", image->ds, image->cs);
@@ -117,9 +119,9 @@ image_t *fault_double(image_t *image) {
 }
 
 /***** System Calls *****/
-/* See section I of the Flux manual for details */
+/* See section II of the Flux manual for details */
 
-image_t *fire(image_t *image) {
+thread_t *fire(thread_t *image) {
 	uint32_t targ  = image->eax;
 	uint32_t sig   = image->ecx;
 	uint32_t grant = image->ebx;
@@ -141,11 +143,11 @@ image_t *fire(image_t *image) {
 	return signal(targ, sig, (void*) grant, 0);
 }
 
-image_t *drop(image_t *image) {
+thread_t *drop(thread_t *image) {
 	return sret(image);
 }
 
-image_t *hand(image_t *image) {
+thread_t *hand(thread_t *image) {
 	uint32_t old_handler;
 
 	old_handler = curr_task->shandler;
@@ -153,7 +155,7 @@ image_t *hand(image_t *image) {
 	ret(image, old_handler);
 }
 
-image_t *ctrl(image_t *image) {
+thread_t *ctrl(thread_t *image) {
 	extern uint32_t can_use_fpu;
 	uint32_t flags = image->eax;
 	uint32_t mask  = image->edx;
@@ -213,7 +215,7 @@ image_t *ctrl(image_t *image) {
 	}
 }
 
-image_t *info(image_t *image) {
+thread_t *info(thread_t *image) {
 	uint8_t sel = image->eax;
 
 	switch (sel) {
@@ -230,7 +232,7 @@ image_t *info(image_t *image) {
 	}
 }
 
-image_t *mmap(image_t *image) {
+thread_t *mmap(thread_t *image) {
 	uintptr_t addr = image->ebx;
 	size_t count   = image->ecx;
 	uint16_t flags = image->edx & 0xFFF;
@@ -273,7 +275,7 @@ image_t *mmap(image_t *image) {
 	ret(image, 0);
 }
 
-image_t *fork(image_t *image) {
+thread_t *fork(thread_t *image) {
 	pid_t parent;
 	task_t *child;
 
@@ -296,7 +298,7 @@ image_t *fork(image_t *image) {
 	return image;
 }
 
-image_t *exit(image_t *image) {
+thread_t *exit(thread_t *image) {
 	pid_t catcher;
 	uint32_t ret_val;
 	task_t *t;

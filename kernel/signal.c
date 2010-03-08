@@ -7,7 +7,7 @@
 #include <task.h>
 #include <int.h>
 
-image_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
+thread_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 	task_t *dst_t = task_get(targ);
 	task_t *src_t = curr_task;
 	uintptr_t addr, pflags;
@@ -39,15 +39,15 @@ image_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 	task_switch(dst_t);
 
 	/* Create new image structure below old one */	
-	memcpy(&dst_t->image[-1], dst_t->image, sizeof(image_t));
+	memcpy(&dst_t->image[-1], dst_t->image, sizeof(thread_t));
 	dst_t->image = &dst_t->image[-1];
 
 	/* Check for imminent task image stack overflows */
 	/* i.e. within two structures of overflow */
-	if ((uintptr_t) dst_t->image < SSTACK_BSE + 2 * sizeof(image_t)) {
+	if ((uintptr_t) dst_t->image < SSTACK_BSE + 2 * sizeof(thread_t)) {
 
 		/* Check for a second offense */
-		if ((uintptr_t) dst_t->image < SSTACK_BSE + sizeof(image_t)) {
+		if ((uintptr_t) dst_t->image < SSTACK_BSE + sizeof(thread_t)) {
 			return exit(dst_t->image);
 		}
 
@@ -64,7 +64,6 @@ image_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 
 	/* Save grant and flags */
 	dst_t->image[1].grant = dst_t->grant;
-	dst_t->image[1].flags = dst_t->flags;
 
 	/* Set registers to describe signal */
 
@@ -87,8 +86,7 @@ image_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 	return dst_t->image;
 }
 
-image_t *sret(image_t *image) {
-	uint32_t flags;
+thread_t *sret(thread_t *image) {
 
 	/* Bounds check image */
 	if ((uint32_t) curr_task->image >= SSTACK_TOP) {
@@ -100,11 +98,6 @@ image_t *sret(image_t *image) {
 
 	/* Reload saved grant */
 	curr_task->grant = curr_task->image->grant;
-
-	/* Reload/modify flags */
-	flags = curr_task->flags;
-	curr_task->flags &= ~(CTRL_BLOCK | CTRL_CLEAR);
-	curr_task->flags |= curr_task->image->flags & (CTRL_BLOCK | CTRL_CLEAR);
 
 	return curr_task->image;
 }

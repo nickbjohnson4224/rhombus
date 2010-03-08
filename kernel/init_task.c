@@ -55,7 +55,7 @@ void init_task() {
 		}
 
 		/* Set TIS top pointer */
-		t->image = (void*) (SSTACK_INI - sizeof(image_t));
+		t->image = (void*) (SSTACK_INI - sizeof(thread_t));
 
 		/* Load executable */
 		entry = elf_load(user_init);
@@ -69,7 +69,6 @@ void init_task() {
 		t->image->eip = entry;
 		t->image->cs  = 0x1B;
 		t->image->eflags = get_eflags() | 0x3200; 	/* IF, IOPL=3 */
-		t->image->mg  = 0x42242442;
 		tss_set_esp((uint32_t) &t->image[1]);
 
 	cursek(74, -1);

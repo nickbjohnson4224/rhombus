@@ -60,7 +60,7 @@ uint32_t task_rem(task_t *t) {
 }
 
 /* Switch to another task */
-image_t *task_switch(task_t *t) {
+thread_t *task_switch(task_t *t) {
 	extern void fpu_save(uint32_t *fxdata);
 	extern void fpu_load(uint32_t *fxdata);
 

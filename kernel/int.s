@@ -8,7 +8,6 @@
   global int%1
   int%1:
     cli
-	sub esp, 4	; Reserve space for caller
     push byte 0
     push byte %1
     jmp int_common
@@ -18,7 +17,6 @@
   global int%1
   int%1:
     cli
-	sub esp, 4	; Reserve space for caller
     push byte %1
     jmp int_common
 %endmacro 
@@ -79,11 +77,11 @@ global int_return
 int_common:
 	pusha
 
-	mov eax, 0
+	xor eax, eax
 	mov ax, ds
 	push eax
-	push 0x42242442
-	sub esp, 520
+
+	sub esp, 516
 
 	mov cx, 0x10
 	mov ds, cx
@@ -104,7 +102,8 @@ int_common:
 	mov esp, eax
 
 int_return:
-	add esp, 524
+	add esp, 516
+
 	pop eax
 	mov ds, ax
 	mov es, ax
@@ -112,5 +111,5 @@ int_return:
 	mov gs, ax
 
 	popa
-	add esp, 12
+	add esp, 8
 	iret
