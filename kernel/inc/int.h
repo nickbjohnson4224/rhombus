@@ -1,7 +1,4 @@
-/*
- * Copyright 2009, 2010 Nick Johnson 
- * ISC Licensed, see LICENSE for details
- */
+/* Copyright 2009, 2010 Nick Johnson */
 
 #ifndef INT_H
 #define INT_H

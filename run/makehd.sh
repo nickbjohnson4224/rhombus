@@ -2,4 +2,4 @@
 
 export BUILDDIR=${PWD}
 
-tar -cvf hd.img hd/*
+qemu-img create ${BUILDDIR}/run/hd.img 100M
