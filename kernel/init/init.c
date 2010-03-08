@@ -3,37 +3,27 @@
  * ISC Licensed, see LICENSE for details 
  */
 
-#include <lib.h>
-#include <mem.h>
-#include <int.h>
-#include <task.h>
-#include <init.h>
+#include <kernel/thread.h>
+#include <kernel/memory.h>
+#include <kernel/print.h>
 
 #define FLUX_VERSION_MAJOR 0
-#define FLUX_VERSION_MINOR 3
-#define FLUX_KERNEL_REVISN 1
+#define FLUX_VERSION_MINOR 4
 
-#ifdef KERNEL_GC
-__attribute__ ((section(".idata"))) 
-#endif
 const char *stamp = "\
 Flux Operating System v%x.%x\n\
 Copyright 2009 Nick Johnson\n\n";
 
 typedef void (*init_t)(void);
-__attribute__ ((section(".tdata")))
-init_t init_list[] = {
-init_detect,
-init_mem,
-init_int,
-init_task,
-init_pit,
-#ifdef KERNEL_GC
-init_free,
-#endif
-init_fpu,
-NULL
-};
+
+/*init_t init_list[] = {
+	init_detect,
+	mem_init,
+	int_init,
+	task_init,
+	pit_init,
+	NULL
+};*/
 
 struct multiboot *mboot;
 
@@ -51,9 +41,11 @@ void init(void *mboot_ptr, uint32_t mboot_magic) {
 	}
 	mboot = mboot_ptr;
 
-	for (i = 0; init_list[i]; i++) {
+	printk("Just checking\n");
+
+/*	for (i = 0; init_list[i]; i++) {
 		init_list[i]();
-	}
+	} */
 
 	printk("  Kernel: dropping to usermode");
 	cursek(74, -1);

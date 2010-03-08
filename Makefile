@@ -1,7 +1,7 @@
 BUILDDIR=$(PWD)
 
-LIB_DIRS  = driver libmath
-BIN_DIRS  = kernel init
+#LIB_DIRS  = driver libmath
+BIN_DIRS  = kernel #init
 
 CC := clang
 LD := /usr/flux-cross/bin/i586-elf-ld
@@ -70,7 +70,7 @@ cd:	all image
 	export BUILDDIR
 	run/makecd.sh
 
-hd:
+hd:	all
 	export BUILDDIR
 	run/makehd.sh
 

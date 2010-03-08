@@ -8,9 +8,6 @@
 #include <init.h>
 #include <elf.h>
 
-#ifdef KERNEL_GC
-__attribute__ ((section(".itext")))
-#endif
 void init_task() {
 	extern uint32_t get_eflags(void);
 	extern uint32_t get_cr3(void);
@@ -20,10 +17,12 @@ void init_task() {
 
 	printk("  Kernel: tasking system");
 
-		/* Set up task allocator */
-		tpool = pool_new(MAX_TASKS);
-
 		/* Bootstrap task 0 */
+		idle = proc_alloc();
+		idle->space = get_cr3();
+
+		thread_spawn(idle);
+
 		task_touch(0);
 		idle = task_get(0);
 		idle->pid = (pid_t) pool_alloc(tpool);

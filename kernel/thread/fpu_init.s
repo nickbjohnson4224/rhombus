@@ -1,24 +1,16 @@
-; Copyright 2009 Nick Johnson
+; Copyright 2010 Nick Johnson
 ; ISC Licensed, see LICENSE for details
-
-; FPU/SSE init/save/load functions
-
-[bits 32]
 
 section .data
 
-global can_use_fpu
-
-can_use_fpu: 
+global fpu_p
+fpu_p:
 	dd 0
 
 section .text
 
-global init_fpu
-global fpu_save
-global fpu_load
-
-init_fpu:
+global fpu_init
+fpu_init:
 	push ebx
 
 	; check CPUID for FXSR bit
@@ -33,7 +25,7 @@ init_fpu:
 	mov cr4, eax
 
 	mov eax, 1
-	mov [can_use_fpu], eax
+	mov [fpu_p], eax
 
 	; check CPUID for FPU bit
 	test edx, 0x00000001
@@ -64,20 +56,3 @@ init_fpu:
 	pop ebx
 	ret
 
-fpu_save:
-	mov eax, [can_use_fpu]
-	cmp eax, 0
-	je .blank
-	mov ecx, [esp+4]
-	fxsave [ecx]
-.blank:
-	ret
-
-fpu_load:
-	mov eax, [can_use_fpu]
-	cmp eax, 0
-	je .blank
-	mov ecx, [esp+4]
-	fxrstor [ecx]
-.blank:
-	ret

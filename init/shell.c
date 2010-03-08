@@ -41,6 +41,7 @@ static void halt(int argc, char **argv);
 static void ata_read(int argc, char **argv);
 static void seek(int argc, char **argv);
 static void gen(int argc, char **argv);
+static void tar(int argc, char **argv);
 
 static const char *cmdlist[] = {
 	"echo",
@@ -50,6 +51,7 @@ static const char *cmdlist[] = {
 	"read",
 	"seek",
 	"gen",
+	"tar",
 	NULL,
 };
 
@@ -61,6 +63,7 @@ static void (*cmd[])(int, char**) = {
 	ata_read,
 	seek,
 	gen,
+	tar,
 };
 
 static int vexec(char *name, int argc, char **argv) {
@@ -171,4 +174,48 @@ static void gen(int argc, char **argv) {
 	}
 
 	printf("\n");
+}
+
+static void read_tar_header(char *block) {
+	
+	printf("name:  %s\n", &block[  0]);
+	printf("mode:  %s\n", &block[100]);
+	printf("uid:   %s\n", &block[108]);
+	printf("gid:   %s\n", &block[116]);
+	printf("size:  %s\n", &block[124]);
+	printf("mtime: %s\n", &block[136]);
+	printf("cksum: %s\n", &block[148]);
+	printf("link:  %s\n", &block[157]);
+
+}
+
+static bool tar_nullp(char *block) {
+	size_t i, s;
+
+	for (s = 0, i = 0; i < 512; i++) {
+		if (block[i]) s++;
+	}
+
+	return (s) ? false : true;
+}
+
+static void tar(int argc, char **argv) {
+	char buffer[513];
+	size_t size, tsize;
+	
+	fread(buffer, sizeof(char), 512, disk);
+	read_tar_header(buffer);
+	printf("\n");
+
+	size = atoi(&buffer[124]) - 512;
+
+	if (size % 512) {
+		size = (size - (size % 512) + 512);
+	}
+
+	printf("size %d\n", size);
+
+	fseek(disk, size, SEEK_CUR);
+
+	printf("seek %d\n", disk->position);
 }
