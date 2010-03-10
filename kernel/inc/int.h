@@ -3,7 +3,16 @@
 #ifndef INT_H
 #define INT_H
 
-/* Image structure - contains the saved state of a task */
+#include <task.h>
+
+/* Signal structure */
+typedef struct signal {
+	uint32_t signal;
+	uint32_t grant;
+	uint32_t caller;
+} __attribute__ ((packed)) signal_t;
+
+/* Thread structure - contains the saved state of a task */
 /* Stored in the task image stack (TIS), used during signals and interrupts */
 typedef struct thread {
 	uint32_t fxdata[128];
@@ -25,7 +34,13 @@ typedef struct thread {
 	uint32_t useresp;
 	uint32_t ss;
 	uint32_t tss_start;
+
+	struct signal signal;
+	struct task  *task;
 } __attribute__ ((packed)) thread_t;
+
+/***** THREAD OPERATIONS *****/
+thread_t *thread_bind(thread_t *image, signal_t *signal);
 
 typedef thread_t* (*handler_t) (thread_t*);
 thread_t *pit_handler(thread_t *image);

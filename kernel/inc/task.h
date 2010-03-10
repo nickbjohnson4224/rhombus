@@ -25,14 +25,15 @@ typedef uint16_t pid_t;
 #define NOERR 0x02
 #define EKILL 0x04
 
-thread_t *signal(uint16_t task, uint16_t sig, void* grant, uint8_t flags);
-thread_t *sret(thread_t *image);
+struct thread *signal(uint16_t task, uint16_t sig, void* grant, uint8_t flags);
+struct thread *sret(struct thread *image);
 
 /***** TASK TABLE *****/
 
 typedef struct task {
 	map_t map;
-	thread_t *image;
+	struct thread *image;
+	uint32_t curr_thread;
 	uint32_t flags;
 	uint8_t quanta;
 	uint16_t magic;
@@ -42,7 +43,7 @@ typedef struct task {
 	uint32_t shandler;
 	uint32_t grant;
 	uint32_t sigflags;
-} task_t;
+} task_t, process_t;
 
 #define CTRL_PSPACE	0
 #define CTRL_SSPACE 1
@@ -72,11 +73,11 @@ typedef struct task {
 #define CTRL_SFLOAT	0x00000040
 #define CTRL_SDEATH	0x00000080
 
-void      task_touch (pid_t pid);
-task_t   *task_get   (pid_t pid);
-task_t   *task_new   (task_t *src);
-uint32_t  task_rem   (task_t *t);
-thread_t *task_switch(task_t *t);
+void           task_touch (pid_t pid);
+task_t        *task_get   (pid_t pid);
+task_t        *task_new   (task_t *src);
+uint32_t       task_rem   (task_t *t);
+struct thread *task_switch(task_t *t, uint32_t thread);
 
 extern pool_t *tpool;		/* Pool allocator for task structures */
 extern task_t *task; 		/* Array of task structures */

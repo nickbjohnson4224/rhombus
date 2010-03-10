@@ -13,12 +13,8 @@
 	/***** TASKING SUBSYSTEM *****/
 
 	/* Maximum number of tasks, must be less than 65536 */
-	#define MAX_TASKS 4096
-
-	/* Scheduling algorithm */
-	#define SCHED_ROUND_ROBIN 0
-	#define SCHED_VAR_QUANTUM 1 /* Incomplete */
-	#define SCHED_ALG SCHED_ROUND_ROBIN
+	#define MAX_TASKS 1024
+	#define MAX_PID   1024
 
 	/***** MEMORY SUBSYSTEM *****/
 
@@ -33,7 +29,9 @@
 	#define PGE_MAP	0xFFC00000
 
 	/* Address of task table */
-	#define TASK_TBL (KSPACE + 0x400000)
+	#define TASK_TBL      (KSPACE + 0x400000)
+	#define PROCESS_TABLE (KSPACE + 0x400000)
+	#define THREAD_TABLE  (KSPACE - 0x400000)
 
 	/* Task image stack */
 	#define SSTACK_BSE	(LSPACE - 0x7000)

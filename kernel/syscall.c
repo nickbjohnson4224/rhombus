@@ -41,7 +41,7 @@ thread_t *pit_handler(thread_t *image) {
 	}
 
 	/* Switch to next scheduled task */
-	return task_switch(task_next(0));
+	return task_switch(task_next(0), 0);
 }
 
 thread_t *irq_redirect(thread_t *image) {
@@ -129,7 +129,7 @@ thread_t *fire(thread_t *image) {
 	task_t *dst_t  = task_get(targ);
 
 	if (targ == 0) {
-		return task_switch(task_next(0));
+		return task_switch(task_next(0), 0);
 	}
 
 	if (!dst_t || !dst_t->shandler || (dst_t->sigflags & (1 << sig))) {
@@ -290,7 +290,7 @@ thread_t *fork(thread_t *image) {
 	image->eax = child->pid;
 
 	/* Switch to child */
-	image = task_switch(child);
+	image = task_switch(child, 0);
 
 	/* (now in child) Set return value to negative parent's PID */
 	image->eax = (uint32_t) -parent;
@@ -322,7 +322,7 @@ thread_t *exit(thread_t *image) {
 	t = task_get(catcher);
 	if (!t || !t->shandler || t->flags & CTRL_CLEAR) {
 		/* Parent will not accept - reschedule */
-		return task_switch(task_next(0));
+		return task_switch(task_next(0), 0);
 	}
 	else {
 		/* Send S_DTH signal to parent with return value */

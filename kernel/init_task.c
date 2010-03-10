@@ -26,13 +26,13 @@ void init_task() {
 		/* Bootstrap task 0 */
 		task_touch(0);
 		idle = task_get(0);
-		idle->pid = (pid_t) pool_alloc(tpool);
+		idle->pid = 0;
 		idle->map = get_cr3();
 		idle->flags = CTRL_READY | CTRL_SUPER;
 		idle->sigflags = CTRL_SENTER;
 
-		task_switch(task_new(task_get(0))); /* Fork task 1 and switch */
-		idle->magic = 0;					/* Mark task 0 as invalid */
+		task_switch(task_new(idle), 0); /* Fork task 1 and switch */
+		idle->magic = 0;				/* Mark task 0 as invalid */
 
 	cursek(74, -1);
 	printk("[done]");
@@ -69,7 +69,7 @@ void init_task() {
 		t->image->eip = entry;
 		t->image->cs  = 0x1B;
 		t->image->eflags = get_eflags() | 0x3200; 	/* IF, IOPL=3 */
-		tss_set_esp((uint32_t) &t->image[1]);
+		tss_set_esp((uint32_t) &t->image->tss_start);
 
 	cursek(74, -1);
 	printk("[done]");

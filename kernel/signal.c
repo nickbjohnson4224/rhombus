@@ -36,7 +36,7 @@ thread_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 	src_t->image->eax = 0;
 
 	/* Switch to target task */
-	task_switch(dst_t);
+	task_switch(dst_t, 0);
 
 	/* Create new image structure below old one */	
 	memcpy(&dst_t->image[-1], dst_t->image, sizeof(thread_t));

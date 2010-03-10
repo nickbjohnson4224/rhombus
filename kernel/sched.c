@@ -68,8 +68,8 @@ task_t *task_next(uint8_t flags) {
 		if (!t) idle();
 		sched_rem(t->pid);
 		sched_ins(t->pid);
-		if ((t->flags & CTRL_BLOCK) == 0 && t->magic == 0x4224 
-			&& (t->pid != curr_pid || t->next_task == NULL)) {
+		if ((t->flags & CTRL_BLOCK) == 0 && 
+			(t->pid != curr_pid || t->next_task == NULL)) {
 			return t;
 		}
 	}
