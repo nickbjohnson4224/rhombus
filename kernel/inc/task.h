@@ -30,7 +30,7 @@ struct thread *sret(struct thread *image);
 
 /***** TASK TABLE *****/
 
-typedef struct task {
+typedef struct process {
 	map_t map;
 	struct thread *image;
 	uint32_t curr_thread;
@@ -38,7 +38,7 @@ typedef struct task {
 	uint8_t quanta;
 	uint16_t magic;
 	pid_t pid;
-	struct task *next_task;
+	struct process *next_task;
 	pid_t parent;
 	uint32_t shandler;
 	uint32_t grant;
@@ -73,16 +73,21 @@ typedef struct task {
 #define CTRL_SFLOAT	0x00000040
 #define CTRL_SDEATH	0x00000080
 
+struct process *process_get  (pid_t pid);
+struct process *process_alloc(void);
+struct process *process_clone(struct process *parent);
+void            process_free (struct process *proc);
+void            process_kill (struct process *proc);
+void            process_touch(pid_t pid);
+
 void           task_touch (pid_t pid);
 task_t        *task_get   (pid_t pid);
 task_t        *task_new   (task_t *src);
 uint32_t       task_rem   (task_t *t);
 struct thread *task_switch(task_t *t, uint32_t thread);
 
-extern pool_t *tpool;		/* Pool allocator for task structures */
-extern task_t *task; 		/* Array of task structures */
 extern pid_t curr_pid;		/* Currently loaded task ID */
-extern task_t *curr_task;	/* Currently loaded task pointer */
+extern task_t *curr_task;
 
 /***** IRQ REDIRECTION *****/
 

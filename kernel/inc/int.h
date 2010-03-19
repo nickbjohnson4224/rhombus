@@ -40,7 +40,7 @@ typedef struct thread {
 } __attribute__ ((packed)) thread_t;
 
 /***** THREAD OPERATIONS *****/
-thread_t *thread_bind(thread_t *image, signal_t *signal);
+thread_t *thread_bind (thread_t *image, signal_t *signal);
 
 typedef thread_t* (*handler_t) (thread_t*);
 thread_t *pit_handler(thread_t *image);
