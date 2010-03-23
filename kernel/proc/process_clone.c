@@ -24,7 +24,7 @@ process_t *process_clone(process_t *parent) {
 
 	memcpy(child, parent, sizeof(process_t));
 
-	child->map    = map_clone();
+	child->space  = space_clone();
 	child->parent = parent->pid;
 	child->pid    = pid;
 

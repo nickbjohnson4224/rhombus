@@ -21,7 +21,7 @@ void init_task() {
 		task_touch(0);
 		idle = task_get(0);
 		idle->pid = 0;
-		idle->map = get_cr3();
+		idle->space = get_cr3();
 		idle->flags = CTRL_READY | CTRL_SUPER;
 		idle->sigflags = CTRL_SENTER;
 
@@ -41,11 +41,12 @@ void init_task() {
 
 		/* Set up stacks for the new task - TIS and user stack */
 		t = task_get(curr_pid);
-		for (i = USTACK_BSE; i < USTACK_TOP; i += 0x1000) {
-			p_alloc(i, (PF_USER | PF_RW));
+		for (i = USTACK_BSE; i < USTACK_TOP; i += PAGESZ) {
+			page_set(i, page_fmt(frame_new(), PF_USER | PF_RW | PF_PRES));
 		}
-		for (i = SSTACK_BSE; i < SSTACK_TOP; i += 0x1000) {
-			p_alloc(i, PF_USER);
+		
+		for (i = SSTACK_BSE; i < SSTACK_TOP; i += PAGESZ) {
+			page_set(i, page_fmt(frame_new(), PF_USER | PF_RW | PF_PRES));
 		}
 
 		/* Set TIS top pointer */

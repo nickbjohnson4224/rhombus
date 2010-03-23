@@ -9,9 +9,6 @@
 
 uint32_t memsize;
 
-#ifdef KERNEL_GC
-__attribute__ ((section(".itext"))) 
-#endif
 void init_mem() {
 	uint32_t i, z;
 
@@ -20,8 +17,10 @@ void init_mem() {
 		/* Initialize frame allocator */
 		fpool = pool_new(memsize >> 12);
 
-		/* Set the first 4 MB to used (appropriately) */
-		for (i = 0; i < 1024; i++) z = frame_new();
+		/* Set the first 4 MB of physical memory as used (appropriately) */
+		for (i = 0; i < 1024; i++) {
+			z = frame_new();
+		}
 
 	cursek(74, -1);
 	printk("[done]");

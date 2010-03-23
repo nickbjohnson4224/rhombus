@@ -28,8 +28,7 @@ thread_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 		addr = (uintptr_t) grant;
 		grant = (void*) (page_get(addr) & ~0xFFF);
 		pflags = page_get(addr) & 0xFFF;
-		page_set(addr, 0);
-		p_alloc(addr, pflags);
+		page_set(addr, page_fmt(frame_new(), (pflags & PF_MASK) | PF_PRES));
 	}
 
 	/* Return 0 in source task */

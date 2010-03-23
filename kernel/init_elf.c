@@ -8,9 +8,6 @@
 #include <task.h>
 #include <mem.h>
 
-#ifdef KERNEL_GC
-__attribute__ ((section(".itext")))
-#endif
 void elf_load_segment(uint8_t *src, elf_ph_t *seg) {
 	uint8_t *src_base, *dest_base;
 	uint32_t dest_limit, i;
@@ -27,8 +24,9 @@ void elf_load_segment(uint8_t *src, elf_ph_t *seg) {
 
 	/* Allocate adequate memory */
 	i = ((uint32_t) dest_base) &~ 0xFFF;
-	for (; i < dest_limit; i += 0x1000)
-		p_alloc(i, (PF_USER | PF_PRES | PF_RW));
+	for (; i < dest_limit; i += 0x1000) {
+		page_set(i, page_fmt(frame_new(), PF_USER | PF_RW | PF_PRES));
+	}
 
 	/* Copy data */
 	memcpy(dest_base, src_base, seg->p_filesz);
@@ -37,24 +35,22 @@ void elf_load_segment(uint8_t *src, elf_ph_t *seg) {
 	memclr(dest_base + seg->p_filesz, seg->p_memsz - seg->p_filesz);
 }
 
-#ifdef KERNEL_GC
-__attribute__ ((section(".itext")))
-#endif
 int elf_check(uint8_t *src) {
-	elf_t *elf_header = (elf_t*) src;
-	if (elf_header->e_ident[0] != 0x7F)return 1;
-	if (elf_header->e_ident[1] != 'E') return 1;
-	if (elf_header->e_ident[2] != 'L') return 1;
-	if (elf_header->e_ident[3] != 'F') return 1;
-	if (elf_header->e_type != ET_EXEC) return 1;
+	elf_t *elf_header;
+	
+	elf_header = (elf_t*) src;
+	
+	if (elf_header->e_ident[0] != 0x7F)  return 1;
+	if (elf_header->e_ident[1] != 'E')   return 1;
+	if (elf_header->e_ident[2] != 'L')   return 1;
+	if (elf_header->e_ident[3] != 'F')   return 1;
+	if (elf_header->e_type != ET_EXEC)   return 1;
 	if (elf_header->e_machine != EM_386) return 1;
-	if (elf_header->e_version == 0) return 1;
+	if (elf_header->e_version == 0)      return 1;
+
 	return 0;
 }
 
-#ifdef KERNEL_GC
-__attribute__ ((section(".itext")))
-#endif
 uint32_t elf_load(uint8_t *src) {
 	uint32_t i, n;
 	elf_t *elf_header = (elf_t*) src;

@@ -31,7 +31,7 @@ struct thread *sret(struct thread *image);
 /***** TASK TABLE *****/
 
 typedef struct process {
-	map_t map;
+	space_t space;
 	struct thread *image;
 	uint32_t curr_thread;
 	uint32_t flags;

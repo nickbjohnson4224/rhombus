@@ -44,7 +44,7 @@ thread_t *task_switch(task_t *t, uint32_t thread) {
 	/* switch task */
 	curr_task = t;
 	curr_pid = t->pid;
-	map_load(t->map);
+	space_load(t->space);
 
 	/* switch thread */
 	curr_task->curr_thread = thread;

@@ -259,7 +259,7 @@ thread_t *mmap(thread_t *image) {
 
 	if (flags & MMAP_FRAME) {
 		if ((curr_task->flags & CTRL_SUPER) || curr_task->grant == frame) {
-			p_free(addr);
+			frame_free(page_ufmt(page_get(addr)));
 			page_set(addr, page_fmt(frame, pflags));
 			if (curr_task->grant == frame) {
 				curr_task->grant = 0;
@@ -315,9 +315,8 @@ thread_t *exit(thread_t *image) {
 	}
 
 	/* Deallocate current address space and clear metadata */
-	map_clean(curr_task->map);	/* Deallocate pages and page tables */
-	map_free(curr_task->map);	/* Deallocate page directory itself */
-	task_rem(curr_task);		/* Clear metadata and relinquish PID */
+	space_free(curr_task->space);	/* Deallocate whole address space */
+	task_rem(curr_task);			/* Clear metadata and relinquish PID */
 
 	t = task_get(catcher);
 	if (!t || !t->shandler || t->flags & CTRL_CLEAR) {
