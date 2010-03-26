@@ -6,9 +6,8 @@
 #include <lib.h>
 #include <init.h>
 
-#ifdef KERNEL_GC
-__attribute__ ((section(".itext")))
-#endif
+uint32_t memsize;
+
 void init_detect() {
 	uintptr_t nmem_map;
 	size_t i;

@@ -20,14 +20,14 @@ uint32_t tick = 0;
 
 thread_t *pit_handler(thread_t *image) {
 	size_t i;
-	task_t *holder;
+	process_t *holder;
 
 	if (image->cs | 1) tick++;
 
 	if (held_count) {
 		for (i = 0; i < 15; i++) {
 			if (held_irq[i]) {
-				holder = task_get(irq_holder[i]);
+				holder = process_get(irq_holder[i]);
 				if (!holder || 
 					(holder->flags & CTRL_CLEAR) || 
 					(holder->sigflags & CTRL_SIRQ)) {
@@ -41,13 +41,13 @@ thread_t *pit_handler(thread_t *image) {
 	}
 
 	/* Switch to next scheduled task */
-	return task_switch(task_next(0), 0);
+	return process_switch(task_next(0), 0);
 }
 
 thread_t *irq_redirect(thread_t *image) {
-	task_t *holder;
+	process_t *holder;
 
-	holder = task_get(irq_holder[DEIRQ(image->num)]);
+	holder = process_get(irq_holder[DEIRQ(image->num)]);
 	if ((holder->flags & CTRL_CLEAR) || (holder->flags & CTRL_SIRQ)) {
 		held_irq[DEIRQ(image->num)]++;
 		held_count++;
@@ -101,6 +101,7 @@ thread_t *fault_float(thread_t *image) {
 	#ifdef PARANOID
 	/* If in kernelspace, panic */
 	if ((image->cs & 0x3) == 0) {
+		printk("ip = %x\n", image->eip);
 		panic("floating point exception");
 	}
 	#endif
@@ -122,14 +123,14 @@ thread_t *fault_double(thread_t *image) {
 /* See section II of the Flux manual for details */
 
 thread_t *fire(thread_t *image) {
-	uint32_t targ  = image->eax;
-	uint32_t sig   = image->ecx;
-	uint32_t grant = image->ebx;
-	uint32_t flags = image->edx;
-	task_t *dst_t  = task_get(targ);
+	uint32_t   targ  = image->eax;
+	uint32_t   sig   = image->ecx;
+	uint32_t   grant = image->ebx;
+	uint32_t   flags = image->edx;
+	process_t *dst_t = process_get(targ);
 
 	if (targ == 0) {
-		return task_switch(task_next(0), 0);
+		return process_switch(task_next(0), 0);
 	}
 
 	if (!dst_t || !dst_t->shandler || (dst_t->sigflags & (1 << sig))) {
@@ -258,7 +259,7 @@ thread_t *mmap(thread_t *image) {
 	if (flags & MMAP_EXEC) 	pflags |= PF_PRES;
 
 	if (flags & MMAP_FRAME) {
-		if ((curr_task->flags & CTRL_SUPER) || curr_task->grant == frame) {
+		if ((curr_task->flags & CTRL_SUPER) || image->grant == frame) {
 			frame_free(page_ufmt(page_get(addr)));
 			page_set(addr, page_fmt(frame, pflags));
 			if (curr_task->grant == frame) {
@@ -283,17 +284,21 @@ thread_t *fork(thread_t *image) {
 	parent = curr_pid;
 
 	/* Create a new task from the parent */
-	child = task_new(task_get(parent));
+	child = process_clone(process_get(parent));
 	if (!child) ret(image, 0); /* Fail if child was not created */
 
 	/* (still in parent) Set return value to child's PID */
 	image->eax = child->pid;
 
 	/* Switch to child */
-	image = task_switch(child, 0);
+	image = process_switch(child, 0);
 
 	/* (now in child) Set return value to negative parent's PID */
 	image->eax = (uint32_t) -parent;
+
+	if (page_get((uintptr_t) image) == 0xFFFFFFFF) {
+		page_set((uintptr_t) image, page_fmt(frame_new(), PF_PRES | PF_RW));
+	}
 
 	return image;
 }
@@ -301,7 +306,7 @@ thread_t *fork(thread_t *image) {
 thread_t *exit(thread_t *image) {
 	pid_t catcher;
 	uint32_t ret_val;
-	task_t *t;
+	process_t *t;
 
 	/* Send death signal to parent */
 	catcher = curr_task->parent;
@@ -314,14 +319,16 @@ thread_t *exit(thread_t *image) {
 		panic("init died");
 	}
 
+	process_switch(process_get(catcher), 0);
+
 	/* Deallocate current address space and clear metadata */
 	space_free(curr_task->space);	/* Deallocate whole address space */
-	task_rem(curr_task);			/* Clear metadata and relinquish PID */
+	process_kill(curr_task);		/* Clear metadata and relinquish PID */
 
-	t = task_get(catcher);
+	t = process_get(catcher);
 	if (!t || !t->shandler || t->flags & CTRL_CLEAR) {
 		/* Parent will not accept - reschedule */
-		return task_switch(task_next(0), 0);
+		return process_switch(task_next(0), 0);
 	}
 	else {
 		/* Send S_DTH signal to parent with return value */

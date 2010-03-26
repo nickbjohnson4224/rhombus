@@ -13,7 +13,6 @@ typedef struct signal {
 } __attribute__ ((packed)) signal_t;
 
 /* Thread structure - contains the saved state of a task */
-/* Stored in the task image stack (TIS), used during signals and interrupts */
 typedef struct thread {
 	uint32_t fxdata[128];
 	uint32_t grant;
@@ -35,13 +34,11 @@ typedef struct thread {
 	uint32_t ss;
 	uint32_t tss_start;
 
-	struct signal signal;
-	struct task  *task;
+	struct signal  signal;
+	struct process *proc;
 } __attribute__ ((packed)) thread_t;
 
 /***** THREAD OPERATIONS *****/
-thread_t *thread_bind (thread_t *image, signal_t *signal);
-
 typedef thread_t* (*handler_t) (thread_t*);
 thread_t *pit_handler(thread_t *image);
 

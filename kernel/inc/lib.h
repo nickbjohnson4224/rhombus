@@ -12,7 +12,6 @@ uint8_t inb(uint16_t port);
 #define max(a,b) ((a > b) ? a : b)
 #define min(a,b) ((a < b) ? a : b)
 void sleep(uint32_t cycles);
-#define NULL ((void*) 0)
 
 /***** STRING FUNCTIONS *****/
 void *memcpy(void *dest, void *src, uint32_t size);
@@ -36,24 +35,8 @@ void panic(const char *message); /* Panic with a message */
 
 #define ERROR	((uint32_t) -1)
 #define ENOTASK ((uint32_t) -1)
-#define ENOSIG ((uint32_t) -2)
+#define ENOSIG  ((uint32_t) -2)
 #define EPERMIT ((uint32_t) -3)
 #define EREPEAT ((uint32_t) -4)
-
-/***** POOL ALLOCATOR *****/
-
-#define SIZEOF_POOL(n) (((n) / 1024) + 1)
-
-typedef uint32_t pool_t;
-
-pool_t *pool_new(uint32_t num);						/* Allocate a new pool */
-uint32_t pool_alloc(pool_t *pool);					/* Allocate from a pool */
-uint32_t pool_free(pool_t *pool, uint32_t pos);		/* Free back to a pool */
-uint32_t pool_query(pool_t *pool);					/* Find how much of a pool is full */
-
-/***** STACK ALLOCATOR *****/
-
-void *kmalloc_align(uint32_t size, uint32_t align);
-void *kmalloc(uint32_t size);
 
 #endif

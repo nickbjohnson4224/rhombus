@@ -18,9 +18,6 @@
 
 	/***** MEMORY SUBSYSTEM *****/
 
-	/* Kernel init allocator */
-	#define KMALLOC (KSPACE + 0x200000)	
-
 	/* Two areas of 16 pages for temporary mappings */
 	#define TMP_DST 0xFF000000
 	#define TMP_SRC 0xFF010000
@@ -29,7 +26,6 @@
 	#define PGE_MAP	0xFFC00000
 
 	/* Address of task table */
-	#define TASK_TBL      (KSPACE + 0x400000)
 	#define PROCESS_TABLE (KSPACE + 0x400000)
 	#define THREAD_TABLE  (KSPACE - 0x400000)
 
@@ -45,9 +41,6 @@
 
 	/* Exec bootstrap location */
 	#define EXEC_STRAP	(SSPACE - 0x100000)
-
-	/* Remove init code after boot (experimental) */
-/*	#define KERNEL_GC */
 
 /********** DRIVER OPTIONS **********/
 

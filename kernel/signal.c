@@ -8,7 +8,7 @@
 #include <int.h>
 
 thread_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
-	task_t *dst_t = task_get(targ);
+	task_t *dst_t = process_get(targ);
 	task_t *src_t = curr_task;
 	uintptr_t addr, pflags;
 
@@ -35,7 +35,7 @@ thread_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 	src_t->image->eax = 0;
 
 	/* Switch to target task */
-	task_switch(dst_t, 0);
+	process_switch(dst_t, 0);
 
 	/* Create new image structure below old one */	
 	memcpy(&dst_t->image[-1], dst_t->image, sizeof(thread_t));
@@ -61,13 +61,10 @@ thread_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 	/* Make sure handler is unblocked */
 	dst_t->flags &= ~CTRL_BLOCK;
 
-	/* Save grant and flags */
-	dst_t->image[1].grant = dst_t->grant;
-
 	/* Set registers to describe signal */
 
 	/* Granted frame */
-	dst_t->grant = (uintptr_t) grant;
+	dst_t->image->grant = (uintptr_t) grant;
 	dst_t->image->ebx = (uintptr_t) grant;
 
 	/* Caller PID */
@@ -92,11 +89,8 @@ thread_t *sret(thread_t *image) {
 		return exit(curr_task->image);
 	}
 
-	/* Reset task image stack */
+	/* Reset thread image stack */
 	curr_task->image = &curr_task->image[1];
-
-	/* Reload saved grant */
-	curr_task->grant = curr_task->image->grant;
 
 	return curr_task->image;
 }

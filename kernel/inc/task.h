@@ -73,18 +73,13 @@ typedef struct process {
 #define CTRL_SFLOAT	0x00000040
 #define CTRL_SDEATH	0x00000080
 
-struct process *process_get  (pid_t pid);
-struct process *process_alloc(void);
-struct process *process_clone(struct process *parent);
-void            process_free (struct process *proc);
-void            process_kill (struct process *proc);
-void            process_touch(pid_t pid);
-
-void           task_touch (pid_t pid);
-task_t        *task_get   (pid_t pid);
-task_t        *task_new   (task_t *src);
-uint32_t       task_rem   (task_t *t);
-struct thread *task_switch(task_t *t, uint32_t thread);
+struct process *process_get   (pid_t pid);
+struct process *process_alloc (void);
+struct process *process_clone (struct process *parent);
+void            process_free  (struct process *proc);
+void            process_kill  (struct process *proc);
+void            process_touch (pid_t pid);
+struct thread  *process_switch(struct process *proc, uint32_t thread);
 
 extern pid_t curr_pid;		/* Currently loaded task ID */
 extern task_t *curr_task;

@@ -39,10 +39,11 @@ space_t space_clone(void);
 void    space_free (space_t space);
 void    space_load (space_t space);
 
-extern pool_t *fpool;
-
-#define frame_new() (pool_alloc(fpool) << 12)	/* Allocates a new frame */
-#define frame_free(addr) (pool_free(fpool, addr >> 12))	/* Frees a frame */
+extern uint32_t *frame_bitmap;
+extern uint32_t nframe_bitmap;
+void    frame_init(void);
+frame_t frame_new (void);
+void    frame_free(frame_t frame);
 
 extern frame_t *cmap;		/* Address of current page directory */
 extern frame_t *ctbl;		/* Base of current page tables */

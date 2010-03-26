@@ -21,28 +21,9 @@
 
 FILE *disk = NULL;
 
-/*
-FILE *ping = NULL;
-
-static void ping_write(uint32_t caller, req_t *req) {
-	req->format = REQ_READ;
-	tail(caller, SIG_REPLY, req_cksum(req));
-}
-
-static void ping_init(device_t dev) {
-	sigregister(SIG_WRITE, ping_write);
-}
-
-static struct driver_interface ping_driver = {
-	ping_init,
-	NULL, 
-	NULL, 
-	0
-};*/
-
 static void launch_driver(FILE **hand, struct driver_interface *drv, device_t dev) {
 	int32_t pid;
-	
+
 	sighold(SIG_REPLY);
 
 	pid = fork();
@@ -51,7 +32,7 @@ static void launch_driver(FILE **hand, struct driver_interface *drv, device_t de
 		sigfree(SIG_REPLY);
 		drv->init(dev);
 		fire(-pid, SIG_REPLY, NULL);
-		block(true);
+		block(true);	
 		for(;;);
 	}
 	sigpullc(SIG_REPLY, pid);
@@ -78,10 +59,14 @@ int main() {
 	sigregister(SSIG_PAGE, 	segfault);
 
 	launch_driver(&stdout, &terminal, nulldev);
-	launch_driver(&stdin,  &keyboard, nulldev);
 
 	printf("Flux 0.3a booting...\n");
+	printf("Launched terminal driver\n");
 
+	printf("Launching keyboard driver\n");
+	launch_driver(&stdin,  &keyboard, nulldev);
+
+	printf("Launching ATA driver\n");
 	launch_driver(&disk, &ata, pci_findb(CLASS_STORAGE, PCI_CLASS, nulldev));
 
 	shell();

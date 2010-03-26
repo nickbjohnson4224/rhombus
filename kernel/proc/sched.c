@@ -15,7 +15,7 @@ static task_t *queue_last = NULL;
 void sched_ins(pid_t pid) {
 	task_t *t;
 
-	t = task_get(pid);
+	t = process_get(pid);
 	if (!t) return;
 	t->next_task = NULL;
 
@@ -35,7 +35,7 @@ void sched_rem(pid_t pid) {
 
 	if (!queue_next) return;
 
-	t2 = task_get(pid);
+	t2 = process_get(pid);
 	if (!t2) return;
 
 	if (queue_next->pid == pid) {
@@ -60,7 +60,7 @@ void sched_rem(pid_t pid) {
  * skipping blocked tasks and moving the schedulable task to the end */
 task_t *task_next(uint8_t flags) {
 	extern void idle(void);
-	task_t *t;
+	process_t *t;
 	flags = 0;
 
 	while (1) {
