@@ -53,6 +53,7 @@ void init_task() {
 		entry = elf_load(user_init);
 
 		/* Setup process image */
+		t->image->proc = t;
 		t->image->useresp = USTACK_INI;
 		t->image->esp = (uint32_t) &t->image->num;
 		t->image->ebp = USTACK_INI;

@@ -13,17 +13,11 @@ thread_t *signal(pid_t targ, uint16_t sig, void* grant, uint8_t flags) {
 	uintptr_t addr, pflags;
 
 	/* Check target (for existence) */
-	if (!dst_t || !dst_t->shandler) {
-		ret(src_t->image, (flags & NOERR) ? targ : ERROR);
+	if (!dst_t || !dst_t->shandler || (dst_t->sigflags & (1 << sig))) {
+		src_t->image->eax = (flags & NOERR) ? targ : ERROR;
+		return src_t->image;
 	}
 
-	if (dst_t->sigflags & (1 << sig)) {
-		if ((flags & CTRL_SUPER) == 0) {
-			ret(src_t->image, (flags & NOERR) ? targ : ERROR);
-		}
-	}
-
-	/* Get frame of grant */
 	if (grant) {
 		addr = (uintptr_t) grant;
 		grant = (void*) (page_get(addr) & ~0xFFF);

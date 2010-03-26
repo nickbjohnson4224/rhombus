@@ -134,7 +134,8 @@ thread_t *fire(thread_t *image) {
 	}
 
 	if (!dst_t || !dst_t->shandler || (dst_t->sigflags & (1 << sig))) {
-			ret(image, ERROR);
+		image->eax = ERROR;
+		return image;
 	}
 
 	if (flags & 0x1) {
@@ -153,7 +154,9 @@ thread_t *hand(thread_t *image) {
 
 	old_handler = curr_task->shandler;
 	curr_task->shandler = image->eax;
-	ret(image, old_handler);
+
+	image->eax = old_handler;
+	return image;
 }
 
 thread_t *ctrl(thread_t *image) {
@@ -199,20 +202,20 @@ thread_t *ctrl(thread_t *image) {
 			}
 		}
 
-		ret(image, curr_task->flags);
-		break;
+		image->eax = curr_task->flags;
+		return image;
 
 	case CTRL_SSPACE:
 		
 		/* Set flags */
 		curr_task->sigflags = (curr_task->sigflags & ~mask) | (flags & mask);
 
-		ret(image, curr_task->sigflags);
-		break;
+		image->eax = curr_task->sigflags;
+		return image;
 
 	default:
-		ret(image, -1);
-		break;
+		image->eax = ERROR;
+		return image;
 	}
 }
 
@@ -220,60 +223,76 @@ thread_t *info(thread_t *image) {
 	uint8_t sel = image->eax;
 
 	switch (sel) {
-	case 0: ret(image, curr_pid);
-	case 1: ret(image, curr_task->parent);
-	case 2: ret(image, tick);
-	case 3: ret(image, 0x0003);
-	case 4: ret(image, KSPACE);
-	case 5: ret(image, 
-		(curr_task->flags & CTRL_SUPER) ? CTRL_CMASK : CTRL_CMASK & CTRL_SMASK);
-	case 6: ret(image, MMAP_CMASK);
-	case 7: ret(image, curr_task->sigflags);
-	default: ret(image, -1);
+	case 0: image->eax = image->proc->pid; break;
+	case 1: image->eax = image->proc->parent; break;
+	case 2: image->eax = tick; break;
+	case 3: image->eax = 0x0003; break;
+	case 4: image->eax = KSPACE; break;
+	case 5: 
+		if (image->proc->flags & CTRL_SUPER) {
+			image->eax = CTRL_CMASK;
+		}
+		else {
+			image->eax = CTRL_SMASK & CTRL_CMASK;
+		}
+		break;
+	case 6: image->eax = MMAP_CMASK; break;
+	case 7: image->eax = image->proc->sigflags;
+	default: image->eax = -1;
 	}
+
+	return image;
 }
 
 thread_t *mmap(thread_t *image) {
-	uintptr_t addr = image->ebx;
-	size_t count   = image->ecx;
-	uint16_t flags = image->edx & 0xFFF;
-	uint32_t frame = image->edx & ~0xFFF;
-	uint16_t pflags = 0;
+	uintptr_t addr;
+	uintptr_t count;
+	uintptr_t flags;
+	uintptr_t frame;
+	uintptr_t pflags;
 
-	if (addr & 0xFFF)   ret(image, -1);	/* Reject unaligned requests */
-	if (addr >= KSPACE) ret(image, -1);	/* Reject out of bounds requests */
-	if (count > 1024)   ret(image, -1);	/* Reject requests > 4MB */
+	addr  = image->ebx;
+	count = image->ecx;
+	flags = image->edx & 0xFFF;
+	frame = image->edx &~0xFFF;
+
+	if (addr & 0xFFF || addr >= KSPACE || count > 1024) {
+		image->eax = ERROR;
+		return image;
+	}
 
 	if (flags & MMAP_PHYS) {
-		ret(image, page_ufmt(page_get(addr)));
+		image->eax = page_ufmt(page_get(addr));
+		return image;
 	}
 
 	if (flags & MMAP_FREE) {
 		mem_free(addr, count * PAGESZ);
-		ret(image, 0);
+		image->eax = 0;
+		return image;
 	}
 	
-	pflags |= (PF_USER | PF_PRES);
-	if (flags & MMAP_READ) 	pflags |= PF_PRES;
-	if (flags & MMAP_WRITE)	pflags |= PF_RW;
-	if (flags & MMAP_EXEC) 	pflags |= PF_PRES;
+	pflags = PF_USER | PF_PRES | ((flags & MMAP_WRITE) ? PF_RW : 0);
 
 	if (flags & MMAP_FRAME) {
-		if ((curr_task->flags & CTRL_SUPER) || image->grant == frame) {
+		if ((image->proc->flags & CTRL_SUPER) || image->grant == frame) {
 			frame_free(page_ufmt(page_get(addr)));
 			page_set(addr, page_fmt(frame, pflags));
-			if (curr_task->grant == frame) {
-				curr_task->grant = 0;
+			if (image->grant == frame) {
+				image->grant = 0;
 			}
-			ret(image, 0);
+			image->eax = 0;
 		}
 		else {
-			ret(image, -1);
+			image->eax = ERROR;
 		}
+		return image;
 	}
 
 	mem_alloc(addr, count * PAGESZ, pflags);
-	ret(image, 0);
+
+	image->eax = 0;
+	return image;
 }
 
 thread_t *fork(thread_t *image) {
@@ -285,7 +304,11 @@ thread_t *fork(thread_t *image) {
 
 	/* Create a new task from the parent */
 	child = process_clone(process_get(parent));
-	if (!child) ret(image, 0); /* Fail if child was not created */
+
+	if (!child) {
+		image->eax = 0;
+		return image;
+	}
 
 	/* (still in parent) Set return value to child's PID */
 	image->eax = child->pid;
@@ -295,10 +318,6 @@ thread_t *fork(thread_t *image) {
 
 	/* (now in child) Set return value to negative parent's PID */
 	image->eax = (uint32_t) -parent;
-
-	if (page_get((uintptr_t) image) == 0xFFFFFFFF) {
-		page_set((uintptr_t) image, page_fmt(frame_new(), PF_PRES | PF_RW));
-	}
 
 	return image;
 }
