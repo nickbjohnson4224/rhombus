@@ -41,7 +41,7 @@ void    space_load (space_t space);
 
 extern uint32_t *frame_bitmap;
 extern uint32_t nframe_bitmap;
-void    frame_init(void);
+void    frame_init(uintptr_t memsize);
 frame_t frame_new (void);
 void    frame_free(frame_t frame);
 
@@ -49,6 +49,7 @@ extern frame_t *cmap;		/* Address of current page directory */
 extern frame_t *ctbl;		/* Base of current page tables */
 extern uint32_t *tsrc, *tdst;
 
+void   mem_init(void);
 void   mem_alloc(uintptr_t base, uintptr_t size, uint16_t flags);
 void   mem_free (uintptr_t base, uintptr_t size);
 

@@ -44,13 +44,8 @@ struct memory_map {
 } __attribute__ ((packed));
 
 extern struct multiboot *mboot;
-extern uint32_t memsize;
 
 void init(void *mboot_ptr, uint32_t mboot_magic);
-void init_detect(void);
-void init_mem(void);
-void init_free(void);
-void init_int(void);
 void init_user_init(void);
 void init_sysmap(void);
 void init_task(void);

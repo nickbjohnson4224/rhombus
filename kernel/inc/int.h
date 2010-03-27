@@ -37,6 +37,7 @@ typedef struct thread {
 	
 } __attribute__ ((packed)) thread_t;
 
+void      thread_init(void);
 thread_t *thread_switch(thread_t *old, thread_t *new);
 
 typedef thread_t* (*handler_t) (thread_t*);

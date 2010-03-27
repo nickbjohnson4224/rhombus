@@ -14,8 +14,6 @@
  */
 
 struct thread *process_switch(struct process *proc, uint32_t thread) {
-	extern void fpu_save(uint32_t *fxdata);
-	extern void fpu_load(uint32_t *fxdata);
 
 	/* switch task */
 	curr_task = proc;

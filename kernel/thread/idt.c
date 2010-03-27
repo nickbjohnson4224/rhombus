@@ -64,7 +64,6 @@ NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL
 };
 
 /* Create the IDT from idt_raw[] */
-/*__attribute__ ((section(".itext"))) */
 void init_idt() {
 	extern void idt_flush(void);
 	extern void halt(void);

@@ -71,6 +71,7 @@ typedef struct process {
 #define CTRL_SFLOAT	0x00000040
 #define CTRL_SDEATH	0x00000080
 
+void            process_init  (void);
 struct process *process_get   (pid_t pid);
 struct process *process_alloc (void);
 struct process *process_clone (struct process *parent);
@@ -81,10 +82,6 @@ struct thread  *process_switch(struct process *proc, uint32_t thread);
 
 extern pid_t curr_pid;		/* Currently loaded task ID */
 extern task_t *curr_task;
-
-/***** IRQ REDIRECTION *****/
-
-extern pid_t irq_holder[15];
 
 /***** SCHEDULER *****/
 

@@ -10,7 +10,8 @@
 
 /***** IRQ HANDLERS *****/
 
-static uint8_t held_irq[15];
+static uint8_t held_irq[256];
+static uint16_t irq_holder[256];
 static uint16_t held_count;
 
 /* Handles IRQ 0, and advances a simple counter used as a clock */
