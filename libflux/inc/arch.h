@@ -89,10 +89,10 @@ void *x86_memclr(void *s, size_t size);
 #define HEAP_MXBRK	0x20000000
 
 /* These must remain in order */
-#define ESPACE	0xFC000000	/* Temporary space for exec data */
-#define SSPACE	0xFCF00000	/* Stack space (grows down from next address) */
-#define LSPACE	0xFD000000	/* Space for exec bootstrap */
-#define KSPACE 	0xFE000000	/* Kernel space */
+#define ESPACE	0xEC000000	/* Temporary space for exec data */
+#define SSPACE	0xECF00000	/* Stack space (grows down from next address) */
+#define LSPACE	0xED000000	/* Space for exec bootstrap */
+#define KSPACE 	0xF0000000	/* Kernel space */
 
 #endif/*ARCH_X86*/
 

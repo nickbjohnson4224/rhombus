@@ -27,7 +27,7 @@
 
 	/* Address of task table */
 	#define PROCESS_TABLE (KSPACE + 0x400000)
-	#define THREAD_TABLE  (KSPACE - 0x400000)
+	#define THREAD_TABLE  (KSPACE + 0x800000)
 
 	/* Task image stack */
 	#define SSTACK_BSE	(LSPACE - 0x7000)

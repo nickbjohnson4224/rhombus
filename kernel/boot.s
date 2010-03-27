@@ -35,7 +35,7 @@ init_kmap:
     dd (init_ktbl - KSPACE + 0x003)	
 	times ((KSPACE / 0x400000) - 1) dd 0 ; Fill until KSPACE
 	dd (init_ktbl - KSPACE + 0x203)
-	times 6 dd 0	; Fill remainder of map
+	times (1022 - (KSPACE / 0x400000)) dd 0	; Fill remainder of map
 	dd (init_kmap - KSPACE + 0x203)
 
 init_ktbl:

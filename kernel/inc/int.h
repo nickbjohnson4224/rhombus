@@ -5,14 +5,6 @@
 
 #include <task.h>
 
-/* Signal structure */
-typedef struct signal {
-	uint32_t signal;
-	uint32_t grant;
-	uint32_t caller;
-} __attribute__ ((packed)) signal_t;
-
-/* thread structure - contains the saved state of a task */
 typedef struct thread {
 
 	/* stored continuation */
@@ -42,7 +34,10 @@ typedef struct thread {
 
 	/* owning process */
 	struct process *proc;
+	
 } __attribute__ ((packed)) thread_t;
+
+thread_t *thread_switch(thread_t *old, thread_t *new);
 
 typedef thread_t* (*handler_t) (thread_t*);
 thread_t *pit_handler(thread_t *image);

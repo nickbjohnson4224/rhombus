@@ -33,7 +33,6 @@ struct thread *sret(struct thread *image);
 typedef struct process {
 	space_t space;
 	struct thread *image;
-	uint32_t curr_thread;
 	uint32_t flags;
 	uint8_t quanta;
 	uint16_t magic;
@@ -41,7 +40,6 @@ typedef struct process {
 	struct process *next_task;
 	pid_t parent;
 	uint32_t shandler;
-	uint32_t grant;
 	uint32_t sigflags;
 } task_t, process_t;
 

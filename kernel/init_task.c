@@ -15,9 +15,18 @@ void init_task() {
 	uint32_t i, entry;
 	void *user_init;
 
+	printk("  Kernel: thread allocator");
+
+		/* allocate four consecutive segments for thread table */
+		for (i = THREAD_TABLE; i < THREAD_TABLE + SEGSZ * 4; i += SEGSZ) {
+			page_touch(i);
+		}
+
+	cursek(74, -1);
+	printk("[done]");
 	printk("  Kernel: tasking system");
 
-		/* Bootstrap task 0 */
+		/* bootstrap task 0 */
 		idle = process_alloc();
 		idle->space = get_cr3();
 		idle->flags = CTRL_READY | CTRL_SUPER;
