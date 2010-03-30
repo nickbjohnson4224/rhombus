@@ -14,27 +14,27 @@
 #define FLUX_KERNEL_REVISN 1
 
 const char *stamp = "\
-Flux Operating System v%x.%x\n\
+Flux Operating System Kernel v%x.%x\n\
 Copyright 2010 Nick Johnson\n\n";
 
 typedef void (*init_t)(void);
+
 init_t init_list[] = {
-mem_init,
-thread_init,
-process_init,
-init_task,
-init_pit,
-init_fpu,
-NULL
+	mem_init,
+	thread_init,
+	process_init,
+	init_task,
+	NULL
 };
 
 struct multiboot *mboot;
 
 typedef void (*entry_t)();
 
-void init(void *mboot_ptr, uint32_t mboot_magic) {
+void *init(void *mboot_ptr, uint32_t mboot_magic) {
 	extern void halt(void);
 	uint32_t i;
+	thread_t *boot_image;
 
 	cleark(); 
 	printk(stamp, FLUX_VERSION_MAJOR, FLUX_VERSION_MINOR);
@@ -48,7 +48,6 @@ void init(void *mboot_ptr, uint32_t mboot_magic) {
 		init_list[i]();
 	}
 
-	printk("  Kernel: dropping to usermode");
-	cursek(74, -1);
-	printk("[done]");
+	boot_image = thread_alloc();
+	return &boot_image->tss_start;
 }

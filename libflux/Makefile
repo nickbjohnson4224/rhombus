@@ -4,7 +4,7 @@ HEADERS := $(shell find inc -name "*.h")
 SUBDIR	:= libflux
 TARGET	:= libflux.a
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -r -lkernel
+LDFLAGS += -r
 ASFLAGS := -felf
 
 .PHONY: $(HEADERS) clean

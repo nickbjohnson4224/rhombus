@@ -51,6 +51,7 @@ static void segfault(uint32_t source, struct request *req) {
 
 int main() {
 	extern void shell(void);
+	int pid;
 
 	device_t nulldev;
 	nulldev.type = -1;
@@ -59,14 +60,12 @@ int main() {
 	sigregister(SSIG_PAGE, 	segfault);
 
 	launch_driver(&stdout, &terminal, nulldev);
+	printf("Launching terminal driver...\n");
 
-	printf("Flux 0.3a booting...\n");
-	printf("Launched terminal driver\n");
-
-	printf("Launching keyboard driver\n");
+	printf("Launching keyboard driver...\n");
 	launch_driver(&stdin,  &keyboard, nulldev);
 
-	printf("Launching ATA driver\n");
+	printf("Launching ATA driver...\n");
 	launch_driver(&disk, &ata, pci_findb(CLASS_STORAGE, PCI_CLASS, nulldev));
 
 	shell();

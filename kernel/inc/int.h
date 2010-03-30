@@ -34,10 +34,18 @@ typedef struct thread {
 
 	/* owning process */
 	struct process *proc;
+
+	/* user stack segment base */
+	uintptr_t stack;
+
+	/* (legacy) thread image stack */
+	struct thread *tis;
 	
 } __attribute__ ((packed)) thread_t;
 
-void      thread_init(void);
+void      thread_init  (void);
+thread_t *thread_alloc (void);
+void      thread_free  (thread_t *thread);
 thread_t *thread_switch(thread_t *old, thread_t *new);
 
 typedef thread_t* (*handler_t) (thread_t*);

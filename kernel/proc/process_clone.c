@@ -27,6 +27,14 @@ process_t *process_clone(process_t *parent) {
 	child->space  = space_clone();
 	child->parent = parent->pid;
 	child->pid    = pid;
+	child->image  = thread_alloc();
+
+	if (parent->image) {
+		memcpy(child->image, parent->image, sizeof(thread_t));
+	}
+
+	child->image->tis  = NULL;
+	child->image->proc = child;
 
 	sched_ins(pid);
 

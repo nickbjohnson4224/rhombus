@@ -115,8 +115,8 @@ start:
 
 	call init
 
-	; Create saved images at some empty space
-	mov esp, SSTACK_INI - 0x1000
+	; Create saved images at a blank thread
+	mov esp, eax
 
 	sti
 	jmp $
