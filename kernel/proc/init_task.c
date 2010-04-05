@@ -14,6 +14,8 @@ void init_task() {
 	uint32_t i, entry;
 	void *user_init;
 
+	init = process_get(1);
+
 	/* Check for init */
 	if (!mboot->mods_count) panic("No init found!");
 	user_init = (void*) (*(uint32_t*) (mboot->mods_addr + KSPACE) + KSPACE);
@@ -22,10 +24,7 @@ void init_task() {
 	if (elf_check(user_init)) panic("init is not valid ELF");
 
 	/* allocate stack space */
-	init = process_get(1);
-	for (i = USTACK_BSE; i < USTACK_TOP; i += PAGESZ) {
-		page_set(i, page_fmt(frame_new(), PF_USER | PF_RW | PF_PRES));
-	}
+	mem_alloc(USTACK_BSE, USTACK_TOP - USTACK_BSE, PF_USER | PF_RW);
 
 	/* Set TIS top pointer */
 	init->image = thread_alloc();

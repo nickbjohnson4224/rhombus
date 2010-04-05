@@ -47,6 +47,8 @@ void      thread_init  (void);
 thread_t *thread_alloc (void);
 void      thread_free  (thread_t *thread);
 thread_t *thread_switch(thread_t *old, thread_t *new);
+thread_t *thread_fire  (thread_t *image, uint16_t targ, uint16_t sig, uintptr_t grant);
+thread_t *thread_drop  (thread_t *image);
 
 typedef thread_t* (*handler_t) (thread_t*);
 thread_t *pit_handler(thread_t *image);

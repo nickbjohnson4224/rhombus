@@ -25,14 +25,20 @@ typedef uint16_t pid_t;
 #define NOERR 0x02
 #define EKILL 0x04
 
-struct thread *signal(uint16_t task, uint16_t sig, void* grant, uint8_t flags);
-struct thread *sret(struct thread *image);
+//struct thread *signal(uint16_t task, uint16_t sig, void* grant, uint8_t flags);
+//struct thread *sret(struct thread *image);
 
 /***** TASK TABLE *****/
 
 typedef struct process {
+
+	/* address space */
 	space_t space;
+
+	/* thread image stack */
 	struct thread *image;
+
+	/* various crap */
 	uint32_t flags;
 	uint8_t quanta;
 	uint16_t magic;
@@ -41,6 +47,7 @@ typedef struct process {
 	pid_t parent;
 	uint32_t shandler;
 	uint32_t sigflags;
+
 } task_t, process_t;
 
 #define CTRL_PSPACE	0

@@ -36,7 +36,7 @@ thread_t *pit_handler(thread_t *image) {
 				}
 				held_irq[i]--;
 				held_count--;
-				return signal(irq_holder[i], SSIG_IRQ, NULL, NOERR);
+				return thread_fire(image, irq_holder[i], SSIG_IRQ, 0);
 			}
 		}
 	}
@@ -56,7 +56,7 @@ thread_t *irq_redirect(thread_t *image) {
 	}
 
 	/* Send S_IRQ signal to the task registered with the IRQ */
-	return signal(irq_holder[DEIRQ(image->num)], SSIG_IRQ, NULL, NOERR);
+	return thread_fire(image, irq_holder[DEIRQ(image->num)], SSIG_IRQ, 0);
 }
 
 /***** FAULT HANDLERS *****/
@@ -72,7 +72,7 @@ thread_t *fault_generic(thread_t *image) {
 	}
 	#endif
 
-	return signal(curr_pid, SSIG_FAULT, NULL, NOERR | EKILL);
+	return thread_fire(image, curr_pid, SSIG_FAULT, 0);
 }
 
 /* Page fault */
@@ -93,7 +93,7 @@ thread_t *fault_page(thread_t *image) {
 	}
 	#endif
 
-	return signal(curr_pid, SSIG_PAGE, NULL, NOERR | EKILL);
+	return thread_fire(image, curr_pid, SSIG_PAGE, 0);
 }
 
 /* Floating point exception */
@@ -107,7 +107,7 @@ thread_t *fault_float(thread_t *image) {
 	}
 	#endif
 
-	return signal(curr_pid, SSIG_FLOAT, NULL, NOERR | EKILL);
+	return thread_fire(image, curr_pid, SSIG_FLOAT, 0);
 }
 
 /* Double fault */
@@ -138,16 +138,19 @@ thread_t *fire(thread_t *image) {
 		image->eax = ERROR;
 		return image;
 	}
-
-	if (flags & 0x1) {
-		image = sret(image);
+	else {
+		image->eax = 0;
 	}
 
-	return signal(targ, sig, (void*) grant, 0);
+	if (flags & 0x1) {
+		image = thread_drop(image);
+	}
+
+	return thread_fire(image, targ, sig, grant);
 }
 
 thread_t *drop(thread_t *image) {
-	return sret(image);
+	return thread_drop(image);
 }
 
 thread_t *hand(thread_t *image) {
@@ -352,6 +355,6 @@ thread_t *exit(thread_t *image) {
 	}
 	else {
 		/* Send S_DTH signal to parent with return value */
-		return signal(catcher, SSIG_DEATH, NULL, NOERR);
+		return thread_fire(image, catcher, SSIG_DEATH, 0);
 	}
 }
