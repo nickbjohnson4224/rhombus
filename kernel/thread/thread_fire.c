@@ -1,11 +1,27 @@
-/* 
- * Copyright 2009, 2010 Nick Johnson 
+/*
+ * Copyright 2010 Nick Johnson
  * ISC Licensed, see LICENSE for details
  */
 
 #include <lib.h>
 #include <task.h>
 #include <int.h>
+
+/****************************************************************************
+ * thread_fire
+ *
+ * Sends a signal to the process with pid targ of the type sig with the
+ * granted page at current virtual address grant. If the target process has 
+ * the CTRL_QUEUE flag set, the signal is added to that process' mailbox. 
+ * Otherwise, a new thread is created in the target process to handle the 
+ * incoming signal, and that thread is switched to.
+ *
+ * The granted page in the current process is replaced with a page with
+ * undefined contents and the same permissions as the granted page.
+ *
+ * Returns a runnable and active thread that may or may not be the thread
+ * passed as image.
+ */
 
 thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t grant){
 	process_t *p_targ;
@@ -58,15 +74,4 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 	
 		return thread_switch(image, new_image);
 	}
-}
-
-thread_t *thread_drop(thread_t *image) {
-	thread_t *old_image;
-
-	old_image = image;
-	image->proc->image = image->tis;
-	image = thread_switch(image, image->tis);
-	thread_free(old_image);
-
-	return image;
 }
