@@ -3,7 +3,7 @@
  * ISC Licensed, see LICENSE foe details
  */
 
-#include <lib.h>
+#include <util.h>
 
 void sleep(uint32_t cycles) {
 	volatile uint32_t i;

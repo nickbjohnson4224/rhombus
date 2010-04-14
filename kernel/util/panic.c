@@ -3,7 +3,7 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <lib.h>
+#include <util.h>
 
 void panic(const char *message) {
 	extern void halt(void);

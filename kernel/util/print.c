@@ -3,8 +3,8 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <lib.h>
-#include <mem.h>
+#include <util.h>
+#include <space.h>
 #include <stdarg.h>
 
 static uint16_t *video_mem = (void*) (KSPACE + 0xB8000);

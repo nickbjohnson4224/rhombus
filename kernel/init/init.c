@@ -3,10 +3,9 @@
  * ISC Licensed, see LICENSE for details 
  */
 
-#include <lib.h>
-#include <mem.h>
-#include <int.h>
-#include <task.h>
+#include <util.h>
+#include <time.h>
+#include <space.h>
 #include <init.h>
 
 #define FLUX_VERSION_MAJOR 0

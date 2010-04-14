@@ -3,9 +3,9 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <lib.h>
-#include <mem.h>
-#include <int.h>
+#include <util.h>
+#include <time.h>
+#include <space.h>
 #include <init.h>
 
 /****************************************************************************

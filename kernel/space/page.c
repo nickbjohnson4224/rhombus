@@ -3,8 +3,8 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <lib.h>
-#include <mem.h>
+#include <util.h>
+#include <space.h>
 
 frame_t *cmap = (void*) (PGE_MAP + 0x3FF000);	/* Current page directory mapping */
 frame_t *ctbl = (void*) PGE_MAP;				/* Current base page table mapping */

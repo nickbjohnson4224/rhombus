@@ -1,7 +1,7 @@
-/* Copyright 2009 Nick Johnson */
+/* Copyright 2009, 2010 Nick Johnson */
 
-#ifndef LIB_H
-#define LIB_H
+#ifndef UTIL_H
+#define UTIL_H
 
 #include <flux/config.h>
 #include <flux/arch.h>
@@ -39,4 +39,4 @@ void panic(const char *message); /* Panic with a message */
 #define EPERMIT ((uint32_t) -3)
 #define EREPEAT ((uint32_t) -4)
 
-#endif
+#endif/*UTIL_H*/

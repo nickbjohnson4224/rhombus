@@ -3,7 +3,7 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <lib.h>
+#include <util.h>
 
 /* Optimized memory clearing (modified from jgaref's memset) */
 void *memclr(void *dest, uint32_t size) {

@@ -3,8 +3,8 @@
  * ISC Licensed, see LICENSE for details 
  */
 
-#include <lib.h>
-#include <task.h>
+#include <util.h>
+#include <time.h>
 #include <init.h>
 #include <elf.h>
 

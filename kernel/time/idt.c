@@ -3,10 +3,9 @@
  * ISC Licensed, see LICENSE for details 
  */
 
-#include <lib.h>
-#include <int.h>
-#include <task.h>
-#include <mem.h>
+#include <util.h>
+#include <time.h>
+#include <space.h>
 #include <init.h>
 
 void idt_set(uint8_t n, uint32_t base, uint16_t seg, uint8_t flags);

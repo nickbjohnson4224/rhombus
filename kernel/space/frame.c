@@ -3,8 +3,8 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <lib.h>
-#include <mem.h>
+#include <util.h>
+#include <space.h>
 
 uint32_t vframe_bitmap[32768]; /* space for bitmap */
 uint32_t *frame_bitmap;        /* bitmap for allocating frames */

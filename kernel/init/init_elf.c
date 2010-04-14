@@ -3,10 +3,10 @@
  * ISC Licensed, see LICENSE for details 
  */
 
-#include <lib.h>
+#include <util.h>
 #include <elf.h>
-#include <task.h>
-#include <mem.h>
+#include <time.h>
+#include <space.h>
 
 void elf_load_segment(uint8_t *src, elf_ph_t *seg) {
 	uint8_t *src_base, *dest_base;

@@ -1,9 +1,10 @@
-/* Copyright 2009 Nick Johnson */
+/* Copyright 2010 Nick Johnson */
 
-#ifndef MEM_H
-#define MEM_H
+#ifndef SPACE_H
+#define SPACE_H
 
-#include <flux/config.h> /* Contains macros for VM layout */
+#include <flux/config.h>
+#include <flux/arch.h>
 
 /***** PAGE FLAGS *****/
 
@@ -30,7 +31,16 @@
 
 #define PF_MASK 0x0E7F	/* Page flags that can be used */
 
+/***** FRAME ALLOCATOR *****/
+
 typedef uint32_t frame_t;
+
+void    frame_init(uintptr_t memsize);
+frame_t frame_new (void);
+void    frame_free(frame_t frame);
+
+/***** ADDRESS SPACES *****/
+
 typedef uint32_t space_t;
 
 void    space_exmap(uintptr_t seg, space_t space);
@@ -39,19 +49,16 @@ space_t space_clone(void);
 void    space_free (space_t space);
 void    space_load (space_t space);
 
-extern uint32_t *frame_bitmap;
-extern uint32_t nframe_bitmap;
-void    frame_init(uintptr_t memsize);
-frame_t frame_new (void);
-void    frame_free(frame_t frame);
-
 extern frame_t *cmap;		/* Address of current page directory */
 extern frame_t *ctbl;		/* Base of current page tables */
-extern uint32_t *tsrc, *tdst;
+
+/***** HIGH LEVEL MEMORY OPERATIONS *****/
 
 void   mem_init(void);
 void   mem_alloc(uintptr_t base, uintptr_t size, uint16_t flags);
 void   mem_free (uintptr_t base, uintptr_t size);
+
+/***** ADDRESS SPACE SEGMENTS *****/
 
 #define SEGSZ 0x400000
 
@@ -63,6 +70,8 @@ void   mem_free (uintptr_t base, uintptr_t size);
 
 uintptr_t segment_alloc(uint32_t type);
 void      segment_free (uintptr_t seg);
+
+/***** PAGE OPERATIONS *****/
 
 void    page_touch(uintptr_t page);
 void    page_set  (uintptr_t page, frame_t value);
@@ -77,9 +86,11 @@ frame_t page_exget  (uintptr_t seg, uintptr_t page);
 #define page_fmt(base,flags) (((base)&0xFFFFF000)|((flags)&PF_MASK))
 #define page_ufmt(page) ((page)&0xFFFFF000)
 
+/***** KERNEL HEAP *****/
+
 void *heap_alloc(size_t size);
 void  heap_free(void *ptr, size_t size);
 void  heap_new_slab(size_t bucket);
 void *heap_valloc(void);
 
-#endif /*MEM_H*/
+#endif /*SPACE_H*/

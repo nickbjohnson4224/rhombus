@@ -1,7 +1,7 @@
 #ifndef ELF_H
 #define ELF_H
 
-#include <lib.h>
+#include <util.h>
 
 /* ELF Header */
 typedef struct {

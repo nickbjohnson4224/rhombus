@@ -3,9 +3,7 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <lib.h>
-#include <task.h>
-#include <int.h>
+#include <time.h>
 
 /* Scheduling queue */
 static task_t *queue_next = NULL;

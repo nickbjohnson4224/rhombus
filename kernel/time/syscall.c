@@ -3,10 +3,9 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <lib.h>
-#include <int.h>
-#include <task.h>
-#include <mem.h>
+#include <util.h>
+#include <time.h>
+#include <space.h>
 
 /***** IRQ HANDLERS *****/
 

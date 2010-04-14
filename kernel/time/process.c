@@ -3,9 +3,9 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <lib.h>
-#include <mem.h>
-#include <task.h>
+#include <util.h>
+#include <time.h>
+#include <space.h>
 
 process_t *process_table[MAX_TASKS];
 
@@ -96,8 +96,9 @@ process_t *process_get(pid_t pid) {
 	if (pid >= MAX_TASKS) {
 		return NULL;
 	}
-
-	return process_table[pid];
+	else {
+		return process_table[pid];
+	}
 }
 
 /****************************************************************************
