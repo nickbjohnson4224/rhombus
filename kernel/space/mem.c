@@ -3,8 +3,42 @@
  * ISC Licensed, see LICENSE for details
  */
 
+#include <lib.h>
 #include <mem.h>
 #include <init.h>
+
+/****************************************************************************
+ * mem_alloc
+ *
+ * Allocates at least a range of memory with the given flags.
+ */
+
+void mem_alloc(uintptr_t base, uintptr_t size, uint16_t flags) {
+	uintptr_t i;
+
+	for (i = base & ~0xFFF; i < base + size; i += 0x1000) {
+		if ((page_get(i) & PF_PRES) == 0) {
+			page_set(i, page_fmt(frame_new(), (flags & PF_MASK) | PF_PRES));
+		}
+	}
+}
+
+/****************************************************************************
+ * mem_free
+ *
+ * Unmaps at most a range of memory.
+ */
+
+void mem_free(uintptr_t base, uintptr_t size) {
+	uint32_t i;
+
+	for (i = base & ~0xFFF; i < base + size; i += 0x1000) {
+		if (page_get(i) & PF_PRES) {
+			frame_free(page_ufmt(page_get(i)));
+			page_set(i, 0);
+		}
+	}
+}
 
 /****************************************************************************
  * mem_init
