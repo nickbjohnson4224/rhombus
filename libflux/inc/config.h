@@ -25,6 +25,10 @@
 	#define TMP_MAP	0xFF800000
 	#define PGE_MAP	0xFFC00000
 
+	/* Kernel heap */
+	#define KERNEL_HEAP      (KSPACE + 0x1000000)
+	#define KERNEL_HEAP_END  (KSPACE + 0x8000000)
+
 	/* Address of task table */
 	#define PROCESS_TABLE (KSPACE + 0x400000)
 	#define THREAD_TABLE  (KSPACE + 0x800000)

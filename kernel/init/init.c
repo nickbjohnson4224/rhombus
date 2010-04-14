@@ -10,7 +10,7 @@
 #include <init.h>
 
 #define FLUX_VERSION_MAJOR 0
-#define FLUX_VERSION_MINOR 3
+#define FLUX_VERSION_MINOR 4
 #define FLUX_KERNEL_REVISN 1
 
 const char *stamp = "\
@@ -34,6 +34,7 @@ typedef void (*entry_t)();
 void *init(void *mboot_ptr, uint32_t mboot_magic) {
 	extern void halt(void);
 	uint32_t i;
+	uintptr_t *p;
 	thread_t *boot_image;
 
 	cleark(); 

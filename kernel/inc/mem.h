@@ -77,4 +77,9 @@ frame_t page_exget  (uintptr_t seg, uintptr_t page);
 #define page_fmt(base,flags) (((base)&0xFFFFF000)|((flags)&PF_MASK))
 #define page_ufmt(page) ((page)&0xFFFFF000)
 
+void *heap_alloc(size_t size);
+void  heap_free(void *ptr, size_t size);
+void  heap_new_slab(size_t bucket);
+void *heap_valloc(void);
+
 #endif /*MEM_H*/

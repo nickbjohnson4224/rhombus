@@ -16,23 +16,7 @@
  */
 
 thread_t *thread_alloc(void) {
-	uintptr_t addr;
-	thread_t *thread;
-	size_t i;
-
-	for (i = 0; i < 4096; i++) {
-		addr = THREAD_TABLE + (PAGESZ * i);
-
-		if ((page_get(addr) & PF_PRES) == 0) {
-			page_set(addr, page_fmt(frame_new(), PF_PRES | PF_RW));
-
-			thread = (thread_t*) addr;
-
-			return thread;
-		}
-	}
-
-	return NULL;
+	return heap_alloc(sizeof(thread_t));
 }
 
 /****************************************************************************
@@ -130,8 +114,7 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
  */
 
 void thread_free(thread_t *thread) {
-	frame_free(page_ufmt(page_get((uintptr_t) thread)));
-	page_set((uintptr_t) thread, 0);
+	heap_free(thread, sizeof(thread_t));
 }
 
 /****************************************************************************

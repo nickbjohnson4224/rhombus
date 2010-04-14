@@ -7,6 +7,8 @@
 #include <mem.h>
 #include <task.h>
 
+process_t *process_table[MAX_TASKS];
+
 /****************************************************************************
  * process_alloc
  *
@@ -15,24 +17,17 @@
  */
 
 process_t *process_alloc(void) {
-	uintptr_t addr;
-	process_t *proc;
-	pid_t pid;
+	uintptr_t i;
 
-	for (pid = 0; pid < MAX_PID; pid++) {
-		addr = PROCESS_TABLE + (PAGESZ * pid);
-
-		if ((page_get(addr) & PF_PRES) == 0) {
-			process_touch(pid);
-
-			proc = (process_t*) addr;
-			proc->pid = pid;
-
-			return proc;
+	for (i = 0; i < MAX_TASKS; i++) {
+		if (process_table[i] == NULL) {
+			break;
 		}
 	}
 
-	return NULL;
+	process_table[i] = heap_alloc(sizeof(process_t));
+	process_table[i]->pid = i;
+	return process_table[i];
 }
 
 /****************************************************************************
@@ -77,16 +72,16 @@ process_t *process_clone(process_t *parent) {
  */
 
 void process_free(process_t *proc) {
-	uintptr_t addr;
+	uintptr_t i;
 
-	addr = (uintptr_t) proc;
-
-	if (addr < PROCESS_TABLE || addr >= PROCESS_TABLE + (PAGESZ * MAX_PID)) {
-		return;
+	for (i = 0; i < MAX_PID; i++) {
+		if (process_table[i] == proc) {
+			break;
+		}
 	}
 
-	frame_free(page_get(addr));
-	page_set(addr, 0);
+	process_table[i] = NULL;
+	heap_free(proc, sizeof(process_t));
 }
 
 /****************************************************************************
@@ -97,19 +92,12 @@ void process_free(process_t *proc) {
  */
 
 process_t *process_get(pid_t pid) {
-	uintptr_t addr;
 
-	if (pid >= MAX_PID) {
+	if (pid >= MAX_TASKS) {
 		return NULL;
 	}
 
-	addr = PROCESS_TABLE + (PAGESZ * pid);
-
-	if (page_get(addr) & PF_PRES) {
-		return (process_t*) addr;
-	}
-
-	return NULL;
+	return process_table[pid];
 }
 
 /****************************************************************************
@@ -158,26 +146,4 @@ struct thread *process_switch(struct process *proc, uint32_t thread) {
 	space_load(proc->space);
 
 	return proc->image;
-}
-
-/****************************************************************************
- * process_touch
- *
- * creates a process at the specified pid.
- */
-
-void process_touch(pid_t pid) {
-	uintptr_t addr;
-
-	if (pid >= MAX_PID) {
-		return;
-	}
-
-	addr = PROCESS_TABLE + (PAGESZ * pid);
-
-	if (page_get(addr) & PF_PRES) {
-		return;
-	}
-
-	page_set(addr, page_fmt(frame_new(), PF_PRES | PF_RW));
 }

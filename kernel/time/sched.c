@@ -74,3 +74,43 @@ task_t *task_next(uint8_t flags) {
 		}
 	}
 }
+
+#if 0
+
+struct sched_list {
+	struct sched_list *next;
+
+	thread_t *thread;
+};
+
+struct sched_queue {
+	struct sched_list *in;
+	struct sched_list *out;
+};
+
+static struct sched_queue queue;
+
+thread_t *sched_next(void) {
+	struct sched_list *node;
+	thread_t *thread;
+
+	node = queue->out;
+
+	if (!node) {
+		/* underflow */
+		return NULL;
+	}
+
+	if (!node->next) {
+		/* removal of last element */
+		queue->in = NULL;
+	}
+
+	queue->out = node->next;
+	
+	thread = node->thread;
+
+	return node;
+}
+
+#endif

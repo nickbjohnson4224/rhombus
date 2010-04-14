@@ -1,4 +1,4 @@
-Flux Operating System v0.2a
+Flux Operating System v0.4a
 Build Instructions
 ================================
 
@@ -57,7 +57,6 @@ configuration file for Bochs - modify it to your liking.
 ===============================
 
 Tested Machines and Virtual Machines
-Please make sure all builds continue to work on this list!
 
 Virtual Machines:
 Bochs 2.4.1 i586 - 1MHz Intel i586, 8MB RAM
