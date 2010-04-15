@@ -14,62 +14,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <driver/terminal.h>
-#include <driver/keyboard.h>
-#include <driver/ata.h>
-#include <driver/pci.h>
-
-FILE *disk = NULL;
-
-static void launch_driver(FILE **hand, struct driver_interface *drv, device_t dev) {
-	int32_t pid;
-
-	sighold(SIG_REPLY);
-
-	pid = fork();
-
-	if (pid < 0) {
-		sigfree(SIG_REPLY);
-		drv->init(dev);
-		fire(-pid, SIG_REPLY, NULL);
-		block(true);	
-		for(;;);
-	}
-	sigpullc(SIG_REPLY, pid);
-
-	*hand = fsetup(pid, 0, "r");
-
-	sigfree(SIG_REPLY);
-}
-
-static void segfault(uint32_t source, struct request *req) {
-	if (req) rfree(req);
-
-	printf("Segmentation Fault\n");
-	exit(1);
-}
-
 int main() {
-	extern void shell(void);
-	int pid;
+	req_t *req = ralloc();
+	req->transid = 42;
 
-	device_t nulldev;
-	nulldev.type = -1;
+	fire(1, SIG_READ, req);
 
-	sigregister(SSIG_FAULT, segfault);
-	sigregister(SSIG_PAGE, 	segfault);
+	req = sigpull(SIG_READ);
 
-	launch_driver(&stdout, &terminal, nulldev);
-	printf("Launching terminal driver...\n");
-
-	printf("Launching keyboard driver...\n");
-	launch_driver(&stdin,  &keyboard, nulldev);
-
-	printf("Launching ATA driver...\n");
-	launch_driver(&disk, &ata, pci_findb(CLASS_STORAGE, PCI_CLASS, nulldev));
-
-	shell();
+	if (req->transid != 42) {
+		exit(0);
+	}
 
 	for(;;);
-	return 0;
 }

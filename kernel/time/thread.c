@@ -58,6 +58,7 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 	process_t *p_targ;
 	thread_t *new_image;
 	uintptr_t addr;
+	struct signal_queue *sq;
 
 	p_targ = process_get(targ);
 
@@ -68,10 +69,26 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 		grant &= ~0xFFF;
 	}
 
-	if (p_targ->flags & CTRL_QUEUE) {
+	if (p_targ->flags & CTRL_QUEUE || p_targ->shandler == 0) {
 		/* queue signal */
 
-		/* XXX - please implement */
+		printk("FIRE queue (%x %x %x)\n", sig, grant, targ);
+
+		sq = heap_alloc(sizeof(struct signal_queue));
+		sq->signal = sig;
+		sq->grant  = grant;
+		sq->source = image->proc->pid;
+		sq->next   = NULL;
+
+		if (p_targ->mailbox_out[sig]) {
+			p_targ->mailbox_in[sig]->next = sq;
+			p_targ->mailbox_in[sig] = sq;
+		}
+		else {
+			p_targ->mailbox_out[sig] = sq;
+			p_targ->mailbox_in[sig]  = sq;
+		}
+
 		return image;
 
 	}
@@ -137,14 +154,18 @@ void thread_init(void) {
 	pic_mask(0x0001);
 
 	/* register system calls */
-	register_int(0x60, fire);
-	register_int(0x61, drop);
-	register_int(0x62, hand);
-	register_int(0x63, ctrl);
-	register_int(0x64, info);
-	register_int(0x65, mmap);
-	register_int(0x66, fork);
-	register_int(0x67, exit);
+	register_int(0x40, syscall_fire);
+	register_int(0x41, syscall_drop);
+	register_int(0x42, syscall_sctl);
+	register_int(0x43, syscall_mail);
+
+	register_int(0x48, syscall_fork);
+	register_int(0x49, syscall_exit);
+	register_int(0x4A, syscall_pctl);
+	register_int(0x4B, syscall_kctl);
+
+	register_int(0x50, syscall_mmap);
+	register_int(0x51, syscall_mctl);
 
 	/* register fault handlers */
 	register_int(0x00, fault_float);

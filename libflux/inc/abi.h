@@ -9,12 +9,12 @@
 
 int32_t		_fire(uint32_t pid, uint16_t signal, void *grant, uint32_t flags);
 void		_drop(void);
-uintptr_t	_hand(uintptr_t handler);
-uint32_t	_ctrl(uint32_t flags, uint32_t mask, uint32_t space);
+uint32_t	_pctl(uint32_t flags, uint32_t mask, uint32_t space);
 uint32_t	_info(uint32_t selector);
 int32_t		_mmap(uintptr_t addr, uint32_t flags, uint32_t frame);
 int32_t		_fork(void);
 void		_exit(uint32_t value);
+uintptr_t   _mail(uint32_t signal, uint32_t source, uint32_t insert);
 
 #define FIRE_NONE	0x0000
 #define FIRE_TAIL	0x0001

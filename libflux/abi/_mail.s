@@ -3,9 +3,13 @@
 
 [bits 32]
 
-global _fork
+global _mail
 
-_fork:
-	int 0x48
+_mail:
+
+	mov ecx, [esp+4]
+	mov edx, [esp+8];
+	mov eax, [esp+12];
+	int 0x43
 
 	ret

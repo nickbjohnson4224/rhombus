@@ -16,8 +16,6 @@ size_t read(struct file *fd, void *buf, size_t size, uint64_t offset) {
 
 	oldsize = size;
 
-	sighold(SIG_REPLY);
-
 	req = ralloc();
 
 	while (size) {
@@ -31,7 +29,7 @@ size_t read(struct file *fd, void *buf, size_t size, uint64_t offset) {
 
 		fire(fd->target, SIG_READ, req_cksum(req));
 
-		res = sigpulltc(SIG_REPLY, i, fd->target);
+		res = sigpull(SIG_REPLY);
 
 		if (res->format == REQ_ERROR) {
 			rfree(res);
@@ -49,7 +47,6 @@ size_t read(struct file *fd, void *buf, size_t size, uint64_t offset) {
 	}
 
 	rfree(req);
-	sigfree(SIG_REPLY);
 
 	return oldsize;
 }

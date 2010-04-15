@@ -26,6 +26,13 @@
 
 typedef uint16_t pid_t;
 
+struct signal_queue {
+	struct signal_queue *next;
+	uint32_t signal;
+	uint32_t grant;
+	uint32_t source;
+};
+
 typedef struct process {
 
 	/* address space */
@@ -36,13 +43,15 @@ typedef struct process {
 
 	/* various crap */
 	uint32_t flags;
-	uint8_t quanta;
-	uint16_t magic;
 	pid_t pid;
 	struct process *next_task;
 	pid_t parent;
 	uint32_t shandler;
 	uint32_t sigflags;
+
+	/* signal queue */
+	struct signal_queue *mailbox_in [32];
+	struct signal_queue *mailbox_out[32];
 
 } task_t, process_t;
 
@@ -152,14 +161,18 @@ void register_int(uint8_t n, handler_t handler);
 void tss_set_esp(uint32_t esp);
 void pic_mask(uint16_t mask);
 
-thread_t *fire(thread_t *image);
-thread_t *drop(thread_t *image);
-thread_t *hand(thread_t *image);
-thread_t *ctrl(thread_t *image);
-thread_t *info(thread_t *image);
-thread_t *mmap(thread_t *image);
-thread_t *fork(thread_t *image);
-thread_t *exit(thread_t *image);
+thread_t *syscall_fire(thread_t *image); /* send signals / create threads */
+thread_t *syscall_drop(thread_t *image); /* exit from threads */
+thread_t *syscall_sctl(thread_t *image); /* query signal policy */
+thread_t *syscall_mail(thread_t *image); /* recieve signals */
+
+thread_t *syscall_fork(thread_t *image); /* create processes */
+thread_t *syscall_exit(thread_t *image); /* exit from processes */
+thread_t *syscall_pctl(thread_t *image); /* query process metadata */
+thread_t *syscall_kctl(thread_t *image); /* query kernel metadata */
+
+thread_t *syscall_mmap(thread_t *image); /* manage memory */
+thread_t *syscall_mctl(thread_t *image); /* query memory subsystem */
 
 thread_t *fault_generic(thread_t *image);
 thread_t *fault_page   (thread_t *image);

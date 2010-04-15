@@ -209,22 +209,15 @@ struct request *ralloc(void) {
 void rfree(struct request *r) {
 	size_t idx;
 	
-	sigblock(true, VSIG_ALL);
-
 	idx = ((uintptr_t) r - _HEAP_START) / BLOCKSZ;
 	bmap[idx >> 4] &= ~(1 << (idx & 0xFFFF));
-
-	sigblock(false, VSIG_ALL);
 }
 
 void *heap_malloc(size_t size) {
 	struct slab_header *slab;
 	size_t bidx;
 
-	sigblock(true, VSIG_ALL);
-
 	if (size > (BLOCKSZ / 2) - sizeof(struct slab_header)) {
-		sigblock(false, VSIG_ALL);
 		return heap_valloc(size);
 	}
 	
@@ -245,7 +238,6 @@ void *heap_malloc(size_t size) {
 		bucket[bidx] = slab;
 	}
 
-	sigblock(false, VSIG_ALL);
 	return slab_alloc(slab);
 }
 
@@ -253,11 +245,7 @@ void heap_free(void *ptr) {
 	struct slab_header *s, *x;
 	size_t bidx;
 
-	sigblock(true, VSIG_ALL);
-
 	if ((uintptr_t) ptr < _HEAP_START || (uintptr_t) ptr > HEAP_MXBRK) {
-
-		sigblock(false, VSIG_ALL);
 
 		return;
 	}
@@ -266,8 +254,6 @@ void heap_free(void *ptr) {
 
 	if (s == NULL) {
 		heap_vfree(ptr);
-
-		sigblock(false, VSIG_ALL);
 
 		return;
 	}
@@ -291,18 +277,12 @@ void heap_free(void *ptr) {
 		}
 		del_slab(s);
 	}
-
-	sigblock(false, VSIG_ALL);
 }
 
 size_t heap_size(void *ptr) {
 	struct slab_header *slab;
 
-	sigblock(true, VSIG_ALL);
-
 	slab = get_slab(ptr);
-
-	sigblock(false, VSIG_ALL);
 
 	if (slab == NULL) return BLOCKSZ;
 	

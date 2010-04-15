@@ -60,14 +60,18 @@ INTN	46
 INTN	47
 
 ; System calls
-INTN	96  ; fire
-INTN	97  ; drop
-INTN	98  ; hand
-INTN	99  ; ctrl
-INTN	100 ; info
-INTN	101 ; mmap
-INTN	102 ; fork
-INTN	103 ; exit
+INTN	64	; fire
+INTN	65	; drop
+INTN	66	; sctl
+INTN	67	; mail
+
+INTN	72	; fork
+INTN	73	; exit
+INTN	74	; pctl
+INTN	75	; kctl
+
+INTN	80	; mmap
+INTN	81	; mctl
 
 extern int_handler
 extern fpu_save
@@ -80,8 +84,6 @@ int_common:
 	xor eax, eax
 	mov ax, ds
 	push eax
-
-;	sub esp, 512
 
 	mov cx, 0x10
 	mov ds, cx
@@ -102,8 +104,6 @@ int_common:
 	mov esp, eax
 
 int_return:
-;	add esp, 512
-
 	pop eax
 	mov ds, ax
 	mov es, ax

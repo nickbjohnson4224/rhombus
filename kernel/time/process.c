@@ -7,6 +7,13 @@
 #include <time.h>
 #include <space.h>
 
+/****************************************************************************
+ * process_table
+ *
+ * Array of pointers to process structures used to quickly associate 
+ * processes with their corresponding PIDs and otherwise keep track of them.
+ */
+
 process_t *process_table[MAX_TASKS];
 
 /****************************************************************************
@@ -126,7 +133,7 @@ void process_init() {
 	/* bootstrap process 0 (idle) */
 	idle = process_alloc();
 	idle->space = get_cr3();
-	idle->flags = CTRL_READY | CTRL_SUPER;
+	idle->flags = CTRL_READY | CTRL_SUPER | CTRL_QUEUE;
 	idle->sigflags = 0;
 
 	/* fork process 1 and switch */

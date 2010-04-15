@@ -8,5 +8,5 @@
 #include <flux/proc.h>
 
 void rirq(uint8_t irq) {
-	pctrl(CTRL_IRQRD | CTRL_IRQ(irq), CTRL_IRQRD | CTRL_IRQMASK, 0);
+	_pctl(CTRL_IRQRD | CTRL_IRQ(irq), CTRL_IRQRD | CTRL_IRQMASK, 0);
 }

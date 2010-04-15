@@ -1,6 +1,6 @@
 BUILDDIR=$(PWD)
 
-LIB_DIRS  = driver
+LIB_DIRS  =
 BIN_DIRS  = kernel init
 
 CC := clang

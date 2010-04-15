@@ -119,7 +119,7 @@ thread_t *fault_double(thread_t *image) {
 
 }
 
-/* Coprocessor Existence Fault */
+/* Coprocessor Existence Failure */
 thread_t *fault_nomath(thread_t *image) {
 	extern void clr_ts(void);
 	extern void fpu_load(void *fxdata);
@@ -134,20 +134,18 @@ thread_t *fault_nomath(thread_t *image) {
 }
 
 /***** System Calls *****/
-/* See section II of the Flux manual for details */
 
-thread_t *fire(thread_t *image) {
+thread_t *syscall_fire(thread_t *image) {
 	uint32_t   targ  = image->eax;
 	uint32_t   sig   = image->ecx;
 	uint32_t   grant = image->ebx;
 	uint32_t   flags = image->edx;
-	process_t *dst_t = process_get(targ);
 
 	if (targ == 0) {
 		return process_switch(task_next(0), 0);
 	}
 
-	if (!dst_t || !dst_t->shandler || (dst_t->sigflags & (1 << sig))) {
+	if (!process_get(targ)) {
 		image->eax = ERROR;
 		return image;
 	}
@@ -155,113 +153,180 @@ thread_t *fire(thread_t *image) {
 		image->eax = 0;
 	}
 
-	if (flags & 0x1) {
-		image = thread_drop(image);
-	}
-
 	return thread_fire(image, targ, sig, grant);
 }
 
-thread_t *drop(thread_t *image) {
+thread_t *syscall_drop(thread_t *image) {
 	return thread_drop(image);
 }
 
-thread_t *hand(thread_t *image) {
-	uint32_t old_handler;
-
-	old_handler = curr_task->shandler;
-	curr_task->shandler = image->eax;
-
-	image->eax = old_handler;
+thread_t *syscall_sctl(thread_t *image) {
 	return image;
 }
 
-thread_t *ctrl(thread_t *image) {
+thread_t *syscall_mail(thread_t *image) {
+	uint32_t signal = image->ecx % 32;
+	uint32_t source = image->edx;
+	uint32_t insert = image->eax;
+	struct signal_queue *sq;
+	struct signal_queue **mailbox_in;
+	struct signal_queue **mailbox_out;
+
+	mailbox_in  = &image->proc->mailbox_in [signal];
+	mailbox_out = &image->proc->mailbox_out[signal];
+
+	if (!insert) {
+
+		sq = *mailbox_out;
+
+		if (!sq) {
+			image->eax = -1;
+			return image;
+		}
+
+		*mailbox_out = (*mailbox_out)->next;
+		if (!(*mailbox_out)) {
+			*mailbox_in = NULL;
+		}
+
+		image->signal = sq->signal;
+		image->grant  = sq->grant;
+		image->source = sq->source;
+
+		image->eax    = sq->grant;
+		heap_free(sq, sizeof(struct signal_queue));
+
+		printk("MAIL fetch (%x %x %x)\n", sq->signal, sq->grant, sq->source);
+
+	}
+	else {
+
+		sq = heap_alloc(sizeof(struct signal_queue));
+
+		sq->next = NULL;
+		sq->signal = image->signal;
+		sq->grant  = image->grant;
+		sq->source = image->source;
+
+		if (*mailbox_out) {
+			(*mailbox_in)->next = sq;
+			*mailbox_in = sq;
+		}
+		else {
+			*mailbox_out = sq;
+			*mailbox_in = sq;
+		}
+
+		printk("MAIL queue (%x %x %x)\n", sq->signal, sq->grant, sq->source);
+
+	}
+
+	return image;
+}
+
+thread_t *syscall_fork(thread_t *image) {
+	pid_t parent;
+	task_t *child;
+
+	/* Save current PID - it will become the parent */
+	parent = curr_pid;
+
+	/* Create a new task from the parent */
+	child = process_clone(process_get(parent));
+
+	if (!child) {
+		image->eax = 0;
+		return image;
+	}
+
+	/* (still in parent) Set return value to child's PID */
+	image->eax = child->pid;
+
+	/* Switch to child */
+	image = process_switch(child, 0);
+
+	/* (now in child) Set return value to negative parent's PID */
+	image->eax = (uint32_t) -parent;
+
+	return image;
+}
+
+thread_t *syscall_exit(thread_t *image) {
+	pid_t catcher;
+	uint32_t ret_val;
+	process_t *t;
+
+	/* Send death signal to parent */
+	catcher = curr_task->parent;
+
+	/* Copy return value because images are cleared with the address space */
+	ret_val = image->eax;
+
+	/* If init exits, halt */
+	if (curr_pid == 1) {
+		panic("init died");
+	}
+
+	process_switch(process_get(catcher), 0);
+
+	/* Deallocate current address space and clear metadata */
+	space_free(curr_task->space);	/* Deallocate whole address space */
+	process_kill(curr_task);		/* Clear metadata and relinquish PID */
+
+	t = process_get(catcher);
+	if (!t || !t->shandler || t->flags & CTRL_CLEAR) {
+		/* Parent will not accept - reschedule */
+		return process_switch(task_next(0), 0);
+	}
+	else {
+		/* Send SSIG_DEATH signal to parent with return value */
+		return thread_fire(image, catcher, SSIG_DEATH, 0);
+	}
+}
+
+thread_t *syscall_pctl(thread_t *image) {
 	extern uint32_t can_use_fpu;
 	uint32_t flags = image->eax;
 	uint32_t mask  = image->edx;
-	uint32_t space = image->ecx;
 	uint8_t irq;
 
-	switch (space) {
-	case CTRL_PSPACE:
+	/* Stop the modification of protected flags if not super */
+	if ((curr_task->flags & CTRL_SUPER) == 0) {
+		mask &= CTRL_SMASK;
+	}
 
-		/* Stop the modification of protected flags if not super */
-		if ((curr_task->flags & CTRL_SUPER) == 0) {
-			mask &= CTRL_SMASK;
-		}
+	/* Set flags */
+	curr_task->flags = (curr_task->flags & ~mask) | (flags & mask);
 
-		/* Set flags */
-		curr_task->flags = (curr_task->flags & ~mask) | (flags & mask);
-
-		/* Unset CTRL_FLOAT if FPU is disabled */
-		if ((flags & mask & CTRL_FLOAT) && (can_use_fpu == 0)) {
-			curr_task->flags &= ~CTRL_FLOAT;
-		}
-
-		/* Update IRQ redirect if CTRL_IRQRD is changed */
-		if (mask & CTRL_IRQRD) {
-			if (flags & CTRL_IRQRD) {
-				/* Set IRQ redirect */
-				irq = (flags >> 24) & 0xFF;
-				if (irq < 15) {
-					irq_holder[irq] = curr_pid;
-					register_int(IRQ(irq), irq_redirect);
-					pic_mask(1 << irq);
-				}
-			}
-			else {
-				/* Unset IRQ redirect */
-				irq = (curr_task->flags >> 24) & 0xFF;
-				irq_holder[irq] = 0;
-				register_int(IRQ(irq), NULL);
+	/* Update IRQ redirect if CTRL_IRQRD is changed */
+	if (mask & CTRL_IRQRD) {
+		if (flags & CTRL_IRQRD) {
+			/* Set IRQ redirect */
+			irq = (flags >> 24) & 0xFF;
+			if (irq < 15) {
+				irq_holder[irq] = curr_pid;
+				register_int(IRQ(irq), irq_redirect);
 				pic_mask(1 << irq);
 			}
 		}
-
-		image->eax = curr_task->flags;
-		return image;
-
-	case CTRL_SSPACE:
-		
-		/* Set flags */
-		curr_task->sigflags = (curr_task->sigflags & ~mask) | (flags & mask);
-
-		image->eax = curr_task->sigflags;
-		return image;
-
-	default:
-		image->eax = ERROR;
-		return image;
-	}
-}
-
-thread_t *info(thread_t *image) {
-	uint8_t sel = image->eax;
-
-	switch (sel) {
-	case 0: image->eax = image->proc->pid; break;
-	case 1: image->eax = image->proc->parent; break;
-	case 2: image->eax = tick; break;
-	case 3: image->eax = 0x0003; break;
-	case 4: image->eax = KSPACE; break;
-	case 5: 
-		if (image->proc->flags & CTRL_SUPER) {
-			image->eax = CTRL_CMASK;
-		}
 		else {
-			image->eax = CTRL_SMASK & CTRL_CMASK;
+			/* Unset IRQ redirect */
+			irq = (curr_task->flags >> 24) & 0xFF;
+			irq_holder[irq] = 0;
+			register_int(IRQ(irq), NULL);
+			pic_mask(1 << irq);
 		}
-		break;
-	case 6: image->eax = MMAP_CMASK; break;
-	case 7: image->eax = image->proc->sigflags;
-	default: image->eax = -1;
 	}
 
+	image->eax = curr_task->flags;
 	return image;
 }
 
-thread_t *mmap(thread_t *image) {
+thread_t *syscall_kctl(thread_t *image) {
+	return image;
+}
+
+thread_t *syscall_mmap(thread_t *image) {
 	uintptr_t addr;
 	uintptr_t count;
 	uintptr_t flags;
@@ -312,62 +377,6 @@ thread_t *mmap(thread_t *image) {
 	return image;
 }
 
-thread_t *fork(thread_t *image) {
-	pid_t parent;
-	task_t *child;
-
-	/* Save current PID - it will become the parent */
-	parent = curr_pid;
-
-	/* Create a new task from the parent */
-	child = process_clone(process_get(parent));
-
-	if (!child) {
-		image->eax = 0;
-		return image;
-	}
-
-	/* (still in parent) Set return value to child's PID */
-	image->eax = child->pid;
-
-	/* Switch to child */
-	image = process_switch(child, 0);
-
-	/* (now in child) Set return value to negative parent's PID */
-	image->eax = (uint32_t) -parent;
-
+thread_t *syscall_mctl(thread_t *image) {
 	return image;
-}
-
-thread_t *exit(thread_t *image) {
-	pid_t catcher;
-	uint32_t ret_val;
-	process_t *t;
-
-	/* Send death signal to parent */
-	catcher = curr_task->parent;
-
-	/* Copy return value because images are cleared with the address space */
-	ret_val = image->eax;
-
-	/* If init exits, halt */
-	if (curr_pid == 1) {
-		panic("init died");
-	}
-
-	process_switch(process_get(catcher), 0);
-
-	/* Deallocate current address space and clear metadata */
-	space_free(curr_task->space);	/* Deallocate whole address space */
-	process_kill(curr_task);		/* Clear metadata and relinquish PID */
-
-	t = process_get(catcher);
-	if (!t || !t->shandler || t->flags & CTRL_CLEAR) {
-		/* Parent will not accept - reschedule */
-		return process_switch(task_next(0), 0);
-	}
-	else {
-		/* Send S_DTH signal to parent with return value */
-		return thread_fire(image, catcher, SSIG_DEATH, 0);
-	}
 }

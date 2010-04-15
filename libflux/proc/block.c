@@ -8,9 +8,9 @@
 
 void block(bool v) {
 	if (v) {
-		pctrl(CTRL_BLOCK, CTRL_BLOCK, 0);
+		_pctl(CTRL_BLOCK, CTRL_BLOCK, 0);
 	}
 	else {
-		pctrl(CTRL_NONE, CTRL_BLOCK, 0);
+		_pctl(CTRL_NONE, CTRL_BLOCK, 0);
 	}
 }

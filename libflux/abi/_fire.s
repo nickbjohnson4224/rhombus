@@ -12,7 +12,7 @@ _fire:
 	mov ecx, [esp+12]
 	mov ebx, [esp+16]
 	mov edx, [esp+20]
-	int 0x60
+	int 0x40
 
 	pop ebx
 	ret

@@ -29,9 +29,9 @@ extern void
  int12(void), int13(void), int14(void), int15(void), int16(void), int17(void), 
  int18(void), int32(void), int33(void), int34(void), int35(void), int36(void), 
  int37(void), int38(void), int39(void), int40(void), int41(void), int42(void), 
- int43(void), int44(void), int45(void), int46(void), int47(void), int96(void), 
- int97(void), int98(void), int99(void), int100(void), int101(void), int102(void), 
- int103(void);
+ int43(void), int44(void), int45(void), int46(void), int47(void), int64(void), 
+ int65(void), int66(void), int67(void), int72(void), int73(void), int74(void), 
+ int75(void), int80(void), int81(void);
 
 /* Handlers to be put into the IDT, in order */
 typedef void (*int_handler_t) (void);
@@ -49,16 +49,12 @@ int40,	int41, 	int42, 	int43, 	int44, 	int45, 	int46, 	int47,
 
 NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
 NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
-NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
-NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
-NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
-NULL, 	NULL, 	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
 
-/* ABI 2 system calls */
-int96,	int97,	int98,	int99,	int100,	int101,	int102,	int103,
-NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
-NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
-NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL
+/* ABI 4 system calls */
+int64, 	int65, 	int66, 	int67, 	NULL, 	NULL, 	NULL, 	NULL, 
+int72, 	int73, 	int74, 	int75, 	NULL, 	NULL, 	NULL, 	NULL, 
+int80, 	int81, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
+NULL, 	NULL, 	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
 
 };
 
@@ -77,7 +73,7 @@ void init_idt() {
 	}
 
 	/* Write usermode interrupt handlers (syscalls) */
-	for (i = 96; i < 128; i++) {
+	for (i = 64; i < 96; i++) {
 		if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0xEE);
 	}
 

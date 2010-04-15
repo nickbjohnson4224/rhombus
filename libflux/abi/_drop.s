@@ -6,4 +6,4 @@
 global _drop
 
 _drop:
-	int 0x61
+	int 0x41

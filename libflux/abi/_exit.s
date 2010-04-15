@@ -7,4 +7,4 @@ global _exit
 
 _exit:
 	mov eax, [esp+4]
-	int 0x67
+	int 0x49

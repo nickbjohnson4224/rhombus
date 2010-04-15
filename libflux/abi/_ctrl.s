@@ -3,12 +3,12 @@
 
 [bits 32]
 
-global _ctrl
+global _pctl
 
-_ctrl:
+_pctl:
 	mov eax, [esp+4]
 	mov edx, [esp+8]
 	mov ecx, [esp+12]
-	int 0x63
+	int 0x4A
 
 	ret
