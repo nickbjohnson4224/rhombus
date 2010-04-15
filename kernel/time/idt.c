@@ -17,10 +17,10 @@ struct idt_entry {
 	uint8_t  reserved;
 	uint8_t  flags;
 	uint16_t base_h;
-} __attribute__((packed)) idt[128];
+} __attribute__((packed)) idt[96];
 
 /* Redirection table for handling interrupts */
-handler_t int_handlers[128];
+handler_t int_handlers[96];
 
 /* Assembly interrupt handler stubs to be registered in the IDT */
 extern void
@@ -63,9 +63,6 @@ void init_idt() {
 	extern void idt_flush(void);
 	extern void halt(void);
 	size_t i;
-
-	memclr(int_handlers, sizeof(handler_t) * 128);
-	memclr(idt, sizeof(struct idt_entry) * 128);
 
 	/* Write privileged interrupt handlers (faults, IRQs) */
 	for (i = 0; i < 48; i++) {

@@ -132,6 +132,25 @@ thread_t *syscall_drop(thread_t *image) {
 }
 
 thread_t *syscall_sctl(thread_t *image) {
+	uint32_t action = image->eax;
+	uint32_t signal = image->ecx % 32;
+	uint32_t handle = image->edx;
+	uint32_t policy = image->edx;
+
+	printk("SCTL %x %x %x\n", action, signal, handle);
+
+	switch (action) {
+	default :
+	case 0:
+		image->eax = image->proc->signal_policy[signal];
+		image->proc->signal_policy[signal] = policy;
+		break;
+	case 1:
+		image->eax = image->proc->signal_handle;
+		image->proc->signal_handle = handle;
+		break;
+	}
+
 	return image;
 }
 

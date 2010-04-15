@@ -44,14 +44,13 @@ typedef struct process {
 	/* various crap */
 	uint32_t flags;
 	uint32_t pid;
-	uint32_t shandler;
 
 	struct process *next_task;
 	struct process *parent;
 
 	/* signal policy */
 	uint32_t signal_policy[32];
-	uint32_t signal_handler;
+	uint32_t signal_handle;
 
 	/* signal queue */
 	struct signal_queue *mailbox_in [32];

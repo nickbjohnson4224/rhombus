@@ -18,7 +18,10 @@ int main() {
 	req_t *req = ralloc();
 	req->transid = 42;
 
-	fire(1, SIG_READ, req);
+	_sctl(SCTL_POLICY, SIG_READ, 1);
+
+	fire(1, SIG_READ , req);
+	fire(1, SIG_WRITE, req);
 
 	req = sigpull(SIG_READ);
 

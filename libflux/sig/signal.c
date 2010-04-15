@@ -14,6 +14,9 @@
 static volatile sig_handler_t sighandler [MAXSIGNAL];
 
 void siginit(void) {
+	extern void sighand(void);
+
+	_sctl(SCTL_HANDLE, -1, (uint32_t) sighand);
 }
 
 int fire(uint32_t target, uint8_t signal, struct request *req) {
@@ -34,13 +37,18 @@ void sigredirect(uint32_t source, uint32_t signal, void *grant) {
 		sighandler[signal](source, req);
 	}
 	
-	else if (signal != SIG_REPLY && source != pinfo(INFO_GPID)) {
-		if (!req) {
-			req = ralloc();
+	else {
+		if (signal == SIG_REPLY) {
+			rfree(req);
 		}
+		else {
+			if (!req) {
+				req = ralloc();
+			}
 
-		req->format = REQ_ERROR;
-		fire(source, SIG_REPLY, req_cksum(req));
+			req->format = REQ_ERROR;
+			fire(source, SIG_REPLY, req_cksum(req));
+		}
 	}
 }
 

@@ -51,7 +51,7 @@ tss_flush:
 section .data
 extern idt
 idt_ptr:
-	dw 0x3FF
+	dw 0x2FF
 	dd idt
 
 section .text

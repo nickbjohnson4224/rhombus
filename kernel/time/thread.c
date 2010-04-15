@@ -42,10 +42,11 @@ thread_t *thread_drop(thread_t *image) {
  * thread_fire
  *
  * Sends a signal to the process with pid targ of the type sig with the
- * granted page at current virtual address grant. If the target process has 
- * the CTRL_QUEUE flag set, the signal is added to that process' mailbox. 
- * Otherwise, a new thread is created in the target process to handle the 
- * incoming signal, and that thread is switched to.
+ * granted page at current virtual address grant. If the target process cannot
+ * accept it or has a nonzero value at the signals' offset in  signal_policy, 
+ * the signal is added to that process' mailbox. Otherwise, a new thread is 
+ * created in the target process to handle the incoming signal, and that 
+ * thread is switched to.
  *
  * The granted page in the current process is replaced with a page with
  * undefined contents and the same permissions as the granted page.
@@ -69,7 +70,7 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 		grant &= ~0xFFF;
 	}
 
-	if (p_targ->flags & CTRL_QUEUE || p_targ->shandler == 0) {
+	if (p_targ->signal_policy[sig] || (p_targ->signal_handle == 0)) {
 		/* queue signal */
 
 		printk("FIRE queue (%x %x %x)\n", sig, grant, targ);
@@ -94,10 +95,7 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 	}
 	else {
 		/* send signal */
-
-		if (p_targ->shandler == 0) {
-			return image;
-		}
+		printk("FIRE spawn (%x %x %x)\n", sig, grant, targ);
 
 		new_image = thread_alloc();
 
@@ -114,7 +112,7 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 		new_image->esi     = image->proc->pid;
 		new_image->signal  = sig;
 		new_image->edi     = sig;
-		new_image->eip     = p_targ->shandler;
+		new_image->eip     = p_targ->signal_handle;
 		new_image->fxdata  = NULL;
 
 		p_targ->image  = new_image;

@@ -7,14 +7,18 @@
 
 /***** SYSTEM CALLS *****/
 
-int32_t		_fire(uint32_t target, uint16_t signal, void *grant);
+uint32_t	_fire(uint32_t target, uint16_t signal, void *grant);
 void		_drop(void);
+uint32_t    _sctl(uint32_t action, uint32_t signal, uint32_t value);
+uintptr_t   _mail(uint32_t signal, uint32_t source, uint32_t insert);
+
 uint32_t	_pctl(uint32_t flags, uint32_t mask);
+
 uint32_t	_info(uint32_t selector);
 int32_t		_mmap(uintptr_t addr, uint32_t flags, uint32_t frame);
+
 int32_t		_fork(void);
 void		_exit(uint32_t value);
-uintptr_t   _mail(uint32_t signal, uint32_t source, uint32_t insert);
 
 #define FIRE_NONE	0x0000
 #define FIRE_TAIL	0x0001
@@ -26,6 +30,9 @@ uintptr_t   _mail(uint32_t signal, uint32_t source, uint32_t insert);
 #define MMAP_FRAME	0x010
 #define MMAP_PHYS	0x020
 #define MMAP_MOVE	0x040
+
+#define SCTL_POLICY		0
+#define SCTL_HANDLE		1
 
 #define CTRL_PSPACE 	0
 #define CTRL_SSPACE 	1
