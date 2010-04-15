@@ -14,18 +14,10 @@
 static volatile sig_handler_t sighandler [MAXSIGNAL];
 
 void siginit(void) {
-	extern void sighand(void);
-
-//	_hand((uint32_t) sighand);
 }
 
 int fire(uint32_t target, uint8_t signal, struct request *req) {
-	return _fire(target, signal, req, 0);
-}
-
-void tail(uint32_t target, uint8_t signal, struct request *req) {
-	if (req) rfree(req);
-	_fire(target, signal, req, FIRE_TAIL);
+	return _fire(target, signal, req);
 }
 
 void sigregister(uint16_t signal, sig_handler_t handler) {
@@ -48,7 +40,7 @@ void sigredirect(uint32_t source, uint32_t signal, void *grant) {
 		}
 
 		req->format = REQ_ERROR;
-		tail(source, SIG_REPLY, req_cksum(req));
+		fire(source, SIG_REPLY, req_cksum(req));
 	}
 }
 

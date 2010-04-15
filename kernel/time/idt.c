@@ -99,11 +99,6 @@ void register_int(uint8_t n, handler_t handler) {
 /* C interrupt handler - called by assembly state-saving routine */
 thread_t *int_handler(thread_t *image) {
 
-	/* If userspace was interrupted, make sure its state is saved */
-	if (image->cs & 0x3) {
-		curr_task->image = image;
-	}
-
 	/* Reset PIC if it was an IRQ */
 	if (image->num >= 32 && image->num <= 47) {
 		if (image->num >= 40) outb(0xA0, 0x20);

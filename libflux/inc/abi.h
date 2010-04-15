@@ -7,9 +7,9 @@
 
 /***** SYSTEM CALLS *****/
 
-int32_t		_fire(uint32_t pid, uint16_t signal, void *grant, uint32_t flags);
+int32_t		_fire(uint32_t target, uint16_t signal, void *grant);
 void		_drop(void);
-uint32_t	_pctl(uint32_t flags, uint32_t mask, uint32_t space);
+uint32_t	_pctl(uint32_t flags, uint32_t mask);
 uint32_t	_info(uint32_t selector);
 int32_t		_mmap(uintptr_t addr, uint32_t flags, uint32_t frame);
 int32_t		_fork(void);

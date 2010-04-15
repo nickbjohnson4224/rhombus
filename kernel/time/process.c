@@ -58,7 +58,7 @@ process_t *process_clone(process_t *parent) {
 
 	/* setup child */
 	child->space  = space_clone();
-	child->parent = parent->pid;
+	child->parent = parent;
 	child->pid    = pid;
 	child->image  = thread_alloc();
 
@@ -134,7 +134,6 @@ void process_init() {
 	idle = process_alloc();
 	idle->space = get_cr3();
 	idle->flags = CTRL_READY | CTRL_SUPER | CTRL_QUEUE;
-	idle->sigflags = 0;
 
 	/* fork process 1 and switch */
 	process_switch(process_clone(idle), 0);
@@ -161,8 +160,6 @@ void process_kill(process_t *proc) {
 struct thread *process_switch(struct process *proc, uint32_t thread) {
 
 	/* switch task */
-	curr_task = proc;
-	curr_pid = proc->pid;
 	space_load(proc->space);
 
 	return proc->image;

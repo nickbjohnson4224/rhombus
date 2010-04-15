@@ -9,9 +9,7 @@
 
 /***** IRQ HANDLERS *****/
 
-static uint8_t held_irq[256];
 static uint16_t irq_holder[256];
-static uint16_t held_count;
 
 /* Handles IRQ 0, and advances a simple counter used as a clock */
 /* If an IRQ was held, it is redirected now */
@@ -19,40 +17,13 @@ static uint16_t held_count;
 uint32_t tick = 0;
 
 thread_t *pit_handler(thread_t *image) {
-	size_t i;
-	process_t *holder;
-
-	if (image->cs | 1) tick++;
-
-	if (held_count) {
-		for (i = 0; i < 15; i++) {
-			if (held_irq[i]) {
-				holder = process_get(irq_holder[i]);
-				if (!holder || 
-					(holder->flags & CTRL_CLEAR) || 
-					(holder->sigflags & CTRL_SIRQ)) {
-					continue;
-				}
-				held_irq[i]--;
-				held_count--;
-				return thread_fire(image, irq_holder[i], SSIG_IRQ, 0);
-			}
-		}
-	}
+	tick++;
 
 	/* Switch to next scheduled task */
 	return process_switch(task_next(0), 0);
 }
 
 thread_t *irq_redirect(thread_t *image) {
-	process_t *holder;
-
-	holder = process_get(irq_holder[DEIRQ(image->num)]);
-	if ((holder->flags & CTRL_CLEAR) || (holder->flags & CTRL_SIRQ)) {
-		held_irq[DEIRQ(image->num)]++;
-		held_count++;
-		return image;
-	}
 
 	/* Send S_IRQ signal to the task registered with the IRQ */
 	return thread_fire(image, irq_holder[DEIRQ(image->num)], SSIG_IRQ, 0);
@@ -71,7 +42,7 @@ thread_t *fault_generic(thread_t *image) {
 	}
 	#endif
 
-	return thread_fire(image, curr_pid, SSIG_FAULT, 0);
+	return thread_fire(image, image->proc->pid, SSIG_FAULT, 0);
 }
 
 /* Page fault */
@@ -87,12 +58,12 @@ thread_t *fault_page(thread_t *image) {
 	/* If in kernelspace, panic */
 	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */
 		printk("page fault at %x, ip = %x frame %x task %d\n", 
-			cr2, image->eip, page_get(cr2), curr_pid);
+			cr2, image->eip, page_get(cr2), image->proc->pid);
 		panic("page fault exception");
 	}
 	#endif
 
-	return thread_fire(image, curr_pid, SSIG_PAGE, 0);
+	return thread_fire(image, image->proc->pid, SSIG_PAGE, 0);
 }
 
 /* Floating point exception */
@@ -106,7 +77,7 @@ thread_t *fault_float(thread_t *image) {
 	}
 	#endif
 
-	return thread_fire(image, curr_pid, SSIG_FLOAT, 0);
+	return thread_fire(image, image->proc->pid, SSIG_FLOAT, 0);
 }
 
 /* Double fault */
@@ -139,9 +110,9 @@ thread_t *syscall_fire(thread_t *image) {
 	uint32_t   targ  = image->eax;
 	uint32_t   sig   = image->ecx;
 	uint32_t   grant = image->ebx;
-	uint32_t   flags = image->edx;
 
 	if (targ == 0) {
+		image->eax = 0;
 		return process_switch(task_next(0), 0);
 	}
 
@@ -225,14 +196,14 @@ thread_t *syscall_mail(thread_t *image) {
 }
 
 thread_t *syscall_fork(thread_t *image) {
-	pid_t parent;
-	task_t *child;
+	process_t *parent;
+	process_t *child;
 
 	/* Save current PID - it will become the parent */
-	parent = curr_pid;
+	parent = image->proc;
 
 	/* Create a new task from the parent */
-	child = process_clone(process_get(parent));
+	child = process_clone(parent);
 
 	if (!child) {
 		image->eax = 0;
@@ -246,41 +217,43 @@ thread_t *syscall_fork(thread_t *image) {
 	image = process_switch(child, 0);
 
 	/* (now in child) Set return value to negative parent's PID */
-	image->eax = (uint32_t) -parent;
+	image->eax = -((uint32_t) parent->pid);
 
 	return image;
 }
 
 thread_t *syscall_exit(thread_t *image) {
-	pid_t catcher;
+	process_t *parent;
 	uint32_t ret_val;
-	process_t *t;
 
-	/* Send death signal to parent */
-	catcher = curr_task->parent;
+	parent = image->proc->parent;
 
 	/* Copy return value because images are cleared with the address space */
 	ret_val = image->eax;
 
 	/* If init exits, halt */
-	if (curr_pid == 1) {
+	if (image->proc->pid == 1) {
 		panic("init died");
 	}
 
-	process_switch(process_get(catcher), 0);
+	if (parent) {
+		process_switch(parent, 0);
+	}
+	else {
+		process_switch(task_next(0), 0);
+	}
 
 	/* Deallocate current address space and clear metadata */
-	space_free(curr_task->space);	/* Deallocate whole address space */
-	process_kill(curr_task);		/* Clear metadata and relinquish PID */
+	space_free(image->proc->space);	/* Deallocate whole address space */
+	process_kill(image->proc);		/* Clear metadata and relinquish PID */
 
-	t = process_get(catcher);
-	if (!t || !t->shandler || t->flags & CTRL_CLEAR) {
+	if (!parent) {
 		/* Parent will not accept - reschedule */
 		return process_switch(task_next(0), 0);
 	}
 	else {
 		/* Send SSIG_DEATH signal to parent with return value */
-		return thread_fire(image, catcher, SSIG_DEATH, 0);
+		return thread_fire(image, parent->pid, SSIG_DEATH, 0);
 	}
 }
 
@@ -291,12 +264,12 @@ thread_t *syscall_pctl(thread_t *image) {
 	uint8_t irq;
 
 	/* Stop the modification of protected flags if not super */
-	if ((curr_task->flags & CTRL_SUPER) == 0) {
+	if ((image->proc->flags & CTRL_SUPER) == 0) {
 		mask &= CTRL_SMASK;
 	}
 
 	/* Set flags */
-	curr_task->flags = (curr_task->flags & ~mask) | (flags & mask);
+	image->proc->flags = (image->proc->flags & ~mask) | (flags & mask);
 
 	/* Update IRQ redirect if CTRL_IRQRD is changed */
 	if (mask & CTRL_IRQRD) {
@@ -304,21 +277,21 @@ thread_t *syscall_pctl(thread_t *image) {
 			/* Set IRQ redirect */
 			irq = (flags >> 24) & 0xFF;
 			if (irq < 15) {
-				irq_holder[irq] = curr_pid;
+				irq_holder[irq] = image->proc->pid;
 				register_int(IRQ(irq), irq_redirect);
 				pic_mask(1 << irq);
 			}
 		}
 		else {
 			/* Unset IRQ redirect */
-			irq = (curr_task->flags >> 24) & 0xFF;
+			irq = (image->proc->flags >> 24) & 0xFF;
 			irq_holder[irq] = 0;
 			register_int(IRQ(irq), NULL);
 			pic_mask(1 << irq);
 		}
 	}
 
-	image->eax = curr_task->flags;
+	image->eax = image->proc->flags;
 	return image;
 }
 

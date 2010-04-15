@@ -22,16 +22,16 @@
 #define NOERR 0x02
 #define EKILL 0x04
 
-/***** PROCESSES *****/
-
-typedef uint16_t pid_t;
-
 struct signal_queue {
 	struct signal_queue *next;
 	uint32_t signal;
 	uint32_t grant;
 	uint32_t source;
 };
+
+/***** PROCESSES *****/
+
+typedef uint16_t pid_t;
 
 typedef struct process {
 
@@ -43,11 +43,15 @@ typedef struct process {
 
 	/* various crap */
 	uint32_t flags;
-	pid_t pid;
-	struct process *next_task;
-	pid_t parent;
+	uint32_t pid;
 	uint32_t shandler;
-	uint32_t sigflags;
+
+	struct process *next_task;
+	struct process *parent;
+
+	/* signal policy */
+	uint32_t signal_policy[32];
+	uint32_t signal_handler;
 
 	/* signal queue */
 	struct signal_queue *mailbox_in [32];
@@ -147,7 +151,7 @@ void      thread_init  (void);
 thread_t *thread_alloc (void);
 void      thread_free  (thread_t *thread);
 thread_t *thread_switch(thread_t *old, thread_t *new);
-thread_t *thread_fire  (thread_t *image, uint16_t targ, uint16_t sig, uintptr_t grant);
+thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t grant);
 thread_t *thread_drop  (thread_t *image);
 
 /***** SYSTEM CALLS AND OTHER INTERRUPTS *****/
