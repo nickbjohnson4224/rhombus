@@ -99,7 +99,6 @@ task_t *task_next(uint8_t flags);
 typedef struct thread {
 
 	/* stored continuation */
-	uint32_t fxdata[128];
 	uint32_t ds;
 	uint32_t edi;
 	uint32_t esi;
@@ -117,7 +116,8 @@ typedef struct thread {
 	uint32_t useresp;
 	uint32_t ss;
 	uint32_t tss_start;
-
+	uint32_t *fxdata;
+	
 	/* signal descriptor */
 	uint32_t signal;
 	uint32_t grant;
@@ -165,6 +165,7 @@ thread_t *fault_generic(thread_t *image);
 thread_t *fault_page   (thread_t *image);
 thread_t *fault_float  (thread_t *image);
 thread_t *fault_double (thread_t *image);
+thread_t *fault_nomath (thread_t *image);
 
 thread_t *int_handler(thread_t *image);
 

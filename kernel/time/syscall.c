@@ -119,6 +119,20 @@ thread_t *fault_double(thread_t *image) {
 
 }
 
+/* Coprocessor Existence Fault */
+thread_t *fault_nomath(thread_t *image) {
+	extern void clr_ts(void);
+	extern void fpu_load(void *fxdata);
+
+	if (image->fxdata) {
+		fpu_load(image->fxdata);
+	}
+
+	clr_ts();
+
+	return image;
+}
+
 /***** System Calls *****/
 /* See section II of the Flux manual for details */
 

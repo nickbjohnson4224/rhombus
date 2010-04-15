@@ -68,7 +68,6 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 		grant &= ~0xFFF;
 	}
 
-
 	if (p_targ->flags & CTRL_QUEUE) {
 		/* queue signal */
 
@@ -99,6 +98,7 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 		new_image->signal  = sig;
 		new_image->edi     = sig;
 		new_image->eip     = p_targ->shandler;
+		new_image->fxdata  = NULL;
 
 		p_targ->image  = new_image;
 		p_targ->flags &= ~CTRL_BLOCK;
@@ -154,7 +154,7 @@ void thread_init(void) {
 	register_int(0x04, fault_generic);
 	register_int(0x05, fault_generic);
 	register_int(0x06, fault_generic);
-	register_int(0x07, fault_float);
+	register_int(0x07, fault_nomath);
 	register_int(0x08, fault_double);
 	register_int(0x09, fault_float);
 	register_int(0x0A, fault_generic);
@@ -189,10 +189,15 @@ void thread_init(void) {
 
 thread_t *thread_switch(thread_t *old, thread_t *new) {
 	extern void fpu_save(void *fxdata);
-	extern void fpu_load(void *fxdata);
+	extern bool tst_ts(void);
+	extern void set_ts(void);
 
 	/* save FPU state */
-	if (old->proc->flags & CTRL_FLOAT) {
+	if (tst_ts()) {
+		if (!old->fxdata) {
+			old->fxdata = heap_alloc(512);
+		}
+
 		fpu_save(old->fxdata);
 	}
 
@@ -201,10 +206,8 @@ thread_t *thread_switch(thread_t *old, thread_t *new) {
 		process_switch(new->proc, 0);
 	}
 
-	/* load FPU state */
-	if (new->proc->flags & CTRL_FLOAT) {
-		fpu_load(new->fxdata);
-	}
+	/* set task switched flag */
+	set_ts();
 
 	return new;
 }

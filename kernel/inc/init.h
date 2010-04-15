@@ -3,8 +3,6 @@
 #ifndef INIT_H
 #define INIT_H
 
-#include <test.h>
-
 /* Multiboot header */
 struct multiboot {
 	uint32_t flags;

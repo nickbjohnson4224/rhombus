@@ -42,23 +42,35 @@ process_t *process_clone(process_t *parent) {
 	process_t *child;
 	pid_t pid;
 
+	/* allocate new process structure for child */
 	child = process_alloc();
 	pid   = child->pid;
 
+	/* copy parent */
 	memcpy(child, parent, sizeof(process_t));
 
+	/* setup child */
 	child->space  = space_clone();
 	child->parent = parent->pid;
 	child->pid    = pid;
 	child->image  = thread_alloc();
 
+	/* copy parent thread */
 	if (parent->image) {
 		memcpy(child->image, parent->image, sizeof(thread_t));
+
+		/* copy parent FPU/SSE state */
+		if (parent->image->fxdata) {
+			child->image->fxdata = heap_alloc(512);
+			memcpy(child->image->fxdata, parent->image->fxdata, 512);
+		}
 	}
 
+	/* setup child thread */
 	child->image->tis  = NULL;
 	child->image->proc = child;
 
+	/* add child to scheduler */
 	sched_ins(pid);
 
 	return child;

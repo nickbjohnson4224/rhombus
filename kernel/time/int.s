@@ -81,7 +81,7 @@ int_common:
 	mov ax, ds
 	push eax
 
-	sub esp, 512
+;	sub esp, 512
 
 	mov cx, 0x10
 	mov ds, cx
@@ -102,7 +102,7 @@ int_common:
 	mov esp, eax
 
 int_return:
-	add esp, 512
+;	add esp, 512
 
 	pop eax
 	mov ds, ax
