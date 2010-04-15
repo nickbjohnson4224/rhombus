@@ -10,13 +10,23 @@ struct heap_block {
 	struct heap_block *next;
 };
 
+/****************************************************************************
+ * heap_bucket
+ * 
+ * Array of singly linked lists of free blocks in the allocator. The size
+ * of blocks in bucket n is 2^n pointer-sized words (4 bytes on x86).
+ */
+
 static struct heap_block *heap_bucket[10];
 
 /****************************************************************************
  * heap_alloc
  *
  * Returns a pointer to a block of kernel memory of size size bytes. This
- * memory is accessible from all address spaces.
+ * memory is accessible from all address spaces, is privileged and
+ * read-write. Returns null on out of memory or too large error. The
+ * block of memory is 16 byte aligned for allocations of size 9 bytes
+ * or greater, and page aligned for allocations of 2049 to 4096 bytes.
  */
 
 void *heap_alloc(size_t size) {
@@ -24,7 +34,7 @@ void *heap_alloc(size_t size) {
 	uintptr_t i;
 	void *block;
 
-	/* find appropriate bucket */
+	/* find appropriately sized bucket */
 	bucket = -1;
 	for (i = 0; i < 10; i++) {
 		if (size < (sizeof(uintptr_t) * (1 << i))) {
@@ -85,7 +95,7 @@ void heap_free(void *ptr, size_t size) {
  * heap_new_slab
  *
  * Allocates and initializes a new slab of memory, and adds its contents to
- * the appropriate bucket.
+ * the specified bucket in pieces of appropriate size for that bucket.
  */
 
 void heap_new_slab(size_t bucket) {
@@ -109,19 +119,22 @@ void heap_new_slab(size_t bucket) {
  * heap_valloc
  *
  * Returns a pointer to a single page of kernel memory. This memory is
- * accessible from all address spaces.
+ * accessible from all address spaces, privileged, and read-write.
+ * Returns null on out of memory error. Virtual memory taken from this
+ * allocator cannot be freed.
  */
 
 void *heap_valloc(void) {
-	static uintptr_t base = KERNEL_HEAP;
+	static uintptr_t brk = KERNEL_HEAP;
 
-	if (base + PAGESZ >= KERNEL_HEAP_END) {
+	if (brk + PAGESZ >= KERNEL_HEAP_END) {
+		/* out of memory */
 		return NULL;
 	}
 	else {
-		page_set(base, page_fmt(frame_new(), PF_PRES | PF_RW));
+		page_set(brk, page_fmt(frame_new(), PF_PRES | PF_RW));
 
-		base += PAGESZ;
-		return (void*) (base - PAGESZ);
+		brk += PAGESZ;
+		return (void*) (brk - PAGESZ);
 	}
 }
