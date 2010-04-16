@@ -285,12 +285,19 @@ static void itoa(char *buffer, unsigned int n, int b) {
 }
 
 int vfprintf(FILE *stream, const char *format, va_list ap) {
-	size_t i;
+	size_t i, fbt;
 	char buffer[13];
+	char *fmtbuffer;
 	const char *str;
+
+	fmtbuffer = malloc(sizeof(char) * strlen(format));
+	fbt = 0;
 
 	for (i = 0; format[i]; i++) {
 		if (format[i] == '%') {
+			fwrite(fmtbuffer, fbt, sizeof(char), stream);
+			fbt = 0;
+
 			switch (format[i+1]) {
 			case 'x':
 			case 'X':
@@ -311,10 +318,15 @@ int vfprintf(FILE *stream, const char *format, va_list ap) {
 				str = va_arg(ap, const char*);
 				fwrite(str, strlen(str), sizeof(char), stream);
 			}
-			i += 2;
+			i++;
 		}
-		fputc(format[i], stream);
+		else {
+			fmtbuffer[fbt++] = format[i];
+		}
 	}
+	
+	fwrite(fmtbuffer, fbt, sizeof(char), stream);
+	free(fmtbuffer);
 
 	return 0;
 }

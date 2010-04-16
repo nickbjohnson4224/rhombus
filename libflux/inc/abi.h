@@ -7,7 +7,7 @@
 
 /***** SYSTEM CALLS *****/
 
-uint32_t	_fire(uint32_t target, uint16_t signal, void *grant);
+uint32_t	_fire(uint32_t target, uint16_t signal, void *grant, bool drop);
 void		_drop(void);
 uint32_t    _sctl(uint32_t action, uint32_t signal, uint32_t value);
 uintptr_t   _mail(uint32_t signal, uint32_t source, uint32_t insert);

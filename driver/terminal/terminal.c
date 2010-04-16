@@ -70,7 +70,7 @@ static void terminal_write(uint32_t caller, struct request *req) {
 	if (!req_check(req)) {
 		if (!req) req = ralloc();
 		req->format = REQ_ERROR;
-		fire(caller, SIG_REPLY, req);
+		tail(caller, SIG_REPLY, req);
 		return;
 	}
 
@@ -91,7 +91,7 @@ static void terminal_write(uint32_t caller, struct request *req) {
 
 	req->datasize = i;
 	req->format = REQ_READ;
-	fire(caller, SIG_REPLY, req_cksum(req));
+	tail(caller, SIG_REPLY, req_cksum(req));
 }
 
 static void char_write(char c) {

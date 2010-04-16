@@ -20,7 +20,11 @@ void signal_init(void) {
 }
 
 int fire(uint32_t target, uint32_t signal, struct request *req) {
-	return _fire(target, signal, req);
+	return _fire(target, signal, req, false);
+}
+
+int tail(uint32_t target, uint32_t signal, struct request *req) {
+	return _fire(target, signal, req, true);
 }
 
 uint32_t signal_policy(uint32_t signal, uint32_t policy) {
@@ -73,7 +77,7 @@ void signal_redirect(uint32_t source, uint32_t signal, void *grant) {
 			}
 
 			req->format = REQ_ERROR;
-			fire(source, SIG_REPLY, req_cksum(req));
+			tail(source, SIG_REPLY, req_cksum(req));
 		}
 	}
 }

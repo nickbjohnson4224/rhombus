@@ -25,7 +25,8 @@
 #define POLICY_QUEUE 1
 #define POLICY_EVENT 2
 
-int    fire(uint32_t target, uint32_t signal, req_t *req);
+int fire(uint32_t target, uint32_t signal, req_t *req);
+int tail(uint32_t target, uint32_t signal, req_t *req);  
 
 uint32_t signal_policy(uint32_t signal, uint32_t policy);
 req_t   *signal_recv  (uint32_t signal);
