@@ -183,6 +183,7 @@ void thread_init(void) {
 	register_int(0x10, fault_float);
 	register_int(0x11, fault_generic);
 	register_int(0x12, fault_generic);
+	register_int(0x13, fault_nomath);
 
 	/* initialize programmable interrupt timer at 256Hz */
 	register_int(IRQ(0), pit_handler);

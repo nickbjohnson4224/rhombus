@@ -21,25 +21,26 @@
     jmp int_common
 %endmacro 
 
-INTN 	0
+INTN 	0	; #DE - Divide Error
 INTN 	1
-INTN 	2
-INTN 	3
-INTN 	4
-INTN 	5
-INTN	6
-INTN 	7
-INTE	8
-INTN	9
-INTE	10
-INTE	11
-INTE	12
-INTE	13
-INTE	14
+INTN 	2	; Non-Maskable Interrupt
+INTN 	3	; #BP - Breakpoint
+INTN 	4	; #OF - Overflow
+INTN 	5	; #BR - Bound Range Exceeded
+INTN	6	; #UD - Invalid Opcode
+INTN 	7	; #NM - No Math Coprocessor
+INTE	8	; #DF - Double Fault
+INTN	9	; Coprocessor Segment Overrun
+INTE	10	; #TS - Invalid TSS
+INTE	11	; #NP - Segment Not Present
+INTE	12	; #SS - Stack Segment Fault
+INTE	13	; #GP - General Protection Fault
+INTE	14	; #PF - Page Fault
 INTN 	15
-INTN 	16
-INTN 	17
-INTN 	18
+INTN 	16	; #MF - Math Fault
+INTN 	17	; #AC - Alignment Check
+INTN 	18	; #MC - Machine Check
+INTN	19	; #XM - SIMD Exception
 
 ; IRQs
 INTN	32

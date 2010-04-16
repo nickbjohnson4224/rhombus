@@ -57,8 +57,8 @@ thread_t *fault_page(thread_t *image) {
 
 	/* If in kernelspace, panic */
 	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */
-		printk("page fault at %x, ip = %x frame %x task %d\n", 
-			cr2, image->eip, page_get(cr2), image->proc->pid);
+		printk("page fault at %x, ip = %x frame %x\n", 
+			cr2, image->eip, page_get(cr2));
 		panic("page fault exception");
 	}
 	#endif
