@@ -67,8 +67,8 @@ void mem_init() {
 	/* initialize frame allocator */
 	frame_init(memsize);
 
-	/* touch pages for all kernel tables */
-	for (i = KSPACE; i < KSPACE + SEGSZ * 6; i += SEGSZ) {
+	/* touch pages for kernel heap and other tables */
+	for (i = KSPACE; i < KERNEL_HEAP_END; i += SEGSZ) {
 		page_touch(i);
 	}
 
