@@ -23,8 +23,8 @@ int fire(uint32_t target, uint32_t signal, struct request *req) {
 	return _fire(target, signal, req);
 }
 
-bool signal_queue(uint32_t signal, bool value) {
-	return _sctl(SCTL_POLICY, signal, (value) ? 1 : 0);
+uint32_t signal_policy(uint32_t signal, uint32_t policy) {
+	return _sctl(SCTL_POLICY, signal, policy);
 }
 
 struct request *signal_recv(uint32_t signal) {

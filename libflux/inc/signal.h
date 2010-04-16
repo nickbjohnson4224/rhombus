@@ -21,10 +21,14 @@
 #define SIG_CTRL	0x13
 #define SIG_REPLY	0x1F
 
+#define POLICY_ABORT 0
+#define POLICY_QUEUE 1
+#define POLICY_EVENT 2
+
 int    fire(uint32_t target, uint32_t signal, req_t *req);
 
-bool   signal_queue(uint32_t signal, bool value);
-req_t *signal_recv(uint32_t signal);
+uint32_t signal_policy(uint32_t signal, uint32_t policy);
+req_t   *signal_recv(uint32_t signal);
 
 typedef void (*sig_handler_t) (uint32_t caller, req_t *req);
 void signal_register(uint32_t signal, sig_handler_t handler);

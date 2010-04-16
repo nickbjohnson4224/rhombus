@@ -18,9 +18,9 @@
 #define SSIG_FLOAT	6	/* FPU exception */
 #define SSIG_DEATH	7	/* Child death */
 
-#define UNBLK 0x01
-#define NOERR 0x02
-#define EKILL 0x04
+#define SIG_POLICY_ABORT 0 /* Exit on signal */
+#define SIG_POLICY_QUEUE 1 /* Queue signal */
+#define SIG_POLICY_EVENT 2 /* Handle signal */
 
 struct signal_queue {
 	struct signal_queue *next;
@@ -56,7 +56,11 @@ typedef struct process {
 	struct signal_queue *mailbox_in [32];
 	struct signal_queue *mailbox_out[32];
 
-} task_t, process_t;
+	/* threads and thread stacks */
+	struct thread *thread[128];
+	uint32_t thread_stack_bmap[4];
+
+} process_t;
 
 void            process_init  (void);
 struct process *process_get   (pid_t pid);
@@ -97,14 +101,11 @@ struct thread  *process_switch(struct process *proc, uint32_t thread);
 #define CTRL_SFLOAT	0x00000040
 #define CTRL_SDEATH	0x00000080
 
-extern pid_t curr_pid;		/* Currently loaded task ID */
-extern task_t *curr_task;
-
 /***** SCHEDULER *****/
 
-void    sched_ins(pid_t pid);
-void    sched_rem(pid_t pid);
-task_t *task_next(uint8_t flags);
+void       sched_ins(pid_t pid);
+void       sched_rem(pid_t pid);
+process_t *task_next(uint8_t flags);
 
 void scheduler_insert(struct thread *thread);
 void scheduler_remove(struct thread *thread);
@@ -156,6 +157,8 @@ void      thread_free  (thread_t *thread);
 thread_t *thread_switch(thread_t *old, thread_t *new);
 thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t grant);
 thread_t *thread_drop  (thread_t *image);
+uintptr_t thread_stack_alloc(thread_t *thread, process_t *proc);
+void      thread_stack_free (process_t *proc, uintptr_t seg);
 
 /***** SYSTEM CALLS AND OTHER INTERRUPTS *****/
 

@@ -13,13 +13,13 @@ size_t read(struct file *fd, void *buf, size_t size, uint64_t offset) {
 	uint8_t *data = (void*) buf;
 	uint16_t datasize;
 	size_t oldsize, i = 1;
-	bool old_queue;
+	uint32_t old_policy;
 
 	oldsize = size;
 
 	req = ralloc();
 
-	old_queue = signal_queue(SIG_REPLY, true);
+	old_policy = signal_policy(SIG_REPLY, POLICY_QUEUE);
 
 	while (size) {
 		datasize = (size > REQSZ) ? REQSZ : size;
@@ -37,7 +37,7 @@ size_t read(struct file *fd, void *buf, size_t size, uint64_t offset) {
 		if (res->format == REQ_ERROR) {
 			rfree(res);
 
-			signal_queue(SIG_REPLY, old_queue);
+			signal_policy(SIG_REPLY, old_policy);
 			return (oldsize - size);
 		}
 
@@ -53,7 +53,7 @@ size_t read(struct file *fd, void *buf, size_t size, uint64_t offset) {
 
 	rfree(req);
 
-	signal_queue(SIG_REPLY, old_queue);
+	signal_policy(SIG_REPLY, old_policy);
 
 	return oldsize;
 }

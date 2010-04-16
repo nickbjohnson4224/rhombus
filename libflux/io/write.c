@@ -9,17 +9,21 @@
 #include <flux/request.h>
 
 size_t write(struct file *fd, void *buf, size_t size, uint64_t offset) {
-	req_t *req, *res;
-	uint8_t *data = (void*) buf;
+	uint8_t *data;
+	uint32_t old_policy;
 	uint16_t datasize;
-	size_t oldsize, i = 0;
-	bool old_queue;
+	size_t oldsize;
+	size_t i;
+	req_t *req;
+	req_t *res;
 
 	oldsize = size;
+	data    = buf;
+	res     = NULL;
+	req     = ralloc();
+	i       = 0;
 
-	req = ralloc();
-
-	old_queue = signal_queue(SIG_REPLY, true);
+	old_policy = signal_policy(SIG_REPLY, POLICY_QUEUE);
 
 	while (size) {
 		datasize = (size > REQSZ) ? REQSZ : size;
@@ -39,7 +43,7 @@ size_t write(struct file *fd, void *buf, size_t size, uint64_t offset) {
 		if (res->format == REQ_ERROR) {
 			rfree(res);
 
-			signal_queue(SIG_REPLY, old_queue);
+			signal_policy(SIG_REPLY, old_policy);
 			return (oldsize - size);
 		}
 
@@ -53,7 +57,7 @@ size_t write(struct file *fd, void *buf, size_t size, uint64_t offset) {
 
 	rfree(req);
 
-	signal_queue(SIG_REPLY, old_queue);
+	signal_policy(SIG_REPLY, old_policy);
 
 	return oldsize;
 }

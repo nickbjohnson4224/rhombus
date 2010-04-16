@@ -43,10 +43,10 @@ thread_t *thread_drop(thread_t *image) {
  *
  * Sends a signal to the process with pid targ of the type sig with the
  * granted page at current virtual address grant. If the target process cannot
- * accept it or has a nonzero value at the signals' offset in  signal_policy, 
- * the signal is added to that process' mailbox. Otherwise, a new thread is 
- * created in the target process to handle the incoming signal, and that 
- * thread is switched to.
+ * accept it or has value SIG_POLICY_QUEUE at the signals' offset in 
+ * signal_policy, the signal is added to that process' mailbox. Otherwise, a 
+ * new thread is created in the target process to handle the incoming signal, 
+ * and that thread is made active.
  *
  * The granted page in the current process is replaced with a page with
  * undefined contents and the same permissions as the granted page.
@@ -70,9 +70,38 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 		grant &= ~0xFFF;
 	}
 
-	if (p_targ->signal_policy[sig] || (p_targ->signal_handle == 0)) {
-		/* queue signal */
+	switch (p_targ->signal_policy[sig]) {
+	case SIG_POLICY_EVENT:
+		if (p_targ->signal_handle) {
+			printk("FIRE event (%x %x %x)\n", sig, grant, targ);
+	
+			new_image = thread_alloc();
+	
+			new_image->ds      = 0x23;
+			new_image->cs      = 0x1B;
+			new_image->ss      = 0x23;
+			new_image->eflags  = p_targ->image->eflags;
+			new_image->stack   = thread_stack_alloc(new_image, p_targ);
+			new_image->useresp = new_image->stack + SEGSZ;
+			new_image->tis     = p_targ->image;
+			new_image->proc    = p_targ;
+			new_image->grant   = grant;
+			new_image->ebx     = grant;
+			new_image->source  = image->proc->pid;
+			new_image->esi     = image->proc->pid;
+			new_image->signal  = sig;
+			new_image->edi     = sig;
+			new_image->eip     = p_targ->signal_handle;
+			new_image->fxdata  = NULL;
 
+			printk("stack: %x %x\n", new_image->stack, new_image->useresp);
+	
+			p_targ->image  = new_image;
+			p_targ->flags &= ~CTRL_BLOCK;
+		
+			return thread_switch(image, new_image);
+		}
+	case SIG_POLICY_QUEUE:
 		printk("FIRE queue (%x %x %x)\n", sig, grant, targ);
 
 		sq = heap_alloc(sizeof(struct signal_queue));
@@ -91,34 +120,11 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 		}
 
 		return image;
+	default :
+	case SIG_POLICY_ABORT:
+		printk("FIRE abort (%x %x %x)\n", sig, grant, targ);
 
-	}
-	else {
-		/* send signal */
-		printk("FIRE spawn (%x %x %x)\n", sig, grant, targ);
-
-		new_image = thread_alloc();
-
-		new_image->ds      = 0x23;
-		new_image->cs      = 0x1B;
-		new_image->ss      = 0x23;
-		new_image->eflags  = p_targ->image->eflags;
-		new_image->useresp = p_targ->image->useresp;
-		new_image->tis     = p_targ->image;
-		new_image->proc    = p_targ;
-		new_image->grant   = grant;
-		new_image->ebx     = grant;
-		new_image->source  = image->proc->pid;
-		new_image->esi     = image->proc->pid;
-		new_image->signal  = sig;
-		new_image->edi     = sig;
-		new_image->eip     = p_targ->signal_handle;
-		new_image->fxdata  = NULL;
-
-		p_targ->image  = new_image;
-		p_targ->flags &= ~CTRL_BLOCK;
-	
-		return thread_switch(image, new_image);
+		return syscall_exit(image);
 	}
 }
 
@@ -129,6 +135,7 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
  */
 
 void thread_free(thread_t *thread) {
+	if (thread->stack) thread_stack_free(thread->proc, thread->stack);
 	heap_free(thread, sizeof(thread_t));
 }
 
@@ -195,6 +202,63 @@ void thread_init(void) {
 
 	/* initialize FPU/MMX/SSE */
 	init_fpu();
+}
+
+/****************************************************************************
+ * thread_stack_alloc
+ *
+ * Returns a free segment of size SEGSZ with 16 pages allocated at its end.
+ * Associates the thread with this stack with the process.
+ */
+
+uintptr_t thread_stack_alloc(thread_t *thread, process_t *proc) {
+	uintptr_t i;
+	uintptr_t addr;
+
+	for (i = 0; i < 128; i++) {
+		if ((proc->thread_stack_bmap[i / 32] & (1 << (i % 32))) == 0) {
+			proc->thread_stack_bmap[i / 32] |= (1 << (i % 32));
+			addr = KSPACE - (SEGSZ * 128) + (SEGSZ * i);
+			break;
+		}
+	}
+
+	proc->thread[i] = thread;
+
+	space_exmap(TMP_MAP, proc->space);
+
+	for (i = addr + (SEGSZ - PAGESZ * 16); i < addr + SEGSZ; i += PAGESZ) {
+		page_exset(TMP_MAP, i, page_fmt(frame_new(), PF_PRES | PF_RW | PF_USER));
+	}
+
+	return addr;
+}
+
+/****************************************************************************
+ * thread_stack_free
+ *
+ * Frees a thread stack. Disassociates the thread with that stack from the
+ * process.
+ */
+
+void thread_stack_free(process_t *proc, uintptr_t seg) {
+	uintptr_t i;
+
+	i = (seg - (KSPACE - (SEGSZ * 128))) / SEGSZ;
+
+	proc->thread_stack_bmap[i / 32] &= ~(1 << (i % 32));
+	proc->thread[i] = NULL;
+
+	space_exmap(TMP_MAP, proc->space);
+
+	for (i = seg; i < seg + SEGSZ; i += PAGESZ) {
+		if (page_exget(TMP_MAP, i) & PF_PRES != 0) {
+			frame_free(page_ufmt(page_exget(TMP_MAP, i)));
+			page_exset(TMP_MAP, i, 0);
+		}
+	}
+
+	segment_free(seg);
 }
 
 /****************************************************************************
