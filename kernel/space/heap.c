@@ -24,7 +24,9 @@ static struct heap_block *heap_bucket[10];
  *
  * Returns a pointer to a block of kernel memory of size size bytes. This
  * memory is accessible from all address spaces, is privileged and
- * read-write. Returns null on out of memory or too large error.
+ * read-write. Returns null on out of memory or too large error. The
+ * block of memory is 16 byte aligned for allocations of size 9 bytes
+ * or greater, and page aligned for allocations of 2049 to 4096 bytes.
  */
 
 void *heap_alloc(size_t size) {
