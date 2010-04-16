@@ -106,6 +106,10 @@ void    sched_ins(pid_t pid);
 void    sched_rem(pid_t pid);
 task_t *task_next(uint8_t flags);
 
+void scheduler_insert(struct thread *thread);
+void scheduler_remove(struct thread *thread);
+struct thread *scheduler_next(void);
+
 /***** THREADS ******/
 
 typedef struct thread {

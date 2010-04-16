@@ -3,16 +3,16 @@
 
 [bits 32]
 
-global sighand
+global signal_handle
 
-extern sigredirect
+extern signal_redirect
 extern _drop
 
-sighand:
+signal_handle:
 	push ebx
 	push edi
 	push esi
-	call sigredirect
+	call signal_redirect
 	add esp, 12
 
 	call _drop

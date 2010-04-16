@@ -13,10 +13,13 @@ size_t write(struct file *fd, void *buf, size_t size, uint64_t offset) {
 	uint8_t *data = (void*) buf;
 	uint16_t datasize;
 	size_t oldsize, i = 0;
+	bool old_queue;
 
 	oldsize = size;
 
 	req = ralloc();
+
+	old_queue = signal_queue(SIG_REPLY, true);
 
 	while (size) {
 		datasize = (size > REQSZ) ? REQSZ : size;
@@ -31,9 +34,12 @@ size_t write(struct file *fd, void *buf, size_t size, uint64_t offset) {
 
 		fire(fd->target, SIG_WRITE, req_cksum(req));
 
-		res = sigpull(SIG_REPLY);
+		res = signal_recv(SIG_REPLY);
 
 		if (res->format == REQ_ERROR) {
+			rfree(res);
+
+			signal_queue(SIG_REPLY, old_queue);
 			return (oldsize - size);
 		}
 
@@ -46,6 +52,8 @@ size_t write(struct file *fd, void *buf, size_t size, uint64_t offset) {
 	}
 
 	rfree(req);
+
+	signal_queue(SIG_REPLY, old_queue);
 
 	return oldsize;
 }

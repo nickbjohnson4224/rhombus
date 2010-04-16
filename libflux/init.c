@@ -10,14 +10,14 @@ static void __exit(uint32_t source, struct request *req) {
 }
 
 void _cini() {
-	extern void siginit(void);
+	extern void signal_init(void);
 
 	/* Heap */
 	heap_init();
 
 	/* Fault handling */
-	siginit();
-	sigregister(0, __exit);
-	sigregister(2, __exit);
-	sigregister(5, __exit);
+	signal_init();
+	signal_register(0, __exit);
+	signal_register(2, __exit);
+	signal_register(5, __exit);
 }

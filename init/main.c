@@ -18,12 +18,12 @@ int main() {
 	req_t *req = ralloc();
 	req->transid = 42;
 
-	_sctl(SCTL_POLICY, SIG_READ, 1);
+	signal_queue(SIG_READ, true);
 
 	fire(1, SIG_READ , req);
 	fire(1, SIG_WRITE, req);
 
-	req = sigpull(SIG_READ);
+	req = signal_recv(SIG_READ);
 
 	if (req->transid != 42) {
 		exit(0);

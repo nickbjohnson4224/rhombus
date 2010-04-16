@@ -6,14 +6,6 @@
 
 #define MAXSIGNAL	32
 
-int  fire(uint32_t target, uint8_t signal, req_t *req);
-void tail(uint32_t target, uint8_t signal, req_t *req);
-
-typedef void (*sig_handler_t) (uint32_t caller, req_t *req);
-void sigregister(uint16_t signal, sig_handler_t handler);
-
-req_t *sigpull(uint16_t signal);			/* Get held signal request */
-
 #define SSIG_FAULT	0x00
 #define SSIG_ENTER	0x01
 #define SSIG_PAGE	0x02
@@ -29,4 +21,12 @@ req_t *sigpull(uint16_t signal);			/* Get held signal request */
 #define SIG_CTRL	0x13
 #define SIG_REPLY	0x1F
 
-#endif
+int    fire(uint32_t target, uint32_t signal, req_t *req);
+
+bool   signal_queue(uint32_t signal, bool value);
+req_t *signal_recv(uint32_t signal);
+
+typedef void (*sig_handler_t) (uint32_t caller, req_t *req);
+void signal_register(uint32_t signal, sig_handler_t handler);
+
+#endif/*FLUX_SIGNAL_H*/
