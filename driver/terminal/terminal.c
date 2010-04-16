@@ -31,6 +31,8 @@ static uint16_t cursor = 0;
 static uint16_t buffer = 0;
 static void char_write(char c);
 
+static uint32_t m_vbuf = 0;
+
 struct driver_interface terminal = {
 	terminal_init,
 	terminal_halt,
@@ -42,12 +44,16 @@ struct driver_interface terminal = {
 static void terminal_init(device_t selector) {
 	size_t i;
 
+	mutex_spin(&m_vbuf);
+
 	vbuf = malloc(0x1000);
 	emap(vbuf, VMEM, PROT_READ | PROT_WRITE);
 
 	for (i = 0; i < WIDTH * HEIGHT; i++) {
 		vbuf[i] = 0x0F00 | ' ';
 	}
+
+	mutex_free(&m_vbuf);
 
 	signal_policy  (SIG_WRITE, POLICY_EVENT);
 	signal_register(SIG_WRITE, terminal_write);
@@ -70,6 +76,8 @@ static void terminal_write(uint32_t caller, struct request *req) {
 
 	buffer = (void*) req_getbuf(req);
 
+	mutex_spin(&m_vbuf);
+
 	for (i = 0; i < req->datasize; i++) {
 		char_write(buffer[i]);
 	}
@@ -78,6 +86,8 @@ static void terminal_write(uint32_t caller, struct request *req) {
 	outb(0x3D5, cursor >> 8);
 	outb(0x3D4, 15);
 	outb(0x3D5, cursor & 0xFF);
+
+	mutex_free(&m_vbuf);
 
 	req->datasize = i;
 	req->format = REQ_READ;

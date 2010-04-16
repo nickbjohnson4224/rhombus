@@ -19,6 +19,7 @@
 int main() {
 	int32_t pid;
 	device_t nulldev;
+	uint32_t mutex = 0;
 
 	signal_policy(SIG_REPLY, POLICY_QUEUE);
 
@@ -36,6 +37,21 @@ int main() {
 
 	printf("Flux Operating System 0.4a\n");
 	printf("Launching Terminal Driver...\n");
+	
+	printf("testing mutexen:\n");
+
+	mutex_lock(&mutex);
+	printf("mutex locked\n");
+	printf("mutex state: %s\n", mutex_test(&mutex) ? "locked" : "unlocked");
+	printf("mutex lock attempt: %s\n", mutex_lock(&mutex) ? "success" : "failure");
+
+	mutex_free(&mutex);
+	printf("mutex freed\n");
+	printf("mutex state: %s\n", (mutex_test(&mutex) ? "locked" : "unlocked"));
+
+	mutex_spin(&mutex);
+	printf("mutex spinlocked\n");
+	printf("mutex state: %s\n", mutex_test(&mutex) ? "locked" : "unlocked");
 
 	for(;;);
 }
