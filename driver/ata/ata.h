@@ -134,6 +134,7 @@ extern struct ata_drive {
 	uint64_t size;			/* size in sectors of the entire drive */
 	char     model[41];		/* model name as reported by IDENTIFY */
 	uint16_t sectsize;
+	uint32_t mutex;
 } ata_drive[4];
 
 /* I/O port BARs and IRQs */

@@ -57,7 +57,8 @@ static void ata_read(uint32_t caller, req_t *req) {
 	if (!req_check(req)) {
 		if (!req) req = ralloc();
 		req->format = REQ_ERROR;
-		tail(caller, SIG_REPLY, req_cksum(req));
+		fire(caller, SIG_REPLY, req_cksum(req));
+		return;
 	}
 
 	/* calculate command */
@@ -71,17 +72,25 @@ static void ata_read(uint32_t caller, req_t *req) {
 	/* reject requests to nonexistent drives */
 	if (dr > 4 || !(ata_drive[dr].flags & FLAG_EXIST)) {
 		req->format = REQ_ERROR;
-		tail(caller, SIG_REPLY, req_cksum(req));
+		fire(caller, SIG_REPLY, req_cksum(req));
+		return;
 	}
+
+	/* aquire lock */
+	mutex_spin(&ata_drive[dr].mutex);
 
 	/* do read command */
 	req_setbuf(req, STDOFF, size);
 	pio_read_sector(dr, sector, (uint16_t*) req_getbuf(req));
 	req_setbuf(req, STDOFF + offset, size);
 
+	/* release lock */
+	mutex_free(&ata_drive[dr].mutex);
+
 	/* send reply */
 	req->format = REQ_WRITE;
-	tail(caller, SIG_REPLY, req_cksum(req));
+	fire(caller, SIG_REPLY, req_cksum(req));
+	return;
 }
 
 static void ata_write(uint32_t caller, struct request *req) {
@@ -93,7 +102,8 @@ static void ata_write(uint32_t caller, struct request *req) {
 	if (!req_check(req)) {
 		if (!req) req = ralloc();
 		req->format = REQ_ERROR;
-		tail(caller, SIG_REPLY, req_cksum(req));
+		fire(caller, SIG_REPLY, req_cksum(req));
+		return;
 	}
 
 	/* calculate command */
@@ -107,8 +117,12 @@ static void ata_write(uint32_t caller, struct request *req) {
 	/* reject requests to nonexistent drives */
 	if (!(ata_drive[dr].flags & FLAG_EXIST)) {
 		req->format = REQ_ERROR;
-		tail(caller, SIG_REPLY, req_cksum(req));
+		fire(caller, SIG_REPLY, req_cksum(req));
+		return;
 	}
+
+	/* aquire lock */
+	mutex_spin(&ata_drive[dr].mutex);
 
 	/* do write command */
 	buffer = malloc(ata_drive[dr].sectsize);
@@ -117,10 +131,14 @@ static void ata_write(uint32_t caller, struct request *req) {
 	pio_write_sector(dr, sector, (uint16_t*) buffer);
 	free(buffer);
 
+	/* release lock */
+	mutex_free(&ata_drive[dr].mutex);
+
+
 	/* send reply */
 	req->format   = REQ_READ;
 	req->datasize = size;
-	tail(caller, SIG_REPLY, req_cksum(req));
+	fire(caller, SIG_REPLY, req_cksum(req));
 }
 
 /*** Driver Interface ***/
@@ -192,6 +210,7 @@ static void ata_init(device_t dev) {
 	for (dr = 0; dr < 4; dr++) {
 		ata_select(dr);
 		ata_drive[dr].flags = 0;
+		ata_drive[dr].mutex = 0;
 
 		/* send IDENTIFY command */
 		outb(ata_base[dr] + REG_CMD, CMD_ID);
@@ -326,8 +345,10 @@ static void ata_init(device_t dev) {
 	}
 	
 	/* register interface handler */
-	sigregister(SIG_READ,  ata_read);
-	sigregister(SIG_WRITE, ata_write);
+	signal_policy  (SIG_READ,  POLICY_EVENT);
+	signal_policy  (SIG_READ,  POLICY_EVENT);
+	signal_register(SIG_READ,  ata_read);
+	signal_register(SIG_WRITE, ata_write);
 }
 
 static void ata_halt(void) {

@@ -38,6 +38,7 @@ int main() {
 	printf("Flux Operating System 0.4a\n");
 	printf("Launching Terminal Driver...\n");
 	
+	printf("\n");
 	printf("testing mutexen:\n");
 
 	mutex_lock(&mutex);

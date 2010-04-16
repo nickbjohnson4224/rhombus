@@ -70,6 +70,8 @@ static size_t bmap_top = 0;
 static struct slab_header *bucket[BLOCKSZ / sizeof(void*)];
 static struct slab_header *slab_deathrow = NULL;
 
+static uint32_t heap_mutex = 0;
+
 static void heap_vfree(void* ptr);
 
 /*** Slab Allocator ***/
@@ -203,22 +205,40 @@ void heap_init(void) {
 }
 
 struct request *ralloc(void) {
-	return heap_valloc(PAGESZ);
+	void *ptr;
+
+	mutex_spin(&heap_mutex);
+
+	ptr = heap_valloc(PAGESZ);
+
+	mutex_free(&heap_mutex);
+
+	return ptr;
 }
 
 void rfree(struct request *r) {
 	size_t idx;
-	
+
 	idx = ((uintptr_t) r - _HEAP_START) / BLOCKSZ;
-	bmap[idx >> 4] &= ~(1 << (idx & 0xFFFF));
+
+	mutex_spin(&heap_mutex);
+
+	bmap[idx >> 4] &= ~(1 << (idx & 0xF));
+
+	mutex_free(&heap_mutex);
 }
 
 void *heap_malloc(size_t size) {
 	struct slab_header *slab;
 	size_t bidx;
+	void *ptr;
+
+	mutex_spin(&heap_mutex);
 
 	if (size > (BLOCKSZ / 2) - sizeof(struct slab_header)) {
-		return heap_valloc(size);
+		ptr = heap_valloc(size);
+		mutex_free(&heap_mutex);
+		return ptr;
 	}
 	
 	if (size % sizeof(void*) != 0) {
@@ -238,15 +258,19 @@ void *heap_malloc(size_t size) {
 		bucket[bidx] = slab;
 	}
 
-	return slab_alloc(slab);
+	ptr = slab_alloc(slab);
+	mutex_free(&heap_mutex);
+	return ptr;
 }
 
 void heap_free(void *ptr) {
 	struct slab_header *s, *x;
 	size_t bidx;
 
-	if ((uintptr_t) ptr < _HEAP_START || (uintptr_t) ptr > HEAP_MXBRK) {
+	mutex_spin(&heap_mutex);
 
+	if ((uintptr_t) ptr < _HEAP_START || (uintptr_t) ptr > HEAP_MXBRK) {
+		mutex_free(&heap_mutex);
 		return;
 	}
 
@@ -254,7 +278,7 @@ void heap_free(void *ptr) {
 
 	if (s == NULL) {
 		heap_vfree(ptr);
-
+		mutex_free(&heap_mutex);
 		return;
 	}
 
@@ -277,14 +301,26 @@ void heap_free(void *ptr) {
 		}
 		del_slab(s);
 	}
+
+	mutex_free(&heap_mutex);
 }
 
 size_t heap_size(void *ptr) {
 	struct slab_header *slab;
+	size_t size;
+
+	mutex_spin(&heap_mutex);
 
 	slab = get_slab(ptr);
 
-	if (slab == NULL) return BLOCKSZ;
+	if (slab == NULL) {
+		size = BLOCKSZ;
+	}
+	else {
+		size = slab->esize;
+	}
 	
-	return slab->esize;
+	mutex_free(&heap_mutex);
+
+	return size;
 }
