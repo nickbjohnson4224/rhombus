@@ -20,7 +20,7 @@ thread_t *pit_handler(thread_t *image) {
 	tick++;
 
 	/* Switch to next scheduled task */
-	return process_switch(task_next(0), 0);
+	return thread_switch(image, schedule_next());
 }
 
 thread_t *irq_redirect(thread_t *image) {
@@ -113,7 +113,7 @@ thread_t *syscall_fire(thread_t *image) {
 
 	if (targ == 0) {
 		image->eax = 0;
-		return process_switch(task_next(0), 0);
+		return thread_switch(image, schedule_next());
 	}
 
 	if (!process_get(targ)) {
@@ -170,7 +170,7 @@ thread_t *syscall_mail(thread_t *image) {
 		sq = *mailbox_out;
 
 		if (!sq) {
-			image->eax = -1;
+			image->eax = 0;
 			return image;
 		}
 
@@ -218,11 +218,8 @@ thread_t *syscall_fork(thread_t *image) {
 	process_t *parent;
 	process_t *child;
 
-	/* Save current PID - it will become the parent */
 	parent = image->proc;
-
-	/* Create a new task from the parent */
-	child = process_clone(parent);
+	child = process_clone(parent, image);
 
 	if (!child) {
 		image->eax = 0;
@@ -233,7 +230,7 @@ thread_t *syscall_fork(thread_t *image) {
 	image->eax = child->pid;
 
 	/* Switch to child */
-	image = process_switch(child, 0);
+	image = thread_switch(image, child->thread[0]);
 
 	/* (now in child) Set return value to negative parent's PID */
 	image->eax = -((uint32_t) parent->pid);
@@ -255,12 +252,7 @@ thread_t *syscall_exit(thread_t *image) {
 		panic("init died");
 	}
 
-	if (parent) {
-		process_switch(parent, 0);
-	}
-	else {
-		process_switch(task_next(0), 0);
-	}
+	process_switch(process_get(1));
 
 	/* Deallocate current address space and clear metadata */
 	space_free(image->proc->space);	/* Deallocate whole address space */
@@ -268,7 +260,7 @@ thread_t *syscall_exit(thread_t *image) {
 
 	if (!parent) {
 		/* Parent will not accept - reschedule */
-		return process_switch(task_next(0), 0);
+		return thread_switch(image, schedule_next());
 	}
 	else {
 		/* Send SSIG_DEATH signal to parent with return value */

@@ -31,8 +31,7 @@ thread_t *thread_drop(thread_t *image) {
 	thread_t *old_image;
 
 	old_image = image;
-	image->proc->image = image->tis;
-	image = thread_switch(image, image->tis);
+	image = thread_switch(image, schedule_next());
 	thread_free(old_image);
 
 	return image;
@@ -80,10 +79,9 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 			new_image->ds      = 0x23;
 			new_image->cs      = 0x1B;
 			new_image->ss      = 0x23;
-			new_image->eflags  = p_targ->image->eflags;
+			new_image->eflags  = p_targ->thread[0]->eflags;
 			new_image->stack   = thread_stack_alloc(new_image, p_targ);
 			new_image->useresp = new_image->stack + SEGSZ;
-			new_image->tis     = p_targ->image;
 			new_image->proc    = p_targ;
 			new_image->grant   = grant;
 			new_image->ebx     = grant;
@@ -94,11 +92,6 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 			new_image->eip     = p_targ->signal_handle;
 			new_image->fxdata  = NULL;
 
-			printk("stack: %x %x\n", new_image->stack, new_image->useresp);
-	
-			p_targ->image  = new_image;
-			p_targ->flags &= ~CTRL_BLOCK;
-		
 			return thread_switch(image, new_image);
 		}
 	case SIG_POLICY_QUEUE:
@@ -286,7 +279,7 @@ thread_t *thread_switch(thread_t *old, thread_t *new) {
 
 	/* switch processes */
 	if (old->proc != new->proc) {
-		process_switch(new->proc, 0);
+		process_switch(new->proc);
 	}
 
 	/* set task switched flag */

@@ -38,9 +38,6 @@ typedef struct process {
 	/* address space */
 	space_t space;
 
-	/* thread image stack */
-	struct thread *image;
-
 	/* various crap */
 	uint32_t flags;
 	uint32_t pid;
@@ -65,11 +62,11 @@ typedef struct process {
 void            process_init  (void);
 struct process *process_get   (pid_t pid);
 struct process *process_alloc (void);
-struct process *process_clone (struct process *parent);
+struct process *process_clone (struct process *parent, struct thread *active_thread);
 void            process_free  (struct process *proc);
 void            process_kill  (struct process *proc);
 void            process_touch (pid_t pid);
-struct thread  *process_switch(struct process *proc, uint32_t thread);
+void            process_switch(struct process *proc);
 
 /***** CONTROL SPACE *****/
 
@@ -103,13 +100,9 @@ struct thread  *process_switch(struct process *proc, uint32_t thread);
 
 /***** SCHEDULER *****/
 
-void       sched_ins(pid_t pid);
-void       sched_rem(pid_t pid);
-process_t *task_next(uint8_t flags);
-
-void scheduler_insert(struct thread *thread);
-void scheduler_remove(struct thread *thread);
-struct thread *scheduler_next(void);
+void schedule_insert(struct thread *thread);
+void schedule_remove(struct thread *thread);
+struct thread *schedule_next(void);
 
 /***** THREADS ******/
 
@@ -146,9 +139,9 @@ typedef struct thread {
 	/* user stack segment base */
 	uintptr_t stack;
 
-	/* (legacy) thread image stack */
-	struct thread *tis;
-	
+	/* scheduler information */
+	struct thread *next;
+
 } __attribute__ ((packed)) thread_t;
 
 void      thread_init  (void);

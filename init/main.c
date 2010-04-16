@@ -20,11 +20,21 @@ int main() {
 
 	signal_policy(SIG_READ,  POLICY_QUEUE);
 	signal_policy(SIG_WRITE, POLICY_EVENT);
-	signal_policy(SIG_REPLY, POLICY_EVENT);
+	signal_policy(SIG_REPLY, POLICY_QUEUE);
 
 	fire(1, SIG_READ , req);
 	fire(1, SIG_WRITE, req);
 	fire(1, SIG_WRITE, req);
+
+	while (1) {
+		req = signal_recv(SIG_REPLY);
+		if (req) {
+			rfree(req);
+		}
+		else {
+			break;
+		}
+	}
 
 	req = signal_recv(SIG_READ);
 

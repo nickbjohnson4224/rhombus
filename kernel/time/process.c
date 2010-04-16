@@ -45,7 +45,7 @@ process_t *process_alloc(void) {
  * as the 'child'.
  */
 
-process_t *process_clone(process_t *parent) {
+process_t *process_clone(process_t *parent, thread_t *active_thread) {
 	process_t *child;
 	pid_t pid;
 
@@ -60,25 +60,29 @@ process_t *process_clone(process_t *parent) {
 	child->space  = space_clone();
 	child->parent = parent;
 	child->pid    = pid;
-	child->image  = thread_alloc();
+
+	memclr(child->thread_stack_bmap, sizeof(uint32_t) * 4);
+	memclr(child->thread, sizeof(struct thread *) * 128);
+
+	child->thread[0] = thread_alloc();
 
 	/* copy parent thread */
-	if (parent->image) {
-		memcpy(child->image, parent->image, sizeof(thread_t));
+	if (active_thread) {
+		memcpy(child->thread[0], active_thread, sizeof(thread_t));
 
 		/* copy parent FPU/SSE state */
-		if (parent->image->fxdata) {
-			child->image->fxdata = heap_alloc(512);
-			memcpy(child->image->fxdata, parent->image->fxdata, 512);
+		if (active_thread->fxdata) {
+			child->thread[0]->fxdata = heap_alloc(512);
+			memcpy(child->thread[0]->fxdata, active_thread->fxdata, 512);
 		}
 	}
 
 	/* setup child thread */
-	child->image->tis  = NULL;
-	child->image->proc = child;
+	child->thread[0]->stack = thread_stack_alloc(child->thread[0], child);
+	child->thread[0]->proc  = child;
 
-	/* add child to scheduler */
-	sched_ins(pid);
+	/* add child's thread to the scheduler */
+	schedule_insert(child->thread[0]);
 
 	return child;
 }
@@ -133,10 +137,10 @@ void process_init() {
 	/* bootstrap process 0 (idle) */
 	idle = process_alloc();
 	idle->space = get_cr3();
-	idle->flags = CTRL_READY | CTRL_SUPER | CTRL_QUEUE;
+	idle->flags = CTRL_READY | CTRL_SUPER;
 
 	/* fork process 1 and switch */
-	process_switch(process_clone(idle), 0);
+	process_switch(process_clone(idle, NULL));
 }
 
 /****************************************************************************
@@ -146,21 +150,15 @@ void process_init() {
  */
 
 void process_kill(process_t *proc) {
-	sched_rem(proc->pid);
-
 	process_free(proc);
 }
 
 /****************************************************************************
  * process_switch
  *
- * Switches to the target process and its specified thread.
+ * Switches to the target process.
  */
 
-struct thread *process_switch(struct process *proc, uint32_t thread) {
-
-	/* switch task */
+void process_switch(struct process *proc) {
 	space_load(proc->space);
-
-	return proc->image;
 }

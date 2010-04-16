@@ -26,22 +26,18 @@ void init_task() {
 	/* allocate stack space */
 	mem_alloc(USTACK_BSE, USTACK_TOP - USTACK_BSE, PF_USER | PF_RW);
 
-	/* Set TIS top pointer */
-	init->image = thread_alloc();
-	init->image->proc = init;
-
 	/* Load executable */
 	entry = elf_load(user_init);
 
 	/* Setup process image */
-	init->image->proc    = init;
-	init->image->useresp = USTACK_INI;
-	init->image->esp     = (uint32_t) &init->image->num;
-	init->image->ebp     = USTACK_INI;
-	init->image->ss      = 0x23;
-	init->image->ds      = 0x23;
-	init->image->eip     = entry;
-	init->image->cs      = 0x1B;
-	init->image->eflags  = get_eflags() | 0x3200; 	/* IF, IOPL=3 */
-	tss_set_esp((uintptr_t) &init->image->tss_start);
+	init->thread[0]->proc    = init;
+	init->thread[0]->useresp = USTACK_INI;
+	init->thread[0]->esp     = (uint32_t) &init->thread[0]->num;
+	init->thread[0]->ebp     = USTACK_INI;
+	init->thread[0]->ss      = 0x23;
+	init->thread[0]->ds      = 0x23;
+	init->thread[0]->eip     = entry;
+	init->thread[0]->cs      = 0x1B;
+	init->thread[0]->eflags  = get_eflags() | 0x3200; 	/* IF, IOPL=3 */
+	tss_set_esp((uintptr_t) &init->thread[0]->tss_start);
 }
