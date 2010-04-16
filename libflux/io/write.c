@@ -38,7 +38,7 @@ size_t write(struct file *fd, void *buf, size_t size, uint64_t offset) {
 
 		fire(fd->target, SIG_WRITE, req_cksum(req));
 
-		res = signal_recv(SIG_REPLY);
+		res = signal_recvs(SIG_REPLY, fd->target);
 
 		if (res->format == REQ_ERROR) {
 			rfree(res);
@@ -56,7 +56,6 @@ size_t write(struct file *fd, void *buf, size_t size, uint64_t offset) {
 	}
 
 	rfree(req);
-
 	signal_policy(SIG_REPLY, old_policy);
 
 	return oldsize;

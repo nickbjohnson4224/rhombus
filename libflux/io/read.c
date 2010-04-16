@@ -16,9 +16,7 @@ size_t read(struct file *fd, void *buf, size_t size, uint64_t offset) {
 	uint32_t old_policy;
 
 	oldsize = size;
-
 	req = ralloc();
-
 	old_policy = signal_policy(SIG_REPLY, POLICY_QUEUE);
 
 	while (size) {
@@ -32,7 +30,7 @@ size_t read(struct file *fd, void *buf, size_t size, uint64_t offset) {
 
 		fire(fd->target, SIG_READ, req_cksum(req));
 
-		res = signal_recv(SIG_REPLY);
+		res = signal_recvs(SIG_REPLY, fd->target);
 
 		if (res->format == REQ_ERROR) {
 			rfree(res);
@@ -52,7 +50,6 @@ size_t read(struct file *fd, void *buf, size_t size, uint64_t offset) {
 	}
 
 	rfree(req);
-
 	signal_policy(SIG_REPLY, old_policy);
 
 	return oldsize;

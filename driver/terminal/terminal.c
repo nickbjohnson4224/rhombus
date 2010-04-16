@@ -49,7 +49,8 @@ static void terminal_init(device_t selector) {
 		vbuf[i] = 0x0F00 | ' ';
 	}
 
-	sigregister(SIG_WRITE, terminal_write);
+	signal_policy  (SIG_WRITE, POLICY_EVENT);
+	signal_register(SIG_WRITE, terminal_write);
 }
 
 static void terminal_halt(void) {
@@ -63,12 +64,11 @@ static void terminal_write(uint32_t caller, struct request *req) {
 	if (!req_check(req)) {
 		if (!req) req = ralloc();
 		req->format = REQ_ERROR;
-		tail(caller, SIG_REPLY, req);
+		fire(caller, SIG_REPLY, req);
+		return;
 	}
 
 	buffer = (void*) req_getbuf(req);
-
-	sigblock(true, VSIG_REQ);
 
 	for (i = 0; i < req->datasize; i++) {
 		char_write(buffer[i]);
@@ -79,11 +79,9 @@ static void terminal_write(uint32_t caller, struct request *req) {
 	outb(0x3D4, 15);
 	outb(0x3D5, cursor & 0xFF);
 
-	sigblock(false, VSIG_REQ);
-
 	req->datasize = i;
 	req->format = REQ_READ;
-	tail(caller, SIG_REPLY, req_cksum(req));
+	fire(caller, SIG_REPLY, req_cksum(req));
 }
 
 static void char_write(char c) {

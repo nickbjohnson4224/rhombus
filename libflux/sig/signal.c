@@ -27,20 +27,24 @@ uint32_t signal_policy(uint32_t signal, uint32_t policy) {
 	return _sctl(SCTL_POLICY, signal, policy);
 }
 
-struct request *signal_recv(uint32_t signal) {
+struct request *signal_recvs(uint32_t signal, uint32_t source) {
 	req_t *req;
 	uintptr_t grant;
 
 	req = ralloc();
-	grant = _mail(signal, -1, 0);
+	grant = _mail(signal, source, 0);
 
-	if (!grant) {
+	if (grant == -1) {
 		return NULL;
 	}
 
 	emap(req, grant, PROT_READ | PROT_WRITE);
 
 	return req;
+}
+
+struct request *signal_recv(uint32_t signal) {
+	return signal_recvs(signal, 0);
 }
 
 void signal_register(uint32_t signal, sig_handler_t handler) {

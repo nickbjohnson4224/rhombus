@@ -31,7 +31,10 @@ thread_t *thread_drop(thread_t *image) {
 	thread_t *old_image;
 
 	old_image = image;
+	schedule_remove(old_image);
+
 	image = thread_switch(image, schedule_next());
+
 	thread_free(old_image);
 
 	return image;
@@ -72,8 +75,6 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 	switch (p_targ->signal_policy[sig]) {
 	case SIG_POLICY_EVENT:
 		if (p_targ->signal_handle) {
-			printk("FIRE event (%x %x %x)\n", sig, grant, targ);
-	
 			new_image = thread_alloc();
 	
 			new_image->ds      = 0x23;
@@ -91,12 +92,11 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 			new_image->edi     = sig;
 			new_image->eip     = p_targ->signal_handle;
 			new_image->fxdata  = NULL;
+			schedule_insert(new_image);
 
 			return thread_switch(image, new_image);
 		}
 	case SIG_POLICY_QUEUE:
-		printk("FIRE queue (%x %x %x)\n", sig, grant, targ);
-
 		sq = heap_alloc(sizeof(struct signal_queue));
 		sq->signal = sig;
 		sq->grant  = grant;
@@ -115,8 +115,6 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 		return image;
 	default :
 	case SIG_POLICY_ABORT:
-		printk("FIRE abort (%x %x %x)\n", sig, grant, targ);
-
 		return syscall_exit(image);
 	}
 }

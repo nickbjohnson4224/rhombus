@@ -137,8 +137,6 @@ thread_t *syscall_sctl(thread_t *image) {
 	uint32_t handle = image->edx;
 	uint32_t policy = image->edx;
 
-	printk("SCTL %x %x %x\n", action, signal, handle);
-
 	switch (action) {
 	default :
 	case 0:
@@ -158,7 +156,7 @@ thread_t *syscall_mail(thread_t *image) {
 	uint32_t signal = image->ecx % 32;
 	uint32_t source = image->edx;
 	uint32_t insert = image->eax;
-	struct signal_queue *sq;
+	struct signal_queue *sq, *found;
 	struct signal_queue **mailbox_in;
 	struct signal_queue **mailbox_out;
 
@@ -170,11 +168,39 @@ thread_t *syscall_mail(thread_t *image) {
 		sq = *mailbox_out;
 
 		if (!sq) {
-			image->eax = 0;
+			image->eax = -1;
 			return image;
 		}
 
-		*mailbox_out = (*mailbox_out)->next;
+		if (source) {
+			if (sq->source == source) {
+				*mailbox_out = (*mailbox_out)->next;
+			}
+			else {
+				for (found = NULL; sq->next; sq = sq->next) {
+					if (sq->next->source == source) {
+						found = sq->next;
+						sq->next = sq->next->next;
+	
+						if (*mailbox_in = found) {
+							*mailbox_in = sq;
+						}
+	
+						sq = found;
+						break;
+					}
+				}
+
+				if (!found) {
+					image->eax = -1;
+					return image;
+				}
+			}
+		}
+		else {
+			*mailbox_out = (*mailbox_out)->next;
+		}
+
 		if (!(*mailbox_out)) {
 			*mailbox_in = NULL;
 		}
@@ -185,9 +211,6 @@ thread_t *syscall_mail(thread_t *image) {
 
 		image->eax    = sq->grant;
 		heap_free(sq, sizeof(struct signal_queue));
-
-		printk("MAIL fetch (%x %x %x)\n", sq->signal, sq->grant, sq->source);
-
 	}
 	else {
 
@@ -206,9 +229,6 @@ thread_t *syscall_mail(thread_t *image) {
 			*mailbox_out = sq;
 			*mailbox_in = sq;
 		}
-
-		printk("MAIL queue (%x %x %x)\n", sq->signal, sq->grant, sq->source);
-
 	}
 
 	return image;

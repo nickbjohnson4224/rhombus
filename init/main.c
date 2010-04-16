@@ -9,38 +9,33 @@
 #include <flux/proc.h>
 #include <flux/driver.h>
 
+#include <driver/terminal.h>
+
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 int main() {
-	req_t *req = ralloc();
-	req->transid = 42;
+	int32_t pid;
+	device_t nulldev;
 
-	signal_policy(SIG_READ,  POLICY_QUEUE);
-	signal_policy(SIG_WRITE, POLICY_EVENT);
 	signal_policy(SIG_REPLY, POLICY_QUEUE);
 
-	fire(1, SIG_READ , req);
-	fire(1, SIG_WRITE, req);
-	fire(1, SIG_WRITE, req);
+	pid = fork();
 
-	while (1) {
-		req = signal_recv(SIG_REPLY);
-		if (req) {
-			rfree(req);
-		}
-		else {
-			break;
-		}
+	if (pid < 0) {
+		terminal.init(nulldev);
+		fire(-pid, SIG_REPLY, NULL);
+		for(;;);
 	}
 
-	req = signal_recv(SIG_READ);
+	while (!signal_recvs(SIG_REPLY, pid));
 
-	if (req->transid != 42) {
-		exit(0);
-	}
+	stdout = fsetup(pid, 0, "r");
+
+	printf("Flux Operating System 0.4a\n");
+	printf("Launching Terminal Driver...\n");
 
 	for(;;);
 }

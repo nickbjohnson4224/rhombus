@@ -1,5 +1,5 @@
 SUBDIR	:= driver
-DRIVERS := pci
+DRIVERS := pci terminal
 
 .PHONY: $(DRIVERS) clean
 

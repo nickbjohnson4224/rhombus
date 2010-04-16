@@ -28,7 +28,8 @@
 int    fire(uint32_t target, uint32_t signal, req_t *req);
 
 uint32_t signal_policy(uint32_t signal, uint32_t policy);
-req_t   *signal_recv(uint32_t signal);
+req_t   *signal_recv  (uint32_t signal);
+req_t   *signal_recvs (uint32_t signal, uint32_t source);
 
 typedef void (*sig_handler_t) (uint32_t caller, req_t *req);
 void signal_register(uint32_t signal, sig_handler_t handler);

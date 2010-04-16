@@ -26,7 +26,7 @@ struct schedule_queue {
  */
 
 void schedule_insert(struct thread *thread) {
-	
+
 	if (!schedule_queue.in) {
 		schedule_queue.out = thread;
 		schedule_queue.in  = thread;
@@ -61,6 +61,8 @@ void schedule_remove(struct thread *thread) {
 			if (schedule_queue.in == thread) {
 				schedule_queue.in = temp;
 			}
+
+			break;
 		}
 	}
 }
@@ -73,7 +75,7 @@ void schedule_remove(struct thread *thread) {
  */
 
 struct thread *schedule_next(void) {
-	struct thread *thread;
+	struct thread *thread, *temp;
 
 	thread = schedule_queue.out;
 
@@ -88,7 +90,16 @@ struct thread *schedule_next(void) {
 		return NULL;
 	}
 
-	schedule_insert(thread);
+	if (!schedule_queue.in) {
+		schedule_queue.out = thread;
+		schedule_queue.in  = thread;
+		thread->next = NULL;
+	}
+	else {
+		schedule_queue.in->next = thread;
+		schedule_queue.in = thread;
+		thread->next = NULL;
+	}
 
 	return thread;
 }
