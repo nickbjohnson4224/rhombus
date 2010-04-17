@@ -75,7 +75,7 @@ void schedule_remove(struct thread *thread) {
  */
 
 struct thread *schedule_next(void) {
-	struct thread *thread, *temp;
+	struct thread *thread;
 
 	thread = schedule_queue.out;
 

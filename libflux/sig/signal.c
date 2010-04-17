@@ -11,7 +11,7 @@
 #include <flux/proc.h>
 #include <flux/mmap.h>
 
-static volatile sig_handler_t signal_handler[MAXSIGNAL];
+volatile sig_handler_t signal_handler[MAXSIGNAL];
 
 void signal_init(void) {
 	extern void signal_handle(void);
@@ -38,7 +38,7 @@ struct request *signal_recvs(uint32_t signal, uint32_t source) {
 	req = ralloc();
 	grant = _mail(signal, source, 0);
 
-	if (grant == -1) {
+	if (grant & 1) {
 		return NULL;
 	}
 

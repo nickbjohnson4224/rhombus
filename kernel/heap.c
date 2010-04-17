@@ -17,7 +17,7 @@ struct heap_block {
  * of blocks in bucket n is 2^n pointer-sized words (4 bytes on x86).
  */
 
-static struct heap_block *heap_bucket[10];
+struct heap_block *heap_bucket[10];
 
 /****************************************************************************
  * heap_alloc
@@ -35,7 +35,7 @@ void *heap_alloc(size_t size) {
 	void *block;
 
 	/* find appropriately sized bucket */
-	bucket = -1;
+	bucket = 42;
 	for (i = 0; i < 10; i++) {
 		if (size < (sizeof(uintptr_t) * (1 << i))) {
 			bucket = i;
@@ -43,7 +43,7 @@ void *heap_alloc(size_t size) {
 		}
 	}
 
-	if (bucket == -1) {
+	if (bucket == 42) {
 		/* allocation was too large */
 		return NULL;
 	}

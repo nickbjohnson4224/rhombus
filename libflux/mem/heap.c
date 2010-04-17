@@ -65,12 +65,12 @@ struct slab_header {
 	uint16_t esize; /* Element size */
 };
 
-static uint16_t *bmap = (void*) _BMAP_START;
-static size_t bmap_top = 0;
-static struct slab_header *bucket[BLOCKSZ / sizeof(void*)];
-static struct slab_header *slab_deathrow = NULL;
+uint16_t *bmap = (void*) _BMAP_START;
+size_t bmap_top = 0;
+struct slab_header *bucket[BLOCKSZ / sizeof(void*)];
+struct slab_header *slab_deathrow = NULL;
 
-static uint32_t heap_mutex = 0;
+uint32_t heap_mutex = 0;
 
 static void heap_vfree(void* ptr);
 

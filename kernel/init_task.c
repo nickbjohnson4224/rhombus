@@ -11,7 +11,7 @@
 void init_task() {
 	extern uint32_t get_eflags(void);
 	process_t *init;
-	uint32_t i, entry;
+	uint32_t entry;
 	void *user_init;
 
 	init = process_get(1);

@@ -33,7 +33,6 @@ typedef void (*entry_t)();
 void *init(void *mboot_ptr, uint32_t mboot_magic) {
 	extern void halt(void);
 	uint32_t i;
-	uintptr_t *p;
 	thread_t *boot_image;
 
 	cleark(); 

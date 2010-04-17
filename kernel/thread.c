@@ -138,7 +138,6 @@ void thread_free(thread_t *thread) {
 
 void thread_init(void) {
 	uint16_t divisor;
-	thread_t *image;
 
 	/* set up interrupt descriptor table */
 	init_idt();
@@ -207,12 +206,17 @@ uintptr_t thread_stack_alloc(thread_t *thread, process_t *proc) {
 	uintptr_t i;
 	uintptr_t addr;
 
-	for (i = 0; i < 128; i++) {
+	for (addr = 0, i = 0; i < 128; i++) {
 		if ((proc->thread_stack_bmap[i / 32] & (1 << (i % 32))) == 0) {
 			proc->thread_stack_bmap[i / 32] |= (1 << (i % 32));
 			addr = KSPACE - (SEGSZ * 128) + (SEGSZ * i);
 			break;
 		}
+	}
+
+	if (!addr) {
+		/* out of threads */
+		return 0;
 	}
 
 	proc->thread[i] = thread;
@@ -244,7 +248,7 @@ void thread_stack_free(process_t *proc, uintptr_t seg) {
 	space_exmap(TMP_MAP, proc->space);
 
 	for (i = seg; i < seg + SEGSZ; i += PAGESZ) {
-		if (page_exget(TMP_MAP, i) & PF_PRES != 0) {
+		if ((page_exget(TMP_MAP, i) & PF_PRES) != 0) {
 			frame_free(page_ufmt(page_exget(TMP_MAP, i)));
 			page_exset(TMP_MAP, i, 0);
 		}

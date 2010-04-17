@@ -56,13 +56,16 @@ void mem_init() {
 	mem_map = (void*) (mboot->mmap_addr + KSPACE);
 	nmem_map = mboot->mmap_length / sizeof(struct memory_map);
 
+	memsize = 0;
+
 	for (i = 0; i < nmem_map; i++) {
 		if (mem_map[i].base_addr_low == 0x100000) {
 			memsize = mem_map[i].length_low + 0x100000;
-			if (memsize < 0x400000) memsize = 0x400000;
 			break;
 		}
 	}
+
+	if (memsize < 0x400000) memsize = 0x400000;
 
 	/* initialize frame allocator */
 	frame_init(memsize);

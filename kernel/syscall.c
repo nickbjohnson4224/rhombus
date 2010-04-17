@@ -9,7 +9,7 @@
 
 /***** IRQ HANDLERS *****/
 
-static uint16_t irq_holder[256];
+uint16_t irq_holder[256];
 
 /* Handles IRQ 0, and advances a simple counter used as a clock */
 /* If an IRQ was held, it is redirected now */
@@ -57,11 +57,11 @@ thread_t *fault_page(thread_t *image) {
 	cr2 = get_cr2();
 
 	/* If in kernelspace, panic */
-	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */
+//	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */
 		printk("page fault at %x, ip = %x frame %x\n", 
 			cr2, image->eip, page_get(cr2));
 		panic("page fault exception");
-	}
+//	}
 	#endif
 
 	return thread_fire(image, image->proc->pid, SSIG_PAGE, 0);
@@ -183,7 +183,7 @@ thread_t *syscall_mail(thread_t *image) {
 						found = sq->next;
 						sq->next = sq->next->next;
 	
-						if (*mailbox_in = found) {
+						if (*mailbox_in == found) {
 							*mailbox_in = sq;
 						}
 	
@@ -290,7 +290,6 @@ thread_t *syscall_exit(thread_t *image) {
 }
 
 thread_t *syscall_pctl(thread_t *image) {
-	extern uint32_t can_use_fpu;
 	uint32_t flags = image->eax;
 	uint32_t mask  = image->edx;
 	uint8_t irq;

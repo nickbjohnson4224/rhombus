@@ -19,7 +19,6 @@
 
 static void driver_start(FILE **file, struct driver_interface *driver) {
 	int32_t pid;
-	size_t i;
 	device_t nulldev;
 
 	signal_policy(SIG_REPLY, POLICY_QUEUE);

@@ -22,15 +22,15 @@ static void keyboard_halt(void);
 static void keyboard_read(uint32_t caller, req_t *req);
 static void keyboard_hand(uint32_t caller, req_t *req);
 
-static const char dnkmap[] = 
+const char dnkmap[] = 
 "\0\0331234567890-=\b\tqwertyuiop[]\n\0asdfghjkl;\'`\0\\zxcvbnm,./\0*\0 ";
-static const char upkmap[] = 
+const char upkmap[] = 
 "\0\033!@#$%^&*()_+\b\0QWERTYUIOP{}\n\0ASDFGHJKL:\"~\0|ZXCVBNM<>?\0*\0 ";
 
-static uint32_t mutex_buffer;
-static volatile char buffer[1024];
-static volatile size_t buffer_top;
-static volatile bool shift = false;
+uint32_t mutex_buffer;
+volatile char buffer[1024];
+volatile size_t buffer_top;
+volatile bool shift = false;
 
 struct driver_interface keyboard = {
 	keyboard_init,
@@ -40,7 +40,6 @@ struct driver_interface keyboard = {
 };
 
 static void keyboard_init(device_t selector) {
-	uint8_t scan;
 
 	signal_policy(SSIG_IRQ, POLICY_EVENT);
 	signal_policy(SIG_READ, POLICY_EVENT);
