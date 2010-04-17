@@ -24,7 +24,7 @@ int fire(uint32_t target, uint32_t signal, struct request *req) {
 }
 
 int tail(uint32_t target, uint32_t signal, struct request *req) {
-	return _fire(target, signal, req, true);
+	return _fire(target, signal, req, false);
 }
 
 uint32_t signal_policy(uint32_t signal, uint32_t policy) {
@@ -81,5 +81,3 @@ void signal_redirect(uint32_t source, uint32_t signal, void *grant) {
 		}
 	}
 }
-
-

@@ -80,7 +80,7 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 			new_image->ds      = 0x23;
 			new_image->cs      = 0x1B;
 			new_image->ss      = 0x23;
-			new_image->eflags  = p_targ->thread[0]->eflags;
+			new_image->eflags  = p_targ->thread[0]->eflags | 0x3000;
 			new_image->stack   = thread_stack_alloc(new_image, p_targ);
 			new_image->useresp = new_image->stack + SEGSZ;
 			new_image->proc    = p_targ;
@@ -249,8 +249,6 @@ void thread_stack_free(process_t *proc, uintptr_t seg) {
 			page_exset(TMP_MAP, i, 0);
 		}
 	}
-
-	segment_free(seg);
 }
 
 /****************************************************************************

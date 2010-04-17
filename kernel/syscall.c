@@ -17,6 +17,7 @@ static uint16_t irq_holder[256];
 uint32_t tick = 0;
 
 thread_t *pit_handler(thread_t *image) {
+
 	tick++;
 
 	/* Switch to next scheduled task */
@@ -110,9 +111,6 @@ thread_t *syscall_fire(thread_t *image) {
 	uint32_t   targ  = image->eax;
 	uint32_t   sig   = image->ecx;
 	uint32_t   grant = image->ebx;
-	uint32_t   drop  = image->edx;
-
-	thread_t *old_image;
 
 	if (targ == 0) {
 		image->eax = 0;
@@ -127,19 +125,7 @@ thread_t *syscall_fire(thread_t *image) {
 		image->eax = 0;
 	}
 
-	old_image = image;
-	image = thread_fire(image, targ, sig, grant);
-
-	if (drop) {
-		if (image == old_image) {
-			image = thread_switch(image, schedule_next());
-		}
-
-		schedule_remove(old_image);
-		thread_free(old_image);
-	}
-
-	return image;
+	return thread_fire(image, targ, sig, grant);
 }
 
 thread_t *syscall_drop(thread_t *image) {

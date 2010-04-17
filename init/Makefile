@@ -3,7 +3,7 @@ SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
 SUBDIR	:= init
 TARGET	:= init
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -lterminal -lc -lflux -T$(BUILDDIR)/inc/link.ld
+LDFLAGS += -lkeyboard -lterminal -lc -lflux -T$(BUILDDIR)/inc/link.ld
 ASFLAGS := -felf
 
 all: $(TARGET)

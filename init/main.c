@@ -10,49 +10,43 @@
 #include <flux/driver.h>
 
 #include <driver/terminal.h>
+#include <driver/keyboard.h>
 
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-int main() {
+static void driver_start(FILE **file, struct driver_interface *driver) {
 	int32_t pid;
+	size_t i;
 	device_t nulldev;
-	uint32_t mutex = 0;
 
 	signal_policy(SIG_REPLY, POLICY_QUEUE);
 
 	pid = fork();
 
 	if (pid < 0) {
-		terminal.init(nulldev);
+		driver->init(nulldev);
 		fire(-pid, SIG_REPLY, NULL);
 		for(;;);
 	}
 
 	while (!signal_recvs(SIG_REPLY, pid));
 
-	stdout = fsetup(pid, 0, "r");
+	*file = fsetup(pid, 0, "r");
+}
+
+int main() {
+	driver_start(&stdout, &terminal);
 
 	printf("Flux Operating System 0.4a\n");
+	printf("Copyright 2010 Nick Johnson\n\n");
+
 	printf("Launching Terminal Driver...\n");
-	
-	printf("\n");
-	printf("testing mutexen:\n");
 
-	mutex_lock(&mutex);
-	printf("mutex locked\n");
-	printf("mutex state: %s\n", mutex_test(&mutex) ? "locked" : "unlocked");
-	printf("mutex lock attempt: %s\n", mutex_lock(&mutex) ? "success" : "failure");
-
-	mutex_free(&mutex);
-	printf("mutex freed\n");
-	printf("mutex state: %s\n", (mutex_test(&mutex) ? "locked" : "unlocked"));
-
-	mutex_spin(&mutex);
-	printf("mutex spinlocked\n");
-	printf("mutex state: %s\n", mutex_test(&mutex) ? "locked" : "unlocked");
+	printf("Launching Keyboard Driver...\n");
+	driver_start(&stdin, &keyboard);
 
 	for(;;);
 }

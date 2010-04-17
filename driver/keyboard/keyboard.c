@@ -27,6 +27,7 @@ static const char dnkmap[] =
 static const char upkmap[] = 
 "\0\033!@#$%^&*()_+\b\0QWERTYUIOP{}\n\0ASDFGHJKL:\"~\0|ZXCVBNM<>?\0*\0 ";
 
+static uint32_t mutex_buffer;
 static volatile char buffer[1024];
 static volatile size_t buffer_top;
 static volatile bool shift = false;
@@ -39,8 +40,13 @@ struct driver_interface keyboard = {
 };
 
 static void keyboard_init(device_t selector) {
-	sigregister(SSIG_IRQ, keyboard_hand);
-	sigregister(SIG_READ, keyboard_read);
+	uint8_t scan;
+
+	signal_policy(SSIG_IRQ, POLICY_EVENT);
+	signal_policy(SIG_READ, POLICY_EVENT);
+
+	signal_register(SSIG_IRQ, keyboard_hand);
+	signal_register(SIG_READ, keyboard_read);
 
 	rirq(1);
 }
@@ -59,8 +65,7 @@ static void keyboard_read(uint32_t caller, req_t *req) {
 
 	while (!buffer_top) sleep();
 
-	sigblock(true, SSIG_IRQ);
-	sigblock(true, VSIG_REQ);
+	mutex_spin(&mutex_buffer);
 
 	if (req->datasize > buffer_top) {
 		req->datasize = buffer_top;
@@ -73,8 +78,7 @@ static void keyboard_read(uint32_t caller, req_t *req) {
 		buffer_top = 0;
 	}
 
-	sigblock(false, VSIG_REQ);
-	sigblock(false, SSIG_IRQ);
+	mutex_free(&mutex_buffer);
 
 	req->format = REQ_WRITE;
 	tail(caller, SIG_REPLY, req_cksum(req));
@@ -82,11 +86,10 @@ static void keyboard_read(uint32_t caller, req_t *req) {
 
 static void keyboard_hand(uint32_t caller, struct request *req) {
 	uint8_t scan;
-	
-	sigblock(true, SSIG_IRQ);
-	sigblock(true, VSIG_REQ);
 
 	scan = inb(0x60);
+
+	mutex_spin(&mutex_buffer);
 
 	if (scan & 0x80) {
 		if (dnkmap[scan & 0x7F] == '\0') {
@@ -99,14 +102,12 @@ static void keyboard_hand(uint32_t caller, struct request *req) {
 	}
 
 	else {
-		buffer[buffer_top] = ((shift) ? upkmap[scan] : dnkmap[scan]);
-		buffer_top++;
+		buffer[buffer_top++] = ((shift) ? upkmap[scan] : dnkmap[scan]);
 
 		fwrite((char*) &buffer[buffer_top-1], 1, 1, stdout);
 	}
 
-	sigblock(false, VSIG_REQ);
-	sigblock(false, SSIG_IRQ);
+	mutex_free(&mutex_buffer);
 
 	return;
 }
