@@ -335,7 +335,6 @@ static void ata_init(device_t dev) {
 		printf((ata_drive[dr].flags & FLAG_SATA) ? "S" : "P");
 		printf((ata_drive[dr].flags & FLAG_ATAPI) ? "ATAPI " : "ATA ");
 		printf((ata_drive[dr].flags & FLAG_LONG) ? "LBA48 " : "LBA28 ");
-		printf((ata_drive[dr].flags & FLAG_DMA) ? "DMA " : "");
 		printf("\n");
 
 		printf("\tsize: %d KB (%d sectors)\n", 

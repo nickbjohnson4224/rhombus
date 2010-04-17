@@ -1,5 +1,5 @@
 SUBDIR	:= driver
-DRIVERS := pci terminal keyboard
+DRIVERS := pci terminal keyboard ata
 
 .PHONY: $(DRIVERS) clean
 

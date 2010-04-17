@@ -38,8 +38,6 @@ static void ata_pio_read(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 	size_t i;
 	bool lba48 = false;
 
-	sigblock(true, VSIG_REQ);
-
 	/* send LBA to controller */
 	lba48 = ata_send_lba(drive, sector);
 
@@ -56,19 +54,17 @@ static void ata_pio_read(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 		while (inb(ata_base[drive] + REG_STAT) & STAT_BUSY);
 		buffer[i] = inw(ata_base[drive] + REG_DATA);
 	}
-
-	sigblock(false, VSIG_REQ);
 }
 
 static void atapi_pio_read(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 	uint16_t atapi_cmd[6];
+	uint32_t old_policy;
 	size_t i;
-
-	sigblock(true, VSIG_REQ);
 
 	/* Enable IRQs */
 	rirq(ata_irq[drive]);
-	sighold(SSIG_IRQ);
+	old_policy = signal_policy(SSIG_IRQ, POLICY_QUEUE);
+
 	outw(ata_ctrl[drive] + REG_CTRL, 0);
 
 	/* ATAPI command packet */
@@ -95,11 +91,7 @@ static void atapi_pio_read(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 		outw(ata_base[drive] + REG_DATA, atapi_cmd[i]);
 	}
 
-	printf("lies\n");
-
-	sigpull(SSIG_IRQ);
-
-	printf("size\n");
+	signal_wait(SSIG_IRQ, false);
 
 	while (inb(ata_base[drive] + REG_STAT) & STAT_BUSY);
 
@@ -107,22 +99,16 @@ static void atapi_pio_read(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 		buffer[i] = inw(ata_base[drive] + REG_DATA);
 	}
 
-	sigpull(SSIG_IRQ);
+	signal_wait(SSIG_IRQ, false);
+
 	while (inb(ata_base[drive] + REG_STAT) & STAT_BUSY);
 
-	printf("pies\n");
-
-	sigfree(SSIG_IRQ);
-
-	sigblock(false, VSIG_REQ);
+	signal_policy(SSIG_IRQ, old_policy);
 }
 
 static void ata_pio_write(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 	size_t i;
 	bool lba48 = false;
-
-	/* must not be interrupted */
-	sigblock(true, VSIG_REQ);
 
 	lba48 = ata_send_lba(drive, sector);
 
@@ -143,8 +129,6 @@ static void ata_pio_write(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 	/* flush write cache */
 	outb(ata_base[drive] + REG_CMD, CMD_CACHE_FLUSH);
 	while (inb(ata_base[drive] + REG_STAT) & STAT_BUSY);
-
-	sigblock(false, VSIG_REQ);
 }
 
 static void atapi_pio_write(uint8_t drive, uint64_t sector, uint16_t *buffer) {

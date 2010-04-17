@@ -4,8 +4,8 @@ vgaromimage: file=/usr/share/bochs/VGABIOS-lgpl-latest
 ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x13f0, irq=14
 ata0-master: type=cdrom, path="$BUILDDIR/run/flux.iso", status=inserted
 #image="$BUILDDIR/run/flux.iso", status=inserted
-#floppya: 1_44="$BUILDDIR/run/floppy.img", status=inserted
-boot: cdrom
+floppya: 1_44="$BUILDDIR/run/floppy.img", status=inserted
+boot: floppy
 log: /dev/stdout
 mouse: enabled=0
 clock: sync=none
