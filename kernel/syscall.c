@@ -53,15 +53,15 @@ thread_t *fault_page(thread_t *image) {
 	extern uint32_t get_cr2(void);
 	uint32_t cr2;
 
-	/* Get faulting address from register CR2 */
-	cr2 = get_cr2();
-
 	/* If in kernelspace, panic */
-//	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */
+	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */	
+		/* Get faulting address from register CR2 */
+		cr2 = get_cr2();
+
 		printk("page fault at %x, ip = %x frame %x\n", 
 			cr2, image->eip, page_get(cr2));
 		panic("page fault exception");
-//	}
+	}
 	#endif
 
 	return thread_fire(image, image->proc->pid, SSIG_PAGE, 0);

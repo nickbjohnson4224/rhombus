@@ -76,6 +76,7 @@ void *x86_memclr(void *s, size_t size);
 bool x86_mutex_lock(uint32_t *mutex);
 bool x86_mutex_test(uint32_t *mutex);
 void x86_mutex_spin(uint32_t *mutex);
+void x86_mutex_wait(uint32_t *mutex);
 void x86_mutex_free(uint32_t *mutex);
 
 #define arch_memcpy x86_memcpy
@@ -84,6 +85,7 @@ void x86_mutex_free(uint32_t *mutex);
 #define mutex_lock x86_mutex_lock
 #define mutex_test x86_mutex_test
 #define mutex_spin x86_mutex_spin
+#define mutex_wait x86_mutex_spin
 #define mutex_free x86_mutex_free
 
 #endif/*ASM*/

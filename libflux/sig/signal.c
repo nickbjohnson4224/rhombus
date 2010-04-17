@@ -51,6 +51,25 @@ struct request *signal_recv(uint32_t signal) {
 	return signal_recvs(signal, 0);
 }
 
+struct request *signal_waits(uint32_t signal, uint32_t source, bool dosleep) {
+	struct request *req;
+
+	req = NULL;
+
+	while (!req) {
+		req = signal_recv(signal);
+		if (dosleep) {
+			sleep();
+		}
+	}
+
+	return req;
+}
+
+struct request *signal_wait(uint32_t signal, bool dosleep) {
+	return signal_waits(signal, 0, dosleep);
+}
+
 void signal_register(uint32_t signal, sig_handler_t handler) {
 	signal_handler[signal] = handler;
 }

@@ -30,10 +30,7 @@ size_t read(struct file *fd, void *buf, size_t size, uint64_t offset) {
 
 		fire(fd->target, SIG_READ, req_cksum(req));
 
-		res = NULL;
-		while (!res) {
-			res = signal_recvs(SIG_REPLY, fd->target);
-		}
+		res = signal_waits(SIG_REPLY, fd->target, false);
 
 		if (res->format == REQ_ERROR) {
 			rfree(res);

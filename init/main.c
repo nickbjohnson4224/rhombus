@@ -31,7 +31,7 @@ static void driver_start(FILE **file, struct driver_interface *driver) {
 		for(;;);
 	}
 
-	while (!signal_recvs(SIG_REPLY, pid));
+	signal_waits(SIG_REPLY, pid, true);
 
 	*file = fsetup(pid, 0, "r");
 }

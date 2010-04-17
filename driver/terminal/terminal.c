@@ -25,10 +25,10 @@ static void terminal_init (device_t selector);
 static void terminal_halt (void);
 static void terminal_write(uint32_t caller, req_t *req);
 
-uint16_t *vbuf;
-uint16_t c_base = 0;
-uint16_t cursor = 0;
-uint16_t buffer = 0;
+static uint16_t *vbuf;
+static uint16_t c_base = 0;
+static uint16_t cursor = 0;
+static uint16_t buffer = 0;
 static void char_write(char c);
 
 static uint32_t m_vbuf = 0;
