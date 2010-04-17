@@ -1,4 +1,4 @@
-Flux Operating System 0.2a
+Flux Operating System 0.4a
 User Manual Section 1 - ABI
 ==============================
 
@@ -8,14 +8,13 @@ Contents:
 2 - Memory Management
 3 - Interprocess Communication
 4 - Driver Interfaces
-5 - Executable Loading
 
 1 - Process Control
 ==============================
 Flux provides the same two basic system calls for process creation and 
 destruction as UNIX: fork and exit. However, a few small differences exist.
 
-fork: int 0x66
+fork: int 0x48
 ------------------------------
 - takes no arguments
 - returns either
@@ -27,7 +26,7 @@ fork: int 0x66
 	- same process flags
 	- new PID and address space
 
-exit: int 0x67
+exit: int 0x49
 ------------------------------
 - takes one argument
 	- ecx: exit value page
@@ -37,10 +36,10 @@ exit: int 0x67
 	- sig 7: SSIG_DEATH
 	- exit value page granted
 
-There are also three system calls used to control the state of the current
-process. These calls are ctrl, hand, and info.
+There is also a system call that controls the state of the current process,
+called pctl.
 
-ctrl: int 0x63
+pctl: int 0x4A
 ------------------------------
 - takes two arguments
 	- eax: flag values
@@ -54,49 +53,11 @@ ctrl: int 0x63
 	- bit 3: 		CTRL_SUPER: super (super only)
 	- bit 4: 		CTRL_PORTS: port i/o (super only)
 	- bit 5: 		CTRL_IRQRD: set irq redirect (super only)
-	- bit 6: 		CTRL_FLOAT: use FPU/SSE extensions
+	- bit 6:		unassigned
 	- bit 7: 		CTRL_RNICE: change scheduling priority
 	- bits 8-11: 	scheduling priority (bit 8 super only)
-	- bit 12: 		CTRL_CBLOCK: clear CTRL_BLOCK when catching signal
-	- bit 13:		CTRL_CCLEAR: set CTRL_CLEAR when catching signal
-	- bit 14:		CTRL_IRQST: unblock irq signals only
-	- bit 15:		unassigned
-	- bit 16:		CTRL_DBLOCK: clear CTRL_BLOCK when dropping
-	- bit 17:		CTRL_DCLEAR: set CTRL_CLEAR when dropping
-	- bits 18-19:	unassigned
-	- bit 20:		CTRL_ASYNC: signals run as separate threads
-	- bit 21:		CTRL_MULTI: enable multiple processors
-	- bit 22:		CTRL_QUEUE: queue signals if possible in kernel
-	- bit 23:		CTRL_MMCLR:	clear mapped pages (super only)
+	- bits 12-23:	unassigned
 	- bits 24-31: 	irq number (super only)
-
-hand: int 0x62
-------------------------------
-- takes one argument
-	- eax: new handler
-- returns previous handler
-- sets signal hander for current process
-
-info: int 0x64
-------------------------------
-- takes one argument
-	- eax: selector
-- returns requested data
-- assigned selectors
-	- 0: 	INFO_CPID:	current PID
-	- 1: 	INFO_PPID:	parent PID
-	- 2: 	INFO_TICK:	ticks elapsed
-	- 3: 	INFO_ABIV:	kernel abi version
-	- 4: 	INFO_USER:	highest user address
-	- 5: 	INFO_CTRL:	enabled ctrl flags
-	- 6: 	INFO_MMAP:	enabled mmap flags
-	- 7: 	INFO_ARCH:	architecture ID
-		- 0: 	unknown
-		- 1: 	x86-32
-		- 2: 	x86-64
-	- 8: 	INFO_PAGE:	page size
-	- 9: 	INFO_CPUN:	number of logical CPUs
-	- 10:	INFO_LOAD:	system load
 
 2 - Memory Management
 ==============================
@@ -106,7 +67,7 @@ stability and security reasons. However, this does not mean it cannot take
 advantage of the paging system it requires: signals can grant pages to other 
 processes with the help of this call.
 
-mmap: int 0x65
+mmap: int 0x50
 ------------------------------
 - takes three arguments
 	- ebx: virtual address
@@ -132,15 +93,15 @@ mmap: int 0x65
 3 - Interprocess Communication
 ==============================
 Flux has only one basic IPC facility: signals. Signals can be described as a 
-form of asynchronous unqueued pure message passing, with an interface similar
-to UNIX signals, which create a preemptive handler context in the target 
-process. Signals are also used by the kernel to notify processes of internal
-exceptions, IRQ firings, and other events. Signals can also be compared closely
-to interrupts.
+form of asynchronous message passing with event driven capabilities. Along
+with general interprocess communication, signals are also used by the kernel 
+to notify processes of internal exceptions, IRQ firings, and other events.
+Signals are the only way to create threads other than the main thread that is
+created when forking processes.
 
-Two system calls are needed to work with signals: fire and drop.
+Four system calls are used to work with signals: fire, drop, sctl, and mail.
 
-fire: int 0x60
+fire: int 0x40
 ------------------------------
 - takes three arguments
 	- eax: target process
@@ -151,12 +112,17 @@ fire: int 0x60
 	- edx: flags
 		- bit 0: FIRE_TAIL:	drop before firing
 - returns 0 on success, negative on failure
-- fires a signal to another process
-	- signal is created in new signal handling context
-	- esi set to calling PID
-	- ebx set to granted page
-	- edi set to signal number
-	- ebp set to previous context image address (read-only)
+- action depends on signal policy (see sctl)
+	- policy is POLICY_ABORT
+		- exit current process
+	- policy is POLICY_EVENT
+		- new thread is created in target process
+		- esi set to calling PID
+		- ebx set to granted page
+		- edi set to signal number
+		- instruction pointer set to signal handle
+	- policy is POLICY_QUEUE or no signal handle
+		- signal information added to signal queue
 - grants page if non-null
 - currently assigned signals:
 	- 0: SSIG_FAULT:	general exception
@@ -174,13 +140,41 @@ fire: int 0x60
 	- 20: SIG_PING:		ping request
 	- 32: SIG_REPLY:	generic reply
 
-drop: int 0x61
+drop: int 0x41
 ------------------------------
 - takes no arguments
 - does not return
-- if granted page is unmapped, it is freed
-- signal handling context destroyed
-- preempted context resumed immediately
+- if granted page has not been mapped, it is freed
+- signal handling thread destroyed
+
+sctl: int 0x42
+------------------------------
+- takes three arguments
+	- eax: selector
+	- ecx: signal
+	- edx: value
+- returns previous value at selector
+- currently assigned selectors:
+	- 0: signal policy
+		- each signal can be set to three possible policies:
+			- 0: POLICY_ABORT: exit process on reception
+			- 1: POLICY_EVENT: call signal handle on reception
+			- 2: POLICY_QUEUE: redirect to signal queue
+	- 1: signal handle
+		- address of signal handle function
+
+mail: int 0x43
+------------------------------
+- takes three arguments
+	- eax: operation
+	- ecx: signal
+	- edx: source search (if nonzero)
+- if operation is 0
+	- returns first signal of type signal with source equal to edx in queue
+	- if edx is zero, returns first signal of type signal in queue
+- if operation is nonzero
+	- adds signal used to spawn current thread to queue
+	- returns nothing
 
 4 - Driver Interfaces
 ==============================
@@ -189,7 +183,7 @@ spawns a process called devd, the device daemon, which analyzes the hardware
 and spawns drivers. Drivers have the CTRL_SUPER flag set, which allows them to 
 request port access and map frames directly, through the CTRL_PORTS and 
 MMAP_FRAME flags. They can also request that a single IRQ be redirected as 
-signal 1 to them. These things are managed though interfaces in libdriver.
+signal 1 to them. These things are managed though interfaces in libflux.
 
 Drivers are launched during init by a service called the device daemon, or
 devd. It detects all of the devices in the system automatically, and loads
@@ -237,14 +231,3 @@ action that should be taken by the driver. Here is a draft of the format:
 When an action finishes, the driver should reply with a signal which has a 
 granted page with a header containing the same transaction ID as was sent, 
 using signal 32: SIG_REPLY.
-
-5 - Executable Loading
-==============================
-The Flux kernel is clearly lacking in an exec system call. It also does not 
-have adequate facilities for drivers to load executables for processes. So, all
-executables are loaded directly by the calling process, with help from a 
-library. Linking with different of these libraries, or "libexec"s, enables 
-loading of different executable formats. The native format for Flux binaries 
-is ELF, described in the UNIX System V ABI documentataion, but a programmer may
-use any format he or she wishes. Execution is managed through interfaces in 
-libexec. A standard libexec is part of the libc.
