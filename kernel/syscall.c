@@ -4,6 +4,7 @@
  */
 
 #include <util.h>
+#include <elf.h>
 #include <time.h>
 #include <space.h>
 
@@ -331,7 +332,18 @@ thread_t *syscall_pctl(thread_t *image) {
 	return image;
 }
 
-thread_t *syscall_kctl(thread_t *image) {
+thread_t *syscall_exec(thread_t *image) {
+
+	if (elf_check((void*) image->eax)) {
+		image->eax = -1;
+		return image;
+	}
+
+	mem_free(0, ESPACE);
+
+	image->eip = elf_load((void*) image->eax);
+	image->useresp = image->stack + SEGSZ;
+
 	return image;
 }
 

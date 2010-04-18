@@ -172,7 +172,7 @@ thread_t *syscall_mail(thread_t *image); /* recieve signals */
 thread_t *syscall_fork(thread_t *image); /* create processes */
 thread_t *syscall_exit(thread_t *image); /* exit from processes */
 thread_t *syscall_pctl(thread_t *image); /* query process metadata */
-thread_t *syscall_kctl(thread_t *image); /* query kernel metadata */
+thread_t *syscall_exec(thread_t *image); /* execute new process */
 
 thread_t *syscall_mmap(thread_t *image); /* manage memory */
 thread_t *syscall_mctl(thread_t *image); /* query memory subsystem */

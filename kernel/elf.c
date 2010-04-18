@@ -20,11 +20,11 @@ void elf_load_segment(uint8_t *src, elf_ph_t *seg) {
 
 	/* Get pointer to destination */
 	dest_base = (uint8_t*) seg->p_vaddr;
-	dest_limit = ((uint32_t) dest_base + seg->p_memsz + 0x1000) &~ 0xFFF;
+	dest_limit = ((uint32_t) dest_base + seg->p_memsz + PAGESZ) &~ 0xFFF;
 
 	/* Allocate adequate memory */
 	i = ((uint32_t) dest_base) &~ 0xFFF;
-	for (; i < dest_limit; i += 0x1000) {
+	for (; i < dest_limit; i += PAGESZ) {
 		page_set(i, page_fmt(frame_new(), PF_USER | PF_RW | PF_PRES));
 	}
 

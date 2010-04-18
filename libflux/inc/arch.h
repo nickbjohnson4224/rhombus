@@ -101,9 +101,8 @@ void x86_mutex_free(uint32_t *mutex);
 #define HEAP_MXBRK	0x20000000
 
 /* These must remain in order */
-#define ESPACE	0xEC000000	/* Temporary space for exec data */
-#define SSPACE	0xECF00000	/* Stack space (grows down from next address) */
-#define LSPACE	0xED000000	/* Space for exec bootstrap */
+#define ESPACE	0xC0000000	/* Exec persistent data */
+#define SSPACE	0xD0000000	/* Stack space */
 #define KSPACE 	0xF0000000	/* Kernel space */
 
 #endif/*ARCH_X86*/

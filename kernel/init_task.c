@@ -23,20 +23,14 @@ void init_task() {
 	/* Check init */
 	if (elf_check(user_init)) panic("init is not valid ELF");
 
-	/* allocate stack space */
-	mem_alloc(USTACK_BSE, USTACK_TOP - USTACK_BSE, PF_USER | PF_RW);
-
-	/* Load executable */
-	entry = elf_load(user_init);
-
 	/* Setup process image */
 	init->thread[0]->proc    = init;
-	init->thread[0]->useresp = USTACK_INI;
+	init->thread[0]->stack   = thread_stack_alloc(init->thread[0], init);
+	init->thread[0]->useresp = init->thread[0]->stack + SEGSZ;
 	init->thread[0]->esp     = (uint32_t) &init->thread[0]->num;
-	init->thread[0]->ebp     = USTACK_INI;
 	init->thread[0]->ss      = 0x23;
 	init->thread[0]->ds      = 0x23;
-	init->thread[0]->eip     = entry;
+	init->thread[0]->eip     = elf_load(user_init);
 	init->thread[0]->cs      = 0x1B;
 	init->thread[0]->eflags  = get_eflags() | 0x3200; 	/* IF, IOPL=3 */
 	tss_set_esp((uintptr_t) &init->thread[0]->tss_start);

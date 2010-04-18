@@ -289,6 +289,7 @@ int vfprintf(FILE *stream, const char *format, va_list ap) {
 	char buffer[13];
 	char *fmtbuffer;
 	const char *str;
+	char c;
 
 	fmtbuffer = malloc(sizeof(char) * strlen(format));
 	fbt = 0;
@@ -317,6 +318,11 @@ int vfprintf(FILE *stream, const char *format, va_list ap) {
 			case 's':
 				str = va_arg(ap, const char*);
 				fwrite(str, strlen(str), sizeof(char), stream);
+				break;
+			case 'c':
+				c = va_arg(ap, int);
+				fwrite(&c, 1, sizeof(char), stream);
+				break;
 			}
 			i++;
 		}

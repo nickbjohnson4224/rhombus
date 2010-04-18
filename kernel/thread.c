@@ -157,7 +157,7 @@ void thread_init(void) {
 	register_int(0x48, syscall_fork);
 	register_int(0x49, syscall_exit);
 	register_int(0x4A, syscall_pctl);
-	register_int(0x4B, syscall_kctl);
+	register_int(0x4B, syscall_exec);
 
 	register_int(0x50, syscall_mmap);
 	register_int(0x51, syscall_mctl);

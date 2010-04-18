@@ -69,7 +69,7 @@ INTN	67	; mail
 INTN	72	; fork
 INTN	73	; exit
 INTN	74	; pctl
-INTN	75	; kctl
+INTN	75	; exec
 
 INTN	80	; mmap
 INTN	81	; mctl
