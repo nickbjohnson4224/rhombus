@@ -1,7 +1,7 @@
 BUILDDIR=$(PWD)
 
 LIB_DIRS  = driver
-BIN_DIRS  = kernel init exectest
+BIN_DIRS  = kernel init
 
 CC := clang
 LD := /usr/flux-cross/bin/i586-elf-ld
@@ -63,8 +63,6 @@ image:	all
 	sudo run/image.sh
 
 test:	all cd
-	strip bin/exectest
-	cat bin/exectest run/pad.img > run/hd.img
 	export BUILDDIR
 	run/run.sh
 

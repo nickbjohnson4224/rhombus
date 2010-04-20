@@ -21,22 +21,9 @@
 #include <stdio.h>
 #include <ctype.h>
 
+#include "inc/tar.h"
+
 FILE *disk;
-
-uint32_t mutex_i;
-int i;
-char *symbols = "AV.";
-
-void thread_thingy(uint32_t caller, req_t *req) {
-	int v;
-	
-	mutex_spin(&mutex_i);
-	v = i;
-	i++;
-	mutex_free(&mutex_i);
-
-	while (1) printf("%c", symbols[v % 3]);
-}
 
 void driver_start(FILE **file, struct driver_interface *driver, device_t dev) {
 	int32_t pid;
@@ -56,22 +43,10 @@ void driver_start(FILE **file, struct driver_interface *driver, device_t dev) {
 	*file = fsetup(pid, 0, "r");
 }
 
-void printx(const char *str, size_t size) {
-	size_t i;
-
-	for (i = 0; i < size; i++) {
-		if (!isprint(str[i])) {
-			printf("\\%x", str[i]);
-		}
-		else {
-			printf("%c", str[i]);
-		}
-	}
-}
-
 int main() {
 	device_t nulldev;
-	char buffer[8000];
+	struct tar_file *boot_image;
+	int i;
 
 	nulldev.type = -1;
 
@@ -82,25 +57,14 @@ int main() {
 
 	printf("Launching Terminal Driver...\n");
 
-	printf("Launching Keyboard Driver...\n");
-	driver_start(&stdin, &keyboard, nulldev);
+	printf("Reading Boot Image...\n");
+	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);
 
-	printf("Launching ATA Driver...\n");
-	driver_start(&disk, &ata, pci_findb(CLASS_STORAGE, PCI_CLASS, nulldev));
-
-	printf("\nReading disk:\n");
-	fread (buffer, sizeof(char), 8000, disk);
-	fwrite(buffer, sizeof(char), 10, stdout);
-
-	signal_policy(SIG_REPLY, POLICY_QUEUE);
-
-	if (fork() < 0) {
-		exec((uint8_t*) buffer, 8000);
+	for (i = 0; boot_image[i].name; i++) {
+		printf("%s at %x size %d:\n", boot_image[i].name,
+			boot_image[i].start, boot_image[i].size);
+		fwrite(boot_image[i].start, sizeof(char), boot_image[i].size, stdout);
 	}
-
-	signal_wait(SIG_REPLY, false);
-
-	printf("!");
 
 	for(;;);
 }
