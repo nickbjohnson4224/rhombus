@@ -8,8 +8,9 @@
 #include <flux/signal.h>
 #include <flux/request.h>
 
-size_t read(struct file *fd, void *buf, size_t size, uint64_t offset) {
+size_t read(int fd, void *buf, size_t size, uint64_t offset) {
 	struct request *req, *res;
+	struct file *file = fdget(fd);
 	uint8_t *data = (void*) buf;
 	uint16_t datasize;
 	size_t oldsize, i = 1;
@@ -23,14 +24,14 @@ size_t read(struct file *fd, void *buf, size_t size, uint64_t offset) {
 		datasize = (size > REQSZ) ? REQSZ : size;
 
 		req_setbuf(req, STDOFF, datasize);
-		req->resource = fd->resource;
+		req->resource = file->resource;
 		req->transid  = i;
 		req->format   = REQ_READ;
 		req->fileoff  = offset;
 
-		fire(fd->target, SIG_READ, req_cksum(req));
+		fire(file->target, SIG_READ, req_cksum(req));
 
-		res = signal_waits(SIG_REPLY, fd->target, false);
+		res = signal_waits(SIG_REPLY, file->target, false);
 
 		if (res->format == REQ_ERROR) {
 			rfree(res);

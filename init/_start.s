@@ -6,7 +6,18 @@ section .text
 global _start
 extern main
 extern _cini
+extern _exit
+
 _start:
+	push edx ; envp
+	push eax ; argv
+	push ecx ; argc
+
+	push esi ; fdp
 	call _cini
+	add esp, 4
+
 	call main
-	int 0x51
+
+	push eax ; return value of main
+	call _exit

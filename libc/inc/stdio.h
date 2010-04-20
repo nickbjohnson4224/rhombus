@@ -12,7 +12,7 @@ typedef size_t fpos_t;
 /*** File Structure ***/
 
 typedef struct _file {
-	struct file file;		/* File descriptor */	
+	int filedes;			/* File descriptor */	
 
 	fpos_t position;		/* File position */
 	fpos_t size;			/* File size */

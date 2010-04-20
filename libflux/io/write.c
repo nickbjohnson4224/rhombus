@@ -8,7 +8,8 @@
 #include <flux/signal.h>
 #include <flux/request.h>
 
-size_t write(struct file *fd, void *buf, size_t size, uint64_t offset) {
+size_t write(int fd, void *buf, size_t size, uint64_t offset) {
+	struct file *file;
 	uint8_t *data;
 	uint32_t old_policy;
 	uint16_t datasize;
@@ -19,6 +20,7 @@ size_t write(struct file *fd, void *buf, size_t size, uint64_t offset) {
 
 	oldsize = size;
 	data    = buf;
+	file    = fdget(fd);
 	res     = NULL;
 	req     = ralloc();
 	i       = 0;
@@ -29,16 +31,16 @@ size_t write(struct file *fd, void *buf, size_t size, uint64_t offset) {
 		datasize = (size > REQSZ) ? REQSZ : size;
 
 		req_setbuf(req, STDOFF, datasize);
-		req->resource = fd->resource;
+		req->resource = file->resource;
 		req->transid  = i;
 		req->format   = REQ_WRITE;
 		req->fileoff  = offset;
 
 		arch_memcpy(req_getbuf(req), data, datasize);
 
-		fire(fd->target, SIG_WRITE, req_cksum(req));
+		fire(file->target, SIG_WRITE, req_cksum(req));
 	
-		res = signal_waits(SIG_REPLY, fd->target, false);
+		res = signal_waits(SIG_REPLY, file->target, false);
 
 		if (res->format == REQ_ERROR) {
 			rfree(res);

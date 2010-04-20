@@ -32,8 +32,7 @@ int fclose(FILE *stream) {
 FILE *fsetup(uint32_t targ, uint32_t resource, const char *mode) {
 	FILE *new = malloc(sizeof(FILE));
 
-	new->file.target   = targ;
-	new->file.resource = resource;
+	new->filedes       = fdsetup(targ, resource);
 	new->position      = 0;
 	new->size          = -1;
 	new->buffer        = NULL;
@@ -159,7 +158,7 @@ int ferror(FILE *stream) {
 size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 	size_t ret;
 
-	ret = read(&stream->file, ptr, size * nmemb, stream->position);
+	ret = read(stream->filedes, ptr, size * nmemb, stream->position);
 	stream->position += ret;
 
 	return ret;
@@ -170,7 +169,7 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
 	size_t i, ret;
 
 	if (stream->flags & FILE_NBF) {
-		ret = write(&stream->file, (void*) ptr, size * nmemb, stream->position);
+		ret = write(stream->filedes, (void*) ptr, size * nmemb, stream->position);
 		stream->position += ret;
 		return ret;
 	}
