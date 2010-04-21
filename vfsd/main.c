@@ -32,17 +32,8 @@ static struct vfsd_node *vfsd_find_path(const char *path);
 static struct vfsd_node *vfsd_find_index(uint32_t target, uint32_t resource);
 
 int main() {
-	device_t nulldev;
-	struct tar_file *boot_image;
-	int i;
-	struct file *f;
 
-	/* File descriptors */
-	stdin  = fdopen(0, "w");
-	stdout = fdopen(1, "r");
-	stderr = fdopen(2, "w");
-
-	printf("VFSd\n");
+	printf("VFSd: ready\n");
 
 	for(;;);
 }

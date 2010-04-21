@@ -65,23 +65,49 @@ int main() {
 
 	nulldev.type = -1;
 
+	/* Boot Image */
+
+	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);
+
+	/* Terminal Driver */
+
 	driver_start(FD_STDOUT, &terminal, nulldev);
 
 	printf("Flux Operating System 0.4a\n");
 	printf("Copyright 2010 Nick Johnson\n\n");
 
-	printf("Reading Boot Image...\n");
-	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);
-
-	printf("contents: ");
-	for (i = 0; boot_image[i].name; i++) {
-		printf("%s ", boot_image[i].name);
-	}
-	printf("\n");
+	/* VFS Daemon */
 
 	file = tar_find(boot_image, "vfsd");
-	printf("Launching Virtual Filesystem Daemon...\n");
+	if (!file) {
+		printf("critical error: no VFSd image found\n");
+		for(;;);
+	}
+
+	printf("Launching Virtual Filesystem Daemon (VFSd)...\n");
 	daemon_start(FD_STDVFS, file->start, file->size);
+
+	/* Device Daemon */
+
+	file = tar_find(boot_image, "devd");
+	if (!file) {
+		printf("critical error: no DEVd image found\n");
+		for(;;);
+	}
+
+	printf("Launching Device Daemon (DEVd)...\n");
+	daemon_start(FD_STDDEV, file->start, file->size);
+
+	/* Process Metadata Daemon */
+
+	file = tar_find(boot_image, "pmdd");
+	if (!file) {
+		printf("critical error: no PMDd image found\n");
+		for(;;);
+	}
+
+	printf("Launching Process Metadata Daemon (PMDd)...\n");
+	daemon_start(FD_STDPMD, file->start, file->size);
 
 	for(;;);
 }
