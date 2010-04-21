@@ -53,6 +53,11 @@ typedef struct _file {
 extern FILE *stdin;
 extern FILE *stdout;
 extern FILE *stderr;
+extern FILE *stdvfs;
+extern FILE *stddev;
+extern FILE *stdpmd;
+extern FILE *extin;
+extern FILE *extout;
 
 /*** File Operations ***/
 

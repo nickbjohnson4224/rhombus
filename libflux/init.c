@@ -12,7 +12,7 @@ static void __exit(uint32_t source, struct request *req) {
 	_exit(1);
 }
 
-void _cini() {
+void _fini() {
 	extern void signal_init(void);
 
 	/* Heap */

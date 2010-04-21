@@ -15,6 +15,11 @@
 FILE *stdin  = NULL;
 FILE *stdout = NULL;
 FILE *stderr = NULL;
+FILE *stdvfs = NULL;
+FILE *stddev = NULL;
+FILE *stdpmd = NULL;
+FILE *extin  = NULL;
+FILE *extout = NULL;
 
 /***** File Operations *****/
 

@@ -25,7 +25,7 @@
 
 FILE *disk;
 
-void driver_start(FILE **file, struct driver_interface *driver, device_t dev) {
+void driver_start(int fd, struct driver_interface *driver, device_t dev) {
 	int32_t pid;
 
 	signal_policy(SIG_REPLY, POLICY_QUEUE);
@@ -40,29 +40,48 @@ void driver_start(FILE **file, struct driver_interface *driver, device_t dev) {
 
 	signal_waits(SIG_REPLY, pid, true);
 
-	*file = fdopen(fdsetup(pid, 0), "r");
+	fdset(fd, pid, 0);
+}
+
+void daemon_start(int fd, void *image, size_t image_size) {
+	int32_t pid;
+
+	signal_policy(SIG_REPLY, POLICY_QUEUE);
+
+	pid = fork();
+
+	if (pid < 0) {
+		exec(image, image_size);
+		for(;;);
+	}
+
+	fdset(fd, pid, 0);
 }
 
 int main() {
 	device_t nulldev;
-	struct tar_file *boot_image;
+	struct tar_file *boot_image, *file;
 	int i;
-	struct file *f;
-
-	/* File descriptors */
-	stdin  = fdopen(0, "w");
-	stdout = fdopen(1, "r");
-	stderr = fdopen(2, "w");
 
 	nulldev.type = -1;
 
-	driver_start(&stdout, &terminal, nulldev);
+	driver_start(FD_STDOUT, &terminal, nulldev);
 
 	printf("Flux Operating System 0.4a\n");
 	printf("Copyright 2010 Nick Johnson\n\n");
 
 	printf("Reading Boot Image...\n");
 	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);
+
+	printf("contents: ");
+	for (i = 0; boot_image[i].name; i++) {
+		printf("%s ", boot_image[i].name);
+	}
+	printf("\n");
+
+	file = tar_find(boot_image, "vfsd");
+	printf("Launching Virtual Filesystem Daemon...\n");
+	daemon_start(FD_STDVFS, file->start, file->size);
 
 	for(;;);
 }

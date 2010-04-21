@@ -1,10 +1,11 @@
-; Copyright 2009 Nick Johnson
+; Copyright 2010 Nick Johnson
 ; ISC Licensed, see LICENSE for details
 
 section .text
 
 global _start
 extern main
+extern _fini
 extern _cini
 extern _exit
 
@@ -13,9 +14,8 @@ _start:
 	push eax ; argv
 	push ecx ; argc
 
-	push esi ; fdp
-	call _cini
-	add esp, 4
+	call _fini ; libflux initialization
+	call _cini ; libc initialization
 
 	call main
 

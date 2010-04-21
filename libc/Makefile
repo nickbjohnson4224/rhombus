@@ -1,5 +1,5 @@
 SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
-SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
+CNAUGHT := c0.o
 HEADERS := $(shell find inc -name "*.h") inc/link.ld
 SUBDIR	:= libc
 TARGET	:= libc.a
@@ -16,12 +16,14 @@ $(HEADERS):
 	@ mkdir -p $(BUILDDIR)/inc
 	@ cp $@ $(BUILDDIR)/inc
 
-$(TARGET): $(HEADERS) $(SOURCES)
+$(TARGET): $(HEADERS) $(SOURCES) $(CNAUGHT)
 	echo " AR	" $(SUBDIR)/$(TARGET)
 	@ $(AR) $(ARFLAGS) $(TARGET) $(shell find . -name "*.o")
 	echo " CP	" $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/lib
 	@ mkdir -p $(BUILDDIR)/inc
 	@ cp $(TARGET) $(BUILDDIR)/lib
+	echo " CP	" $(SUBDIR)/$(CNAUGHT) "->" $(BUILDDIR)/lib
+	@ cp $(CNAUGHT) $(BUILDDIR)/lib
 
 %.o: %.s
 	echo " AS	" $(SUBDIR)/$<
