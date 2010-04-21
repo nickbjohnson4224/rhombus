@@ -40,13 +40,19 @@ void driver_start(FILE **file, struct driver_interface *driver, device_t dev) {
 
 	signal_waits(SIG_REPLY, pid, true);
 
-	*file = fsetup(pid, 0, "r");
+	*file = fdopen(fdsetup(pid, 0), "r");
 }
 
 int main() {
 	device_t nulldev;
 	struct tar_file *boot_image;
 	int i;
+	struct file *f;
+
+	/* File descriptors */
+	stdin  = fdopen(0, "w");
+	stdout = fdopen(1, "r");
+	stderr = fdopen(2, "w");
 
 	nulldev.type = -1;
 
@@ -55,16 +61,8 @@ int main() {
 	printf("Flux Operating System 0.4a\n");
 	printf("Copyright 2010 Nick Johnson\n\n");
 
-	printf("Launching Terminal Driver...\n");
-
 	printf("Reading Boot Image...\n");
 	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);
-
-	for (i = 0; boot_image[i].name; i++) {
-		printf("%s at %x size %d:\n", boot_image[i].name,
-			boot_image[i].start, boot_image[i].size);
-		fwrite(boot_image[i].start, sizeof(char), boot_image[i].size, stdout);
-	}
 
 	for(;;);
 }

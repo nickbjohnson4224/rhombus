@@ -43,5 +43,6 @@ int fdsetup(uint32_t target, uint32_t resource) {
 }
 
 struct file *fdget(int fd) {
+	if (!fdtable) return NULL;
 	return &fdtable[fd];
 }

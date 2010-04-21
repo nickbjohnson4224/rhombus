@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include "inc/tar.h"
 
@@ -7,7 +8,7 @@ static uintptr_t getvalue(char *field, size_t size) {
 
 	sum = 0;
 
-	for (i = 0; i < size; i++) {
+	for (i = 0; i < size && field[i]; i++) {
 		sum *= 8;
 		sum += field[i] - '0';
 	}
@@ -37,11 +38,12 @@ struct tar_file *tar_parse(uint8_t *base) {
 		filelist[n].start = (void*) ((uintptr_t) block + TAR_BLOCKSIZE);
 		filelist[n].size  = filesize;
 
-		if (filesize % TAR_BLOCKSIZE) {
-			filesize += TAR_BLOCKSIZE - (filesize % TAR_BLOCKSIZE);
+		i += filesize + TAR_BLOCKSIZE;
+
+		if (i % TAR_BLOCKSIZE) {
+			i = i - (i % TAR_BLOCKSIZE) + TAR_BLOCKSIZE;
 		}
 
-		i += filesize + TAR_BLOCKSIZE;
 		n++;
 	}
 

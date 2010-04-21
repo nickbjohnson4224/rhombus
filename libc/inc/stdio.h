@@ -59,7 +59,7 @@ extern FILE *stderr;
 int   fclose(FILE *stream);
 FILE *fopen(const char *path, const char *mode);
 FILE *freopen(const char *path, const char *mode, FILE *stream);
-FILE *fsetup(uint32_t targ, uint32_t resource, const char *mode);
+FILE *fdopen(int fd, const char *mode);
 
 int  fflush(FILE *stream);
 int  setvbuf(FILE *stream, char *buf, int mode, size_t size);

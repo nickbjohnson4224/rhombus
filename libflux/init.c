@@ -4,6 +4,9 @@
 #include <flux/heap.h>
 #include <flux/abi.h>
 #include <flux/signal.h>
+#include <flux/io.h>
+
+#include <stdio.h>
 
 static void __exit(uint32_t source, struct request *req) {
 	_exit(1);
@@ -17,7 +20,4 @@ void _cini() {
 
 	/* Fault handling */
 	signal_init();
-	signal_register(0, __exit);
-	signal_register(2, __exit);
-	signal_register(5, __exit);
 }

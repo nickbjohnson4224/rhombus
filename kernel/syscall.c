@@ -359,7 +359,7 @@ thread_t *syscall_mmap(thread_t *image) {
 	flags = image->edx & 0xFFF;
 	frame = image->edx &~0xFFF;
 
-	if (addr & 0xFFF || addr >= KSPACE || count > 1024) {
+	if (addr & 0xFFF || addr + (count * PAGESZ) >= KSPACE) {
 		image->eax = ERROR;
 		return image;
 	}

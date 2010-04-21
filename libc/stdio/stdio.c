@@ -29,10 +29,10 @@ int fclose(FILE *stream) {
 	return 0;
 }
 
-FILE *fsetup(uint32_t targ, uint32_t resource, const char *mode) {
+FILE *fdopen(int fd, const char *mode) {
 	FILE *new = malloc(sizeof(FILE));
 
-	new->filedes       = fdsetup(targ, resource);
+	new->filedes       = fd;
 	new->position      = 0;
 	new->size          = -1;
 	new->buffer        = NULL;
