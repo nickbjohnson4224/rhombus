@@ -19,7 +19,7 @@ char **path_parse(const char *path) {
 	pathv = malloc(sizeof(char*) * count + 2);
 
 	for (i = 0, n = 0, j = 0; path[i]; i++) {
-		if (path[i] == '/') {
+		if (path[i] == '/' || path[i+1] == '\0') {
 			buffer[j] = '\0';
 			pathv[n] = malloc(strlen(buffer) + 1);
 			strcpy(pathv[n], buffer);

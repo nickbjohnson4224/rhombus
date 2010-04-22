@@ -32,7 +32,7 @@ int main() {
 	vfs_node_add(vfs, vfs_node_new("fs", TYPE_DIR));
 	vfs_node_add(vfs_find("dev/"), vfs_node_new("stdout", TYPE_FILE));
 
-	node = vfs_find("dev/stdout/");
+	node = vfs_find("dev/stdout");
 	if (node) printf("%s\n", node->name);
 
 	printf("VFSd: ready\n");
