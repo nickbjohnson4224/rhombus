@@ -14,26 +14,32 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-struct vfsd_node {
-	int type; /* 0 - device, 1 - file, 2 - directory */
-	char name[100];
-	
-	uint32_t target;
-	uint32_t inode;
+#include <vfsd.h>
 
-	struct vfsd_node **parentv;
-	size_t parents;
-
-	struct vfsd_node **childv;
-	size_t children;
-} vfs;
-
-static struct vfsd_node *vfsd_find_path(const char *path);
-static struct vfsd_node *vfsd_find_index(uint32_t target, uint32_t resource);
+struct vfs_node *vfs;
+uint32_t m_vfs = 0;
 
 int main() {
+	struct vfs_node *node;
+	const char **pathv;
+
+	mutex_lock(&m_vfs);
+
+	printf("VFSd: creating basic structure\n");
+
+	vfs = vfs_node_new("vfs", TYPE_DIR);
+	vfs_node_add(vfs, vfs_node_new("dev", TYPE_DIR));
+	vfs_node_add(vfs, vfs_node_new("fs", TYPE_DIR));
+	vfs_node_add(vfs_find("dev/"), vfs_node_new("stdout", TYPE_FILE));
+
+	node = vfs_find("dev/stdout/");
+	if (node) printf("%s\n", node->name);
 
 	printf("VFSd: ready\n");
+
+	mutex_free(&m_vfs);
+
+	fire(1, SIG_REPLY, NULL);
 
 	for(;;);
 }

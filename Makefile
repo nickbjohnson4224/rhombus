@@ -59,6 +59,11 @@ clean:
 	@ rm bin/*
 
 image:	all
+
+	- mkdir boot
+	cp bin/* boot
+	strip boot/*
+
 	export BUILDDIR
 	sudo run/image.sh
 

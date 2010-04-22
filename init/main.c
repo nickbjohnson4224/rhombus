@@ -23,8 +23,6 @@
 
 #include "inc/tar.h"
 
-FILE *disk;
-
 void driver_start(int fd, struct driver_interface *driver, device_t dev) {
 	int32_t pid;
 
@@ -54,6 +52,8 @@ void daemon_start(int fd, void *image, size_t image_size) {
 		exec(image, image_size);
 		for(;;);
 	}
+
+	signal_waits(SIG_REPLY, pid, true);
 
 	fdset(fd, pid, 0);
 }

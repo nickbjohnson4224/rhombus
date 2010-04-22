@@ -18,5 +18,7 @@ int main() {
 
 	printf("PMDd: ready\n");
 
+	fire(1, SIG_REPLY, NULL);
+
 	for(;;);
 }
