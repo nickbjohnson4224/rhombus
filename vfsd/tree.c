@@ -4,57 +4,32 @@
  */
 
 #include <stdlib.h>
-#include <string.h>
+#include <stdio.h>
 #include <vfsd.h>
 
-char **path_parse(const char *path) {
-	char **pathv;
-	char buffer[100];
-	size_t i, j, n, count;
-
-	for (i = 0, count = 0; path[i]; i++) {
-		if (path[i] == '/') count++;
+node_t *vfs_tree_find(node_t *tree, char **pathv) {
+	
+	if (tree == NULL) {
+		return NULL;
 	}
 
-	pathv = malloc(sizeof(char*) * count + 2);
-
-	for (i = 0, n = 0, j = 0; path[i]; i++) {
-		if (path[i] == '/' || path[i+1] == '\0') {
-			buffer[j] = '\0';
-			pathv[n] = malloc(strlen(buffer) + 1);
-			strcpy(pathv[n], buffer);
-			j = 0;
-			n++;
-		}
-		else {
-			buffer[j] = path[i];
-			j++;
-		}
+	if (pathv[0] == NULL) {
+		return tree;
 	}
 
-	pathv[n] = NULL;
-
-	return pathv;
+	return vfs_tree_find(vfs_node_find(tree, pathv[0]), &pathv[1]);
 }
 
-struct vfs_node *vfs_find(const char *path) {
-	char **pathv;
-	struct vfs_node *node;
-	size_t i;
-
-	pathv = path_parse(path);
-	node  = vfs;
-
-	for (i = 0; pathv[i]; i++) {
-		node = vfs_node_find(node, pathv[i]);
-		free(pathv[i]);
-
-		if (!node) {
-			break;
-		}
+node_t *vfs_tree_add(node_t *tree, node_t *node, char **pathv) {
+	
+	if (tree == NULL) {
+		return NULL;
 	}
 
-	free(pathv);
+	if (pathv[0] == NULL) {
+		vfs_node_add(tree, node);
+		return tree;
+	}
 
-	return node;
+	return vfs_tree_add(vfs_node_find(tree, pathv[0]), node, &pathv[1]);
 }

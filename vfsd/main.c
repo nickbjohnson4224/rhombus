@@ -8,6 +8,7 @@
 #include <flux/request.h>
 #include <flux/proc.h>
 #include <flux/driver.h>
+#include <flux/vfs.h>
 
 #include <stdint.h>
 #include <string.h>
@@ -16,28 +17,66 @@
 
 #include <vfsd.h>
 
-struct vfs_node *vfs;
-uint32_t m_vfs = 0;
+#define QUERY_ADD	0
+#define QUERY_DEL	1
+#define QUERY_FIND	2
+#define QUERY_MNT	3
+#define QUERY_UMNT	4
+
+void vfs_add_handle(uint32_t caller, req_t *req) {
+	struct vfs_query *query;
+	struct vfs_node *node;
+
+	if (!req_check(req)) {
+		if (!req) req = ralloc();
+		req->format = REQ_ERROR;
+		tail(caller, SIG_REPLY, req);
+		return;
+	}
+
+	query = (void*) req_getbuf(req);
+
+	node = vfs_node_new(query->name, vfs_get_server(query->server), 
+		query->inode, query->node_type);
+
+	vfs_add(query->path, node);
+
+	tail(caller, SIG_REPLY, req_cksum(req));
+}
+
+void vfs_find_handle(uint32_t caller, req_t *req) {
+	struct vfs_query *query;
+	struct vfs_node *node;
+	struct vfs_inode inode;
+
+	if (!req_check(req)) {
+		if (!req) req = ralloc();
+		req->format = REQ_ERROR;
+		tail(caller, SIG_REPLY, req);
+		return;
+	}
+
+	query = (void*) req_getbuf(req);
+
+	node = vfs_find(query->path);
+	
+	inode.server = node->server->target;
+	inode.inode  = node->inode;
+
+	req_setbuf(req, STDOFF, sizeof(struct vfs_inode));
+	req->format = REQ_WRITE;
+	memcpy(req_getbuf(req), &inode, sizeof(struct vfs_inode));
+
+	tail(caller, SIG_REPLY, req_cksum(req));
+}
 
 int main() {
-	struct vfs_node *node;
-	const char **pathv;
+	char **pathv;
 
-	mutex_lock(&m_vfs);
-
-	printf("VFSd: creating basic structure\n");
-
-	vfs = vfs_node_new("vfs", TYPE_DIR);
-	vfs_node_add(vfs, vfs_node_new("dev", TYPE_DIR));
-	vfs_node_add(vfs, vfs_node_new("fs", TYPE_DIR));
-	vfs_node_add(vfs_find("dev/"), vfs_node_new("stdout", TYPE_FILE));
-
-	node = vfs_find("dev/stdout");
-	if (node) printf("%s\n", node->name);
+	signal_register(SIG_CTRL, vfs_add_handle);
+	signal_register(SIG_INFO, vfs_find_handle);
 
 	printf("VFSd: ready\n");
-
-	mutex_free(&m_vfs);
 
 	fire(1, SIG_REPLY, NULL);
 

@@ -7,24 +7,24 @@
 #include <string.h>
 #include <vfsd.h>
 
-struct vfs_node *vfs_node_new(const char *name, int type) {
-	struct vfs_node *node;
+node_t *vfs_node_new(char *name, server_t *server, uint64_t inode, int type) {
+	node_t *node;
 
-	node = malloc(sizeof(struct vfs_node));
+	node = malloc(sizeof(node_t));
 
 	strcpy(node->name, name);
 
-	node->server = NULL;
+	node->server = server;
 	node->child  = NULL;
 	node->sister = NULL;
 	node->parent = NULL;
 	node->type   = type;
-	node->number = 0;
+	node->inode  = inode;
 
 	return node;
 }
 
-struct vfs_node *vfs_node_add(struct vfs_node *node, struct vfs_node *child) {
+node_t *vfs_node_add(node_t *node, node_t *child) {
 	
 	child->parent = node;
 	child->sister = node->child;
@@ -33,13 +33,13 @@ struct vfs_node *vfs_node_add(struct vfs_node *node, struct vfs_node *child) {
 	return node;
 }
 
-struct vfs_node *vfs_node_find(struct vfs_node *node, const char *child_name) {
-	struct vfs_node *child;
+node_t *vfs_node_find(node_t *node, char *name) {
+	node_t *child;
 
 	child = node->child;
 
 	while (child) {
-		if (!strcmp(child_name, child->name)) {
+		if (!strcmp(name, child->name)) {
 			return child;
 		}
 
