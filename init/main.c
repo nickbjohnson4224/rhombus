@@ -9,6 +9,7 @@
 #include <flux/proc.h>
 #include <flux/driver.h>
 #include <flux/exec.h>
+#include <flux/vfs.h>
 
 #include <driver/terminal.h>
 #include <driver/keyboard.h>
@@ -61,6 +62,7 @@ void daemon_start(int fd, void *image, size_t image_size) {
 int main() {
 	device_t nulldev;
 	struct tar_file *boot_image, *file;
+	struct file *f;
 	int i;
 
 	nulldev.type = -1;
@@ -83,21 +85,21 @@ int main() {
 	}
 	daemon_start(FD_STDVFS, file->start, file->size);
 
-	/* Device Daemon */
-	file = tar_find(boot_image, "devd");
-	if (!file) {
-		printf("critical error: no DEVd image found\n");
-		for(;;);
-	}
-	daemon_start(FD_STDDEV, file->start, file->size);
+//	/* Device Daemon */
+//	file = tar_find(boot_image, "devd");
+//	if (!file) {
+//		printf("critical error: no DEVd image found\n");
+//		for(;;);
+//	}
+//	daemon_start(FD_STDDEV, file->start, file->size);
 
-	/* Process Metadata Daemon */
-	file = tar_find(boot_image, "pmdd");
-	if (!file) {
-		printf("critical error: no PMDd image found\n");
-		for(;;);
-	}
-	daemon_start(FD_STDPMD, file->start, file->size);
+//	/* Process Metadata Daemon */
+//	file = tar_find(boot_image, "pmdd");
+//	if (!file) {
+//		printf("critical error: no PMDd image found\n");
+//		for(;;);
+//	}
+//	daemon_start(FD_STDPMD, file->start, file->size);
 
 	for(;;);
 }

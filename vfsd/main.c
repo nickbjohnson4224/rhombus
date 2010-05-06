@@ -18,36 +18,18 @@
 #include <vfsd.h>
 
 #define QUERY_ADD	0
-#define QUERY_DEL	1
+#define QUERY_REM	1
 #define QUERY_FIND	2
-#define QUERY_MNT	3
-#define QUERY_UMNT	4
+#define QUERY_LINK  3
 
-void vfs_add_handle(uint32_t caller, req_t *req) {
-	struct vfs_query *query;
-	struct vfs_node *node;
+struct vfs *vfs_root;
+uint32_t m_vfs;
 
-	if (!req_check(req)) {
-		if (!req) req = ralloc();
-		req->format = REQ_ERROR;
-		tail(caller, SIG_REPLY, req);
-		return;
-	}
+void vfs_handle(uint32_t caller, req_t *req) {
+	struct vfs_query *q;
+	struct vfs *file;
 
-	query = (void*) req_getbuf(req);
-
-	node = vfs_node_new(query->name, vfs_get_server(query->server), 
-		query->inode, query->node_type);
-
-	vfs_add(query->path, node);
-
-	tail(caller, SIG_REPLY, req_cksum(req));
-}
-
-void vfs_find_handle(uint32_t caller, req_t *req) {
-	struct vfs_query *query;
-	struct vfs_node *node;
-	struct vfs_inode inode;
+	printf("VFS: handling query...\n");
 
 	if (!req_check(req)) {
 		if (!req) req = ralloc();
@@ -56,25 +38,26 @@ void vfs_find_handle(uint32_t caller, req_t *req) {
 		return;
 	}
 
-	query = (void*) req_getbuf(req);
+	q = (void*) req_getbuf(req);
 
-	node = vfs_find(query->path);
-	
-	inode.server = node->server->target;
-	inode.inode  = node->inode;
+	switch (q->command) {
+	case VFS_CMD_FIND:
+		printf("VFS: find %s\n", q->path0);
+		file = vfs_get(vfs_root, q->path0);
+		if (file) {
+			q->server = file->server;
+			q->inode  = file->inode;
+		}
+		break;
+	}
 
-	req_setbuf(req, STDOFF, sizeof(struct vfs_inode));
-	req->format = REQ_WRITE;
-	memcpy(req_getbuf(req), &inode, sizeof(struct vfs_inode));
-
+	q->command = VFS_CMD_REPLY;
 	tail(caller, SIG_REPLY, req_cksum(req));
 }
 
 int main() {
-	char **pathv;
 
-	signal_register(SIG_CTRL, vfs_add_handle);
-	signal_register(SIG_INFO, vfs_find_handle);
+	vfs_root = calloc(sizeof(struct vfs), 1);
 
 	printf("VFSd: ready\n");
 

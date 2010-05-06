@@ -20,16 +20,8 @@
 #define SIG_WRITE	0x11	/* Write data */
 #define SIG_INFO	0x12	/* Read metadata */
 #define SIG_CTRL	0x13	/* Write metadata */
+#define SIG_QUERY	0x14	/* Server query */
 #define SIG_REPLY	0x1F	/* Reply from request */
-
-/* Specific signals */
-#define SIG_DEV_NEW		0x14	/* Create file */
-#define SIG_DEV_DEL		0x15	/* Delete file */
-#define SIG_DEV_LOCK	0x16	/* Lock file */
-
-#define SIG_VFS_ADD 	0x14	/* Add inode */
-#define SIG_VFS_DEL 	0x15	/* Delete inode */
-#define SIG_VFS_FIND	0x16	/* Find inode */
 
 #define POLICY_ABORT 0
 #define POLICY_QUEUE 1

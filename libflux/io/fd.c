@@ -5,8 +5,14 @@
 static struct file *fdtable = (void*) FD_TABLE;
 
 void fdinit(void) {
+	int i;
+
 	mmap(fdtable, sizeof(struct file) * 256, PROT_READ | PROT_WRITE);
 	arch_memclr(fdtable, sizeof(struct file) * 256);
+
+	for (i = 0; i < 8; i++) {
+		fdtable[i].status = 1;
+	}
 }
 
 int fdalloc(void) {

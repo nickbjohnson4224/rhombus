@@ -11,9 +11,7 @@ struct file {
 
 size_t read (int fd, void *buf, size_t size, uint64_t offset);
 size_t write(int fd, void *buf, size_t size, uint64_t offset);
-
-size_t finfo(int fd, void *buf, size_t size, size_t selector);
-size_t fctrl(int fd, void *buf, size_t size, size_t selector);
+size_t query(int fd, void *rbuf, void *sbuf, size_t size);
 
 struct file *fdget(int fd);
 void         fdset(int fd, uint32_t target, uint32_t resource);
