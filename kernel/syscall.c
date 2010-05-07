@@ -52,22 +52,18 @@ thread_t *fault_page(thread_t *image) {
 
 	#ifdef PARANOID
 	extern uint32_t get_cr2(void);
-	uint32_t cr2, i;
+	uint32_t cr2;
 
 	/* If in kernelspace, panic */
-	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */	
+//	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */	
 		/* Get faulting address from register CR2 */
 		cr2 = get_cr2();
 
 		printk("page fault at %x, ip = %x frame %x\n", 
 			cr2, image->eip, page_get(cr2));
 
-		for (i = 0; i < 10; i++) {
-			printk("stack[%x]: %x\n", i, ((uint32_t*) image->useresp)[i]);
-		}
-
 		panic("page fault exception");
-	}
+//	}
 	#endif
 
 	return thread_fire(image, image->proc->pid, SSIG_PAGE, 0);

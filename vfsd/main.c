@@ -17,19 +17,12 @@
 
 #include <vfsd.h>
 
-#define QUERY_ADD	0
-#define QUERY_REM	1
-#define QUERY_FIND	2
-#define QUERY_LINK  3
-
 struct vfs *vfs_root;
 uint32_t m_vfs;
 
 void vfs_handle(uint32_t caller, req_t *req) {
 	struct vfs_query *q;
 	struct vfs *file;
-
-	printf("VFS: handling query...\n");
 
 	if (!req_check(req)) {
 		if (!req) req = ralloc();
@@ -42,12 +35,19 @@ void vfs_handle(uint32_t caller, req_t *req) {
 
 	switch (q->command) {
 	case VFS_CMD_FIND:
-		printf("VFS: find %s\n", q->path0);
+		mutex_spin(&m_vfs);
 		file = vfs_get(vfs_root, q->path0);
+		mutex_free(&m_vfs);
+
 		if (file) {
 			q->server = file->server;
 			q->inode  = file->inode;
 		}
+		break;
+	case VFS_CMD_ADD:
+		mutex_spin(&m_vfs);
+		vfs_add(vfs_root, q->path0, q->server, q->inode);
+		mutex_free(&m_vfs);
 		break;
 	}
 
@@ -56,8 +56,16 @@ void vfs_handle(uint32_t caller, req_t *req) {
 }
 
 int main() {
+	signal_register(SIG_QUERY, vfs_handle);
+	signal_policy(SIG_QUERY, POLICY_EVENT);
 
+	printf("VFSd: starting\n");
+
+	mutex_spin(&m_vfs);
 	vfs_root = calloc(sizeof(struct vfs), 1);
+
+	vfs_add(vfs_root, "cake", 42, 42);
+	mutex_free(&m_vfs);
 
 	printf("VFSd: ready\n");
 

@@ -2,6 +2,8 @@
 #include <flux/arch.h>
 #include <flux/mmap.h>
 
+#include <stdio.h>
+
 static struct file *fdtable = (void*) FD_TABLE;
 
 void fdinit(void) {

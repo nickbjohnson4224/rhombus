@@ -10,6 +10,7 @@
 #include <flux/driver.h>
 #include <flux/exec.h>
 #include <flux/vfs.h>
+#include <flux/io.h>
 
 #include <driver/terminal.h>
 #include <driver/keyboard.h>
@@ -68,7 +69,6 @@ int main() {
 	nulldev.type = -1;
 
 	/* Boot Image */
-
 	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);
 
 	/* Terminal Driver */
@@ -78,28 +78,32 @@ int main() {
 	printf("Copyright 2010 Nick Johnson\n\n");
 
 	/* VFS Daemon */
-	file = tar_find(boot_image, "vfsd");
+	file = tar_find(boot_image, (char*) "vfsd");
 	if (!file) {
 		printf("critical error: no VFSd image found\n");
 		for(;;);
 	}
 	daemon_start(FD_STDVFS, file->start, file->size);
 
-//	/* Device Daemon */
-//	file = tar_find(boot_image, "devd");
-//	if (!file) {
-//		printf("critical error: no DEVd image found\n");
-//		for(;;);
-//	}
-//	daemon_start(FD_STDDEV, file->start, file->size);
+	i = find("cake");
+	f = fdget(i);
+	printf("cake: %d %d\n", f->target, f->resource);
 
-//	/* Process Metadata Daemon */
-//	file = tar_find(boot_image, "pmdd");
-//	if (!file) {
-//		printf("critical error: no PMDd image found\n");
-//		for(;;);
-//	}
-//	daemon_start(FD_STDPMD, file->start, file->size);
+	/* Device Daemon */
+	file = tar_find(boot_image, (char*) "devd");
+	if (!file) {
+		printf("critical error: no DEVd image found\n");
+		for(;;);
+	}
+	daemon_start(FD_STDDEV, file->start, file->size);
+
+	/* Process Metadata Daemon */
+	file = tar_find(boot_image, (char*) "pmdd");
+	if (!file) {
+		printf("critical error: no PMDd image found\n");
+		for(;;);
+	}
+	daemon_start(FD_STDPMD, file->start, file->size);
 
 	for(;;);
 }

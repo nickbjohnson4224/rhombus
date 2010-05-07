@@ -39,7 +39,6 @@ size_t write(int fd, void *buf, size_t size, uint64_t offset) {
 		arch_memcpy(req_getbuf(req), data, datasize);
 
 		fire(file->target, SIG_WRITE, req_cksum(req));
-	
 		res = signal_waits(SIG_REPLY, file->target, false);
 
 		if (res->format == REQ_ERROR) {

@@ -112,7 +112,7 @@ void space_free(space_t space) {
 	exmap = (void*) (seg + 0x3FF000);
 
 	for (i = 0; i < PGE_MAP / SEGSZ; i++) {
-		if (exmap[i] & PF_PRES && !(exmap[i] & SEG_LINK)) {
+		if ((exmap[i] & PF_PRES) && !(exmap[i] & SEG_LINK)) {
 			for (j = 0; j < 1024; j++) {
 				if (extbl[i * 1024 + j] & PF_PRES) {
 					frame_free(page_ufmt(extbl[i * 1024 + j]));
