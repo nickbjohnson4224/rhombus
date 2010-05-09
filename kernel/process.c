@@ -61,7 +61,6 @@ process_t *process_clone(process_t *parent, thread_t *active_thread) {
 	child->parent = parent;
 	child->pid    = pid;
 
-	memclr(child->thread_stack_bmap, sizeof(uint32_t) * 4);
 	memclr(child->thread, sizeof(struct thread *) * 128);
 
 	child->thread[0] = thread_alloc();
@@ -78,8 +77,7 @@ process_t *process_clone(process_t *parent, thread_t *active_thread) {
 	}
 
 	/* setup child thread */
-	child->thread[0]->stack = thread_stack_alloc(child->thread[0], child);
-	child->thread[0]->proc  = child;
+	thread_bind(child->thread[0], child);
 
 	/* add child's thread to the scheduler */
 	schedule_insert(child->thread[0]);

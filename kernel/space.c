@@ -45,10 +45,9 @@ space_t space_clone() {
 	dest = space_alloc();
 
 	/* Exmap in new address space */
-	seg = TMP_MAP;
-	space_exmap(seg, dest);
-	extbl = (void*) seg;
-	exmap = (void*) (seg + 0x3FF000);
+	space_exmap(dest);
+	extbl = (void*) TMP_MAP;
+	exmap = (void*) (TMP_MAP + 0x3FF000);
 
 	/* Clone/clear userspace */
 	for (i = 0; i < 1023; i++) {
@@ -86,11 +85,11 @@ static void segment_clone(frame_t *extbl, frame_t *exmap, uintptr_t seg) {
 /****************************************************************************
  * space_exmap
  *
- * Recursively maps an external address space in the given segment.
+ * Recursively maps an external address space.
  */
 
-void space_exmap(uintptr_t seg, space_t space) {
-	cmap[seg >> 22] = page_fmt(space, PF_PRES | PF_RW | SEG_LINK | SEG_USED);
+void space_exmap(space_t space) {
+	cmap[TMP_MAP >> 22] = page_fmt(space, PF_PRES | PF_RW | SEG_LINK | SEG_USED);
 	page_flush_full();
 }
 
@@ -105,11 +104,9 @@ void space_free(space_t space) {
 	uintptr_t seg;
 	frame_t *extbl, *exmap;
 
-	seg = TMP_MAP;
-
-	space_exmap(seg, space);
-	extbl = (void*) seg;
-	exmap = (void*) (seg + 0x3FF000);
+	space_exmap(space);
+	extbl = (void*) TMP_MAP;
+	exmap = (void*) (TMP_MAP + 0x3FF000);
 
 	for (i = 0; i < PGE_MAP / SEGSZ; i++) {
 		if ((exmap[i] & PF_PRES) && !(exmap[i] & SEG_LINK)) {

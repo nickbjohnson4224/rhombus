@@ -21,8 +21,7 @@ thread_t *pit_handler(thread_t *image) {
 
 	tick++;
 
-	/* Switch to next scheduled task */
-	return thread_switch(image, schedule_next());
+	return schedule_next();
 }
 
 thread_t *irq_redirect(thread_t *image) {

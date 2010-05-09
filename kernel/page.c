@@ -15,11 +15,11 @@ frame_t *ctbl = (void*) PGE_MAP;				/* Current base page table mapping */
  * Returns the value of a page in an exmapped address space
  */
 
-frame_t page_exget(uintptr_t seg, uintptr_t page) {
+frame_t page_exget(uintptr_t page) {
 	frame_t *exmap, *extbl;
 
-	extbl = (void*) seg;
-	exmap = (void*) (seg + 0x3FF000);
+	extbl = (void*) TMP_MAP;
+	exmap = (void*) (TMP_MAP + 0x3FF000);
 
 	if ((exmap[page >> 22] & PF_PRES) == 0) {
 		return 0;
@@ -34,14 +34,14 @@ frame_t page_exget(uintptr_t seg, uintptr_t page) {
  * Sets the value of a page in an exmapped address space.
  */
 
-void page_exset(uintptr_t seg, uintptr_t page, frame_t value) {
+void page_exset(uintptr_t page, frame_t value) {
 	frame_t *exmap, *extbl;
 
-	extbl = (void*) seg;
-	exmap = (void*) (seg + 0x3FF000);
+	extbl = (void*) TMP_MAP;
+	exmap = (void*) (TMP_MAP + 0x3FF000);
 
 	if ((exmap[page >> 22] & PF_PRES) == 0) {
-		page_extouch(seg, page);
+		page_extouch(page);
 	}
 
 	extbl[page >> 12] = value;
@@ -53,11 +53,11 @@ void page_exset(uintptr_t seg, uintptr_t page, frame_t value) {
  * Makes sure that a page in an exmapped address space exists.
  */
 
-void page_extouch(uintptr_t seg, uintptr_t page) {
+void page_extouch(uintptr_t page) {
 	frame_t *exmap, *extbl;
 
-	extbl = (void*) seg;
-	exmap = (void*) (seg + 0x3FF000);
+	extbl = (void*) TMP_MAP;
+	exmap = (void*) (TMP_MAP + 0x3FF000);
 	page &= ~0x3FFFFF;
 
 	if (exmap[page >> 22] & PF_PRES) {
@@ -114,5 +114,20 @@ void page_set(uintptr_t page, frame_t value) {
  */
 
 void page_touch(uintptr_t page) {
-	page_extouch(PGE_MAP, page);
+	page &= ~0x3FFFFF;
+
+	if (cmap[page >> 22] & PF_PRES) {
+		return;
+	}
+
+	cmap[page >> 22]  = frame_new() | PF_PRES | PF_RW | PF_USER;
+	cmap[page >> 22] |= SEG_USED | SEG_ALLC;
+
+	if (page > KSPACE) {
+		cmap[page >> 22] |= SEG_LINK;
+	}
+	
+	page_flush((uintptr_t) &ctbl[page >> 12]);
+
+	pgclr(&ctbl[page >> 12]);
 }

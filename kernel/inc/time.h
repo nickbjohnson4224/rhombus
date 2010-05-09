@@ -55,7 +55,6 @@ typedef struct process {
 
 	/* threads and thread stacks */
 	struct thread *thread[128];
-	uint32_t thread_stack_bmap[4];
 
 } process_t;
 
@@ -149,9 +148,8 @@ thread_t *thread_alloc (void);
 void      thread_free  (thread_t *thread);
 thread_t *thread_switch(thread_t *old, thread_t *new);
 thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t grant);
-thread_t *thread_drop  (thread_t *image);
-uintptr_t thread_stack_alloc(thread_t *thread, process_t *proc);
-void      thread_stack_free (process_t *proc, uintptr_t seg);
+thread_t *thread_drop(thread_t *image);
+uintptr_t thread_bind(thread_t *thread, process_t *proc);
 
 /***** SYSTEM CALLS AND OTHER INTERRUPTS *****/
 

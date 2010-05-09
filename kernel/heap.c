@@ -6,6 +6,9 @@
 #include <util.h>
 #include <space.h>
 
+static void  heap_new_slab(size_t bucket);
+static void *heap_valloc(void);
+
 struct heap_block {
 	struct heap_block *next;
 };
@@ -98,7 +101,7 @@ void heap_free(void *ptr, size_t size) {
  * the specified bucket in pieces of appropriate size for that bucket.
  */
 
-void heap_new_slab(size_t bucket) {
+static void heap_new_slab(size_t bucket) {
 	uintptr_t *slab;
 	uintptr_t i;
 
@@ -124,7 +127,7 @@ void heap_new_slab(size_t bucket) {
  * allocator cannot be freed.
  */
 
-void *heap_valloc(void) {
+static void *heap_valloc(void) {
 	static uintptr_t brk = KERNEL_HEAP;
 
 	if (brk + PAGESZ >= KERNEL_HEAP_END) {

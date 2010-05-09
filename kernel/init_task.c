@@ -31,8 +31,7 @@ void init_task() {
 	memcpy((void*) BOOT_IMAGE, boot_image, boot_size);
 
 	/* Setup process image */
-	init->thread[0]->proc    = init;
-	init->thread[0]->stack   = thread_stack_alloc(init->thread[0], init);
+	thread_bind(init->thread[0], init);
 	init->thread[0]->useresp = init->thread[0]->stack + SEGSZ;
 	init->thread[0]->esp     = (uint32_t) &init->thread[0]->num;
 	init->thread[0]->ss      = 0x23;

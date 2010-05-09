@@ -76,12 +76,12 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 	case SIG_POLICY_EVENT:
 		if (p_targ->signal_handle) {
 			new_image = thread_alloc();
+			thread_bind(new_image, p_targ);
 	
 			new_image->ds      = 0x23;
 			new_image->cs      = 0x1B;
 			new_image->ss      = 0x23;
 			new_image->eflags  = p_targ->thread[0]->eflags | 0x3000;
-			new_image->stack   = thread_stack_alloc(new_image, p_targ);
 			new_image->useresp = new_image->stack + SEGSZ;
 			new_image->proc    = p_targ;
 			new_image->grant   = grant;
@@ -94,7 +94,7 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 			new_image->fxdata  = NULL;
 			schedule_insert(new_image);
 
-			return thread_switch(image, new_image);
+			return new_image;
 		}
 	case SIG_POLICY_QUEUE:
 		sq = heap_alloc(sizeof(struct signal_queue));
@@ -126,7 +126,23 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
  */
 
 void thread_free(thread_t *thread) {
-	if (thread->stack) thread_stack_free(thread->proc, thread->stack);
+	uintptr_t i;
+
+	if (thread->stack) {
+		i = (thread->stack - (KSPACE - (SEGSZ * 128))) / SEGSZ;
+
+		thread->proc->thread[i] = NULL;
+
+		space_exmap(thread->proc->space);
+	
+		for (i = thread->stack; i < thread->stack + SEGSZ; i += PAGESZ) {
+			if ((page_exget(i) & PF_PRES) != 0) {
+				frame_free(page_ufmt(page_exget(i)));
+				page_exset(i, 0);
+			}
+		}
+	}
+
 	heap_free(thread, sizeof(thread_t));
 }
 
@@ -196,19 +212,19 @@ void thread_init(void) {
 }
 
 /****************************************************************************
- * thread_stack_alloc
+ * thread_bind
  *
  * Returns a free segment of size SEGSZ with 16 pages allocated at its end.
  * Associates the thread with this stack with the process.
  */
 
-uintptr_t thread_stack_alloc(thread_t *thread, process_t *proc) {
+uintptr_t thread_bind(thread_t *thread, process_t *proc) {
 	uintptr_t i;
 	uintptr_t addr;
 
 	for (addr = 0, i = 0; i < 128; i++) {
-		if ((proc->thread_stack_bmap[i / 32] & (1 << (i % 32))) == 0) {
-			proc->thread_stack_bmap[i / 32] |= (1 << (i % 32));
+		if (!proc->thread[i]) {
+			proc->thread[i] = thread;
 			addr = KSPACE - (SEGSZ * 128) + (SEGSZ * i);
 			break;
 		}
@@ -219,40 +235,16 @@ uintptr_t thread_stack_alloc(thread_t *thread, process_t *proc) {
 		return 0;
 	}
 
-	proc->thread[i] = thread;
-
-	space_exmap(TMP_MAP, proc->space);
+	space_exmap(proc->space);
 
 	for (i = addr + (SEGSZ - PAGESZ * 16); i < addr + SEGSZ; i += PAGESZ) {
-		page_exset(TMP_MAP, i, page_fmt(frame_new(), PF_PRES | PF_RW | PF_USER));
+		page_exset(i, page_fmt(frame_new(), PF_PRES | PF_RW | PF_USER));
 	}
+
+	thread->stack = addr;
+	thread->proc  = proc;
 
 	return addr;
-}
-
-/****************************************************************************
- * thread_stack_free
- *
- * Frees a thread stack. Disassociates the thread with that stack from the
- * process.
- */
-
-void thread_stack_free(process_t *proc, uintptr_t seg) {
-	uintptr_t i;
-
-	i = (seg - (KSPACE - (SEGSZ * 128))) / SEGSZ;
-
-	proc->thread_stack_bmap[i / 32] &= ~(1 << (i % 32));
-	proc->thread[i] = NULL;
-
-	space_exmap(TMP_MAP, proc->space);
-
-	for (i = seg; i < seg + SEGSZ; i += PAGESZ) {
-		if ((page_exget(TMP_MAP, i) & PF_PRES) != 0) {
-			frame_free(page_ufmt(page_exget(TMP_MAP, i)));
-			page_exset(TMP_MAP, i, 0);
-		}
-	}
 }
 
 /****************************************************************************

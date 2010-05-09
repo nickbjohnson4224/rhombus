@@ -43,7 +43,7 @@ void    frame_free(frame_t frame);
 
 typedef uint32_t space_t;
 
-void    space_exmap(uintptr_t seg, space_t space);
+void    space_exmap(space_t space);
 space_t space_alloc(void);
 space_t space_clone(void);
 void    space_free (space_t space);
@@ -68,9 +68,6 @@ void   mem_free (uintptr_t base, uintptr_t size);
 #define SEG_USED 0x400 /* Segment is allocated and in use */
 #define SEG_ALLC 0x800 /* Segment allocated by segment_alloc or page_touch */
 
-uintptr_t segment_alloc(uint32_t type);
-void      segment_free (uintptr_t seg);
-
 /***** PAGE OPERATIONS *****/
 
 void    page_touch(uintptr_t page);
@@ -79,9 +76,9 @@ frame_t page_get  (uintptr_t page);
 void    page_flush(uintptr_t addr);
 void    page_flush_full(void);
 
-void	page_extouch(uintptr_t seg, uintptr_t page);
-void	page_exset  (uintptr_t seg, uintptr_t page, frame_t value);
-frame_t page_exget  (uintptr_t seg, uintptr_t page);
+void	page_extouch(uintptr_t page);
+void	page_exset  (uintptr_t page, frame_t value);
+frame_t page_exget  (uintptr_t page);
 
 #define page_fmt(base,flags) (((base)&0xFFFFF000)|((flags)&PF_MASK))
 #define page_ufmt(page) ((page)&0xFFFFF000)
@@ -90,7 +87,5 @@ frame_t page_exget  (uintptr_t seg, uintptr_t page);
 
 void *heap_alloc(size_t size);
 void  heap_free(void *ptr, size_t size);
-void  heap_new_slab(size_t bucket);
-void *heap_valloc(void);
 
 #endif /*SPACE_H*/

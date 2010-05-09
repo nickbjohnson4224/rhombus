@@ -95,6 +95,7 @@ void register_int(uint8_t n, handler_t handler) {
 
 /* C interrupt handler - called by assembly state-saving routine */
 thread_t *int_handler(thread_t *image) {
+	thread_t *new_image;
 
 	/* Reset PIC if it was an IRQ */
 	if (image->num >= 32 && image->num <= 47) {
@@ -104,11 +105,16 @@ thread_t *int_handler(thread_t *image) {
 
 	/* Call registered C interrupt handler from int_handlers[] table */
 	if (int_handlers[image->num]) {
-		image = int_handlers[image->num](image);
+		new_image = int_handlers[image->num](image);
 	}
 
-	/* Set TSS to generate images in the proper position */
-	tss_set_esp((uintptr_t) &image->tss_start);
+	if (new_image != image) {
+
+		/* Set TSS to generate images in the proper position */
+		tss_set_esp((uintptr_t) &new_image->tss_start);
+
+		return thread_switch(image, new_image);
+	}
 
 	return image;
 }
