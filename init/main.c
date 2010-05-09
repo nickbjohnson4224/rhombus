@@ -79,9 +79,9 @@ int main() {
 	}
 	daemon_start(FD_STDVFS, file->start, file->size);
 
-//	i = find("cake");
-//	f = fdget(i);
-//	printf("cake: %d %d\n", f->target, f->resource);
+	i = find("cake");
+	f = fdget(i);
+	printf("cake: %d %d\n", f->target, f->resource);
 
 	/* Device Daemon */
 	file = tar_find(boot_image, (char*) "devd");

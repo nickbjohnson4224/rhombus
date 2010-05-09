@@ -60,11 +60,13 @@ int main() {
 
 	printf("VFSd: starting\n");
 
-/*	mutex_spin(&m_vfs);
+	mutex_spin(&m_vfs);
 	vfs_root = calloc(sizeof(struct vfs), 1);
 
+	printf("VFSd: adding structure\n");
+
 	vfs_add(vfs_root, "cake", 42, 42);
-	mutex_free(&m_vfs); */
+	mutex_free(&m_vfs);
 
 	printf("VFSd: ready\n");
 

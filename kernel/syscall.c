@@ -69,7 +69,7 @@ thread_t *fault_page(thread_t *image) {
 	}
 	else {
 		/* fault */
-		return thread_fire(image, image->proc->pid, SSIG_PAGE, 0);
+		return thread_fire(image, image->proc->pid, SSIG_FAULT, 0);
 	}
 }
 
