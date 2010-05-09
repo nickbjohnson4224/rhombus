@@ -72,50 +72,45 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 		grant &= ~0xFFF;
 	}
 
-	switch (p_targ->signal_policy[sig]) {
-	case SIG_POLICY_EVENT:
-		if (p_targ->signal_handle) {
-			new_image = thread_alloc();
-			thread_bind(new_image, p_targ);
+	if (p_targ->port[sig].entry) {
+		new_image = thread_alloc();
+		thread_bind(new_image, p_targ);
 	
-			new_image->ds      = 0x23;
-			new_image->cs      = 0x1B;
-			new_image->ss      = 0x23;
-			new_image->eflags  = p_targ->thread[0]->eflags | 0x3000;
-			new_image->useresp = new_image->stack + SEGSZ;
-			new_image->proc    = p_targ;
-			new_image->grant   = grant;
-			new_image->ebx     = grant;
-			new_image->source  = image->proc->pid;
-			new_image->esi     = image->proc->pid;
-			new_image->signal  = sig;
-			new_image->edi     = sig;
-			new_image->eip     = p_targ->signal_handle;
-			new_image->fxdata  = NULL;
-			schedule_insert(new_image);
+		new_image->ds      = 0x23;
+		new_image->cs      = 0x1B;
+		new_image->ss      = 0x23;
+		new_image->eflags  = p_targ->thread[0]->eflags | 0x3000;
+		new_image->useresp = new_image->stack + SEGSZ;
+		new_image->proc    = p_targ;
+		new_image->grant   = grant;
+		new_image->ebx     = grant;
+		new_image->source  = image->proc->pid;
+		new_image->esi     = image->proc->pid;
+		new_image->signal  = sig;
+		new_image->edi     = sig;
+		new_image->eip     = p_targ->port[sig].entry;
+		new_image->fxdata  = NULL;
+		schedule_insert(new_image);
 
-			return new_image;
-		}
-	case SIG_POLICY_QUEUE:
+		return new_image;
+	}
+	else {
 		sq = heap_alloc(sizeof(struct signal_queue));
 		sq->signal = sig;
 		sq->grant  = grant;
 		sq->source = image->proc->pid;
 		sq->next   = NULL;
 
-		if (p_targ->mailbox_out[sig]) {
-			p_targ->mailbox_in[sig]->next = sq;
-			p_targ->mailbox_in[sig] = sq;
+		if (p_targ->port[sig].out) {
+			p_targ->port[sig].in->next = sq;
+			p_targ->port[sig].in = sq;
 		}
 		else {
-			p_targ->mailbox_out[sig] = sq;
-			p_targ->mailbox_in[sig]  = sq;
+			p_targ->port[sig].out = sq;
+			p_targ->port[sig].in  = sq;
 		}
 
 		return image;
-	default :
-	case SIG_POLICY_ABORT:
-		return syscall_exit(image);
 	}
 }
 
@@ -129,7 +124,7 @@ void thread_free(thread_t *thread) {
 	uintptr_t i;
 
 	if (thread->stack) {
-		i = (thread->stack - (KSPACE - (SEGSZ * 128))) / SEGSZ;
+		i = (thread->stack - SSPACE) / SEGSZ;
 
 		thread->proc->thread[i] = NULL;
 
@@ -165,10 +160,10 @@ void thread_init(void) {
 	pic_mask(0x0001);
 
 	/* register system calls */
-	register_int(0x40, syscall_fire);
+	register_int(0x40, syscall_send);
 	register_int(0x41, syscall_drop);
 	register_int(0x42, syscall_sctl);
-	register_int(0x43, syscall_mail);
+	register_int(0x43, syscall_recv);
 
 	register_int(0x48, syscall_fork);
 	register_int(0x49, syscall_exit);
@@ -222,23 +217,12 @@ uintptr_t thread_bind(thread_t *thread, process_t *proc) {
 	uintptr_t i;
 	uintptr_t addr;
 
-	for (addr = 0, i = 0; i < 128; i++) {
+	for (addr = 0, i = 0; i < 256; i++) {
 		if (!proc->thread[i]) {
 			proc->thread[i] = thread;
-			addr = KSPACE - (SEGSZ * 128) + (SEGSZ * i);
+			addr = SSPACE + (SEGSZ * i);
 			break;
 		}
-	}
-
-	if (!addr) {
-		/* out of threads */
-		return 0;
-	}
-
-	space_exmap(proc->space);
-
-	for (i = addr + (SEGSZ - PAGESZ * 16); i < addr + SEGSZ; i += PAGESZ) {
-		page_exset(i, page_fmt(frame_new(), PF_PRES | PF_RW | PF_USER));
 	}
 
 	thread->stack = addr;

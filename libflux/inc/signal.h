@@ -23,9 +23,8 @@
 #define SIG_QUERY	0x14	/* Server query */
 #define SIG_REPLY	0x1F	/* Reply from request */
 
-#define POLICY_ABORT 0
-#define POLICY_QUEUE 1
-#define POLICY_EVENT 2
+#define POLICY_QUEUE 0
+#define POLICY_EVENT 1
 
 int fire(uint32_t target, uint32_t signal, req_t *req);
 int tail(uint32_t target, uint32_t signal, req_t *req);  

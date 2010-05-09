@@ -7,7 +7,7 @@
 #include <space.h>
 
 static void  heap_new_slab(size_t bucket);
-static void *heap_valloc(void);
+static void *heap_valloc (size_t size);
 
 struct heap_block {
 	struct heap_block *next;
@@ -20,7 +20,7 @@ struct heap_block {
  * of blocks in bucket n is 2^n pointer-sized words (4 bytes on x86).
  */
 
-struct heap_block *heap_bucket[10];
+struct heap_block *heap_bucket[16];
 
 /****************************************************************************
  * heap_alloc
@@ -39,7 +39,7 @@ void *heap_alloc(size_t size) {
 
 	/* find appropriately sized bucket */
 	bucket = 42;
-	for (i = 0; i < 10; i++) {
+	for (i = 0; i < 16; i++) {
 		if (size < (sizeof(uintptr_t) * (1 << i))) {
 			bucket = i;
 			break;
@@ -81,7 +81,7 @@ void heap_free(void *ptr, size_t size) {
 
 	/* find appropriate bucket */
 	bucket = -1;
-	for (i = 0; i < 10; i++) {
+	for (i = 0; i < 16; i++) {
 		if (size <= (sizeof(uintptr_t) * (1 << i))) {
 			bucket = i;
 			break;
@@ -104,8 +104,11 @@ void heap_free(void *ptr, size_t size) {
 static void heap_new_slab(size_t bucket) {
 	uintptr_t *slab;
 	uintptr_t i;
+	uintptr_t slabsize;
 
-	slab = heap_valloc();
+	slabsize = (bucket <= 10) ? PAGESZ : (4 << bucket) * sizeof(uintptr_t);
+
+	slab = heap_valloc(slabsize);
 
 	if (!slab) {
 		/* out of memory */
@@ -113,7 +116,7 @@ static void heap_new_slab(size_t bucket) {
 	}
 
 	/* dump slab into bucket */
-	for (i = 0; i < PAGESZ / sizeof(uintptr_t); i += (1 << bucket)) {
+	for (i = 0; i < slabsize / sizeof(uintptr_t); i += (1 << bucket)) {
 		heap_free(&slab[i], sizeof(uintptr_t) * (1 << bucket));
 	}
 }
@@ -121,23 +124,24 @@ static void heap_new_slab(size_t bucket) {
 /****************************************************************************
  * heap_valloc
  *
- * Returns a pointer to a single page of kernel memory. This memory is
+ * Returns a pointer to some pages of kernel memory. This memory is
  * accessible from all address spaces, privileged, and read-write.
  * Returns null on out of memory error. Virtual memory taken from this
  * allocator cannot be freed.
  */
 
-static void *heap_valloc(void) {
+static void *heap_valloc(uintptr_t size) {
 	static uintptr_t brk = KERNEL_HEAP;
 
-	if (brk + PAGESZ >= KERNEL_HEAP_END) {
+	if (brk + size >= KERNEL_HEAP_END) {
 		/* out of memory */
 		return NULL;
 	}
 	else {
 		page_set(brk, page_fmt(frame_new(), PF_PRES | PF_RW));
+		mem_alloc(brk, size, PF_PRES | PF_RW);
 
-		brk += PAGESZ;
-		return (void*) (brk - PAGESZ);
+		brk += size;
+		return (void*) (brk - size);
 	}
 }

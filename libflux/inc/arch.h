@@ -99,12 +99,12 @@ void x86_mutex_free(uint32_t *mutex);
 #define EXEC_START	0x00400000
 #define HEAP_START	0x10000000
 #define HEAP_MXBRK	0x20000000
-#define BOOT_IMAGE	0xB0000000
+#define BOOT_IMAGE	0xD0000000
 #define FD_TABLE    0xCFFF0000
 
 /* These must remain in order */
+#define SSPACE	0x80000000	/* Stack space */
 #define ESPACE	0xC0000000	/* Exec persistent data */
-#define SSPACE	0xD0000000	/* Stack space */
 #define KSPACE 	0xF0000000	/* Kernel space */
 
 #endif/*ARCH_X86*/

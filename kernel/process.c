@@ -47,7 +47,8 @@ process_t *process_alloc(void) {
 
 process_t *process_clone(process_t *parent, thread_t *active_thread) {
 	process_t *child;
-	pid_t pid;
+	thread_t *new_thread;
+	uint32_t pid;
 
 	/* allocate new process structure for child */
 	child = process_alloc();
@@ -61,26 +62,26 @@ process_t *process_clone(process_t *parent, thread_t *active_thread) {
 	child->parent = parent;
 	child->pid    = pid;
 
-	memclr(child->thread, sizeof(struct thread *) * 128);
+	memclr(child->thread, sizeof(struct thread*) * 256);
 
-	child->thread[0] = thread_alloc();
+	new_thread = thread_alloc();
 
 	/* copy parent thread */
 	if (active_thread) {
-		memcpy(child->thread[0], active_thread, sizeof(thread_t));
+		memcpy(new_thread, active_thread, sizeof(thread_t));
 
 		/* copy parent FPU/SSE state */
 		if (active_thread->fxdata) {
-			child->thread[0]->fxdata = heap_alloc(512);
-			memcpy(child->thread[0]->fxdata, active_thread->fxdata, 512);
+			new_thread->fxdata = heap_alloc(512);
+			memcpy(new_thread->fxdata, active_thread->fxdata, 512);
 		}
 	}
 
 	/* setup child thread */
-	thread_bind(child->thread[0], child);
+	thread_bind(new_thread, child);
 
 	/* add child's thread to the scheduler */
-	schedule_insert(child->thread[0]);
+	schedule_insert(new_thread);
 
 	return child;
 }
@@ -112,7 +113,7 @@ void process_free(process_t *proc) {
  * exists, and null otherwise.
  */
 
-process_t *process_get(pid_t pid) {
+process_t *process_get(uint32_t pid) {
 
 	if (pid >= MAX_TASKS) {
 		return NULL;

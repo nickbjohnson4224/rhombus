@@ -6,7 +6,7 @@
 #include <flux/arch.h>
 #include <space.h>
 
-/***** SIGNALS *****/
+/***** IPC *****/
 
 /* Signals (system) (sig < 16) */
 #define SSIG_FAULT	0	/* Generic fault */
@@ -18,9 +18,13 @@
 #define SSIG_FLOAT	6	/* FPU exception */
 #define SSIG_DEATH	7	/* Child death */
 
-#define SIG_POLICY_ABORT 0 /* Exit on signal */
-#define SIG_POLICY_QUEUE 1 /* Queue signal */
-#define SIG_POLICY_EVENT 2 /* Handle signal */
+#define PORT_FAULT	0
+#define PORT_IRQRD	3
+#define PORT_FLOAT	6
+#define PORT_DEATH	7
+
+#define SIG_POLICY_QUEUE 0 /* Queue signal */
+#define SIG_POLICY_EVENT 1 /* Handle signal */
 
 struct signal_queue {
 	struct signal_queue *next;
@@ -30,8 +34,11 @@ struct signal_queue {
 };
 
 /***** PROCESSES *****/
-
-typedef uint16_t pid_t;
+struct port {
+	struct signal_queue *in;
+	struct signal_queue *out;
+	uintptr_t entry;
+};
 
 typedef struct process {
 
@@ -45,26 +52,22 @@ typedef struct process {
 	struct process *next_task;
 	struct process *parent;
 
-	/* signal policy */
-	uint32_t signal_policy[32];
-	uint32_t signal_handle;
-
-	/* signal queue */
-	struct signal_queue *mailbox_in [32];
-	struct signal_queue *mailbox_out[32];
-
-	/* threads and thread stacks */
-	struct thread *thread[128];
+	/* ports */
+	struct port port[256];
+	uintptr_t signal_handle;
+	
+	/* threads */
+	struct thread *thread[256];
 
 } process_t;
 
 void            process_init  (void);
-struct process *process_get   (pid_t pid);
+struct process *process_get   (uint32_t pid);
 struct process *process_alloc (void);
 struct process *process_clone (struct process *parent, struct thread *active_thread);
 void            process_free  (struct process *proc);
 void            process_kill  (struct process *proc);
-void            process_touch (pid_t pid);
+void            process_touch (uint32_t pid);
 void            process_switch(struct process *proc);
 
 /***** CONTROL SPACE *****/
@@ -162,10 +165,10 @@ void register_int(uint8_t n, handler_t handler);
 void tss_set_esp(uint32_t esp);
 void pic_mask(uint16_t mask);
 
-thread_t *syscall_fire(thread_t *image); /* send signals / create threads */
+thread_t *syscall_send(thread_t *image); /* send signals / create threads */
 thread_t *syscall_drop(thread_t *image); /* exit from threads */
 thread_t *syscall_sctl(thread_t *image); /* query signal policy */
-thread_t *syscall_mail(thread_t *image); /* recieve signals */
+thread_t *syscall_recv(thread_t *image); /* recieve signals */
 
 thread_t *syscall_fork(thread_t *image); /* create processes */
 thread_t *syscall_exit(thread_t *image); /* exit from processes */

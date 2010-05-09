@@ -13,12 +13,9 @@
 uint16_t irq_holder[256];
 
 /* Handles IRQ 0, and advances a simple counter used as a clock */
-/* If an IRQ was held, it is redirected now */
-
 uint32_t tick = 0;
 
 thread_t *pit_handler(thread_t *image) {
-
 	tick++;
 
 	return schedule_next();
@@ -48,24 +45,32 @@ thread_t *fault_generic(thread_t *image) {
 
 /* Page fault */
 thread_t *fault_page(thread_t *image) {
-
-	#ifdef PARANOID
 	extern uint32_t get_cr2(void);
 	uint32_t cr2;
 
+	/* Get faulting address from register CR2 */
+	cr2 = get_cr2();
+
+	#ifdef PARANOID
 	/* If in kernelspace, panic */
-//	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */	
-		/* Get faulting address from register CR2 */
-		cr2 = get_cr2();
+	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */	
 
 		printk("page fault at %x, ip = %x frame %x\n", 
 			cr2, image->eip, page_get(cr2));
 
 		panic("page fault exception");
-//	}
+	}
 	#endif
 
-	return thread_fire(image, image->proc->pid, SSIG_PAGE, 0);
+	if (cr2 >= image->stack && cr2 < image->stack + SEGSZ) {
+		/* allocate stack */
+		mem_alloc(cr2 & ~0xFFF, PAGESZ, PF_PRES | PF_RW | PF_USER);
+		return image;
+	}
+	else {
+		/* fault */
+		return thread_fire(image, image->proc->pid, SSIG_PAGE, 0);
+	}
 }
 
 /* Floating point exception */
@@ -108,7 +113,7 @@ thread_t *fault_nomath(thread_t *image) {
 
 /***** System Calls *****/
 
-thread_t *syscall_fire(thread_t *image) {
+thread_t *syscall_send(thread_t *image) {
 	uint32_t   targ  = image->eax;
 	uint32_t   sig   = image->ecx;
 	uint32_t   grant = image->ebx;
@@ -135,15 +140,26 @@ thread_t *syscall_drop(thread_t *image) {
 
 thread_t *syscall_sctl(thread_t *image) {
 	uint32_t action = image->eax;
-	uint32_t signal = image->ecx % 32;
+	uint32_t port   = image->ecx & 0xFF;
 	uint32_t handle = image->edx;
 	uint32_t policy = image->edx;
 
 	switch (action) {
 	default :
 	case 0:
-		image->eax = image->proc->signal_policy[signal];
-		image->proc->signal_policy[signal] = policy;
+		switch (policy) {
+		case SIG_POLICY_QUEUE:
+			image->eax = (image->proc->port[port].entry) ? 
+				SIG_POLICY_EVENT :
+				SIG_POLICY_QUEUE;
+			image->proc->port[port].entry = 0;
+			break;
+		case SIG_POLICY_EVENT:
+			image->eax = (image->proc->port[port].entry) ?
+				SIG_POLICY_EVENT : SIG_POLICY_QUEUE;
+			image->proc->port[port].entry = image->proc->signal_handle;
+			break;
+		}
 		break;
 	case 1:
 		image->eax = image->proc->signal_handle;
@@ -154,16 +170,17 @@ thread_t *syscall_sctl(thread_t *image) {
 	return image;
 }
 
-thread_t *syscall_mail(thread_t *image) {
-	uint32_t signal = image->ecx % 32;
+thread_t *syscall_recv(thread_t *image) {
+	uint32_t signal = image->ecx % 256;
 	uint32_t source = image->edx;
 	uint32_t insert = image->eax;
 	struct signal_queue *sq, *found;
 	struct signal_queue **mailbox_in;
 	struct signal_queue **mailbox_out;
 
-	mailbox_in  = &image->proc->mailbox_in [signal];
-	mailbox_out = &image->proc->mailbox_out[signal];
+
+	mailbox_in  = &image->proc->port[signal].in;
+	mailbox_out = &image->proc->port[signal].out;
 
 	if (!insert) {
 
@@ -334,7 +351,7 @@ thread_t *syscall_exec(thread_t *image) {
 		return image;
 	}
 
-	mem_free(0, ESPACE);
+	mem_free(0, SSPACE);
 
 	image->eip = elf_load((void*) image->eax);
 	image->useresp = image->stack + SEGSZ;
