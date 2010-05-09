@@ -5,7 +5,7 @@
 
 #include <flux/arch.h>
 #include <flux/driver.h>
-#include <flux/signal.h>
+#include <flux/ipc.h>
 #include <flux/request.h>
 #include <flux/mmap.h>
 
@@ -55,8 +55,7 @@ static void terminal_init(device_t selector) {
 
 	mutex_free(&m_vbuf);
 
-	signal_policy  (SIG_WRITE, POLICY_EVENT);
-	signal_register(SIG_WRITE, terminal_write);
+	event(PORT_WRITE, terminal_write);
 }
 
 static void terminal_halt(void) {
@@ -70,7 +69,7 @@ static void terminal_write(uint32_t caller, struct request *req) {
 	if (!req_check(req)) {
 		if (!req) req = ralloc();
 		req->format = REQ_ERROR;
-		tail(caller, SIG_REPLY, req);
+		send(PORT_REPLY, caller, req);
 		return;
 	}
 
@@ -91,7 +90,7 @@ static void terminal_write(uint32_t caller, struct request *req) {
 
 	req->datasize = i;
 	req->format = REQ_READ;
-	tail(caller, SIG_REPLY, req_cksum(req));
+	send(PORT_REPLY, caller, req_cksum(req));
 }
 
 static void char_write(char c) {

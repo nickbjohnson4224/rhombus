@@ -114,16 +114,16 @@ thread_t *fault_nomath(thread_t *image) {
 /***** System Calls *****/
 
 thread_t *syscall_send(thread_t *image) {
-	uint32_t   targ  = image->eax;
-	uint32_t   sig   = image->ecx;
-	uint32_t   grant = image->ebx;
+	uint32_t   target = image->eax;
+	uint32_t   port   = image->ecx;
+	uint32_t   packet = image->ebx;
 
-	if (targ == 0) {
+	if (target == 0) {
 		image->eax = 0;
-		return thread_switch(image, schedule_next());
+		return schedule_next();
 	}
 
-	if (!process_get(targ)) {
+	if (!process_get(target)) {
 		image->eax = ERROR;
 		return image;
 	}
@@ -131,124 +131,80 @@ thread_t *syscall_send(thread_t *image) {
 		image->eax = 0;
 	}
 
-	return thread_fire(image, targ, sig, grant);
+	return thread_fire(image, target, port, packet);
 }
 
 thread_t *syscall_drop(thread_t *image) {
 	return thread_drop(image);
 }
 
-thread_t *syscall_sctl(thread_t *image) {
-	uint32_t action = image->eax;
+thread_t *syscall_evnt(thread_t *image) {
 	uint32_t port   = image->ecx & 0xFF;
 	uint32_t handle = image->edx;
-	uint32_t policy = image->edx;
 
-	switch (action) {
-	default :
-	case 0:
-		switch (policy) {
-		case SIG_POLICY_QUEUE:
-			image->eax = (image->proc->port[port].entry) ? 
-				SIG_POLICY_EVENT :
-				SIG_POLICY_QUEUE;
-			image->proc->port[port].entry = 0;
-			break;
-		case SIG_POLICY_EVENT:
-			image->eax = (image->proc->port[port].entry) ?
-				SIG_POLICY_EVENT : SIG_POLICY_QUEUE;
-			image->proc->port[port].entry = image->proc->signal_handle;
-			break;
-		}
-		break;
-	case 1:
-		image->eax = image->proc->signal_handle;
-		image->proc->signal_handle = handle;
-		break;
-	}
+	image->eax = image->proc->port[port].entry;
+	image->proc->port[port].entry = handle;
 
 	return image;
 }
 
 thread_t *syscall_recv(thread_t *image) {
-	uint32_t signal = image->ecx % 256;
+	uint32_t port   = image->ecx % 256;
 	uint32_t source = image->edx;
-	uint32_t insert = image->eax;
 	struct signal_queue *sq, *found;
 	struct signal_queue **mailbox_in;
 	struct signal_queue **mailbox_out;
 
 
-	mailbox_in  = &image->proc->port[signal].in;
-	mailbox_out = &image->proc->port[signal].out;
+	mailbox_in  = &image->proc->port[port].in;
+	mailbox_out = &image->proc->port[port].out;
 
-	if (!insert) {
+	sq = *mailbox_out;
 
-		sq = *mailbox_out;
+	if (!sq) {
+		image->eax = -1;
+		return image;
+	}
 
-		if (!sq) {
-			image->eax = -1;
-			return image;
-		}
-
-		if (source) {
-			if (sq->source == source) {
-				*mailbox_out = (*mailbox_out)->next;
-			}
-			else {
-				for (found = NULL; sq->next; sq = sq->next) {
-					if (sq->next->source == source) {
-						found = sq->next;
-						sq->next = sq->next->next;
-	
-						if (*mailbox_in == found) {
-							*mailbox_in = sq;
-						}
-	
-						sq = found;
-						break;
-					}
-				}
-
-				if (!found) {
-					image->eax = -1;
-					return image;
-				}
-			}
-		}
-		else {
+	if (source) {
+		if (sq->source == source) {
 			*mailbox_out = (*mailbox_out)->next;
 		}
+		else {
+			for (found = NULL; sq->next; sq = sq->next) {
+				if (sq->next->source == source) {
+					found = sq->next;
+					sq->next = sq->next->next;
+					
+					if (*mailbox_in == found) {
+						*mailbox_in = sq;
+					}
+	
+					sq = found;
+					break;
+				}
+			}
 
-		if (!(*mailbox_out)) {
-			*mailbox_in = NULL;
+			if (!found) {
+				image->eax = -1;
+				return image;
+			}
 		}
-
-		image->signal = sq->signal;
-		image->grant  = sq->grant;
-		image->source = sq->source;
-
-		image->eax    = sq->grant;
-		heap_free(sq, sizeof(struct signal_queue));
 	}
 	else {
-
-		sq = heap_alloc(sizeof(struct signal_queue));
-
-		sq->next = NULL;
-		sq->signal = image->signal;
-		sq->grant  = image->grant;
-		sq->source = image->source;
-
-		if (*mailbox_out) {
-			(*mailbox_in)->next = sq;
-			*mailbox_in = sq;
-		}
-		else {
-			*mailbox_out = sq;
-			*mailbox_in = sq;
-		}
+		*mailbox_out = (*mailbox_out)->next;
 	}
+
+	if (!(*mailbox_out)) {
+		*mailbox_in = NULL;
+	}
+
+	image->signal = sq->signal;
+	image->grant  = sq->grant;
+	image->source = sq->source;
+
+	image->eax    = sq->grant;
+	heap_free(sq, sizeof(struct signal_queue));
 
 	return image;
 }

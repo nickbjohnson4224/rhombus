@@ -4,7 +4,7 @@
  */
 
 #include <flux/arch.h>
-#include <flux/signal.h>
+#include <flux/ipc.h>
 #include <flux/request.h>
 #include <flux/proc.h>
 #include <flux/driver.h>
@@ -13,8 +13,6 @@
 #include <flux/io.h>
 
 #include <driver/terminal.h>
-#include <driver/keyboard.h>
-#include <driver/ata.h>
 #include <driver/pci.h>
 
 #include <stdint.h>
@@ -28,25 +26,21 @@
 void driver_start(int fd, struct driver_interface *driver, device_t dev) {
 	int32_t pid;
 
-	signal_policy(SIG_REPLY, POLICY_QUEUE);
-
 	pid = fork();
 
 	if (pid < 0) {
 		driver->init(dev);
-		fire(-pid, SIG_REPLY, NULL);
+		send(PORT_REPLY, -pid, NULL);
 		for(;;);
 	}
 
-	signal_waits(SIG_REPLY, pid, true);
+	waits(PORT_REPLY, pid);
 
 	fdset(fd, pid, 0);
 }
 
 void daemon_start(int fd, void *image, size_t image_size) {
 	int32_t pid;
-
-	signal_policy(SIG_REPLY, POLICY_QUEUE);
 
 	pid = fork();
 
@@ -55,7 +49,7 @@ void daemon_start(int fd, void *image, size_t image_size) {
 		for(;;);
 	}
 
-	signal_waits(SIG_REPLY, pid, true);
+	waits(PORT_REPLY, pid);
 
 	fdset(fd, pid, 0);
 }
@@ -85,9 +79,9 @@ int main() {
 	}
 	daemon_start(FD_STDVFS, file->start, file->size);
 
-	i = find("cake");
-	f = fdget(i);
-	printf("cake: %d %d\n", f->target, f->resource);
+//	i = find("cake");
+//	f = fdget(i);
+//	printf("cake: %d %d\n", f->target, f->resource);
 
 	/* Device Daemon */
 	file = tar_find(boot_image, (char*) "devd");

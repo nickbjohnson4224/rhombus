@@ -162,7 +162,7 @@ void thread_init(void) {
 	/* register system calls */
 	register_int(0x40, syscall_send);
 	register_int(0x41, syscall_drop);
-	register_int(0x42, syscall_sctl);
+	register_int(0x42, syscall_evnt);
 	register_int(0x43, syscall_recv);
 
 	register_int(0x48, syscall_fork);

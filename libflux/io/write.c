@@ -5,13 +5,13 @@
 
 #include <flux/arch.h>
 #include <flux/io.h>
-#include <flux/signal.h>
+#include <flux/ipc.h>
 #include <flux/request.h>
 
 size_t write(int fd, void *buf, size_t size, uint64_t offset) {
 	struct file *file;
 	uint8_t *data;
-	uint32_t old_policy;
+	event_t old_handler;
 	uint16_t datasize;
 	size_t oldsize;
 	size_t i;
@@ -25,7 +25,7 @@ size_t write(int fd, void *buf, size_t size, uint64_t offset) {
 	req     = ralloc();
 	i       = 0;
 
-	old_policy = signal_policy(SIG_REPLY, POLICY_QUEUE);
+	old_handler = event(PORT_REPLY, NULL);
 
 	while (size) {
 		datasize = (size > REQSZ) ? REQSZ : size;
@@ -38,13 +38,13 @@ size_t write(int fd, void *buf, size_t size, uint64_t offset) {
 
 		arch_memcpy(req_getbuf(req), data, datasize);
 
-		fire(file->target, SIG_WRITE, req_cksum(req));
-		res = signal_waits(SIG_REPLY, file->target, false);
+		send(PORT_WRITE, file->target, req_cksum(req));
+		res = waits(PORT_REPLY, file->target);
 
 		if (res->format == REQ_ERROR) {
 			rfree(res);
 
-			signal_policy(SIG_REPLY, old_policy);
+			event(PORT_REPLY, old_handler);
 			return (oldsize - size);
 		}
 
@@ -57,7 +57,7 @@ size_t write(int fd, void *buf, size_t size, uint64_t offset) {
 	}
 
 	rfree(req);
-	signal_policy(SIG_REPLY, old_policy);
+	event(PORT_REPLY, old_handler);
 
 	return oldsize;
 }

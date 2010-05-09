@@ -5,14 +5,14 @@
 
 #include <flux/arch.h>
 #include <flux/io.h>
-#include <flux/signal.h>
+#include <flux/ipc.h>
 #include <flux/request.h>
 
 size_t query(int fd, void *rbuf, void *sbuf, size_t size) {
 	struct file *file;
 	uint8_t *send_data;
 	uint8_t *recv_data;
-	uint32_t old_policy;
+	event_t old_handler;
 	size_t oldsize;
 	size_t i;
 	req_t *req;
@@ -26,7 +26,7 @@ size_t query(int fd, void *rbuf, void *sbuf, size_t size) {
 	req       = ralloc();
 	i         = 0;
 
-	old_policy = signal_policy(SIG_REPLY, POLICY_QUEUE);
+	old_handler = event(PORT_REPLY, NULL);
 
 	req_setbuf(req, STDOFF, size);
 	req->resource = file->resource;
@@ -34,13 +34,13 @@ size_t query(int fd, void *rbuf, void *sbuf, size_t size) {
 
 	arch_memcpy(req_getbuf(req), send_data, size);
 
-	fire(file->target, SIG_QUERY, req_cksum(req));
-	res = signal_waits(SIG_REPLY, file->target, false);
+	send(PORT_QUERY, file->target, req_cksum(req));
+	res = waits(PORT_REPLY, file->target);
 
 	if (res->format == REQ_ERROR) {
 		rfree(res);
 
-		signal_policy(SIG_REPLY, old_policy);
+		event(PORT_REPLY, old_handler);
 		return 0;
 	}
 
@@ -50,7 +50,7 @@ size_t query(int fd, void *rbuf, void *sbuf, size_t size) {
 	rfree(res);
 	rfree(req);
 
-	signal_policy(SIG_REPLY, old_policy);
+	event(PORT_REPLY, old_handler);
 
 	return size;
 }

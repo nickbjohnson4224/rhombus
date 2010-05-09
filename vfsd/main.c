@@ -4,7 +4,7 @@
  */
 
 #include <flux/arch.h>
-#include <flux/signal.h>
+#include <flux/ipc.h>
 #include <flux/request.h>
 #include <flux/proc.h>
 #include <flux/driver.h>
@@ -27,7 +27,7 @@ void vfs_handle(uint32_t caller, req_t *req) {
 	if (!req_check(req)) {
 		if (!req) req = ralloc();
 		req->format = REQ_ERROR;
-		tail(caller, SIG_REPLY, req);
+		send(PORT_REPLY, caller, req);
 		return;
 	}
 
@@ -52,24 +52,23 @@ void vfs_handle(uint32_t caller, req_t *req) {
 	}
 
 	q->command = VFS_CMD_REPLY;
-	tail(caller, SIG_REPLY, req_cksum(req));
+	send(PORT_REPLY, caller, req_cksum(req));
 }
 
 int main() {
-	signal_register(SIG_QUERY, vfs_handle);
-	signal_policy(SIG_QUERY, POLICY_EVENT);
+	event(PORT_QUERY, vfs_handle);
 
 	printf("VFSd: starting\n");
 
-	mutex_spin(&m_vfs);
+/*	mutex_spin(&m_vfs);
 	vfs_root = calloc(sizeof(struct vfs), 1);
 
 	vfs_add(vfs_root, "cake", 42, 42);
-	mutex_free(&m_vfs);
+	mutex_free(&m_vfs); */
 
 	printf("VFSd: ready\n");
 
-	fire(1, SIG_REPLY, NULL);
+	send(PORT_REPLY, 1, NULL);
 
 	for(;;);
 }

@@ -167,7 +167,7 @@ void pic_mask(uint16_t mask);
 
 thread_t *syscall_send(thread_t *image); /* send signals / create threads */
 thread_t *syscall_drop(thread_t *image); /* exit from threads */
-thread_t *syscall_sctl(thread_t *image); /* query signal policy */
+thread_t *syscall_evnt(thread_t *image); /* set event handlers */
 thread_t *syscall_recv(thread_t *image); /* recieve signals */
 
 thread_t *syscall_fork(thread_t *image); /* create processes */

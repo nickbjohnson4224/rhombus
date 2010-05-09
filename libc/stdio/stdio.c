@@ -8,7 +8,6 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include <flux/signal.h>
 #include <flux/request.h>
 #include <flux/heap.h>
 

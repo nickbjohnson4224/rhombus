@@ -4,7 +4,7 @@
  */
 
 #include <flux/arch.h>
-#include <flux/signal.h>
+#include <flux/ipc.h>
 #include <flux/request.h>
 #include <flux/proc.h>
 #include <flux/driver.h>
@@ -18,7 +18,7 @@ int main() {
 
 	printf("PMDd: ready\n");
 
-	fire(1, SIG_REPLY, NULL);
+	send(PORT_REPLY, 1, NULL);
 
 	for(;;);
 }
