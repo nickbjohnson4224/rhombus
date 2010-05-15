@@ -14,7 +14,7 @@
  * Array of event handlers called by _on_event, corresponding to each port.
  */
 
-static event_t event_handler[256];
+static volatile event_t event_handler[256];
 
 /****************************************************************************
  * send
@@ -23,13 +23,13 @@ static event_t event_handler[256];
  * The given packet is freed.
  */
 
-uint32_t send(uint32_t port, uint32_t target, req_t *request) {
+uint32_t send(uint32_t port, uint32_t target, struct packet *packet) {
 	uint32_t err;
 
-	err = _send(port, target, request);
+	err = _send(port, target, packet);
 
-	if (!err) {
-		rfree(request);
+	if (!err && packet) {
+		packet_free(packet);
 	}
 
 	return err;
@@ -42,18 +42,18 @@ uint32_t send(uint32_t port, uint32_t target, req_t *request) {
  * from the pid <source>.
  */
 
-struct request *recvs(uint32_t port, uint32_t source) {
-	uintptr_t packet_phys;
-	struct request *packet;
+struct packet *recvs(uint32_t port, uint32_t source) {
+	uintptr_t packet_size;
+	struct packet *packet;
 
-	packet_phys = _recv(port, 0);
+	packet_size = _recv(port, source);
 
-	if (packet_phys & 1) {
+	if (packet_size == -1 || packet_size == 0) {
 		return NULL;
 	}
 
-	packet = ralloc();
-	emap(packet, packet_phys, PROT_READ | PROT_WRITE);
+	packet = packet_alloc(packet_size * PAGESZ);
+	_pget((uintptr_t) packet);
 
 	return packet;
 }
@@ -64,7 +64,7 @@ struct request *recvs(uint32_t port, uint32_t source) {
  * Recieves a packet (if one exists) from the specified port.
  */
 
-struct request *recv(uint32_t port) {
+struct packet *recv(uint32_t port) {
 	return recvs(port, 0);
 }
 
@@ -75,14 +75,26 @@ struct request *recv(uint32_t port) {
  * port that originated from the pid <source>.
  */
 
-struct request *waits(uint32_t port, uint32_t source) {
-	struct request *packet;
+struct packet *waits(uint32_t port, uint32_t source) {
+	uintptr_t packet_size;
+	struct packet *packet;
 
 	packet = NULL;
 
-	while (!packet) {
-		packet = recvs(port, source);
-	}
+	do {
+		packet_size = _recv(port, source);
+
+		if (packet_size == -1) {
+			continue;
+		}
+
+		if (packet_size > 0) {
+			packet = packet_alloc(packet_size * PAGESZ);
+			_pget((uintptr_t) packet);
+		}
+
+		break;
+	} while (1);
 
 	return packet;
 }
@@ -94,7 +106,7 @@ struct request *waits(uint32_t port, uint32_t source) {
  * port.
  */
 
-struct request *wait(uint32_t port) {
+struct packet *wait(uint32_t port) {
 	return waits(port, 0);
 }
 
@@ -105,11 +117,10 @@ struct request *wait(uint32_t port) {
  * handler.
  */
 
-void on_event(uint32_t source, uint32_t port, uintptr_t packet_phys) {
-	struct request *packet;
+void on_event(uint32_t port, uint32_t source) {
+	struct packet *packet;
 
-	packet = ralloc();
-	emap(packet, packet_phys, PROT_READ | PROT_WRITE);
+	packet = recvs(port, source);
 
 	event_handler[port](source, packet);
 }

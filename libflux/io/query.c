@@ -9,46 +9,55 @@
 #include <flux/request.h>
 
 size_t query(int fd, void *rbuf, void *sbuf, size_t size) {
+	struct packet *p_in;
+	struct packet *p_out;
 	struct file *file;
 	uint8_t *send_data;
 	uint8_t *recv_data;
 	event_t old_handler;
 	size_t oldsize;
 	size_t i;
-	req_t *req;
-	req_t *res;
 
-	oldsize   = size;
-	send_data = sbuf;
-	recv_data = rbuf;
-	file      = fdget(fd);
-	res       = NULL;
-	req       = ralloc();
-	i         = 0;
 
 	old_handler = event(PORT_REPLY, NULL);
+	p_out       = packet_alloc(0);
+	p_in        = NULL;
+	oldsize     = size;
+	send_data   = sbuf;
+	recv_data   = rbuf;
+	file        = fdget(fd);
+	i           = 0;
 
-	req_setbuf(req, STDOFF, size);
-	req->resource = file->resource;
-	req->format   = REQ_WRITE;
+	packet_setbuf(&p_out, size);
 
-	arch_memcpy(req_getbuf(req), send_data, size);
+	p_out->identity = 0;
+	p_out->protocol = PACKET_PROTOCOL;
+	p_out->software = PACKET_SOFTWARE;
+	p_out->type     = PACKET_TYPE_QUERY;
+	p_out->flags    = 0;
 
-	send(PORT_QUERY, file->target, req_cksum(req));
-	res = waits(PORT_REPLY, file->target);
+	p_out->fragment_index = 0;
+	p_out->fragment_count = 0;
+	p_out->target_pid     = file->target;
+	p_out->target_inode   = file->resource;
 
-	if (res->format == REQ_ERROR) {
-		rfree(res);
+	arch_memcpy(packet_getbuf(p_out), send_data, size);
+
+	send(PORT_QUERY, file->target, p_out);
+	p_in = waits(PORT_REPLY, file->target);
+
+	if (p_in->type == PACKET_TYPE_ERROR) {
+		packet_free(p_in);
 
 		event(PORT_REPLY, old_handler);
 		return 0;
 	}
 
-	size = res->datasize;
-	arch_memcpy(recv_data, req_getbuf(res), size);
+	size = p_in->data_length;
+	arch_memcpy(recv_data, packet_getbuf(p_in), size);
 
-	rfree(res);
-	rfree(req);
+	packet_free(p_in);
+	packet_free(p_out);
 
 	event(PORT_REPLY, old_handler);
 

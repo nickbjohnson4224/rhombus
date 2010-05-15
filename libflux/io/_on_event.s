@@ -10,10 +10,9 @@ extern _drop
 
 _on_event:
 	
-	push ebx
-	push edi
 	push esi
+	push edi
 	call on_event
-	add esp, 12
+	add esp, 8
 
 	call _drop

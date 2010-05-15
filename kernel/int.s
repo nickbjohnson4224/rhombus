@@ -61,10 +61,11 @@ INTN	46
 INTN	47
 
 ; System calls
-INTN	64	; fire
+INTN	64	; send
 INTN	65	; drop
-INTN	66	; sctl
-INTN	67	; mail
+INTN	66	; evnt
+INTN	67	; recv
+INTN	68	; pget
 
 INTN	72	; fork
 INTN	73	; exit

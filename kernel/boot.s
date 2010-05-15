@@ -32,7 +32,7 @@ section .pdata
 
 ; Initial kernel address space
 init_kmap:
-    dd (init_ktbl - KSPACE + 0x003)	
+	dd (init_ktbl - KSPACE + 0x003)	
 	times ((KSPACE / 0x400000) - 1) dd 0 ; Fill until KSPACE
 	dd (init_ktbl - KSPACE + 0x203)
 	times (1022 - (KSPACE / 0x400000)) dd 0	; Fill remainder of map

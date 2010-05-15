@@ -13,6 +13,11 @@ void *calloc(size_t nmemb, size_t size) {
 	void *ptr;
 	
 	ptr = heap_malloc(nmemb * size);
+
+	if (!ptr) {
+		return NULL;
+	}
+
 	memclr(ptr, nmemb * size);
 	
 	return ptr;

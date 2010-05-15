@@ -30,11 +30,11 @@ void driver_start(int fd, struct driver_interface *driver, device_t dev) {
 
 	if (pid < 0) {
 		driver->init(dev);
-		send(PORT_REPLY, -pid, NULL);
+		send(PORT_SYNC, -pid, NULL);
 		for(;;);
 	}
 
-	waits(PORT_REPLY, pid);
+	waits(PORT_SYNC, pid);
 
 	fdset(fd, pid, 0);
 }
@@ -49,7 +49,7 @@ void daemon_start(int fd, void *image, size_t image_size) {
 		for(;;);
 	}
 
-	waits(PORT_REPLY, pid);
+	waits(PORT_SYNC, pid);
 
 	fdset(fd, pid, 0);
 }
@@ -78,10 +78,6 @@ int main() {
 		for(;;);
 	}
 	daemon_start(FD_STDVFS, file->start, file->size);
-
-	i = find("cake");
-	f = fdget(i);
-	printf("cake: %d %d\n", f->target, f->resource);
 
 	/* Device Daemon */
 	file = tar_find(boot_image, (char*) "devd");

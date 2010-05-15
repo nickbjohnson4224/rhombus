@@ -20,18 +20,18 @@
 struct vfs *vfs_root;
 uint32_t m_vfs;
 
-void vfs_handle(uint32_t caller, req_t *req) {
+void vfs_handle(uint32_t caller, struct packet *packet) {
 	struct vfs_query *q;
 	struct vfs *file;
 
-	if (!req_check(req)) {
-		if (!req) req = ralloc();
-		req->format = REQ_ERROR;
-		send(PORT_REPLY, caller, req);
+	if (!packet) {
+		packet = packet_alloc(0);
+		packet->type = PACKET_TYPE_ERROR;
+		send(PORT_REPLY, caller, packet);
 		return;
 	}
 
-	q = (void*) req_getbuf(req);
+	q = packet_getbuf(packet);
 
 	switch (q->command) {
 	case VFS_CMD_FIND:
@@ -52,25 +52,20 @@ void vfs_handle(uint32_t caller, req_t *req) {
 	}
 
 	q->command = VFS_CMD_REPLY;
-	send(PORT_REPLY, caller, req_cksum(req));
+	packet->type = PACKET_TYPE_REPLY;
+	send(PORT_REPLY, caller, packet);
 }
 
 int main() {
 	event(PORT_QUERY, vfs_handle);
 
-	printf("VFSd: starting\n");
-
 	mutex_spin(&m_vfs);
 	vfs_root = calloc(sizeof(struct vfs), 1);
-
-	printf("VFSd: adding structure\n");
-
-	vfs_add(vfs_root, "cake", 42, 42);
 	mutex_free(&m_vfs);
 
 	printf("VFSd: ready\n");
 
-	send(PORT_REPLY, 1, NULL);
+	send(PORT_SYNC, 1, NULL);
 
-	for(;;);
+	for(;;) sleep();
 }

@@ -23,7 +23,7 @@
 
 static void terminal_init (device_t selector);
 static void terminal_halt (void);
-static void terminal_write(uint32_t caller, req_t *req);
+static void terminal_write(uint32_t caller, struct packet *packet);
 
 static uint16_t *vbuf;
 static uint16_t c_base = 0;
@@ -62,22 +62,22 @@ static void terminal_halt(void) {
 	return;
 }
 
-static void terminal_write(uint32_t caller, struct request *req) {
+static void terminal_write(uint32_t caller, struct packet *packet) {
 	size_t i;
 	char *buffer;
 
-	if (!req_check(req)) {
-		if (!req) req = ralloc();
-		req->format = REQ_ERROR;
-		send(PORT_REPLY, caller, req);
+	if (!packet) {
+		packet = packet_alloc(0);
+		packet->type = PACKET_TYPE_ERROR;
+		send(PORT_REPLY, caller, packet);
 		return;
 	}
 
-	buffer = (void*) req_getbuf(req);
+	buffer = packet_getbuf(packet);
 
 	mutex_spin(&m_vbuf);
 
-	for (i = 0; i < req->datasize; i++) {
+	for (i = 0; i < packet->data_length; i++) {
 		char_write(buffer[i]);
 	}
 
@@ -88,9 +88,8 @@ static void terminal_write(uint32_t caller, struct request *req) {
 
 	mutex_free(&m_vbuf);
 
-	req->datasize = i;
-	req->format = REQ_READ;
-	send(PORT_REPLY, caller, req_cksum(req));
+	packet->type = PACKET_TYPE_REPLY;
+	send(PORT_REPLY, caller, packet);
 }
 
 static void char_write(char c) {

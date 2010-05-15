@@ -57,11 +57,12 @@ thread_t *thread_drop(thread_t *image) {
  * passed as image.
  */
 
-thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t grant){
+thread_t *thread_fire(thread_t *image, 
+		uint16_t targ, uint16_t sig, uintptr_t grant) {
 	process_t *p_targ;
 	thread_t *new_image;
 	uintptr_t addr;
-	struct signal_queue *sq;
+	struct packet *packet;
 
 	p_targ = process_get(targ);
 
@@ -72,21 +73,32 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 		grant &= ~0xFFF;
 	}
 
+	packet = heap_alloc(sizeof(struct packet));
+	packet->signal = sig;
+	packet->grant  = grant;
+	packet->source = image->proc->pid;
+	packet->next   = NULL;
+
+	if (p_targ->port[sig].out) {
+		p_targ->port[sig].in->next = packet;
+		p_targ->port[sig].in = packet;
+	}
+	else {
+		p_targ->port[sig].out = packet;
+		p_targ->port[sig].in  = packet;
+	}
+
 	if (p_targ->port[sig].entry) {
 		new_image = thread_alloc();
 		thread_bind(new_image, p_targ);
-	
+
 		new_image->ds      = 0x23;
 		new_image->cs      = 0x1B;
 		new_image->ss      = 0x23;
 		new_image->eflags  = p_targ->thread[0]->eflags | 0x3000;
 		new_image->useresp = new_image->stack + SEGSZ;
 		new_image->proc    = p_targ;
-		new_image->grant   = grant;
-		new_image->ebx     = grant;
-		new_image->source  = image->proc->pid;
 		new_image->esi     = image->proc->pid;
-		new_image->signal  = sig;
 		new_image->edi     = sig;
 		new_image->eip     = p_targ->port[sig].entry;
 		new_image->fxdata  = NULL;
@@ -95,21 +107,6 @@ thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t gr
 		return new_image;
 	}
 	else {
-		sq = heap_alloc(sizeof(struct signal_queue));
-		sq->signal = sig;
-		sq->grant  = grant;
-		sq->source = image->proc->pid;
-		sq->next   = NULL;
-
-		if (p_targ->port[sig].out) {
-			p_targ->port[sig].in->next = sq;
-			p_targ->port[sig].in = sq;
-		}
-		else {
-			p_targ->port[sig].out = sq;
-			p_targ->port[sig].in  = sq;
-		}
-
 		return image;
 	}
 }
@@ -164,6 +161,7 @@ void thread_init(void) {
 	register_int(0x41, syscall_drop);
 	register_int(0x42, syscall_evnt);
 	register_int(0x43, syscall_recv);
+	register_int(0x44, syscall_pget);
 
 	register_int(0x48, syscall_fork);
 	register_int(0x49, syscall_exit);

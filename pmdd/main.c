@@ -3,11 +3,11 @@
  * ISC Licensed, see LICENSE for details
  */
 
+#include <flux/request.h>
+#include <flux/driver.h>
+#include <flux/proc.h>
 #include <flux/arch.h>
 #include <flux/ipc.h>
-#include <flux/request.h>
-#include <flux/proc.h>
-#include <flux/driver.h>
 
 #include <stdint.h>
 #include <string.h>
@@ -18,7 +18,7 @@ int main() {
 
 	printf("PMDd: ready\n");
 
-	send(PORT_REPLY, 1, NULL);
+	send(PORT_SYNC, 1, NULL);
 
-	for(;;);
+	for(;;) sleep();
 }

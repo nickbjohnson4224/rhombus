@@ -26,8 +26,8 @@
 #define SIG_POLICY_QUEUE 0 /* Queue signal */
 #define SIG_POLICY_EVENT 1 /* Handle signal */
 
-struct signal_queue {
-	struct signal_queue *next;
+struct packet {
+	struct packet *next;
 	uint32_t signal;
 	uint32_t grant;
 	uint32_t source;
@@ -35,8 +35,8 @@ struct signal_queue {
 
 /***** PROCESSES *****/
 struct port {
-	struct signal_queue *in;
-	struct signal_queue *out;
+	struct packet *in;
+	struct packet *out;
 	uintptr_t entry;
 };
 
@@ -131,9 +131,7 @@ typedef struct thread {
 	uint32_t *fxdata;
 	
 	/* signal descriptor */
-	uint32_t signal;
-	uint32_t grant;
-	uint32_t source;
+	struct packet *packet;
 
 	/* owning process */
 	struct process *proc;
@@ -169,6 +167,7 @@ thread_t *syscall_send(thread_t *image); /* send signals / create threads */
 thread_t *syscall_drop(thread_t *image); /* exit from threads */
 thread_t *syscall_evnt(thread_t *image); /* set event handlers */
 thread_t *syscall_recv(thread_t *image); /* recieve signals */
+thread_t *syscall_pget(thread_t *image); /* recieve packets */
 
 thread_t *syscall_fork(thread_t *image); /* create processes */
 thread_t *syscall_exit(thread_t *image); /* exit from processes */

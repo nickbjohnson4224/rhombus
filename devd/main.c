@@ -18,7 +18,7 @@ int main() {
 
 	printf("DEVd: ready\n");
 
-	send(PORT_REPLY, 1, NULL);
+	send(PORT_SYNC, 1, NULL);
 
-	for(;;);
+	for(;;) sleep();
 }

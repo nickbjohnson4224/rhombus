@@ -69,6 +69,10 @@ thread_t *fault_page(thread_t *image) {
 	}
 	else {
 		/* fault */
+		printk("page fault at %x, ip = %x frame %x proc %d\n", 
+			cr2, image->eip, page_get(cr2), image->proc->pid);
+
+		panic("page fault exception");
 		return thread_fire(image, image->proc->pid, SSIG_FAULT, 0);
 	}
 }
@@ -151,10 +155,9 @@ thread_t *syscall_evnt(thread_t *image) {
 thread_t *syscall_recv(thread_t *image) {
 	uint32_t port   = image->ecx % 256;
 	uint32_t source = image->edx;
-	struct signal_queue *sq, *found;
-	struct signal_queue **mailbox_in;
-	struct signal_queue **mailbox_out;
-
+	struct packet *sq, *found;
+	struct packet **mailbox_in;
+	struct packet **mailbox_out;
 
 	mailbox_in  = &image->proc->port[port].in;
 	mailbox_out = &image->proc->port[port].out;
@@ -199,13 +202,39 @@ thread_t *syscall_recv(thread_t *image) {
 		*mailbox_in = NULL;
 	}
 
-	image->signal = sq->signal;
-	image->grant  = sq->grant;
-	image->source = sq->source;
+	image->packet = sq;
 
-	image->eax    = sq->grant;
-	heap_free(sq, sizeof(struct signal_queue));
+	if (sq->grant) {
+		image->eax = 1;
+	}
+	else {
+		image->eax = 0;
+	}
 
+	return image;
+}
+
+thread_t *syscall_pget(thread_t *image) {
+	uintptr_t addr = image->eax;
+	uintptr_t i;
+
+	if (!image->packet || !image->packet->grant) {
+		image->eax = 0;
+		return image;
+	}
+
+	if (addr & 0xFFF || addr + PAGESZ >= KSPACE) {
+		image->eax = -1;
+		return image;
+	}
+
+	if (page_get(addr) & PF_PRES) {
+		frame_free(page_get(addr));
+	}
+
+	page_set(addr, page_fmt(image->packet->grant, PF_PRES | PF_USER | PF_RW));
+
+	image->eax = 1;
 	return image;
 }
 
@@ -346,17 +375,19 @@ thread_t *syscall_mmap(thread_t *image) {
 	pflags = PF_USER | PF_PRES | ((flags & MMAP_WRITE) ? PF_RW : 0);
 
 	if (flags & MMAP_FRAME) {
-		if ((image->proc->flags & CTRL_SUPER) || image->grant == frame) {
-			frame_free(page_ufmt(page_get(addr)));
-			page_set(addr, page_fmt(frame, pflags));
-			if (image->grant == frame) {
-				image->grant = 0;
+		
+		if ((image->proc->flags & CTRL_SUPER)) {
+			if (page_get(addr) & PF_PRES) {
+				frame_free(page_ufmt(page_get(addr)));
 			}
+
+			page_set(addr, page_fmt(frame, pflags));
 			image->eax = 0;
 		}
 		else {
 			image->eax = ERROR;
 		}
+
 		return image;
 	}
 

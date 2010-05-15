@@ -48,7 +48,7 @@ process_t *process_alloc(void) {
 process_t *process_clone(process_t *parent, thread_t *active_thread) {
 	process_t *child;
 	thread_t *new_thread;
-	uint32_t pid;
+	uint32_t pid, i;
 
 	/* allocate new process structure for child */
 	child = process_alloc();
@@ -82,6 +82,13 @@ process_t *process_clone(process_t *parent, thread_t *active_thread) {
 
 	/* add child's thread to the scheduler */
 	schedule_insert(new_thread);
+
+	/* fix child's ports */
+	for (i = 0; i < 256; i++) {
+		child->port[i].in  = NULL;
+		child->port[i].out = NULL;
+		child->port[i].entry = parent->port[i].entry;
+	}
 
 	return child;
 }
