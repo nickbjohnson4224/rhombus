@@ -5,7 +5,7 @@
 
 #include <flux/arch.h>
 #include <flux/ipc.h>
-#include <flux/request.h>
+#include <flux/packet.h>
 #include <flux/proc.h>
 #include <flux/driver.h>
 #include <flux/exec.h>

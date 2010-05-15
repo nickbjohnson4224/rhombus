@@ -3,7 +3,7 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <flux/request.h>
+#include <flux/packet.h>
 #include <flux/driver.h>
 #include <flux/proc.h>
 #include <flux/arch.h>

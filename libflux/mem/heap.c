@@ -203,7 +203,7 @@ void heap_init(void) {
 	}
 }
 
-struct request *ralloc(void) {
+void *ralloc(void) {
 	void *ptr;
 
 	mutex_spin(&heap_mutex);
@@ -215,7 +215,7 @@ struct request *ralloc(void) {
 	return ptr;
 }
 
-void rfree(struct request *r) {
+void rfree(void *r) {
 	size_t idx;
 
 	idx = ((uintptr_t) r - _HEAP_START) / BLOCKSZ;

@@ -8,8 +8,8 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include <flux/request.h>
 #include <flux/heap.h>
+#include <flux/io.h>
 
 FILE *stdin  = NULL;
 FILE *stdout = NULL;

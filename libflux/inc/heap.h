@@ -4,7 +4,6 @@
 #define HEAP_H
 
 #include <flux/arch.h>
-#include <flux/request.h>
 
 void  heap_init(void);
 
@@ -21,7 +20,7 @@ int    heap_check(void *ptr);
 #define HCHECK_FREED	2	/* pointer at start of freed block */
 #define HCHECK_ALIGN	3	/* pointer not at start of block */
 
-req_t *ralloc(void);
-void   rfree(req_t *req);
+void *ralloc(void);
+void   rfree(void *req);
 
 #endif

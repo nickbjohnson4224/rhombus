@@ -6,7 +6,7 @@
 #include <flux/arch.h>
 #include <flux/io.h>
 #include <flux/ipc.h>
-#include <flux/request.h>
+#include <flux/packet.h>
 
 size_t query(int fd, void *rbuf, void *sbuf, size_t size) {
 	struct packet *p_in;
