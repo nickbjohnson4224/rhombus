@@ -1,325 +1,349 @@
-/* 
- * Copyright 2010 Nick Johnson 
+/*
+ * Copyright 2010 Nick Johnson
  * ISC Licensed, see LICENSE for details
  */
 
 #include <flux/arch.h>
-#include <flux/config.h>
 #include <flux/heap.h>
 #include <flux/mmap.h>
 
-/* abmalloc - The AfterBurner Memory Allocator
- * Copyright 2010 Nick Johnson
+#define SBLOCK_SIZE	0x10000
+
+/****************************************************************************
+ * block
  *
- * abmalloc is a two layer virtual memory allocator.
- * The first layer is an implementation of valloc(),
- * which only allocates page aligned areas of memory,
- * which is a fast and easy operation. It uses only
- * a bitmap of which pages are free. Any request of
- * more than half a block is handled by this allocator.
- *
- * The second layer is a slab allocator, which creates
- * pools of quickly allocated fixed sized chunks as
- * they are requested. This reduces the allocation time
- * for a frequently used size two or threefold over
- * algorithms like dlmalloc, and makes it guaranteed
- * constant time.
- *
- * The focus of this allocator's performance is speed
- * over memory efficency. However, for allocations of
- * very small structures, like 2 or 4 dwords, there is
- * less than 0.5% memory overhead, unlike dlmalloc,
- * which can have up to a 50% overhead. 
- *
- * There is a guarantee of no memory fragmentation in 
- * a strict sense, although if allocations are not 
- * predicatble, a lot of memory will go unused. 
- * Allocating one of each multiple of 8 bytes below 
- * 4096 will take up 256 KB!
- *
- * To take full advantage of this memory allocator, try
- * to allocate as many similar structures as possible,
- * and avoid its pathological memory use cases. It is
- * astoundingly fast under the right conditions.
+ * Represents a single free block in the heap. The corresponding superblock
+ * can be calculated using get_sb().
  */
 
-#define BLOCKSZ PAGESZ
-#define _HEAP_SIZE (HEAP_MXBRK - HEAP_START)
-#define _BMAP_SIZE (_HEAP_SIZE / (BLOCKSZ * 8))
-
-#define _BMAP_START HEAP_START
-#define _HEAP_START (HEAP_START + _BMAP_SIZE)
-
-/*** Helper Routines / Structures ***/
-
-struct free_block {
-	struct free_block *next;
+struct block {
+	struct block *next;
 };
 
-struct slab_header {
-	struct slab_header *next; /* Next slab in list */
-	struct free_block *freel; /* Free element list */ 
-	uint32_t magic;	/* Magic number for ID - 0x42242442 */
-	uint16_t refc;  /* Reference count - number of allocated elements */
-	uint16_t esize; /* Element size */
+/****************************************************************************
+ * sblock
+ *
+ * Represents a single superblock in the heap.
+ */
+
+struct sblock {
+	struct block  *free;
+	uint32_t       mutex; 
+	struct sblock *next;
+	uint16_t       size;
+	uint16_t       refc;
 };
 
-static uint16_t *bmap = (void*) _BMAP_START;
-static size_t bmap_top = 0;
-static struct slab_header *bucket[BLOCKSZ / sizeof(void*)];
-static struct slab_header *slab_deathrow = NULL;
+/****************************************************************************
+ * brk
+ *
+ * Top of heap memory.
+ */
 
-static uint32_t heap_mutex = 0;
+static void      *brk = (void*) HEAP_START;
+static uint32_t m_brk;
 
-static void heap_vfree(void* ptr);
+/****************************************************************************
+ * sb_freelist
+ *
+ * List of free superblocks in the heap.
+ */
 
-/*** Slab Allocator ***/
+static struct sblock *sb_freelist;
+static uint32_t     m_sb_freelist;
 
-static void *new_slab(size_t size) {
-	struct slab_header *slab; 
-	struct free_block *b;
-	
-	if (slab_deathrow && slab_deathrow->esize == size) {
-		slab = slab_deathrow;
-		slab_deathrow = NULL;
+/****************************************************************************
+ * bucket
+ *
+ * Lists of superblocks containing blocks of size (1 << index).
+ */
+
+static struct sblock *bucket[16];
+static uint32_t     m_bucket[16];
+
+/****************************************************************************
+ * salloc
+ *
+ * Allocates a superblock. First checks the free superblock list, then expands
+ * the heap. Returns a pointer to a single unused superblock header pointing
+ * to readable and writable memory on success, null on out of memory error. 
+ * The superblock has its mutex set to free. This function is thread safe but
+ * not lock-free.
+ */
+
+static void *salloc() {
+	struct sblock *sblock;
+	uintptr_t base;
+
+	if (sb_freelist) {
+		mutex_spin(&m_sb_freelist);
+
+		sblock = sb_freelist;
+		sb_freelist = sb_freelist->next;
+
+		sblock->mutex = 0;
+		sblock->next  = NULL;
+		sblock->size  = 0;
+		sblock->refc  = 0;
+
+		mutex_free(&m_sb_freelist);
 	}
 	else {
-		slab = heap_valloc(BLOCKSZ);
-	}
+		mutex_spin(&m_brk);
 
-	b = (void*) ((uintptr_t) slab + sizeof(struct slab_header));
-
-	slab->next = NULL;
-	slab->freel = b;
-	slab->magic = 0x42242442;
-	slab->refc = 0;
-	slab->esize = size;
-
-	while ((uintptr_t) b + size < (uintptr_t) slab + BLOCKSZ) {
-		b->next = (void*) ((uintptr_t) b + size);
-		b = (void*) ((uintptr_t) b + size);
-	}
-	b->next = NULL;
-
-	return slab;
-}
-
-static void del_slab(struct slab_header *slab) {
-	struct slab_header *s;
-
-	s = slab_deathrow;
-	slab_deathrow = slab;
-
-	if (s) heap_vfree(s);
-}
-
-static struct slab_header *get_slab(void *ptr) {
-	struct slab_header *h = (void*) ((uintptr_t) ptr &~ 0xFFF);
-
-	if (h->magic != 0x42242442) {
-		return NULL;
-	}
-	else {
-		return h;
-	}
-}
-
-static void *slab_alloc(struct slab_header *slab) {
-	struct free_block *b;
-
-	if (!slab->freel) {
-		return NULL;
-	}
-
-	b = slab->freel;
-	slab->freel = b->next;
-	slab->refc++;
-
-	return b;
-}
-
-static void slab_free(struct slab_header *slab, void *ptr) {
-	struct free_block *b = ptr;
-
-	b->next = slab->freel;
-	slab->freel = b;
-	slab->refc--;
-}
-
-/*** Block Allocator (vmalloc) ***/
-
-void *heap_valloc(size_t size) {
-	size_t idx = 0, i;
-	uintptr_t addr;
-	size_t nblocks = (size % BLOCKSZ) ? (size / BLOCKSZ) + 1 : size / BLOCKSZ;
-
-	if (size > BLOCKSZ) {
-		idx = bmap_top;
-		
-		for (i = 0; i < nblocks; i++, idx++) {
-			bmap[idx >> 4] |= (1 << (idx & 0xF));
-		}
-
-		bmap_top += nblocks;
-	}
-	else {
-		while (idx < _HEAP_SIZE) {
-			if (bmap[idx >> 4] == 0xFFFF) {
-				idx += 16;
-				continue;
-			}
-			if ((bmap[idx >> 4] & (1 << (idx & 0xF))) == 0) {
-				break;
-			}
-			idx++;
-		}
-
-		if (idx >= bmap_top) bmap_top = idx + 1;
-		bmap[idx >> 4] |= (1 << (idx & 0xF));
-	}
-	
-	addr = _HEAP_START + (idx * BLOCKSZ);
-	mmap((void*) addr, size, MMAP_READ | MMAP_WRITE);
-
-	return (void*) addr;
-}
-
-static void heap_vfree(void *ptr) {
-	size_t idx = ((uintptr_t) ptr - _HEAP_START) / BLOCKSZ;
-
-	bmap[idx >> 4] &= ~(1 << (idx & 0xF));
-	umap(ptr, BLOCKSZ);
-}
-
-/*** The Heap Interface ***/
-
-void heap_init(void) {
-	size_t i;
-
-	mmap((void*) _BMAP_START, _BMAP_SIZE, MMAP_WRITE | MMAP_READ);
-	
-	for (i = 0; i < _BMAP_SIZE / sizeof(uint16_t); i++) {
-		bmap[i] = 0;
-	}
-}
-
-void *ralloc(void) {
-	void *ptr;
-
-	mutex_spin(&heap_mutex);
-
-	ptr = heap_valloc(PAGESZ);
-
-	mutex_free(&heap_mutex);
-
-	return ptr;
-}
-
-void rfree(void *r) {
-	size_t idx;
-
-	idx = ((uintptr_t) r - _HEAP_START) / BLOCKSZ;
-
-	mutex_spin(&heap_mutex);
-
-	bmap[idx >> 4] &= ~(1 << (idx & 0xF));
-
-	mutex_free(&heap_mutex);
-}
-
-void *heap_malloc(size_t size) {
-	struct slab_header *slab;
-	size_t bidx;
-	void *ptr;
-
-	mutex_spin(&heap_mutex);
-
-	if (size > (BLOCKSZ / 2) - sizeof(struct slab_header)) {
-		ptr = heap_valloc(size);
-		mutex_free(&heap_mutex);
-		return ptr;
-	}
-	
-	if (size % sizeof(void*) != 0) {
-		size = (size - (size % sizeof(void*))) + sizeof(void*);
-	}
-	bidx = size / sizeof(void*);
-
-	slab = bucket[bidx];
-	while (slab) {
-		if (slab->freel) break;
-		slab = slab->next;
-	}
-
-	if (slab == NULL) {
-		slab = new_slab(size);
-		slab->next = bucket[bidx];
-		bucket[bidx] = slab;
-	}
-
-	ptr = slab_alloc(slab);
-	mutex_free(&heap_mutex);
-	return ptr;
-}
-
-void heap_free(void *ptr) {
-	struct slab_header *s, *x;
-	size_t bidx;
-
-	mutex_spin(&heap_mutex);
-
-	if ((uintptr_t) ptr < _HEAP_START || (uintptr_t) ptr > HEAP_MXBRK) {
-		mutex_free(&heap_mutex);
-		return;
-	}
-
-	s = get_slab(ptr);
-
-	if (s == NULL) {
-		heap_vfree(ptr);
-		mutex_free(&heap_mutex);
-		return;
-	}
-
-	slab_free(s, ptr);
-
-	if (s->refc == 0) {
-		bidx = s->esize / sizeof(void*);
-		x = bucket[bidx];
-		if (x == s) {
-			bucket[bidx] = x->next;
+		if ((uintptr_t) brk + SBLOCK_SIZE > HEAP_MXBRK) {
+			sblock = NULL;
 		}
 		else {
-			while (x && x->next) {
-				if (x->next == s) {
-					x->next = s->next;
-					break;
-				}
-				x = x->next;
-			}
+			base   = (uintptr_t) brk;
+			brk    = (void*) (base + SBLOCK_SIZE);
+			sblock = (void*) (base + SBLOCK_SIZE - sizeof(struct sblock));
+
+			mmap((void*) base, SBLOCK_SIZE, PROT_READ | PROT_WRITE);
+
+			sblock->free  = (void*) base;
+			sblock->mutex = 0;
+			sblock->next  = NULL;
+			sblock->size  = 0;
+			sblock->refc  = 0;
 		}
-		del_slab(s);
+
+		mutex_free(&m_brk);
 	}
 
-	mutex_free(&heap_mutex);
+	return sblock;
 }
 
-size_t heap_size(void *ptr) {
-	struct slab_header *slab;
+/****************************************************************************
+ * sfree
+ *
+ * Frees a superblock, adding it to the free superblock list. This function
+ * is thread safe but not lock-free.
+ */
+
+static void sfree(struct sblock *sblock) {
+
+	mutex_spin(&m_sb_freelist);
+
+	sblock->next = sb_freelist;
+	sb_freelist = sblock;
+
+	mutex_free(&m_sb_freelist);
+}
+
+/****************************************************************************
+ * get_sb
+ *
+ * Returns a pointer to the superblock header corresponding to a block.
+ */
+
+static struct sblock *get_sb(struct block *b) {
+	uintptr_t addr;
+
+	addr = (uintptr_t) b;
+	addr = addr - (addr % SBLOCK_SIZE);
+	addr = addr + SBLOCK_SIZE - sizeof(struct sblock);
+
+	return (struct sblock*) addr;
+}
+
+/****************************************************************************
+ * get_bucket
+ *
+ * Returns an index corresponding to the appropriate bucket for the given
+ * block size. Uses a portable, unrolled version of the algorithm detailed
+ * at <http://graphics.stanford.edu/~seander/bithacks.html#IntegerLog>.
+ */
+
+static size_t get_bucket(size_t size) {
+	register size_t rslt = 0;
+
+	#if   (INTBITS == 64)
+	if (size & 0xFFFFFFFF00000000) {
+		size >>= 0x20;
+		rslt |=  0x20;
+	}
+	#endif
+	if (size & 0xFFFF0000) {
+		size >>= 0x10;
+		rslt |=  0x10;
+	}
+	if (size & 0xFF00) {
+		size >>= 0x08;
+		rslt |=  0x08;
+	}
+	if (size & 0xF0) {
+		size >>= 0x04;
+		rslt |=  0x04;
+	}
+	if (size & 0xC) {
+		size >>= 0x02;
+		rslt |=  0x02;
+	}
+	if (size & 0x2) {
+		size >>= 0x01;
+		rslt |=  0x01;
+	}
+
+	return rslt;
+}
+
+/****************************************************************************
+ * heap_malloc
+ *
+ * Returns a pointer to an unused, read-write block of memory of at least the
+ * specified size. This pointer can be freed via heap_free. Returns null on
+ * out of memory or too large error. This function is thread safe and 
+ * lock-free locally.
+ */
+
+void *heap_malloc(size_t size) {
+	struct sblock *sblock;
+	struct block  *block;
+	size_t i;
+
+	/* convert size to bucket index */
+	size = get_bucket(size);
+	
+	/* reject oversized allocations */
+	if ((1 << size) > SBLOCK_SIZE) {
+		return NULL;
+	}
+
+	/* correct undersized allocations */
+	if ((1 << size) < sizeof(void*)) {
+		size = get_bucket(sizeof(void*));
+	}
+
+	mutex_spin(&m_bucket[size]);
+	sblock = bucket[size];
+
+	/* search for unlocked, usable superblock in bucket */
+	while (sblock) {
+		if (mutex_lock(&sblock->mutex)) {
+			if (!sblock->free) {
+				mutex_free(&sblock->mutex);
+			}
+			else {
+				break;
+			}
+		}
+		else {
+			sblock = sblock->next;
+		}
+	}
+
+	/* allocate new superblock if none found */
+	if (!sblock) {
+		sblock = salloc();
+
+		if (!sblock) {
+			mutex_free(&m_bucket[size]);
+			return NULL;
+		}
+
+		sblock->next = NULL;
+		
+		block = sblock->free;
+		while ((uintptr_t) block + (1 << size) < (uintptr_t) sblock) {
+			block->next = (void*) ((uintptr_t) block + (1 << size));
+			block = block->next;
+		}
+		block->next = NULL;
+
+		mutex_lock(&sblock->mutex);
+
+		sblock->next = bucket[size];
+		bucket[size] = sblock;
+	}
+
+	mutex_free(&m_bucket[size]);
+
+	/* allocate from superblock */
+	block = sblock->free;
+	sblock->free = block->next;
+	sblock->refc++;
+
+	mutex_free(&sblock->mutex);
+
+	return block;
+}
+
+/****************************************************************************
+ * heap_free
+ *
+ * Frees a given block back into the heap. This algorithm DOES NOT detect
+ * double frees or out of bounds pointers - be careful. This function is 
+ * thread safe but not lock-free.
+ */
+
+void heap_free(void* ptr) {
+	struct sblock *sblock, *sblock0;
+	struct block  *block;
 	size_t size;
 
-	mutex_spin(&heap_mutex);
+	block  = ptr;
+	sblock = get_sb(block);
 
-	slab = get_slab(ptr);
+	mutex_spin(&sblock->mutex);
 
-	if (slab == NULL) {
-		size = BLOCKSZ;
+	block->next  = sblock->free;
+	sblock->free = block;
+	sblock->refc--;
+
+	if (sblock->refc == 0) {
+		size = sblock->size;
+		size = get_bucket(size);
+
+		mutex_spin(&m_bucket[size]);
+
+		sblock0 = bucket[size];
+
+		if (sblock0 == sblock) {
+			bucket[size] = sblock0->next;
+		}
+		else while (sblock0) {
+			if (sblock0->next == sblock) {
+				sblock0->next = sblock->next;
+				break;
+			}
+			else {
+				sblock0 = sblock0->next;
+			}
+		}
+
+		mutex_free(&m_bucket[size]);
+
+		sfree(sblock);
 	}
 	else {
-		size = slab->esize;
+		mutex_free(&sblock->mutex);
 	}
-	
-	mutex_free(&heap_mutex);
+}
 
-	return size;
+/****************************************************************************
+ * heap_size
+ *
+ * Returns the allocated size of a given heap block. This size may or may not
+ * be the size given to heap_malloc, but is larger than or equal to it.
+ */
+
+size_t heap_size(void *ptr) {
+	return (get_sb(ptr))->size;
+}
+
+/****************************************************************************
+ * heap_valloc
+ *
+ * Returns an allocated block of memory that is PAGESZ aligned. All other
+ * behavior is identical to that of heap_malloc.
+ */
+
+void *heap_valloc(size_t size) {
+
+	if (size < PAGESZ) {
+		size = PAGESZ;
+	}
+
+	return heap_malloc(size);
 }

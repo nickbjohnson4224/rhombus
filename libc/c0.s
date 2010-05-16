@@ -5,7 +5,6 @@ section .text
 
 global _start
 extern main
-extern _fini
 extern _cini
 extern _exit
 
@@ -14,7 +13,6 @@ _start:
 	push eax ; argv
 	push ecx ; argc
 
-	call _fini ; libflux initialization
 	call _cini ; libc initialization
 
 	call main

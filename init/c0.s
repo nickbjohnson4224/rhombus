@@ -5,7 +5,6 @@ section .text
 
 global _start
 extern main
-extern _fini
 extern fdinit
 extern _cini
 extern _exit
@@ -15,7 +14,6 @@ _start:
 	push eax ; argv
 	push ecx ; argc
 
-	call _fini
 	call fdinit
 	call _cini
 

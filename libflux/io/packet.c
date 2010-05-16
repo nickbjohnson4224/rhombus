@@ -64,7 +64,7 @@ void *packet_getbuf(struct packet *packet) {
  */
 
 void *packet_alloc(uint32_t size) {
-	return ralloc();
+	return heap_valloc(size);
 }
 
 /****************************************************************************
@@ -74,5 +74,5 @@ void *packet_alloc(uint32_t size) {
  */
 
 void packet_free(struct packet *packet) {
-	rfree((void*) packet);
+	heap_free(packet);
 }

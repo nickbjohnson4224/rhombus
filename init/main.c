@@ -23,6 +23,11 @@
 
 #include "inc/tar.h"
 
+const char *splash ="\
+Flux Operating System 0.4a\n\
+Copyright 2010 Nick Johnson\n\
+\n";
+
 void driver_start(int fd, struct driver_interface *driver, device_t dev) {
 	int32_t pid;
 
@@ -68,8 +73,7 @@ int main() {
 	/* Terminal Driver */
 	driver_start(FD_STDOUT, &terminal, nulldev);
 
-	printf("Flux Operating System 0.4a\n");
-	printf("Copyright 2010 Nick Johnson\n\n");
+	printf(splash);
 
 	/* VFS Daemon */
 	file = tar_find(boot_image, (char*) "vfsd");
