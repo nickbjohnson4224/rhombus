@@ -7,7 +7,7 @@
 #include <flux/heap.h>
 #include <flux/mmap.h>
 
-#define SBLOCK_SIZE	0x10000
+#define SBLOCK_SIZE	0x2000
 
 /****************************************************************************
  * block
@@ -67,28 +67,25 @@ static uint32_t     m_bucket[16];
  * Allocates a superblock. First checks the free superblock list, then expands
  * the heap. Returns a pointer to a single unused superblock header pointing
  * to readable and writable memory on success, null on out of memory error. 
- * The superblock has its mutex set to free. This function is thread safe but
- * not lock-free.
+ * The superblock has its mutex locked. This function is thread safe but not 
+ * lock-free.
+ *
+ * XXX - recycling of old superblocks is currently broken (commented out).
  */
 
 static void *salloc() {
 	struct sblock *sblock;
 	uintptr_t base;
 
-	if (sb_freelist) {
-		mutex_spin(&m_sb_freelist);
-
-		sblock = sb_freelist;
-		sb_freelist = sb_freelist->next;
-
-		sblock->mutex = 0;
-		sblock->next  = NULL;
-		sblock->size  = 0;
-		sblock->refc  = 0;
-
-		mutex_free(&m_sb_freelist);
-	}
-	else {
+//	mutex_spin(&m_sb_freelist);
+//	if (sb_freelist) {
+//
+//		sblock = sb_freelist;
+//		sb_freelist = sb_freelist->next;
+//
+//		base = (uintptr_t) sblock + sizeof(struct sblock) - SBLOCK_SIZE;
+//	}
+//	else {
 		mutex_spin(&m_brk);
 
 		if ((uintptr_t) brk + SBLOCK_SIZE > HEAP_MXBRK) {
@@ -100,16 +97,21 @@ static void *salloc() {
 			sblock = (void*) (base + SBLOCK_SIZE - sizeof(struct sblock));
 
 			mmap((void*) base, SBLOCK_SIZE, PROT_READ | PROT_WRITE);
-
-			sblock->free  = (void*) base;
-			sblock->mutex = 0;
-			sblock->next  = NULL;
-			sblock->size  = 0;
-			sblock->refc  = 0;
 		}
 
 		mutex_free(&m_brk);
+//	}
+//	mutex_free(&m_sb_freelist);
+
+	if (!sblock) {
+		return NULL;
 	}
+
+	sblock->mutex = 1;
+	sblock->free  = (void*) base;
+	sblock->next  = NULL;
+	sblock->refc  = 0;
+	sblock->size  = 0;
 
 	return sblock;
 }
@@ -220,13 +222,8 @@ void *heap_malloc(size_t size) {
 
 	/* search for unlocked, usable superblock in bucket */
 	while (sblock) {
-		if (mutex_lock(&sblock->mutex)) {
-			if (!sblock->free) {
-				mutex_free(&sblock->mutex);
-			}
-			else {
-				break;
-			}
+		if (sblock->free && mutex_lock(&sblock->mutex)) {
+			break;
 		}
 		else {
 			sblock = sblock->next;
@@ -241,9 +238,9 @@ void *heap_malloc(size_t size) {
 			mutex_free(&m_bucket[size]);
 			return NULL;
 		}
-
-		sblock->next = NULL;
 		
+		sblock->free = (void*) ((uintptr_t) sblock + sizeof(struct sblock) - SBLOCK_SIZE);
+
 		block = sblock->free;
 		while ((uintptr_t) block + (1 << size) < (uintptr_t) sblock) {
 			block->next = (void*) ((uintptr_t) block + (1 << size));
@@ -251,7 +248,8 @@ void *heap_malloc(size_t size) {
 		}
 		block->next = NULL;
 
-		mutex_lock(&sblock->mutex);
+		sblock->refc = 0;
+		sblock->size = size;
 
 		sblock->next = bucket[size];
 		bucket[size] = sblock;
@@ -293,32 +291,28 @@ void heap_free(void* ptr) {
 
 	if (sblock->refc == 0) {
 		size = sblock->size;
-		size = get_bucket(size);
 
 		mutex_spin(&m_bucket[size]);
 
 		sblock0 = bucket[size];
 
-		if (sblock0 == sblock) {
-			bucket[size] = sblock0->next;
+		if (bucket[size] == sblock) {
+			bucket[size] = sblock->next;
 		}
-		else while (sblock0) {
+		else while (sblock0->next) {
 			if (sblock0->next == sblock) {
 				sblock0->next = sblock->next;
 				break;
 			}
-			else {
-				sblock0 = sblock0->next;
-			}
+			sblock0 = sblock0->next;
 		}
 
 		mutex_free(&m_bucket[size]);
 
 		sfree(sblock);
 	}
-	else {
-		mutex_free(&sblock->mutex);
-	}
+
+	mutex_free(&sblock->mutex);
 }
 
 /****************************************************************************
@@ -329,7 +323,7 @@ void heap_free(void* ptr) {
  */
 
 size_t heap_size(void *ptr) {
-	return (get_sb(ptr))->size;
+	return (1 << (get_sb(ptr))->size);
 }
 
 /****************************************************************************

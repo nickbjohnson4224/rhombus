@@ -70,6 +70,7 @@ static void terminal_write(uint32_t caller, struct packet *packet) {
 		packet = packet_alloc(0);
 		packet->type = PACKET_TYPE_ERROR;
 		send(PORT_REPLY, caller, packet);
+		packet_free(packet);
 		return;
 	}
 
@@ -90,6 +91,8 @@ static void terminal_write(uint32_t caller, struct packet *packet) {
 
 	packet->type = PACKET_TYPE_REPLY;
 	send(PORT_REPLY, caller, packet);
+
+	packet_free(packet);
 }
 
 static void char_write(char c) {

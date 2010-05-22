@@ -11,6 +11,7 @@
 #include <flux/exec.h>
 #include <flux/vfs.h>
 #include <flux/io.h>
+#include <flux/heap.h>
 
 #include <driver/terminal.h>
 #include <driver/pci.h>
@@ -98,6 +99,12 @@ int main() {
 		for(;;);
 	}
 	daemon_start(FD_STDPMD, file->start, file->size);
+
+	printf("allocating/freeing 100000 blocks of size 1\n");
+	for (i = 0; i < 100000; i++) {
+		heap_malloc(1);
+	}
+	printf("done.\n");
 
 	for(;;);
 }
