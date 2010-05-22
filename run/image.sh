@@ -2,7 +2,7 @@
 
 export BUILDDIR=${PWD}
 
-cp ${BUILDDIR}/run/source_floppy.img ${BUILDDIR}/run/floppy.img
+cp ${BUILDDIR}/run/src_floppy.img ${BUILDDIR}/run/floppy.img
 mkdir ${BUILDDIR}/run/mnt
 mount ${BUILDDIR}/run/floppy.img ${BUILDDIR}/run/mnt -o loop
 tar -C ${BUILDDIR}/boot -vvcf ${BUILDDIR}/run/boot.tar `ls ${BUILDDIR}/boot`
