@@ -24,7 +24,7 @@ thread_t *pit_handler(thread_t *image) {
 thread_t *irq_redirect(thread_t *image) {
 
 	/* Send S_IRQ signal to the task registered with the IRQ */
-	return thread_fire(image, irq_holder[DEIRQ(image->num)], SSIG_IRQ, 0);
+	return thread_send(image, irq_holder[DEIRQ(image->num)], SSIG_IRQ, 0);
 }
 
 /***** FAULT HANDLERS *****/
@@ -40,7 +40,7 @@ thread_t *fault_generic(thread_t *image) {
 	}
 	#endif
 
-	return thread_fire(image, image->proc->pid, SSIG_FAULT, 0);
+	return thread_send(image, image->proc->pid, SSIG_FAULT, 0);
 }
 
 /* Page fault */
@@ -74,7 +74,7 @@ thread_t *fault_page(thread_t *image) {
 
 		panic("page fault exception");
 		return image;
-//		return thread_fire(image, image->proc->pid, SSIG_FAULT, 0);
+//		return thread_send(image, image->proc->pid, SSIG_FAULT, 0);
 	}
 }
 
@@ -89,7 +89,7 @@ thread_t *fault_float(thread_t *image) {
 	}
 	#endif
 
-	return thread_fire(image, image->proc->pid, SSIG_FLOAT, 0);
+	return thread_send(image, image->proc->pid, SSIG_FLOAT, 0);
 }
 
 /* Double fault */
@@ -136,14 +136,14 @@ thread_t *syscall_send(thread_t *image) {
 		image->eax = 0;
 	}
 
-	return thread_fire(image, target, port, packet);
+	return thread_send(image, target, port, packet);
 }
 
-thread_t *syscall_drop(thread_t *image) {
-	return thread_drop(image);
+thread_t *syscall_done(thread_t *image) {
+	return thread_exit(image);
 }
 
-thread_t *syscall_evnt(thread_t *image) {
+thread_t *syscall_when(thread_t *image) {
 	uint32_t port   = image->ecx & 0xFF;
 	uint32_t handle = image->edx;
 
@@ -215,7 +215,7 @@ thread_t *syscall_recv(thread_t *image) {
 	return image;
 }
 
-thread_t *syscall_pget(thread_t *image) {
+thread_t *syscall_pack(thread_t *image) {
 	uintptr_t addr = image->eax;
 	uintptr_t i;
 

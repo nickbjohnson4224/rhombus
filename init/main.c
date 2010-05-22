@@ -84,5 +84,7 @@ int main() {
 	}
 	daemon_start(FD_STDPMD, file->start, file->size);
 
-	for(;;);
+	_done();
+
+	return 0;
 }

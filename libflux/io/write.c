@@ -18,7 +18,7 @@ size_t write(int fd, void *buf, size_t size, uint64_t offset) {
 	size_t   oldsize, i;
 	event_t  old_handler;
 
-	old_handler = event(PORT_REPLY, NULL);
+	old_handler = when(PORT_REPLY, NULL);
 	oldsize     = size;
 	p_out       = packet_alloc(0);
 	p_in        = NULL;
@@ -52,7 +52,7 @@ size_t write(int fd, void *buf, size_t size, uint64_t offset) {
 			packet_free(p_in);
 			packet_free(p_err);
 
-			event(PORT_REPLY, old_handler);
+			when(PORT_REPLY, old_handler);
 			return (oldsize - size);
 		}
 
@@ -65,7 +65,7 @@ size_t write(int fd, void *buf, size_t size, uint64_t offset) {
 	}
 
 	packet_free(p_out);
-	event(PORT_REPLY, old_handler);
+	when(PORT_REPLY, old_handler);
 
 	return oldsize;
 }

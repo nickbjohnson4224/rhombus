@@ -19,7 +19,7 @@ size_t query(int fd, void *rbuf, void *sbuf, size_t size) {
 	size_t oldsize;
 	size_t i;
 
-	old_handler = event(PORT_REPLY, NULL);
+	old_handler = when(PORT_REPLY, NULL);
 	p_out       = packet_alloc(0);
 	p_in        = NULL;
 	oldsize     = size;
@@ -50,7 +50,7 @@ size_t query(int fd, void *rbuf, void *sbuf, size_t size) {
 		packet_free(p_in);
 		packet_free(p_err);
 
-		event(PORT_REPLY, old_handler);
+		when(PORT_REPLY, old_handler);
 		return 0;
 	}
 
@@ -60,7 +60,7 @@ size_t query(int fd, void *rbuf, void *sbuf, size_t size) {
 	packet_free(p_in);
 	packet_free(p_out);
 
-	event(PORT_REPLY, old_handler);
+	when(PORT_REPLY, old_handler);
 
 	return size;
 }

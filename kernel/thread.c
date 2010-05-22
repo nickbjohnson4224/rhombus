@@ -20,14 +20,14 @@ thread_t *thread_alloc(void) {
 }
 
 /****************************************************************************
- * thread_drop
+ * thread_exit
  *
  * Kills the given thread and switches to another runnable thread. If legacy
  * mode is enabled, the other runnable thread is the next thread on the 
  * thread image stack of the current process.
  */
 
-thread_t *thread_drop(thread_t *image) {
+thread_t *thread_exit(thread_t *image) {
 	thread_t *old_image;
 
 	old_image = image;
@@ -41,7 +41,7 @@ thread_t *thread_drop(thread_t *image) {
 }
 
 /****************************************************************************
- * thread_fire
+ * thread_send
  *
  * Sends a signal to the process with pid targ of the type sig with the
  * granted page at current virtual address grant. If the target process cannot
@@ -57,7 +57,7 @@ thread_t *thread_drop(thread_t *image) {
  * passed as image.
  */
 
-thread_t *thread_fire(thread_t *image, 
+thread_t *thread_send(thread_t *image, 
 		uint16_t targ, uint16_t sig, uintptr_t grant) {
 	process_t *p_targ;
 	thread_t *new_image;
@@ -160,10 +160,10 @@ void thread_init(void) {
 
 	/* register system calls */
 	register_int(0x40, syscall_send);
-	register_int(0x41, syscall_drop);
-	register_int(0x42, syscall_evnt);
+	register_int(0x41, syscall_done);
+	register_int(0x42, syscall_when);
 	register_int(0x43, syscall_recv);
-	register_int(0x44, syscall_pget);
+	register_int(0x44, syscall_pack);
 
 	register_int(0x48, syscall_fork);
 	register_int(0x49, syscall_exit);

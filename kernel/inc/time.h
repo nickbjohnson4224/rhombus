@@ -148,8 +148,8 @@ void      thread_init  (void);
 thread_t *thread_alloc (void);
 void      thread_free  (thread_t *thread);
 thread_t *thread_switch(thread_t *old, thread_t *new);
-thread_t *thread_fire(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t grant);
-thread_t *thread_drop(thread_t *image);
+thread_t *thread_send(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t grant);
+thread_t *thread_exit(thread_t *image);
 uintptr_t thread_bind(thread_t *thread, process_t *proc);
 
 /***** SYSTEM CALLS AND OTHER INTERRUPTS *****/
@@ -164,13 +164,13 @@ void tss_set_esp(uint32_t esp);
 void pic_mask(uint16_t mask);
 
 thread_t *syscall_send(thread_t *image); /* send signals / create threads */
-thread_t *syscall_drop(thread_t *image); /* exit from threads */
-thread_t *syscall_evnt(thread_t *image); /* set event handlers */
+thread_t *syscall_done(thread_t *image); /* exit from thread */
+thread_t *syscall_when(thread_t *image); /* set event handlers */
 thread_t *syscall_recv(thread_t *image); /* recieve signals */
-thread_t *syscall_pget(thread_t *image); /* recieve packets */
+thread_t *syscall_pack(thread_t *image); /* recieve packets */
 
-thread_t *syscall_fork(thread_t *image); /* create processes */
-thread_t *syscall_exit(thread_t *image); /* exit from processes */
+thread_t *syscall_fork(thread_t *image); /* create process */
+thread_t *syscall_exit(thread_t *image); /* exit from process */
 thread_t *syscall_pctl(thread_t *image); /* query process metadata */
 thread_t *syscall_exec(thread_t *image); /* execute new process */
 

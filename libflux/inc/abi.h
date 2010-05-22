@@ -7,11 +7,11 @@
 
 /***** SYSTEM CALLS *****/
 
-void		_drop(void);
+void		_done(void);
 uint32_t    _send(uint32_t port, uint32_t target, void *packet);
 uintptr_t   _recv(uint32_t port, uint32_t source);
-uintptr_t   _evnt(uint32_t port, uintptr_t handler);
-uintptr_t   _pget(uintptr_t address);
+uintptr_t   _when(uint32_t port, uintptr_t handler);
+uintptr_t   _pack(uintptr_t address);
 
 int32_t		_mmap(uintptr_t addr, uint32_t flags, uint32_t frame);
 

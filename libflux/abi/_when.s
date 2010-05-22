@@ -3,7 +3,12 @@
 
 [bits 32]
 
-global _drop
+global _when
 
-_drop:
-	int 0x41
+_when:
+
+	mov ecx, [esp+4]
+	mov edx, [esp+8]
+	int 0x42
+
+	ret

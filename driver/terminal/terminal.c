@@ -44,7 +44,7 @@ int main() {
 
 	mutex_free(&m_vbuf);
 
-	event(PORT_WRITE, terminal_write);
+	when(PORT_WRITE, terminal_write);
 
 	send(PORT_SYNC, 1, NULL);
 

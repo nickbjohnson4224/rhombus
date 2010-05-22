@@ -3,12 +3,11 @@
 
 [bits 32]
 
-global _evnt
+global _pack
 
-_evnt:
+_pack:
 
-	mov ecx, [esp+4]
-	mov edx, [esp+8]
-	int 0x42
+	mov eax, [esp+4]
+	int 0x44
 
 	ret

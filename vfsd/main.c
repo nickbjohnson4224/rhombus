@@ -57,7 +57,7 @@ void vfs_handle(uint32_t caller, struct packet *packet) {
 }
 
 int main() {
-	event(PORT_QUERY, vfs_handle);
+	when(PORT_QUERY, vfs_handle);
 
 	mutex_spin(&m_vfs);
 	vfs_root = calloc(sizeof(struct vfs), 1);

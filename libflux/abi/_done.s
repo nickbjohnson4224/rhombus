@@ -3,11 +3,7 @@
 
 [bits 32]
 
-global _pget
+global _done
 
-_pget:
-
-	mov eax, [esp+4]
-	int 0x44
-
-	ret
+_done:
+	int 0x41

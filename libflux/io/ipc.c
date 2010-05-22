@@ -53,7 +53,7 @@ struct packet *recvs(uint32_t port, uint32_t source) {
 	}
 
 	packet = packet_alloc(packet_size * PAGESZ);
-	_pget((uintptr_t) packet);
+	_pack((uintptr_t) packet);
 
 	return packet;
 }
@@ -90,7 +90,7 @@ struct packet *waits(uint32_t port, uint32_t source) {
 
 		if (packet_size > 0) {
 			packet = packet_alloc(packet_size * PAGESZ);
-			_pget((uintptr_t) packet);
+			_pack((uintptr_t) packet);
 		}
 
 		break;
@@ -126,7 +126,7 @@ void on_event(uint32_t port, uint32_t source) {
 }
 
 /****************************************************************************
- * event
+ * when
  *
  * Registers a handler to be called on reception of a packet into a specific
  * port. If the handler is NULL, no handler is called on reception of the
@@ -134,7 +134,7 @@ void on_event(uint32_t port, uint32_t source) {
  * registered handler.
  */
 
-event_t event(uint32_t port, event_t handler) {
+event_t when(uint32_t port, event_t handler) {
 	extern void _on_event(void);
 	event_t old_handler;
 
@@ -142,10 +142,10 @@ event_t event(uint32_t port, event_t handler) {
 	event_handler[port] = handler;
 
 	if (handler) {
-		_evnt(port, (uintptr_t) _on_event);
+		_when(port, (uintptr_t) _on_event);
 	}
 	else {
-		_evnt(port, (uintptr_t) NULL);
+		_when(port, (uintptr_t) NULL);
 	}
 
 	return old_handler;

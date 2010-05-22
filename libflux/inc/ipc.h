@@ -27,6 +27,6 @@ struct packet *recv (uint32_t port);
 struct packet *recvs(uint32_t port, uint32_t source);
 struct packet *wait (uint32_t port);
 struct packet *waits(uint32_t port, uint32_t source);
-event_t        event(uint32_t port, event_t handler);
+event_t        when (uint32_t port, event_t handler);
 
 #endif/*FLUX_IPC_H*/
