@@ -10,11 +10,11 @@
 #define PACKET_PROTOCOL		1	/* protocol version */
 #define PACKET_SOFTWARE		1	/* software version */
 
-#define PACKET_TYPE_READ	0
-#define PACKET_TYPE_WRITE	1
-#define PACKET_TYPE_QUERY	2
-#define PACKET_TYPE_REPLY	3
-#define PACKET_TYPE_ERROR	4
+#define PACKET_ENC_UNK		0
+#define PACKET_ENC_ASCII	1
+#define PACKET_ENC_UTF8		2
+#define PACKET_ENC_UTF32	3
+#define PACKET_ENC_GRAPH	4
 
 #define PACKET_FLAG_BENDIAN	0x01
 #define PACKET_FLAG_EXTOFF	0x02
@@ -26,7 +26,7 @@ struct packet {
 	uint16_t reserved;
 	uint16_t protocol;
 	uint16_t software;
-	uint8_t  type;
+	uint8_t  encoding;
 	uint8_t  flags;
 
 	/* fragment information */

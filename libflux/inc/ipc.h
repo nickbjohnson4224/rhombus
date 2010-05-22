@@ -18,6 +18,7 @@
 #define PORT_REPLY	31
 #define PORT_SYNC	32
 #define PORT_PING	33
+#define PORT_ERROR	34
 
 typedef void (*event_t) (uint32_t source, struct packet *packet);
 

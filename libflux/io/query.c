@@ -11,13 +11,13 @@
 size_t query(int fd, void *rbuf, void *sbuf, size_t size) {
 	struct packet *p_in;
 	struct packet *p_out;
+	struct packet *p_err;
 	struct file *file;
 	uint8_t *send_data;
 	uint8_t *recv_data;
 	event_t old_handler;
 	size_t oldsize;
 	size_t i;
-
 
 	old_handler = event(PORT_REPLY, NULL);
 	p_out       = packet_alloc(0);
@@ -33,7 +33,7 @@ size_t query(int fd, void *rbuf, void *sbuf, size_t size) {
 	p_out->identity = 0;
 	p_out->protocol = PACKET_PROTOCOL;
 	p_out->software = PACKET_SOFTWARE;
-	p_out->type     = PACKET_TYPE_QUERY;
+	p_out->encoding = PACKET_ENC_UNK;
 	p_out->flags    = 0;
 
 	p_out->fragment_index = 0;
@@ -46,8 +46,9 @@ size_t query(int fd, void *rbuf, void *sbuf, size_t size) {
 	send(PORT_QUERY, file->target, p_out);
 	p_in = waits(PORT_REPLY, file->target);
 
-	if (p_in->type == PACKET_TYPE_ERROR) {
+	if (p_err = recvs(PORT_ERROR, file->target)) {
 		packet_free(p_in);
+		packet_free(p_err);
 
 		event(PORT_REPLY, old_handler);
 		return 0;

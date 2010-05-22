@@ -26,8 +26,8 @@ void vfs_handle(uint32_t caller, struct packet *packet) {
 
 	if (!packet) {
 		packet = packet_alloc(0);
-		packet->type = PACKET_TYPE_ERROR;
-		send(PORT_REPLY, caller, packet);
+		send(PORT_ERROR, caller, packet);
+		packet_free(packet);
 		return;
 	}
 
@@ -52,8 +52,8 @@ void vfs_handle(uint32_t caller, struct packet *packet) {
 	}
 
 	q->command = VFS_CMD_REPLY;
-	packet->type = PACKET_TYPE_REPLY;
 	send(PORT_REPLY, caller, packet);
+	packet_free(packet);
 }
 
 int main() {

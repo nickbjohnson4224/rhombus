@@ -57,8 +57,7 @@ static void terminal_write(uint32_t caller, struct packet *packet) {
 
 	if (!packet) {
 		packet = packet_alloc(0);
-		packet->type = PACKET_TYPE_ERROR;
-		send(PORT_REPLY, caller, packet);
+		send(PORT_ERROR, caller, packet);
 		packet_free(packet);
 		return;
 	}
@@ -78,9 +77,7 @@ static void terminal_write(uint32_t caller, struct packet *packet) {
 
 	mutex_free(&m_vbuf);
 
-	packet->type = PACKET_TYPE_REPLY;
 	send(PORT_REPLY, caller, packet);
-
 	packet_free(packet);
 }
 
