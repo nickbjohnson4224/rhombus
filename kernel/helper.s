@@ -22,7 +22,7 @@ global idle
 idle:
 	mov eax, [esp]
 	sti
-	hlt
+	jmp $
 
 global halt:
 halt:

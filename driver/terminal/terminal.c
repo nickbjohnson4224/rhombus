@@ -48,7 +48,9 @@ int main() {
 
 	send(PORT_SYNC, 1, NULL);
 
-	for (;;) sleep();
+	_done();
+
+	return 0;
 }
 
 static void terminal_write(uint32_t caller, struct packet *packet) {

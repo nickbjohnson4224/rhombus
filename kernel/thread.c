@@ -22,9 +22,7 @@ thread_t *thread_alloc(void) {
 /****************************************************************************
  * thread_exit
  *
- * Kills the given thread and switches to another runnable thread. If legacy
- * mode is enabled, the other runnable thread is the next thread on the 
- * thread image stack of the current process.
+ * Kills the given thread and switches to another runnable thread.
  */
 
 thread_t *thread_exit(thread_t *image) {
@@ -237,13 +235,19 @@ uintptr_t thread_bind(thread_t *thread, process_t *proc) {
  * Switches to the target thread, completely saving the old threads' state
  * and loading the new ones' state. A process switch is performed if and only
  * if the threads are under different processes. A pointer to the switched to
- * thread is returned.
+ * thread is returned. If the new thread is null, the kernel idles until the
+ * next thread switch attempt.
  */
 
 thread_t *thread_switch(thread_t *old, thread_t *new) {
 	extern void fpu_save(void *fxdata);
 	extern bool tst_ts(void);
 	extern void set_ts(void);
+	extern void idle(void);
+
+	if (!new) {
+		idle();
+	}
 
 	/* save FPU state */
 	if (tst_ts()) {

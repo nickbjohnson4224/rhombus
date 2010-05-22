@@ -67,5 +67,7 @@ int main() {
 
 	send(PORT_SYNC, 1, NULL);
 
-	for(;;) sleep();
+	_done();
+
+	return 0;
 }

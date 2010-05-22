@@ -20,7 +20,5 @@ int main() {
 
 	send(PORT_SYNC, 1, NULL);
 
-	exit(0);
-
-	for(;;) sleep();
+	return 0;
 }
