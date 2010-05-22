@@ -1,7 +1,7 @@
 BUILDDIR=$(PWD)
 
-LIB_DIRS  = driver
-BIN_DIRS  = kernel init vfsd devd pmdd
+LIB_DIRS  = driver/pci
+BIN_DIRS  = kernel init vfsd devd pmdd driver/terminal
 
 CC := clang
 LD := /usr/flux-cross/bin/i586-elf-ld

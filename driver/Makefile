@@ -8,4 +8,3 @@ all: $(DRIVERS)
 $(DRIVERS):
 	echo " MAKE	" $@
 	make -s -C $@
-	

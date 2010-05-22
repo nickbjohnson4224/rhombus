@@ -6,6 +6,7 @@
 #include <flux/arch.h>
 #include <flux/driver.h>
 #include <flux/ipc.h>
+#include <flux/proc.h>
 #include <flux/packet.h>
 #include <flux/mmap.h>
 
@@ -14,15 +15,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <driver/terminal.h>
-
 #define VMEM 0xB8000
 #define WIDTH 80
 #define HEIGHT 25
 #define TAB 4
 
-static void terminal_init (device_t selector);
-static void terminal_halt (void);
 static void terminal_write(uint32_t caller, struct packet *packet);
 
 static uint16_t *vbuf;
@@ -33,15 +30,7 @@ static void char_write(char c);
 
 static uint32_t m_vbuf = 0;
 
-struct driver_interface terminal = {
-	terminal_init,
-	terminal_halt,
-
-	NULL,
-	0,
-};
-
-static void terminal_init(device_t selector) {
+int main() {
 	size_t i;
 
 	mutex_spin(&m_vbuf);
@@ -56,10 +45,10 @@ static void terminal_init(device_t selector) {
 	mutex_free(&m_vbuf);
 
 	event(PORT_WRITE, terminal_write);
-}
 
-static void terminal_halt(void) {
-	return;
+	send(PORT_SYNC, 1, NULL);
+
+	for (;;) sleep();
 }
 
 static void terminal_write(uint32_t caller, struct packet *packet) {

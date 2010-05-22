@@ -13,7 +13,6 @@
 #include <flux/io.h>
 #include <flux/heap.h>
 
-#include <driver/terminal.h>
 #include <driver/pci.h>
 
 #include <stdint.h>
@@ -28,22 +27,6 @@ const char *splash ="\
 Flux Operating System 0.4a\n\
 Copyright 2010 Nick Johnson\n\
 \n";
-
-void driver_start(int fd, struct driver_interface *driver, device_t dev) {
-	int32_t pid;
-
-	pid = fork();
-
-	if (pid < 0) {
-		driver->init(dev);
-		send(PORT_SYNC, -pid, NULL);
-		for(;;);
-	}
-
-	waits(PORT_SYNC, pid);
-
-	fdset(fd, pid, 0);
-}
 
 void daemon_start(int fd, void *image, size_t image_size) {
 	int32_t pid;
@@ -61,18 +44,19 @@ void daemon_start(int fd, void *image, size_t image_size) {
 }
 
 int main() {
-	device_t nulldev;
 	struct tar_file *boot_image, *file;
 	struct file *f;
 	int i;
-
-	nulldev.type = -1;
 
 	/* Boot Image */
 	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);
 
 	/* Terminal Driver */
-	driver_start(FD_STDOUT, &terminal, nulldev);
+	file = tar_find(boot_image, (char*) "terminal");
+	if (!file) {
+		for(;;);
+	}
+	daemon_start(FD_STDOUT, file->start, file->size);
 
 	printf(splash);
 
@@ -99,12 +83,6 @@ int main() {
 		for(;;);
 	}
 	daemon_start(FD_STDPMD, file->start, file->size);
-
-	printf("allocating/freeing 100000 blocks of size 1\n");
-	for (i = 0; i < 100000; i++) {
-		heap_malloc(1);
-	}
-	printf("done.\n");
 
 	for(;;);
 }
