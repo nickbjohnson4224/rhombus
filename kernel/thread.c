@@ -120,6 +120,8 @@ thread_t *thread_fire(thread_t *image,
 void thread_free(thread_t *thread) {
 	uintptr_t i;
 
+	schedule_remove(thread);
+
 	if (thread->stack) {
 		i = (thread->stack - SSPACE) / SEGSZ;
 

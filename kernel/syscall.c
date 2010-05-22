@@ -267,30 +267,14 @@ thread_t *syscall_exit(thread_t *image) {
 	process_t *parent;
 	uint32_t ret_val;
 
-	parent = image->proc->parent;
-
-	/* Copy return value because images are cleared with the address space */
-	ret_val = image->eax;
-
-	/* If init exits, halt */
 	if (image->proc->pid == 1) {
 		panic("init died");
 	}
 
 	process_switch(process_get(1));
+	process_kill(image->proc);
 
-	/* Deallocate current address space and clear metadata */
-	space_free(image->proc->space);	/* Deallocate whole address space */
-	process_kill(image->proc);		/* Clear metadata and relinquish PID */
-
-	if (!parent) {
-		/* Parent will not accept - reschedule */
-		return thread_switch(image, schedule_next());
-	}
-	else {
-		/* Send SSIG_DEATH signal to parent with return value */
-		return thread_fire(image, parent->pid, SSIG_DEATH, 0);
-	}
+	return thread_switch(image, schedule_next());
 }
 
 thread_t *syscall_pctl(thread_t *image) {

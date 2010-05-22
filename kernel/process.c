@@ -156,6 +156,15 @@ void process_init() {
  */
 
 void process_kill(process_t *proc) {
+	size_t i;
+
+	for (i = 0; i < 256; i++) {
+		if (proc->thread[i]) {
+			thread_free(proc->thread[i]);
+		}
+	}
+
+	space_free(proc->space);
 	process_free(proc);
 }
 
