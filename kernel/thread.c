@@ -57,6 +57,7 @@ thread_t *thread_exit(thread_t *image) {
 
 thread_t *thread_send(thread_t *image, 
 		uint16_t targ, uint16_t sig, uintptr_t grant) {
+	extern void set_ts(void);
 	process_t *p_targ;
 	thread_t *new_image;
 	uintptr_t addr;
@@ -74,7 +75,7 @@ thread_t *thread_send(thread_t *image,
 	packet = heap_alloc(sizeof(struct packet));
 	packet->signal = sig;
 	packet->grant  = grant;
-	packet->source = image->proc->pid;
+	packet->source = (image) ? image->proc->pid : 0;
 	packet->next   = NULL;
 
 	if (p_targ->port[sig].out) {
@@ -96,13 +97,20 @@ thread_t *thread_send(thread_t *image,
 		new_image->eflags  = p_targ->thread[0]->eflags | 0x3000;
 		new_image->useresp = new_image->stack + SEGSZ;
 		new_image->proc    = p_targ;
-		new_image->esi     = image->proc->pid;
+		new_image->esi     = (image) ? image->proc->pid : 0;
 		new_image->edi     = sig;
 		new_image->eip     = p_targ->port[sig].entry;
 		new_image->fxdata  = NULL;
 		schedule_insert(new_image);
 
-		return new_image;
+		if (image) {
+			return thread_switch(image, new_image);
+		}
+		else {
+			process_switch(new_image->proc);
+			set_ts();
+			return new_image;
+		}
 	}
 	else {
 		return image;
@@ -250,7 +258,7 @@ thread_t *thread_switch(thread_t *old, thread_t *new) {
 	}
 
 	/* save FPU state */
-	if (tst_ts()) {
+	if (old && tst_ts()) {
 		if (!old->fxdata) {
 			old->fxdata = heap_alloc(512);
 		}
@@ -259,7 +267,7 @@ thread_t *thread_switch(thread_t *old, thread_t *new) {
 	}
 
 	/* switch processes */
-	if (old->proc != new->proc) {
+	if (!old || (old->proc != new->proc)) {
 		process_switch(new->proc);
 	}
 

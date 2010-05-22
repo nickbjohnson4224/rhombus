@@ -1,28 +1,24 @@
 SOURCES := $(patsubst ./%.c,%.o,$(shell find . -name "*.c"))
-HEADERS := $(shell find . -name "*.h")
-TARGET  := libkeyboard.a
+SOURCES += $(BUILDDIR)/lib/c0.o
+TARGET  := keyboard
 SUBDIR	:= driver/keyboard
-CFLAGS  += -ffreestanding -I$(BUILDDIR)/driver/$(SUBDIR)/inc
-LDFLAGS += -r
+CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
+LDFLAGS += -lc -lflux -T$(BUILDDIR)/inc/link.ld
+ASFLAGS += -felf
 
-.PHONY: $(HEADERS) clean install
+.PHONY: clean install
 
-all: $(HEADERS) $(SOURCES) $(TARGET)
-
-$(HEADERS):
-	@ echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/inc/driver
-	@ mkdir -p $(BUILDDIR)/inc/driver
-	@ cp $@ $(BUILDDIR)/inc/driver
+all: $(SOURCES) $(TARGET)
 
 %.o: %.c $(HEADERS)
 	@ echo " CC	" $(SUBDIR)/$<
 	@ $(CC) $(CFLAGS) -c $< -o $@
 
 $(TARGET): $(SOURCES)
-	@ echo " AR	" $(SUBDIR)/$<
-	@ $(AR) $(ARFLAGS) $@ $<
-	@ echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/lib
-	@ cp $@ $(BUILDDIR)/lib	
+	@ echo " LD	" $(SUBDIR)/$@
+	@ $(LD) -o $(TARGET) $(SOURCES) $(LDFLAGS)
+	@ echo " MV	" $(SUBDIR)/$@ "->" $(BUILDDIR)/bin
+	@ mv $@ $(BUILDDIR)/bin
 
 clean:
-	@ rm $(SOURCES) $(DRIVERS)
+	@ rm $(SOURCES) $(TARGET)

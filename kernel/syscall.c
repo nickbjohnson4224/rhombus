@@ -24,7 +24,7 @@ thread_t *pit_handler(thread_t *image) {
 thread_t *irq_redirect(thread_t *image) {
 
 	/* Send S_IRQ signal to the task registered with the IRQ */
-	return thread_send(image, irq_holder[DEIRQ(image->num)], SSIG_IRQ, 0);
+	return thread_send(NULL, irq_holder[DEIRQ(image->num)], SSIG_IRQ, 0);
 }
 
 /***** FAULT HANDLERS *****/

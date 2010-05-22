@@ -4,9 +4,10 @@
  */
 
 #include <flux/arch.h>
-#include <flux/signal.h>
-#include <flux/request.h>
+#include <flux/ipc.h>
+#include <flux/packet.h>
 #include <flux/proc.h>
+#include <flux/driver.h>
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -14,13 +15,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <driver/keyboard.h>
-
-static void keyboard_init(device_t selector);
-static void keyboard_halt(void);
-
-static void keyboard_read(uint32_t caller, req_t *req);
-static void keyboard_hand(uint32_t caller, req_t *req);
+static void keyboard_hand(uint32_t source, struct packet *packet);
 
 static const char dnkmap[] = 
 "\0\0331234567890-=\b\tqwertyuiop[]\n\0asdfghjkl;\'`\0\\zxcvbnm,./\0*\0 ";
@@ -32,63 +27,25 @@ static volatile char buffer[1024];
 static volatile size_t buffer_top;
 static volatile bool shift = false;
 
-struct driver_interface keyboard = {
-	keyboard_init,
-	keyboard_halt,
-	NULL,
-	0,
-};
+int main() {
 
-static void keyboard_init(device_t selector) {
-
-	signal_policy(SSIG_IRQ, POLICY_EVENT);
-	signal_policy(SIG_READ, POLICY_EVENT);
-
-	signal_register(SSIG_IRQ, keyboard_hand);
-	signal_register(SIG_READ, keyboard_read);
-
+	when(PORT_IRQ,  keyboard_hand);
 	rirq(1);
+
+	send(PORT_SYNC, 1, NULL);
+
+	printf("Keyboard: ready\n");
+
+	_done();
+
+	return 0;
 }
 
-static void keyboard_halt(void) {
-	return;
-}
-
-static void keyboard_read(uint32_t caller, req_t *req) {
-
-	if (!req_check(req)) {
-		if (!req) req = ralloc();
-		req->format = REQ_ERROR;
-		tail(caller, SIG_REPLY, req_cksum(req));
-	}
-
-	while (!buffer_top) sleep();
-
-	mutex_spin(&mutex_buffer);
-
-	if (req->datasize > buffer_top) {
-		req->datasize = buffer_top;
-	}
-
-	req->dataoff = STDOFF;
-	memcpy(req_getbuf(req), (void*) buffer, req->datasize);
-	
-	if (req->datasize == buffer_top) {
-		buffer_top = 0;
-	}
-
-	mutex_free(&mutex_buffer);
-
-	req->format = REQ_WRITE;
-	tail(caller, SIG_REPLY, req_cksum(req));
-}
-
-static void keyboard_hand(uint32_t caller, struct request *req) {
+static void keyboard_hand(uint32_t source, struct packet *packet) {
 	uint8_t scan;
+	char c;
 
 	scan = inb(0x60);
-
-	mutex_spin(&mutex_buffer);
 
 	if (scan & 0x80) {
 		if (dnkmap[scan & 0x7F] == '\0') {
@@ -101,12 +58,8 @@ static void keyboard_hand(uint32_t caller, struct request *req) {
 	}
 
 	else {
-		buffer[buffer_top++] = ((shift) ? upkmap[scan] : dnkmap[scan]);
+		c = ((shift) ? upkmap[scan] : dnkmap[scan]);
 
-		fwrite((char*) &buffer[buffer_top-1], 1, 1, stdout);
+		fwrite(&c, sizeof(char), 1, stdout);
 	}
-
-	mutex_free(&mutex_buffer);
-
-	return;
 }

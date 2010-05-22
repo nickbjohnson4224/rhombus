@@ -84,7 +84,15 @@ int main() {
 	}
 	daemon_start(FD_STDPMD, file->start, file->size);
 
-	_done();
+	/* Keyboard Driver */
+	file = tar_find(boot_image, (char*) "keyboard");
+	if (!file) {
+		printf("critical error: no keyboard driver found\n");
+		for(;;);
+	}
+	daemon_start(FD_STDIN, file->start, file->size);
+
+	for(;;);
 
 	return 0;
 }
