@@ -45,21 +45,23 @@ static void keyboard_hand(uint32_t source, struct packet *packet) {
 	uint8_t scan;
 	char c;
 
-	scan = inb(0x60);
+	if (source == 0) {
+		scan = inb(0x60);
 
-	if (scan & 0x80) {
-		if (dnkmap[scan & 0x7F] == '\0') {
-			shift = false;
+		if (scan & 0x80) {
+			if (dnkmap[scan & 0x7F] == '\0') {
+				shift = false;
+			}
 		}
-	}
 
-	else if (dnkmap[scan & 0x7F] == '\0') {
-		shift = true;
-	}
+		else if (dnkmap[scan & 0x7F] == '\0') {
+			shift = true;
+		}
 
-	else {
-		c = ((shift) ? upkmap[scan] : dnkmap[scan]);
+		else {
+			c = ((shift) ? upkmap[scan] : dnkmap[scan]);
 
-		fwrite(&c, sizeof(char), 1, stdout);
+			fwrite(&c, sizeof(char), 1, stdout);
+		}
 	}
 }

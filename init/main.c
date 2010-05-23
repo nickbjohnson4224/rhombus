@@ -44,6 +44,7 @@ void daemon_start(int fd, void *image, size_t image_size) {
 }
 
 int main() {
+	extern void idle(void);
 	struct tar_file *boot_image, *file;
 	struct file *f;
 	int i;
@@ -92,7 +93,7 @@ int main() {
 	}
 	daemon_start(FD_STDIN, file->start, file->size);
 
-	for(;;);
+	idle();
 
 	return 0;
 }
