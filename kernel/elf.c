@@ -30,7 +30,7 @@ void elf_load_segment(uint8_t *src, elf_ph_t *seg) {
 
 	/* Copy data */
 	memcpy(dest_base, src_base, seg->p_filesz);
-
+	
 	/* Clear other space */
 	memclr(dest_base + seg->p_filesz, seg->p_memsz - seg->p_filesz);
 }

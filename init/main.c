@@ -93,7 +93,16 @@ int main() {
 	}
 	daemon_start(FD_STDIN, file->start, file->size);
 
-	while (1) putc(getchar(), stdout);
+	/* Flux Init Shell */
+	file = tar_find(boot_image, (char*) "fish");
+	if (!file) {
+		printf("critical error: no init shell found\n");
+		for(;;);
+	}
+
+	if (fork() < 0) {
+		exec(file->start, file->size);
+	}
 
 	idle();
 

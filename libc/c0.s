@@ -9,7 +9,6 @@ extern _cini
 extern _exit
 
 _start:
-	push edx ; envp
 	push eax ; argv
 	push ecx ; argc
 

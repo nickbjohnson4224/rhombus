@@ -10,4 +10,7 @@ void  *heap_malloc(size_t size);
 void   heap_free(void *ptr);
 size_t heap_size(void *ptr);
 
+void *high_malloc(size_t size);
+void  high_free(void *ptr);
+
 #endif

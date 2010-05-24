@@ -54,7 +54,7 @@ void keyboard_irq(uint32_t source, struct packet *packet) {
 
 		else {
 			if (shift) {
-				c = keymap[scan + 59];
+				c = keymap[scan + 58];
 			}
 			else {
 				c = keymap[scan];

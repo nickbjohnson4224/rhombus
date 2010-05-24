@@ -96,7 +96,7 @@ void x86_mutex_free(uint32_t *mutex);
 
 /* Address space layout */
 
-#define EXEC_START	0x00400000
+#define EXEC_START	0x00000000
 #define HEAP_START	0x10000000
 #define HEAP_MXBRK	0x20000000
 #define BOOT_IMAGE	0xD0000000
