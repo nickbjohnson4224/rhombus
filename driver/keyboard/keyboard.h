@@ -1,8 +1,15 @@
 #ifndef KEYBOARD_H
 #define KEYBOARD_H
 
-#include <flux/driver.h>
+#include <flux/arch.h>
 
-extern struct driver_interface keyboard;
+/* keymap */
+extern const char keymap[];
+
+/* line buffering (thread-safe) */
+void push_char(char c);
+void push_line(char *l);
+char *pop_line(void);
+char pop_char (void);
 
 #endif

@@ -58,9 +58,6 @@ static void terminal_write(uint32_t caller, struct packet *packet) {
 	char *buffer;
 
 	if (!packet) {
-		packet = packet_alloc(0);
-		send(PORT_ERROR, caller, packet);
-		packet_free(packet);
 		return;
 	}
 

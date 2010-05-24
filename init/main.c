@@ -93,6 +93,8 @@ int main() {
 	}
 	daemon_start(FD_STDIN, file->start, file->size);
 
+	while (1) putc(getchar(), stdout);
+
 	idle();
 
 	return 0;

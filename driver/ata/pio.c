@@ -4,12 +4,12 @@
  */
 
 #include <flux/arch.h>
-#include <flux/signal.h>
+#include <flux/ipc.h>
 
 #include <stdint.h>
 #include <stdio.h>
 
-#include <driver/ata.h>
+#include "ata.h"
 
 static void ata_pio_write  (uint8_t drive, uint64_t sector, uint16_t *buffer);
 static void ata_pio_read   (uint8_t drive, uint64_t sector, uint16_t *buffer);
@@ -58,12 +58,10 @@ static void ata_pio_read(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 
 static void atapi_pio_read(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 	uint16_t atapi_cmd[6];
-	uint32_t old_policy;
 	size_t i;
 
 	/* Enable IRQs */
 	rirq(ata_irq[drive]);
-	old_policy = signal_policy(SSIG_IRQ, POLICY_QUEUE);
 
 	outw(ata_ctrl[drive] + REG_CTRL, 0);
 
@@ -91,7 +89,7 @@ static void atapi_pio_read(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 		outw(ata_base[drive] + REG_DATA, atapi_cmd[i]);
 	}
 
-	signal_wait(SSIG_IRQ, false);
+	wait(PORT_IRQ);
 
 	while (inb(ata_base[drive] + REG_STAT) & STAT_BUSY);
 
@@ -99,11 +97,9 @@ static void atapi_pio_read(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 		buffer[i] = inw(ata_base[drive] + REG_DATA);
 	}
 
-	signal_wait(SSIG_IRQ, false);
+	wait(PORT_IRQ);
 
 	while (inb(ata_base[drive] + REG_STAT) & STAT_BUSY);
-
-	signal_policy(SSIG_IRQ, old_policy);
 }
 
 static void ata_pio_write(uint8_t drive, uint64_t sector, uint16_t *buffer) {

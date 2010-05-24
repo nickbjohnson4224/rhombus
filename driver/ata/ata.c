@@ -4,24 +4,21 @@
  */
 
 #include <flux/arch.h>
+#include <flux/abi.h>
 #include <flux/driver.h>
-#include <flux/signal.h>
-#include <flux/request.h>
+#include <flux/ipc.h>
+#include <flux/packet.h>
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 
-#include <driver/ata.h>
 #include <driver/pci.h>
 
-static void ata_init(device_t selector);
-static void ata_halt(void);
+#include "ata.h"
 
 /*** Device Information ***/
-
-device_t ata_controller;
 
 struct ata_drive ata_drive[4];
 
@@ -49,56 +46,54 @@ void ata_select(uint8_t drive) {
 
 /*** Request Handlers ***/
 
-static void ata_read(uint32_t caller, req_t *req) {
+static void ata_read(uint32_t caller, struct packet *packet) {
+	uint8_t *sectorbuf;
 	uint32_t sector, size, offset;
-	uint8_t dr;
+	uint8_t drive;
 
-	/* reject bad requests */
-	if (!req_check(req)) {
-		if (!req) req = ralloc();
-		req->format = REQ_ERROR;
-		fire(caller, SIG_REPLY, req_cksum(req));
+	if (!packet) {
+		packet = packet_alloc(0);
+		send(PORT_ERROR, caller, packet);
+		packet_free(packet);
 		return;
 	}
 
-	/* calculate command */
-	dr = req->resource;
-	offset = req->fileoff & ((1 << ata_drive[dr].sectsize) - 1);
-	sector = req->fileoff >> ata_drive[dr].sectsize;
-	size = (req->datasize + offset > (uint32_t) (1 << ata_drive[dr].sectsize)) 
-		? (1 << ata_drive[dr].sectsize) - offset
-		: req->datasize;
+	drive  = packet->target_inode;
+	offset = packet->offset & ((1 << ata_drive[drive].sectsize) - 1);
+	sector = packet->offset >> ata_drive[drive].sectsize;
+	size   = (packet->data_length + offset > (1 << ata_drive[drive].sectsize)) 
+		? (1 << ata_drive[drive].sectsize) - offset
+		: packet->data_length;
 
 	/* reject requests to nonexistent drives */
-	if (dr > 4 || !(ata_drive[dr].flags & FLAG_EXIST)) {
-		req->format = REQ_ERROR;
-		fire(caller, SIG_REPLY, req_cksum(req));
+	if (drive > 4 || !(ata_drive[drive].flags & FLAG_EXIST)) {
+		send(PORT_ERROR, caller, packet);
 		return;
 	}
 
 	/* aquire lock */
-	mutex_spin(&ata_drive[dr].mutex);
+	mutex_spin(&ata_drive[drive].mutex);
 
 	/* do read command */
-	req_setbuf(req, STDOFF, size);
-	pio_read_sector(dr, sector, (uint16_t*) req_getbuf(req));
-	req_setbuf(req, STDOFF + offset, size);
+	sectorbuf = malloc(1 << ata_drive[drive].sectsize);
+	pio_read_sector(drive, sector, (void*) sectorbuf);
+
+	memcpy(packet_getbuf(packet), &sectorbuf[offset], size);
+	free(sectorbuf);
 
 	/* release lock */
-	mutex_free(&ata_drive[dr].mutex);
+	mutex_free(&ata_drive[drive].mutex);
 
 	/* send reply */
-	req->format = REQ_WRITE;
-	fire(caller, SIG_REPLY, req_cksum(req));
+	send(PORT_REPLY, caller, packet);
 	return;
 }
 
-static void ata_write(uint32_t caller, struct request *req) {
+/*static void ata_write(uint32_t caller, struct request *req) {
 	uint32_t sector, size, offset;
 	uint8_t *buffer;
 	uint8_t dr;
 
-	/* reject bad requests */
 	if (!req_check(req)) {
 		if (!req) req = ralloc();
 		req->format = REQ_ERROR;
@@ -106,7 +101,6 @@ static void ata_write(uint32_t caller, struct request *req) {
 		return;
 	}
 
-	/* calculate command */
 	dr = req->resource;
 	offset = req->fileoff & ((1 << ata_drive[dr].sectsize) - 1);
 	sector = req->fileoff >> ata_drive[dr].sectsize;
@@ -114,43 +108,30 @@ static void ata_write(uint32_t caller, struct request *req) {
 		? ata_drive[dr].sectsize - offset
 		: req->datasize;
 
-	/* reject requests to nonexistent drives */
 	if (!(ata_drive[dr].flags & FLAG_EXIST)) {
 		req->format = REQ_ERROR;
 		fire(caller, SIG_REPLY, req_cksum(req));
 		return;
 	}
 
-	/* aquire lock */
 	mutex_spin(&ata_drive[dr].mutex);
 
-	/* do write command */
 	buffer = malloc(ata_drive[dr].sectsize);
 	pio_read_sector (dr, sector, (uint16_t*) buffer);
 	memcpy(&buffer[offset], req_getbuf(req), size);
 	pio_write_sector(dr, sector, (uint16_t*) buffer);
 	free(buffer);
 
-	/* release lock */
 	mutex_free(&ata_drive[dr].mutex);
 
 
-	/* send reply */
 	req->format   = REQ_READ;
 	req->datasize = size;
 	fire(caller, SIG_REPLY, req_cksum(req));
-}
+} */
 
-/*** Driver Interface ***/
-
-struct driver_interface ata = {
-	ata_init,
-	ata_halt,
-
-	NULL, 0,
-};
-
-static void ata_init(device_t dev) {
+int main() {
+	device_t dev;
 	size_t dr, i;
 	uint8_t err, status, cl, ch;
 	uint16_t c;
@@ -344,12 +325,9 @@ static void ata_init(device_t dev) {
 	}
 	
 	/* register interface handler */
-	signal_policy  (SIG_READ,  POLICY_EVENT);
-	signal_policy  (SIG_READ,  POLICY_EVENT);
-	signal_register(SIG_READ,  ata_read);
-	signal_register(SIG_WRITE, ata_write);
-}
+	when(PORT_READ, ata_read);
 
-static void ata_halt(void) {
-	return;
+	_done();
+
+	return 0;
 }

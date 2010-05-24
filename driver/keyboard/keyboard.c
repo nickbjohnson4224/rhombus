@@ -15,33 +15,27 @@
 #include <string.h>
 #include <stdio.h>
 
-static void keyboard_hand(uint32_t source, struct packet *packet);
+#include "keyboard.h"
 
-static const char dnkmap[] = 
-"\0\0331234567890-=\b\tqwertyuiop[]\n\0asdfghjkl;\'`\0\\zxcvbnm,./\0*\0 ";
-static const char upkmap[] = 
-"\0\033!@#$%^&*()_+\b\0QWERTYUIOP{}\n\0ASDFGHJKL:\"~\0|ZXCVBNM<>?\0*\0 ";
-
-static uint32_t mutex_buffer;
-static volatile char buffer[1024];
-static volatile size_t buffer_top;
-static volatile bool shift = false;
+void keyboard_irq (uint32_t source, struct packet *packet);
+void keyboard_read(uint32_t source, struct packet *packet);
 
 int main() {
 
-	when(PORT_IRQ,  keyboard_hand);
+	when(PORT_IRQ,  keyboard_irq);
+	when(PORT_READ, keyboard_read);
 	rirq(1);
-
-	send(PORT_SYNC, 1, NULL);
 
 	printf("Keyboard: ready\n");
 
+	send(PORT_SYNC, 1, NULL);
 	_done();
 
 	return 0;
 }
 
-static void keyboard_hand(uint32_t source, struct packet *packet) {
+void keyboard_irq(uint32_t source, struct packet *packet) {
+	static bool shift = false;
 	uint8_t scan;
 	char c;
 
@@ -49,19 +43,44 @@ static void keyboard_hand(uint32_t source, struct packet *packet) {
 		scan = inb(0x60);
 
 		if (scan & 0x80) {
-			if (dnkmap[scan & 0x7F] == '\0') {
+			if (keymap[scan & 0x7F] == '\0') {
 				shift = false;
 			}
 		}
 
-		else if (dnkmap[scan & 0x7F] == '\0') {
+		else if (keymap[scan & 0x7F] == '\0') {
 			shift = true;
 		}
 
 		else {
-			c = ((shift) ? upkmap[scan] : dnkmap[scan]);
+			if (shift) {
+				c = keymap[scan + 59];
+			}
+			else {
+				c = keymap[scan];
+			}
 
 			fwrite(&c, sizeof(char), 1, stdout);
+			push_char(c);
 		}
 	}
+}
+
+void keyboard_read(uint32_t source, struct packet *packet) {
+	char *line;
+	char *data;
+	size_t offset;
+	
+	if (!packet) {
+		return;
+	}
+
+	data = packet_getbuf(packet);
+	offset = 0;
+
+	for (offset = 0; offset < packet->data_length; offset++) {
+		data[offset] = pop_char();
+	}
+
+	send(PORT_REPLY, source, packet);
 }
