@@ -68,11 +68,11 @@ thread_t *fault_page(thread_t *image) {
 		return image;
 	}
 	else {
-		/* fault */
-		printk("page fault at %x, ip = %x frame %x proc %d\n",
+		printk("page fault at %x, ip = %x frame %x pid %d\n",
 			cr2, image->eip, page_get(cr2), image->proc->pid);
 
 		panic("page fault exception");
+
 		return image;
 //		return thread_send(image, image->proc->pid, SSIG_FAULT, 0);
 	}
@@ -311,6 +311,11 @@ thread_t *syscall_pctl(thread_t *image) {
 	}
 
 	image->eax = image->proc->flags;
+	return image;
+}
+
+thread_t *syscall_gpid(thread_t *image) {
+	image->eax = image->proc->pid;
 	return image;
 }
 

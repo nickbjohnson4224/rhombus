@@ -25,3 +25,25 @@ int find(const char *path) {
 
 	return fdsetup(q.server, q.inode);
 }
+
+int fadd(const char *path, uint32_t server, uint64_t inode) {
+	struct vfs_query q;
+	size_t i;
+
+	q.command = VFS_CMD_ADD;
+	for (i = 0; path[i] && i < 999; i++) {
+		q.path0[i] = path[i];
+	}
+	q.path0[i] = '\0';
+
+	q.server = server;
+	q.inode  = inode;
+
+	i = query(FD_STDVFS, &q, &q, sizeof(struct vfs_query));
+
+	if (i == 0) {
+		return -1;
+	}
+
+	return 0;
+}

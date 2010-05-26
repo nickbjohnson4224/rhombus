@@ -100,7 +100,8 @@ void x86_mutex_free(uint32_t *mutex);
 #define HEAP_START	0x10000000
 #define HEAP_MXBRK	0x20000000
 #define BOOT_IMAGE	0xD0000000
-#define FD_TABLE    0xCFFF0000
+#define FD_TABLE    0xE0000000
+#define ARGV_TABLE	0xE0010000
 
 /* These must remain in order */
 #define SSPACE	0x80000000	/* Stack space */

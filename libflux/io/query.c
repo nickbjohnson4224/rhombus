@@ -7,6 +7,9 @@
 #include <flux/io.h>
 #include <flux/ipc.h>
 #include <flux/packet.h>
+#include <flux/proc.h>
+
+#include <stdio.h>
 
 size_t query(int fd, void *rbuf, void *sbuf, size_t size) {
 	struct packet *p_in;
@@ -27,7 +30,7 @@ size_t query(int fd, void *rbuf, void *sbuf, size_t size) {
 	recv_data   = rbuf;
 	file        = fdget(fd);
 	i           = 0;
-
+	
 	packet_setbuf(&p_out, size);
 
 	p_out->identity = 0;
@@ -38,6 +41,9 @@ size_t query(int fd, void *rbuf, void *sbuf, size_t size) {
 
 	p_out->fragment_index = 0;
 	p_out->fragment_count = 0;
+
+	p_out->source_pid     = getpid();
+	p_out->source_inode   = 0;
 	p_out->target_pid     = file->target;
 	p_out->target_inode   = file->resource;
 

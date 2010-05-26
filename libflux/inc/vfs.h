@@ -18,6 +18,6 @@ struct vfs_query {
 };
 
 int find(const char *path);
-int open(const char *path);
+int fadd(const char *path, uint32_t server, uint64_t inode);
 
 #endif/*FLUX_VFS_H*/

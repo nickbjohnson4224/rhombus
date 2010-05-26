@@ -71,6 +71,7 @@ INTN	72	; fork
 INTN	73	; exit
 INTN	74	; pctl
 INTN	75	; exec
+INTN	76	; gpid
 
 INTN	80	; mmap
 INTN	81	; mctl

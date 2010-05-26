@@ -19,6 +19,7 @@ int32_t		_fork(void);
 void		_exit(uint32_t value);
 uint32_t	_pctl(uint32_t flags, uint32_t mask);
 int         _exec(uintptr_t addr);
+uint32_t    _gpid(void);
 
 #define FIRE_NONE	0x0000
 #define FIRE_TAIL	0x0001

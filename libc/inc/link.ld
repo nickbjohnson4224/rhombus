@@ -3,7 +3,7 @@ ENTRY(_start)
 OUTPUT_FORMAT(elf32-i386)
 
 SECTIONS {
-	. = 0;
+	. = 0x10000;
 
 	_stext = .;
 	.text  : { *(.text) }

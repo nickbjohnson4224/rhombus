@@ -57,13 +57,16 @@ void vfs_handle(uint32_t caller, struct packet *packet) {
 }
 
 int main() {
+	printf("vfsd: virtual filesystem daemon version 0.4a\n");
+	printf("vfsd: starting on pid %d\n", getpid());
+
 	when(PORT_QUERY, vfs_handle);
 
 	mutex_spin(&m_vfs);
 	vfs_root = calloc(sizeof(struct vfs), 1);
 	mutex_free(&m_vfs);
 
-	printf("VFSd: ready\n");
+	printf("vfsd: ready\n");
 
 	send(PORT_SYNC, 1, NULL);
 

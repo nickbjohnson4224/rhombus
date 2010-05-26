@@ -5,10 +5,10 @@
 
 #define fork _fork		/* Spawn new process */
 #define exit _exit		/* Exit current process */
-#define pinfo _info		/* Get process information */
-#define pctrl _ctrl		/* Set process information */
 
 void block(bool v);		/* (Dis)allow scheduling */
 void sleep(void);		/* Relinquish timeslice */
+
+uint32_t getpid(void);
 
 #endif

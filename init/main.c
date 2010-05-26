@@ -28,25 +28,28 @@ Flux Operating System 0.4a\n\
 Copyright 2010 Nick Johnson\n\
 \n";
 
-void daemon_start(int fd, void *image, size_t image_size) {
+void daemon_start(int fd, void *image, size_t image_size, char **argv) {
 	int32_t pid;
 
 	pid = fork();
 
 	if (pid < 0) {
-		exec(image, image_size);
+		execiv(image, image_size, argv);
 		for(;;);
 	}
 
 	waits(PORT_SYNC, pid);
 
-	fdset(fd, pid, 0);
+	if (fd != -1) {
+		fdset(fd, pid, 0);
+	}
 }
 
 int main() {
 	extern void idle(void);
 	struct tar_file *boot_image, *file;
 	struct file *f;
+	char **argv;
 	int i;
 
 	/* Boot Image */
@@ -57,7 +60,7 @@ int main() {
 	if (!file) {
 		for(;;);
 	}
-	daemon_start(FD_STDOUT, file->start, file->size);
+	daemon_start(FD_STDOUT, file->start, file->size, NULL);
 
 	printf(splash);
 
@@ -67,7 +70,7 @@ int main() {
 		printf("critical error: no VFSd image found\n");
 		for(;;);
 	}
-	daemon_start(FD_STDVFS, file->start, file->size);
+	daemon_start(FD_STDVFS, file->start, file->size, NULL);
 
 	/* Device Daemon */
 	file = tar_find(boot_image, (char*) "devd");
@@ -75,7 +78,24 @@ int main() {
 		printf("critical error: no DEVd image found\n");
 		for(;;);
 	}
-	daemon_start(FD_STDDEV, file->start, file->size);
+	daemon_start(FD_STDDEV, file->start, file->size, NULL);
+
+	fadd("/dev/initrd", getpid(), 0);
+
+	/* Initrd over TARFS */
+	argv = malloc(sizeof(char*) * 3);
+	argv[0] = "tarfs";
+	argv[1] = "/dev/initrd";
+	argv[2] = NULL;
+
+	file = tar_find(boot_image, (char*) "tarfs");
+	if (!file) {
+		printf("critical error: no TARFS image found\n");
+		for(;;);
+	}
+	daemon_start(-1, file->start, file->size, argv);
+
+	free(argv);
 
 	/* Process Metadata Daemon */
 	file = tar_find(boot_image, (char*) "pmdd");
@@ -83,7 +103,7 @@ int main() {
 		printf("critical error: no PMDd image found\n");
 		for(;;);
 	}
-	daemon_start(FD_STDPMD, file->start, file->size);
+	daemon_start(FD_STDPMD, file->start, file->size, NULL);
 
 	/* Keyboard Driver */
 	file = tar_find(boot_image, (char*) "keyboard");
@@ -91,7 +111,7 @@ int main() {
 		printf("critical error: no keyboard driver found\n");
 		for(;;);
 	}
-	daemon_start(FD_STDIN, file->start, file->size);
+	daemon_start(FD_STDIN, file->start, file->size, NULL);
 
 	/* Flux Init Shell */
 	file = tar_find(boot_image, (char*) "fish");
@@ -100,9 +120,16 @@ int main() {
 		for(;;);
 	}
 
+	argv = malloc(sizeof(char*) * 3);
+	argv[0] = "hello";
+	argv[1] = "world";
+	argv[2] = NULL;
+
 	if (fork() < 0) {
-		exec(file->start, file->size);
+		execiv(file->start, file->size, argv);
 	}
+
+	free(argv);
 
 	idle();
 

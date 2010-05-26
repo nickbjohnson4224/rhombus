@@ -3,6 +3,7 @@
 
 #include <flux/arch.h>
 
-int exec(uint8_t *image, size_t size);
+int execiv(uint8_t *image, size_t size, char **argv);
+int execi (uint8_t *image, size_t size);
 
 #endif/*EXEC_H*/

@@ -1,6 +1,8 @@
 ; Copyright 2010 Nick Johnson
 ; ISC Licensed, see LICENSE for details
 
+[bits 32]
+
 section .text
 
 global _start
@@ -9,8 +11,11 @@ extern _cini
 extern _exit
 
 _start:
+	mov eax, 0xE0010004
 	push eax ; argv
-	push ecx ; argc
+	mov eax, 0xE0010000
+	mov edx, [eax]
+	push edx ; argc
 
 	call _cini ; libc initialization
 
