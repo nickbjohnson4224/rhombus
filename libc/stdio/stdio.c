@@ -10,6 +10,7 @@
 
 #include <flux/heap.h>
 #include <flux/io.h>
+#include <flux/vfs.h>
 
 FILE *stdin  = NULL;
 FILE *stdout = NULL;
@@ -22,11 +23,25 @@ FILE *extout = NULL;
 
 /***** File Operations *****/
 
+FILE *fopen(const char *path, const char *mode) {
+	int fd;
+
+	fd = find(path);
+
+	if (fd == -1) {
+		return NULL;
+	}
+
+	return fdopen(fd, mode);
+}
+
 int fclose(FILE *stream) {
 
 	if (stream->buffer) {
 		free(stream->buffer);
 	}
+
+	fdfree(stream->filedes);
 
 	free(stream);
 

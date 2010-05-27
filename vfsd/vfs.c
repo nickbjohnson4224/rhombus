@@ -8,6 +8,7 @@
 #include <vfsd.h>
 
 void vfs_add(struct vfs *root, const char *path, uint32_t server, uint64_t inode) {
+
 	if (root->link && (path[0] == '/' || path[0] == '\0')) {
 		vfs_add(root->link, path, server, inode);
 	}
@@ -26,6 +27,7 @@ void vfs_add(struct vfs *root, const char *path, uint32_t server, uint64_t inode
 }
 
 struct vfs *vfs_get(struct vfs *root, const char *path) {
+
 	if (root->link && (path[0] == '/' || path[0] == '\0')) {
 		return vfs_get(root->link, path);
 	}

@@ -83,12 +83,12 @@ int main() {
 
 	initrd_init();
 
-	fadd("/dev/initrd", getpid(), 0);
+	fadd("/initrd", getpid(), 0);
 
 	/* Initrd over TARFS */
 	argv = malloc(sizeof(char*) * 3);
 	argv[0] = "tarfs";
-	argv[1] = "/dev/initrd";
+	argv[1] = "/initrd";
 	argv[2] = NULL;
 
 	file = tar_find(boot_image, (char*) "tarfs");

@@ -73,7 +73,12 @@ void push_char(char c) {
 		buffer_top = 0;
 	}
 
-	buffer[buffer_top++] = c;
+	if (c == '\b') {
+		buffer_top--;
+	}
+	else {
+		buffer[buffer_top++] = c;
+	}
 
 	if (c == '\n' || buffer_top > 195) {
 		buffer[buffer_top++] = '\0';
