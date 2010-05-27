@@ -22,9 +22,6 @@ void keyboard_read(uint32_t source, struct packet *packet);
 
 int main() {
 
-	printf("kbd: PS/2 keyboard driver version 0.4a\n");
-	printf("kbd: starting on pid %d\n", getpid());
-
 	when(PORT_IRQ,  keyboard_irq);
 	when(PORT_READ, keyboard_read);
 	rirq(1);

@@ -47,6 +47,7 @@ void daemon_start(int fd, void *image, size_t image_size, char **argv) {
 
 int main() {
 	extern void idle(void);
+	extern void initrd_init(void);
 	struct tar_file *boot_image, *file;
 	struct file *f;
 	char **argv;
@@ -79,6 +80,8 @@ int main() {
 		for(;;);
 	}
 	daemon_start(FD_STDDEV, file->start, file->size, NULL);
+
+	initrd_init();
 
 	fadd("/dev/initrd", getpid(), 0);
 

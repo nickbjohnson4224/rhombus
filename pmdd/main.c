@@ -16,9 +16,6 @@
 
 int main() {
 
-	printf("pmdd: process metadata daemon version 0.4a\n");
-	printf("pmdd: starting on pid %d\n", getpid());
-
 	printf("pmdd: ready\n");
 
 	send(PORT_SYNC, 1, NULL);

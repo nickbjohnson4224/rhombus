@@ -57,8 +57,6 @@ void vfs_handle(uint32_t caller, struct packet *packet) {
 }
 
 int main() {
-	printf("vfsd: virtual filesystem daemon version 0.4a\n");
-	printf("vfsd: starting on pid %d\n", getpid());
 
 	when(PORT_QUERY, vfs_handle);
 

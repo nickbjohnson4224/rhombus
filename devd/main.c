@@ -16,9 +16,6 @@
 
 int main() {
 
-	printf("devd: device daemon version 0.4a\n");
-	printf("devd: starting on pid %d\n", getpid());
-
 	printf("devd: ready\n");
 
 	send(PORT_SYNC, 1, NULL);

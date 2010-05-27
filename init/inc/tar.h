@@ -21,6 +21,7 @@ struct tar_block {
 	char linkname[100];
 };
 
+size_t           tar_size(uint8_t *base);
 struct tar_file *tar_parse(uint8_t *base);
 struct tar_file *tar_find(struct tar_file *archive, char *name);
 

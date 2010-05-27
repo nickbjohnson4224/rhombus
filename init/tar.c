@@ -16,6 +16,29 @@ static uintptr_t getvalue(char *field, size_t size) {
 	return sum;
 }
 
+size_t tar_size(uint8_t *base) {
+	size_t i;
+	struct tar_block *block;
+
+	i = 0;
+
+	while (1) {
+		block = (struct tar_block*) &base[i];
+
+		if (block->filename[0] == ' ' || block->filename[0] == '\0') {
+			return i + TAR_BLOCKSIZE;
+		}
+
+		i += getvalue(block->filesize, 12) + TAR_BLOCKSIZE;
+
+		if (i % TAR_BLOCKSIZE) {
+			i = i - (i % TAR_BLOCKSIZE) + TAR_BLOCKSIZE;
+		}
+	}
+
+	return 0;
+}
+
 struct tar_file *tar_parse(uint8_t *base) {
 	struct tar_file *filelist;
 	struct tar_block *block;
