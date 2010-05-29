@@ -132,7 +132,7 @@ int main() {
 
 	free(argv);
 
-	idle();
+	for(;;);
 
 	return 0;
 }
