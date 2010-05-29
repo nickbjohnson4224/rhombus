@@ -380,3 +380,57 @@ int printf(const char *format, ...) {
 
 	return ret;
 }
+
+int vsprintf(char *str, const char *format, va_list ap) {
+	size_t i;
+	char m[2], buffer[13];
+
+	strcpy(str, "");
+	m[1] = '\0';
+
+	for (i = 0; format[i]; i++) {
+		if (format[i] == '%') {
+			switch (format[i+1]) {
+			case 'x':
+			case 'X':
+				itoa(buffer, va_arg(ap, int), 16);
+				strcat(str, buffer);
+				break;
+			case 'd':
+			case 'i':
+				itoa(buffer, va_arg(ap, int), 10);
+				strcat(str, buffer);
+				break;
+			case 'o':
+			case 'O':
+				itoa(buffer, va_arg(ap, int), 8);
+				strcat(str, buffer);
+				break;
+			case 's':
+				strcat(str, va_arg(ap, const char*));
+				break;
+			case 'c':
+				m[0] = va_arg(ap, int);
+				strcat(str, m);
+			}
+			i++;
+		}
+		else {
+			m[0] = format[i];
+			strcat(str, m);
+		}
+	}
+
+	return i;
+}
+
+int sprintf(char *str, const char *format, ...) {
+	va_list ap;
+	int ret;
+
+	va_start(ap, format);
+	ret = vsprintf(str, format, ap);
+	va_end(ap);
+
+	return ret;
+}

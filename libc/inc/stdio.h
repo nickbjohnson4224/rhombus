@@ -92,6 +92,7 @@ int puts(const char *s);
 
 int fprintf(FILE *stream, const char *format, ...);
 int printf(const char *format, ...);
+int sprintf(char *str, const char *format, ...);
 
 /*** File Control Operations ***/
 

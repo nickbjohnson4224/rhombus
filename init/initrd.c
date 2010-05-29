@@ -19,6 +19,23 @@ static uint8_t *initrd;
 static size_t   initrd_size;
 static uint32_t m_initrd;
 
+static void initrd_info(uint32_t source, struct packet *packet) {
+	struct info_query *query;
+
+	if (!packet) {
+		return;
+	}
+
+	query = packet_getbuf(packet);
+
+	if (!strcmp(query->field, "size")) {
+		sprintf(query->value, "%d", initrd_size);
+	}
+
+	send(PORT_REPLY, source, packet);
+	packet_free(packet);
+}
+
 static void initrd_read(uint32_t source, struct packet *packet) {
 	uintptr_t offset;
 
@@ -47,5 +64,7 @@ static void initrd_read(uint32_t source, struct packet *packet) {
 void initrd_init() {
 	initrd = (uint8_t*) BOOT_IMAGE;
 	initrd_size = tar_size(initrd);
+
 	when(PORT_READ, initrd_read);
+	when(PORT_INFO, initrd_info);
 }
