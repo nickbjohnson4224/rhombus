@@ -107,8 +107,11 @@ thread_t *int_handler(thread_t *image) {
 	if (int_handlers[image->num]) {
 		new_image = int_handlers[image->num](image);
 	}
+	else {
+		new_image = NULL;
+	}
 
-	if (new_image != image) {
+	if (new_image && new_image != image) {
 
 		/* Set TSS to generate images in the proper position */
 		tss_set_esp((uintptr_t) &new_image->tss_start);

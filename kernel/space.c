@@ -37,7 +37,6 @@ static void segment_clone(frame_t *extbl, frame_t *exmap, uintptr_t seg);
 
 space_t space_clone() {
 	uint32_t i;
-	uintptr_t seg;
 	space_t dest;
 	frame_t *exmap, *extbl;
 
@@ -101,7 +100,6 @@ void space_exmap(space_t space) {
 
 void space_free(space_t space) {
 	uint32_t i, j;
-	uintptr_t seg;
 	frame_t *extbl, *exmap;
 
 	space_exmap(space);

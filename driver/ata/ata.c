@@ -61,7 +61,8 @@ static void ata_read(uint32_t caller, struct packet *packet) {
 	drive  = packet->target_inode;
 	offset = packet->offset & ((1 << ata_drive[drive].sectsize) - 1);
 	sector = packet->offset >> ata_drive[drive].sectsize;
-	size   = (packet->data_length + offset > (1 << ata_drive[drive].sectsize)) 
+	size   = (packet->data_length + offset 
+		> (size_t) (1 << ata_drive[drive].sectsize)) 
 		? (1 << ata_drive[drive].sectsize) - offset
 		: packet->data_length;
 
@@ -136,6 +137,11 @@ int main() {
 	uint8_t err, status, cl, ch;
 	uint16_t c;
 	uint16_t buffer[256];
+
+	dev.bus = 0;
+	dev.slot = 0;
+	dev.sub = 0;
+	dev.type = 0;
 
 	printf("ATA: initializing %x:%x.%x\n", dev.bus, dev.slot, dev.sub);
 

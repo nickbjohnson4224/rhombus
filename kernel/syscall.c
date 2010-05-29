@@ -217,7 +217,6 @@ thread_t *syscall_recv(thread_t *image) {
 
 thread_t *syscall_pack(thread_t *image) {
 	uintptr_t addr = image->eax;
-	uintptr_t i;
 
 	if (!image->packet || !image->packet->grant) {
 		image->eax = 0;
@@ -264,8 +263,6 @@ thread_t *syscall_fork(thread_t *image) {
 }
 
 thread_t *syscall_exit(thread_t *image) {
-	process_t *parent;
-	uint32_t ret_val;
 
 	if (image->proc->pid == 1) {
 		panic("init died");

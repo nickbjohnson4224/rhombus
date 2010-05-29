@@ -9,12 +9,9 @@
 #include <flux/packet.h>
 #include <flux/proc.h>
 
-#include <stdio.h>
-
 size_t query(int fd, void *rbuf, void *sbuf, size_t size) {
 	struct packet *p_in;
 	struct packet *p_out;
-	struct packet *p_err;
 	struct file *file;
 	uint8_t *send_data;
 	uint8_t *recv_data;

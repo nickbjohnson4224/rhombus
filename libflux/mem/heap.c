@@ -202,7 +202,6 @@ static size_t get_bucket(size_t size) {
 void *heap_malloc(size_t size) {
 	struct sblock *sblock;
 	struct block  *block;
-	size_t i;
 
 	/* convert size to bucket index */
 	size = get_bucket(size);
@@ -213,7 +212,7 @@ void *heap_malloc(size_t size) {
 	}
 
 	/* correct undersized allocations */
-	if ((1 << size) < sizeof(void*)) {
+	if ((size_t) (1 << size) < sizeof(void*)) {
 		size = get_bucket(sizeof(void*));
 	}
 

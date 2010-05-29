@@ -28,7 +28,7 @@ Flux Operating System 0.4a\n\
 Copyright 2010 Nick Johnson\n\
 \n";
 
-void daemon_start(int fd, void *image, size_t image_size, char **argv) {
+void daemon_start(int fd, void *image, size_t image_size, char const **argv) {
 	int32_t pid;
 
 	pid = fork();
@@ -49,9 +49,7 @@ int main() {
 	extern void idle(void);
 	extern void initrd_init(void);
 	struct tar_file *boot_image, *file;
-	struct file *f;
-	char **argv;
-	int i;
+	char const **argv;
 
 	/* Boot Image */
 	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);

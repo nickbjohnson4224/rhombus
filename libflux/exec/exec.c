@@ -15,7 +15,7 @@ static struct {
 	char argvv[100][100];
 } *argv_table = (void*) ARGV_TABLE;
 
-static void _strncpy(char *dest, char *src, size_t n) {
+static void _strncpy(char *dest, char const *src, size_t n) {
 	size_t i;
 
 	for (i = 0; i < n - 1 && src[i]; i++) {
@@ -25,7 +25,7 @@ static void _strncpy(char *dest, char *src, size_t n) {
 	dest[i] = '\0';
 }
 
-int execiv(uint8_t *image, size_t size, char **argv) {
+int execiv(uint8_t *image, size_t size, char const **argv) {
 	size_t i;
 
 	mmap(argv_table, 0x10000, MMAP_READ | MMAP_WRITE);

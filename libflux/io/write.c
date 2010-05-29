@@ -11,7 +11,6 @@
 size_t write(int fd, void *buf, size_t size, uint64_t offset) {
 	struct packet *p_out;
 	struct packet *p_in;
-	struct packet *p_err;
 	struct file   *file;
 	uint8_t *data;
 	uint16_t datasize;
@@ -48,17 +47,15 @@ size_t write(int fd, void *buf, size_t size, uint64_t offset) {
 		send(PORT_WRITE, file->target, p_out);
 		p_in = waits(PORT_REPLY, file->target);
 
-		if (p_err = recvs(PORT_ERROR, file->target)) {
-			packet_free(p_in);
-			packet_free(p_err);
-
-			when(PORT_REPLY, old_handler);
-			return (oldsize - size);
-		}
-
 		data    = &data[p_in->data_length];
 		size   -= p_in->data_length;
 		offset += p_in->data_length;
+
+		if (p_in->data_length == 0) {
+			packet_free(p_in);
+			break;
+		}
+
 		packet_free(p_in);
 
 		i++;

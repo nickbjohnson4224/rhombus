@@ -67,7 +67,6 @@ void keyboard_irq(uint32_t source, struct packet *packet) {
 }
 
 void keyboard_read(uint32_t source, struct packet *packet) {
-	char *line;
 	char *data;
 	size_t offset;
 	

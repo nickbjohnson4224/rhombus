@@ -48,7 +48,7 @@ struct packet *recvs(uint32_t port, uint32_t source) {
 
 	packet_size = _recv(port, source);
 
-	if (packet_size == -1 || packet_size == 0) {
+	if (packet_size == (uintptr_t) -1 || packet_size == 0) {
 		return NULL;
 	}
 
@@ -84,7 +84,7 @@ struct packet *waits(uint32_t port, uint32_t source) {
 	do {
 		packet_size = _recv(port, source);
 
-		if (packet_size == -1) {
+		if (packet_size == (uintptr_t) -1) {
 			continue;
 		}
 
