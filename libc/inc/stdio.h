@@ -1,7 +1,6 @@
 #ifndef STDIO_H
 #define STDIO_H
 
-#include <flux/config.h>
 #include <flux/io.h>
 
 /*** Type Definitions ***/
@@ -63,7 +62,6 @@ extern FILE *extout;
 
 int   fclose(FILE *stream);
 FILE *fopen(const char *path, const char *mode);
-FILE *freopen(const char *path, const char *mode, FILE *stream);
 FILE *fdopen(int fd, const char *mode);
 
 int  fflush(FILE *stream);

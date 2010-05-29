@@ -12,63 +12,7 @@
 #include <flux/io.h>
 #include <flux/vfs.h>
 
-FILE *stdin  = NULL;
-FILE *stdout = NULL;
-FILE *stderr = NULL;
-FILE *stdvfs = NULL;
-FILE *stddev = NULL;
-FILE *stdpmd = NULL;
-FILE *extin  = NULL;
-FILE *extout = NULL;
-
 /***** File Operations *****/
-
-FILE *fopen(const char *path, const char *mode) {
-	int fd;
-
-	fd = find(path);
-
-	if (fd == -1) {
-		return NULL;
-	}
-
-	return fdopen(fd, mode);
-}
-
-int fclose(FILE *stream) {
-
-	if (stream->buffer) {
-		free(stream->buffer);
-	}
-
-	fdfree(stream->filedes);
-
-	free(stream);
-
-	return 0;
-}
-
-FILE *fdopen(int fd, const char *mode) {
-	FILE *new = malloc(sizeof(FILE));
-
-	new->filedes       = fd;
-	new->position      = 0;
-	new->size          = -1;
-	new->buffer        = NULL;
-	new->buffsize      = 0;
-	new->buffpos       = 0;
-	new->revbuf        = EOF;
-	new->flags         = FILE_NBF | FILE_READ | FILE_WRITE;
-
-	return new;
-}
-
-int fflush(FILE *stream) {
-	fwrite(stream->buffer, stream->buffpos, sizeof(char), stream);
-	stream->buffpos = 0;
-
-	return 0;
-}
 
 int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
 	

@@ -8,7 +8,7 @@ DAEMONS  := daemon/vfsd daemon/pmdd daemon/devd
 BIN_DIRS  = kernel init fish
 BIN_DIRS += $(DRIVERS) $(DAEMONS)
 
-CC := /usr/flux-cross/bin/i586-elf-gcc
+CC := clang
 LD := /usr/flux-cross/bin/i586-elf-ld
 AR := /usr/flux-cross/bin/i586-elf-ar
 AS := nasm
@@ -63,28 +63,30 @@ clean:
 	@ rm $(shell find . -name "*.pp")
 	@ echo " CLEAN	" bin/*
 	@ rm bin/*
+	@ echo " CLEAN	" boot/*
+	@ rm boot/*
 
 image:	all
 
-	- mkdir boot
-	cp bin/* boot
-	strip boot/*
+	@ - mkdir boot
+	@ cp bin/* boot
+	@ strip boot/*
 
-	export BUILDDIR
-	sudo run/image.sh
+	@ export BUILDDIR
+	@ sudo run/image.sh
 
 test:	all cd
-	export BUILDDIR
-	run/run.sh
+	@ export BUILDDIR
+	@ run/run.sh
 
 cd:	all image
-	export BUILDDIR
-	run/makecd.sh
+	@ export BUILDDIR
+	@ run/makecd.sh
 
 hd:
-	export BUILDDIR
-	run/makehd.sh
+	@ export BUILDDIR
+	@ run/makehd.sh
 
 makedirs:
-	mkdir -p $(BUILDDIR)/lib
-	mkdir -p $(BUILDDIR)/inc
+	@ mkdir -p $(BUILDDIR)/lib
+	@ mkdir -p $(BUILDDIR)/inc

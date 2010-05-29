@@ -17,9 +17,8 @@ struct file {
 size_t read (int fd, void *buf, size_t size, uint64_t offset);
 size_t write(int fd, void *buf, size_t size, uint64_t offset);
 size_t query(int fd, void *rbuf, void *sbuf, size_t size);
-
-bool info(int fd, char *value, const char *field);
-bool ctrl(int fd, char *value, const char *field);
+bool   info (int fd, char *value, const char *field);
+bool   ctrl (int fd, char *value, const char *field);
 
 struct file *fdget(int fd);
 void         fdset(int fd, uint32_t target, uint32_t resource);
@@ -27,6 +26,9 @@ void         fdset(int fd, uint32_t target, uint32_t resource);
 int  fdsetup(uint32_t target, uint32_t resource);
 int  fdalloc(void);
 void fdfree(int fd);
+
+#define creat fdsetup
+#define close fdfree
 
 void fdinit(void);
 
