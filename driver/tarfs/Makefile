@@ -1,8 +1,8 @@
 SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
 SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
 SOURCES += $(BUILDDIR)/lib/c0.o
-SUBDIR	:= vfsd
-TARGET	:= vfsd
+SUBDIR	:= driver/tarfs
+TARGET	:= tarfs
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
 LDFLAGS += -lc -lflux -T$(BUILDDIR)/inc/link.ld
 ASFLAGS := -felf

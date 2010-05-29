@@ -1,7 +1,7 @@
 SOURCES := $(patsubst ./%.c,%.o,$(shell find . -name "*.c"))
 SOURCES += $(BUILDDIR)/lib/c0.o
-TARGET  := keyboard
-SUBDIR	:= driver/keyboard
+TARGET  := kbd
+SUBDIR	:= driver/kbd
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
 LDFLAGS += -lc -lflux -T$(BUILDDIR)/inc/link.ld
 ASFLAGS += -felf

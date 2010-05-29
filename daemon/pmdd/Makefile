@@ -1,7 +1,7 @@
 SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
 SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
 SOURCES += $(BUILDDIR)/lib/c0.o
-SUBDIR	:= pmdd
+SUBDIR	:= daemon/pmdd
 TARGET	:= pmdd
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
 LDFLAGS += -lc -lflux -T$(BUILDDIR)/inc/link.ld

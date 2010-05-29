@@ -55,7 +55,7 @@ int main() {
 	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);
 
 	/* Terminal Driver */
-	file = tar_find(boot_image, (char*) "terminal");
+	file = tar_find(boot_image, (char*) "term");
 	if (!file) {
 		for(;;);
 	}
@@ -107,7 +107,7 @@ int main() {
 	daemon_start(FD_STDPMD, file->start, file->size, NULL);
 
 	/* Keyboard Driver */
-	file = tar_find(boot_image, (char*) "keyboard");
+	file = tar_find(boot_image, (char*) "kbd");
 	if (!file) {
 		printf("critical error: no keyboard driver found\n");
 		for(;;);

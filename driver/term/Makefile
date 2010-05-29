@@ -1,7 +1,7 @@
 SOURCES := $(patsubst ./%.c,%.o,$(shell find . -name "*.c"))
 SOURCES += $(BUILDDIR)/lib/c0.o
-TARGET  := terminal
-SUBDIR	:= driver/terminal
+TARGET  := term
+SUBDIR	:= driver/term
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
 LDFLAGS += -lc -lflux -T$(BUILDDIR)/inc/link.ld
 ASFLAGS += -felf
