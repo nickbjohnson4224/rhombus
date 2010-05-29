@@ -6,6 +6,11 @@
 #include <flux/arch.h>
 #include <space.h>
 
+/***** Limits *****/
+
+#define MAX_TASKS 1024
+#define MAX_PID   1024
+
 /***** IPC *****/
 
 /* Signals (system) (sig < 16) */

@@ -2,7 +2,6 @@
 #define FLUX_IPC_H
 
 #include <flux/arch.h>
-#include <flux/packet.h>
 
 /*** Flux Packet Protocol (FPP) ***/
 

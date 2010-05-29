@@ -4,7 +4,7 @@
  */
 
 #include <flux/arch.h>
-#include <flux/vfs.h>
+#include <flux/io.h>
 
 #include <stdlib.h>
 #include <stdio.h>

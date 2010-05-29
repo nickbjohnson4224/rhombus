@@ -6,7 +6,6 @@
 #include <flux/arch.h>
 #include <flux/io.h>
 #include <flux/ipc.h>
-#include <flux/packet.h>
 #include <flux/proc.h>
 
 bool info(int fd, char *value, const char *field) {

@@ -4,7 +4,7 @@
 [bits 32]
 
 #define ASM
-#include <flux/config.h>
+#include <flux/arch.h>
 
 section .text
 

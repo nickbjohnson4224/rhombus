@@ -9,10 +9,10 @@ BIN_DIRS  = kernel init fish
 BIN_DIRS += $(DRIVERS) $(DAEMONS)
 
 CC := clang
-LD := /usr/flux-cross/bin/i586-elf-ld
-AR := /usr/flux-cross/bin/i586-elf-ar
+LD := ld
+AR := ar
 AS := nasm
-PP := /usr/flux-cross/bin/i586-elf-cpp
+PP := cpp
 
 CFLAGS	:= -pipe -Wall -Werror -Wextra -pedantic -std=c99
 CFLAGS	+= -Wpointer-arith -Wcast-align -Wwrite-strings

@@ -10,7 +10,6 @@
 
 #include <flux/heap.h>
 #include <flux/io.h>
-#include <flux/vfs.h>
 
 /***** File Operations *****/
 

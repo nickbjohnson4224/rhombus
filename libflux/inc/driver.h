@@ -1,8 +1,6 @@
 #ifndef DRIVER_H
 #define DRIVER_H
 
-/***** Driver API *****/
-
 /*** Port Access ***/
 uint8_t  inb(uint16_t port);
 uint16_t inw(uint16_t port);
@@ -26,15 +24,6 @@ typedef struct device {
 #define DEV_TYPE_NATIVE	0
 #define DEV_TYPE_PCI	1
 #define DEV_TYPE_FREE	2
-
-/*** Driver Interface Structure ***/
-
-struct driver_interface {
-	void (*init) (device_t dev);	/* Initialize driver on device */
-	void (*halt) (void);			/* De-initialize device */
-	void (*work) (void);			/* Do background work */
-	size_t jobs;					/* Number of background jobs to complete */
-};
 
 /*** IRQ Redirection ***/
 

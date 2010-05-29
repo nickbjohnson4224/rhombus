@@ -13,6 +13,8 @@ x86_memclr:
 	mov ecx, [esp+12]
 	xor eax, eax
 
+	cld
+
 	rep stosb
 
 	mov eax, edi

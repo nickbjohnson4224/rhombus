@@ -5,9 +5,7 @@
 
 #include <flux/arch.h>
 #include <flux/ipc.h>
-#include <flux/packet.h>
 #include <flux/proc.h>
-#include <flux/vfs.h>
 #include <flux/io.h>
 
 #include <stdio.h>

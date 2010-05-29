@@ -70,17 +70,40 @@ typedef uint32_t		size_t;
 
 /*** Architecture Optimized Functions ***/
 
+/* memory functions */
 void *x86_memcpy(void *dest, const void *src, size_t size);
 void *x86_memclr(void *s, size_t size);
+int   x86_memcmp(const void *s1, const void *s2, size_t n);
 
+#define arch_memcpy x86_memcpy
+#define arch_memclr x86_memclr
+#define arch_memcmp x86_memcmp
+
+/* string functions */
+char  *x86_strcpy (char *dest, const char *src);
+char  *x86_strncpy(char *dest, const char *src, size_t n);
+size_t x86_strlcpy(char *dest, const char *src, size_t n);
+char  *x86_strcat (char *dest, const char *src);
+char  *x86_strncat(char *dest, const char *src);
+size_t x86_strlcat(char *dest, const char *src);
+int   x86_strcmp (const char *s1, const char *s2);
+int   x86_strncmp(const char *s1, const char *s2, size_t n);
+size_t x86_strlen(const char *s);
+
+#define arch_strcpy  x86_strcpy
+#define arch_strncpy x86_strncpy
+#define arch_strlcpy x86_strlcpy
+//#define arch_strcat  x86_strcat
+//#define arch_strncat x86_strncat
+//#define arch_strlcat x86_strlcat
+//#define arch_strlen  x86_strlen
+
+/* mutex functions */
 bool x86_mutex_lock(uint32_t *mutex);
 bool x86_mutex_test(uint32_t *mutex);
 void x86_mutex_spin(uint32_t *mutex);
 void x86_mutex_wait(uint32_t *mutex);
 void x86_mutex_free(uint32_t *mutex);
-
-#define arch_memcpy x86_memcpy
-#define arch_memclr x86_memclr
 
 #define mutex_lock x86_mutex_lock
 #define mutex_test x86_mutex_test
@@ -102,6 +125,14 @@ void x86_mutex_free(uint32_t *mutex);
 #define BOOT_IMAGE	0xD0000000
 #define FD_TABLE    0xE0000000
 #define ARGV_TABLE	0xE0010000
+
+#define TMP_DST     0xFF000000
+#define TMP_SRC     0xFF010000
+#define TMP_MAP     0xFF800000
+#define PGE_MAP     0xFFC00000
+
+#define KERNEL_HEAP     (KSPACE + 0x1000000)
+#define KERNEL_HEAP_END (KSPACE + 0x8000000)
 
 /* These must remain in order */
 #define SSPACE	0x80000000	/* Stack space */

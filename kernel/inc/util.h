@@ -3,7 +3,6 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include <flux/config.h>
 #include <flux/arch.h>
 
 /***** I/O, ETC. *****/

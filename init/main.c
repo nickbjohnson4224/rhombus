@@ -5,21 +5,14 @@
 
 #include <flux/arch.h>
 #include <flux/ipc.h>
-#include <flux/packet.h>
 #include <flux/proc.h>
-#include <flux/driver.h>
 #include <flux/exec.h>
-#include <flux/vfs.h>
 #include <flux/io.h>
-#include <flux/heap.h>
-
-#include <driver/pci.h>
 
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <ctype.h>
 
 #include "inc/tar.h"
 

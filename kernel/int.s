@@ -2,7 +2,7 @@
 ; ISC Licensed, see LICENSE for details
 
 #define ASM
-#include <flux/config.h>
+#include <flux/arch.h>
 
 %macro INTN 1
   global int%1

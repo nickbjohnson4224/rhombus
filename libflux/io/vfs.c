@@ -3,7 +3,6 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <flux/vfs.h>
 #include <flux/heap.h>
 #include <flux/io.h>
 

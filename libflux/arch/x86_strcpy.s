@@ -5,19 +5,24 @@
 
 section .text
 
-global x86_memcpy
-x86_memcpy:
+global x86_strcpy
+x86_strcpy:
 	push esi
 	push edi
 
 	mov edi, [esp+12]
 	mov esi, [esp+16]
-	mov ecx, [esp+20]
 
 	cld
-	rep movsb
+
+.loop:
+	lodsb
+	stosb
+	test al, al
+	jnz .loop
 
 	mov eax, [esp+12]
+
 	pop edi
 	pop esi
 	ret
