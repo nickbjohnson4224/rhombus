@@ -5,7 +5,7 @@
 
 #include <flux/arch.h>
 #include <flux/heap.h>
-#include <flux/packet.h>
+#include <flux/ipc.h>
 
 /****************************************************************************
  * packet_setbuf

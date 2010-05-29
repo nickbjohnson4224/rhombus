@@ -36,13 +36,13 @@ void fdfree(int fd) {
 	fdtable[fd].status = 0;
 }
 
-int fdsetup(uint32_t target, uint32_t resource) {
+int fdsetup(uint32_t server, uint32_t inode) {
 	int fd;
 
 	fd = fdalloc();
 
-	fdtable[fd].target = target;
-	fdtable[fd].resource = resource;
+	fdtable[fd].server = server;
+	fdtable[fd].inode  = inode;
 
 	return fd;
 }
@@ -52,8 +52,8 @@ struct file *fdget(int fd) {
 	return &fdtable[fd];
 }
 
-void fdset(int fd, uint32_t target, uint32_t resource) {
+void fdset(int fd, uint32_t server, uint32_t inode) {
 	fdtable[fd].status = 1;
-	fdtable[fd].target = target;
-	fdtable[fd].resource = resource;
+	fdtable[fd].server = server;
+	fdtable[fd].inode  = inode;
 }

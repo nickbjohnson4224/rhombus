@@ -3,17 +3,28 @@
 
 #include <flux/arch.h>
 
+struct vfs_query {
+	uint32_t command;
+	uint32_t server;
+	uint64_t inode;
+	uint8_t  naddr[16];
+	char path0[1000];
+	char path1[1000];
+};
+
 struct info_query {
 	char field[100];
-	char value[100];
+	char value[1000];
 };
 
 struct file {
 	uint32_t status;
-	uint32_t target;
-	uint32_t resource;
+	uint32_t server;
+	uint32_t inode;
+	uint8_t  naddr[16];
 };
 
+size_t psend(int fd, char *r, char *s, size_t size, uint64_t off, uint8_t port);
 size_t read (int fd, void *buf, size_t size, uint64_t offset);
 size_t write(int fd, void *buf, size_t size, uint64_t offset);
 size_t query(int fd, void *rbuf, void *sbuf, size_t size);
@@ -26,6 +37,15 @@ void         fdset(int fd, uint32_t target, uint32_t resource);
 int  fdsetup(uint32_t target, uint32_t resource);
 int  fdalloc(void);
 void fdfree(int fd);
+
+#define VFS_CMD_FIND  0
+#define VFS_CMD_ADD   1
+
+#define VFS_CMD_REPLY 3
+#define VFS_CMD_ERROR 4
+
+int find(const char *path);
+int fadd(const char *path, uint32_t server, uint64_t inode);
 
 #define creat fdsetup
 #define close fdfree
