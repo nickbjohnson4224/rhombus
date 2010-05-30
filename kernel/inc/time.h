@@ -179,6 +179,7 @@ thread_t *syscall_exit(thread_t *image); /* exit from process */
 thread_t *syscall_pctl(thread_t *image); /* query process metadata */
 thread_t *syscall_exec(thread_t *image); /* execute new process */
 thread_t *syscall_gpid(thread_t *image); /* get current pid */
+thread_t *syscall_time(thread_t *image); /* get kernel time */
 
 thread_t *syscall_mmap(thread_t *image); /* manage memory */
 thread_t *syscall_mctl(thread_t *image); /* query memory subsystem */

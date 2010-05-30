@@ -5,8 +5,7 @@
 
 #include <flux/arch.h>
 #include <flux/abi.h>
-#include <flux/proc.h>
 
-uint32_t getpid(void) {
-	return _gpid(GPID_SELF);
+uint32_t getppid(void) {
+	return _gpid(GPID_PARENT);
 }

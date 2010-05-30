@@ -176,6 +176,7 @@ void thread_init(void) {
 	register_int(0x4A, syscall_pctl);
 	register_int(0x4B, syscall_exec);
 	register_int(0x4C, syscall_gpid);
+	register_int(0x4D, syscall_time);
 
 	register_int(0x50, syscall_mmap);
 	register_int(0x51, syscall_mctl);

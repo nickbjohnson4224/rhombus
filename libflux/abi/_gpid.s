@@ -6,5 +6,8 @@
 global _gpid
 
 _gpid:
+
+	mov eax, [esp+4]
 	int 0x4C
+
 	ret

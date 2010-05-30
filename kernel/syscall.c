@@ -13,7 +13,7 @@
 uint16_t irq_holder[256];
 
 /* Handles IRQ 0, and advances a simple counter used as a clock */
-uint32_t tick = 0;
+uint64_t tick = 0;
 
 thread_t *pit_handler(thread_t *image) {
 	tick++;
@@ -68,13 +68,8 @@ thread_t *fault_page(thread_t *image) {
 		return image;
 	}
 	else {
-		printk("page fault at %x, ip = %x frame %x pid %d\n",
-			cr2, image->eip, page_get(cr2), image->proc->pid);
-
-		panic("page fault exception");
-
-		return image;
-//		return thread_send(image, image->proc->pid, SSIG_FAULT, 0);
+		/* fault */
+		return thread_send(image, image->proc->pid, SSIG_FAULT, 0);
 	}
 }
 
@@ -312,7 +307,18 @@ thread_t *syscall_pctl(thread_t *image) {
 }
 
 thread_t *syscall_gpid(thread_t *image) {
-	image->eax = image->proc->pid;
+	
+	switch (image->eax) {
+	case 0: image->eax = image->proc->pid; break;
+	case 1: image->eax = image->proc->parent->pid; break;
+	}
+
+	return image;
+}
+
+thread_t *syscall_time(thread_t *image) {
+	image->eax = (tick >> 0);
+	image->edx = (tick >> 32);
 	return image;
 }
 

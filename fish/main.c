@@ -65,6 +65,7 @@ int main() {
 				}
 				exit(0);
 			}
+			waits(PORT_DEATH, pid);
 		}
 	}
 

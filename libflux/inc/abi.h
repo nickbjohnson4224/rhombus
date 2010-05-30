@@ -19,10 +19,10 @@ int32_t		_fork(void);
 void		_exit(uint32_t value);
 uint32_t	_pctl(uint32_t flags, uint32_t mask);
 int         _exec(uintptr_t addr);
-uint32_t    _gpid(void);
+uint32_t    _gpid(uint32_t selector);
 
-#define FIRE_NONE	0x0000
-#define FIRE_TAIL	0x0001
+#define GPID_SELF	0
+#define GPID_PARENT	1
 
 #define MMAP_READ	0x001
 #define MMAP_WRITE	0x002
