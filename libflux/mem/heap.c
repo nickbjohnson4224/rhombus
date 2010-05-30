@@ -7,31 +7,15 @@
 #include <flux/heap.h>
 #include <flux/mmap.h>
 
-#define SBLOCK_SIZE	0x2000
-
 /****************************************************************************
  * block
  *
- * Represents a single free block in the heap. The corresponding superblock
- * can be calculated using get_sb().
+ * Represents a single block in the heap.
  */
 
 struct block {
+	size_t size;
 	struct block *next;
-};
-
-/****************************************************************************
- * sblock
- *
- * Represents a single superblock in the heap.
- */
-
-struct sblock {
-	struct block  *free;
-	uint32_t       mutex; 
-	struct sblock *next;
-	uint16_t       size;
-	uint16_t       refc;
 };
 
 /****************************************************************************
@@ -40,114 +24,17 @@ struct sblock {
  * Top of heap memory.
  */
 
-static void      *brk = (void*) HEAP_START;
+static void *brk = (void*) HEAP_START;
 static uint32_t m_brk;
-
-/****************************************************************************
- * sb_freelist
- *
- * List of free superblocks in the heap.
- */
-
-static struct sblock *sb_freelist;
-static uint32_t     m_sb_freelist;
 
 /****************************************************************************
  * bucket
  *
- * Lists of superblocks containing blocks of size (1 << index).
+ * Lists of blocks of size (1 << index).
  */
 
-static struct sblock *bucket[16];
-static uint32_t     m_bucket[16];
-
-/****************************************************************************
- * salloc
- *
- * Allocates a superblock. First checks the free superblock list, then expands
- * the heap. Returns a pointer to a single unused superblock header pointing
- * to readable and writable memory on success, null on out of memory error. 
- * The superblock has its mutex locked. This function is thread safe but not 
- * lock-free.
- *
- * XXX - recycling of old superblocks is currently broken (commented out).
- */
-
-static void *salloc() {
-	struct sblock *sblock;
-	uintptr_t base;
-
-//	mutex_spin(&m_sb_freelist);
-//	if (sb_freelist) {
-//
-//		sblock = sb_freelist;
-//		sb_freelist = sb_freelist->next;
-//
-//		base = (uintptr_t) sblock + sizeof(struct sblock) - SBLOCK_SIZE;
-//	}
-//	else {
-		mutex_spin(&m_brk);
-
-		if ((uintptr_t) brk + SBLOCK_SIZE > HEAP_MXBRK) {
-			sblock = NULL;
-		}
-		else {
-			base   = (uintptr_t) brk;
-			brk    = (void*) (base + SBLOCK_SIZE);
-			sblock = (void*) (base + SBLOCK_SIZE - sizeof(struct sblock));
-
-			mmap((void*) base, SBLOCK_SIZE, PROT_READ | PROT_WRITE);
-		}
-
-		mutex_free(&m_brk);
-//	}
-//	mutex_free(&m_sb_freelist);
-
-	if (!sblock) {
-		return NULL;
-	}
-
-	sblock->mutex = 1;
-	sblock->free  = (void*) base;
-	sblock->next  = NULL;
-	sblock->refc  = 0;
-	sblock->size  = 0;
-
-	return sblock;
-}
-
-/****************************************************************************
- * sfree
- *
- * Frees a superblock, adding it to the free superblock list. This function
- * is thread safe but not lock-free.
- */
-
-static void sfree(struct sblock *sblock) {
-
-	mutex_spin(&m_sb_freelist);
-
-	sblock->next = sb_freelist;
-	sb_freelist = sblock;
-
-	mutex_free(&m_sb_freelist);
-}
-
-/****************************************************************************
- * get_sb
- *
- * Returns a pointer to the superblock header corresponding to a block.
- */
-
-static struct sblock *get_sb(struct block *b) {
-	uintptr_t addr;
-
-	addr = (uintptr_t) b;
-	addr = addr - (addr % SBLOCK_SIZE);
-	addr = addr + SBLOCK_SIZE - sizeof(struct sblock);
-
-	return (struct sblock*) addr;
-}
+static struct block *bucket[PTRBITS];
+static uint32_t m_bucket[PTRBITS];
 
 /****************************************************************************
  * get_bucket
@@ -194,124 +81,84 @@ static size_t get_bucket(size_t size) {
  * heap_malloc
  *
  * Returns a pointer to an unused, read-write block of memory of at least the
- * specified size. This pointer can be freed via heap_free. Returns null on
- * out of memory or too large error. This function is thread safe and 
- * lock-free locally.
+ * specified size. This pointer can be free via heap_free. Returns null on
+ * out of memory of too large error. This function is thread safe.
  */
 
 void *heap_malloc(size_t size) {
-	struct sblock *sblock;
-	struct block  *block;
+	struct block *block;
+	char  *slab;
+	size_t i;
 
 	/* convert size to bucket index */
+	size += sizeof(size_t);
+	size = (size < sizeof(struct block)) ? sizeof(struct block) : size;
 	size = get_bucket(size);
-	
-	/* reject oversized allocations */
-	if ((1 << size) > SBLOCK_SIZE) {
-		return NULL;
-	}
 
-	/* correct undersized allocations */
-	if ((size_t) (1 << size) < sizeof(void*)) {
-		size = get_bucket(sizeof(void*));
-	}
-
+	/* mutex bucket */
 	mutex_spin(&m_bucket[size]);
-	sblock = bucket[size];
 
-	/* search for unlocked, usable superblock in bucket */
-	while (sblock) {
-		if (sblock->free && mutex_lock(&sblock->mutex)) {
-			break;
+	/* allocate more blocks if bucket empty */
+	if (!bucket[size]) {
+		mutex_spin(&m_brk);
+		if (size < 12) {
+			slab = brk;
+			brk  = (void*) ((uintptr_t) brk + PAGESZ);
+
+			mmap(slab, PAGESZ, PROT_READ | PROT_WRITE);
+
+			i = PAGESZ - (1 << size);
+			do {
+				block = (struct block*) &slab[i];
+				block->next = bucket[size];
+				block->size = size;
+				bucket[size] = block;
+
+				i -= (1 << size);
+			} while (i);
 		}
 		else {
-			sblock = sblock->next;
+			slab = brk;
+			brk  = (void*) ((uintptr_t) brk + (1 << size));
+
+			mmap(slab, 1 << size, PROT_READ | PROT_WRITE);
+
+			block = (struct block*) ((uintptr_t) slab - sizeof(size_t));
+			block->next = bucket[size];
+			block->size = size;
+			bucket[size] = block;
 		}
+		mutex_free(&m_brk);
 	}
 
-	/* allocate new superblock if none found */
-	if (!sblock) {
-		sblock = salloc();
-
-		if (!sblock) {
-			mutex_free(&m_bucket[size]);
-			return NULL;
-		}
-		
-		sblock->free = (void*) ((uintptr_t) sblock + sizeof(struct sblock) - SBLOCK_SIZE);
-
-		block = sblock->free;
-		while ((uintptr_t) block + (1 << size) < (uintptr_t) sblock) {
-			block->next = (void*) ((uintptr_t) block + (1 << size));
-			block = block->next;
-		}
-		block->next = NULL;
-
-		sblock->refc = 0;
-		sblock->size = size;
-
-		sblock->next = bucket[size];
-		bucket[size] = sblock;
-	}
+	/* allocate from bucket */
+	block = bucket[size];
+	bucket[size] = block->next;
 
 	mutex_free(&m_bucket[size]);
 
-	/* allocate from superblock */
-	block = sblock->free;
-	sblock->free = block->next;
-	sblock->refc++;
-
-	mutex_free(&sblock->mutex);
-
-	return block;
+	return (void*) ((uintptr_t) block + sizeof(size_t));
 }
 
 /****************************************************************************
  * heap_free
  *
  * Frees a given block back into the heap. This algorithm DOES NOT detect
- * double frees or out of bounds pointers - be careful. This function is 
- * thread safe but not lock-free.
+ * double frees of out of bounds pointers - be careful. The function is
+ * thread safe.
  */
 
-void heap_free(void* ptr) {
-	struct sblock *sblock, *sblock0;
-	struct block  *block;
+void heap_free(void *ptr) {
+	struct block *block;
 	size_t size;
 
-	block  = ptr;
-	sblock = get_sb(block);
+	block = (void*) ((uintptr_t) ptr - sizeof(size_t));
+	size  = block->size;
 
-	mutex_spin(&sblock->mutex);
-
-	block->next  = sblock->free;
-	sblock->free = block;
-	sblock->refc--;
-
-	if (sblock->refc == 0) {
-		size = sblock->size;
-
-		mutex_spin(&m_bucket[size]);
-
-		sblock0 = bucket[size];
-
-		if (bucket[size] == sblock) {
-			bucket[size] = sblock->next;
-		}
-		else while (sblock0->next) {
-			if (sblock0->next == sblock) {
-				sblock0->next = sblock->next;
-				break;
-			}
-			sblock0 = sblock0->next;
-		}
-
-		mutex_free(&m_bucket[size]);
-
-		sfree(sblock);
-	}
-
-	mutex_free(&sblock->mutex);
+	mutex_spin(&m_bucket[size]);
+	block->next  = bucket[size];
+	bucket[size] = block;
+	mutex_spin(&m_bucket[size]);
 }
 
 /****************************************************************************
@@ -322,7 +169,11 @@ void heap_free(void* ptr) {
  */
 
 size_t heap_size(void *ptr) {
-	return (1 << (get_sb(ptr))->size);
+	struct block *block;
+
+	block = (void*) ((uintptr_t) ptr - sizeof(size_t));
+
+	return (1 << block->size);
 }
 
 /****************************************************************************
