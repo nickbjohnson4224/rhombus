@@ -123,7 +123,7 @@ void *heap_malloc(size_t size) {
 
 			mmap(slab, 1 << size, PROT_READ | PROT_WRITE);
 
-			block = (struct block*) ((uintptr_t) slab - sizeof(size_t));
+			block = (struct block*) slab;
 			block->next = bucket[size];
 			block->size = size;
 			bucket[size] = block;
@@ -151,6 +151,10 @@ void *heap_malloc(size_t size) {
 void heap_free(void *ptr) {
 	struct block *block;
 	size_t size;
+
+	if (!((uintptr_t) ptr % PAGESZ)) {
+		return;
+	}
 
 	block = (void*) ((uintptr_t) ptr - sizeof(size_t));
 	size  = block->size;
@@ -184,10 +188,14 @@ size_t heap_size(void *ptr) {
  */
 
 void *heap_valloc(size_t size) {
+	uintptr_t addr;
 
 	if (size < PAGESZ) {
 		size = PAGESZ;
 	}
 
-	return heap_malloc(size);
+	addr = (uintptr_t) heap_malloc(size);
+	addr -= addr % PAGESZ;
+
+	return (void*) addr;
 }

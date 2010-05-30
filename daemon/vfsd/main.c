@@ -56,8 +56,10 @@ void vfs_handle(uint32_t caller, struct packet *packet) {
 
 	switch (q->command) {
 	case VFS_CMD_FIND:
+		path_preprocess(q->path0);
+
 		mutex_spin(&m_vfs);
-		file = vfs_get(vfs_root, path_preprocess(q->path0));
+		file = vfs_get(vfs_root, q->path0);
 		mutex_free(&m_vfs);
 
 		if (file && file->server) {
@@ -69,13 +71,16 @@ void vfs_handle(uint32_t caller, struct packet *packet) {
 		}
 		break;
 	case VFS_CMD_ADD:
+		path_preprocess(q->path0);
+
 		mutex_spin(&m_vfs);
-		vfs_add(vfs_root, path_preprocess(q->path0), q->server, q->inode);
+		vfs_add(vfs_root, q->path0, q->server, q->inode);
 		mutex_free(&m_vfs);
 		break;
 	case VFS_CMD_LIST:
-		mutex_spin(&m_vfs);
 		path_preprocess(q->path0);
+
+		mutex_spin(&m_vfs);
 		vfs_list(vfs_root, q->path0, q->path1);
 		mutex_free(&m_vfs);
 		break;

@@ -19,9 +19,7 @@ int main() {
 	FILE *file;
 	size_t i, j, n;
 	int err, pid;
-
 	char pwd[100];
-
 	char *argv[100];
 	
 	printf("\n");

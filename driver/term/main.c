@@ -34,7 +34,7 @@ int main() {
 
 	mutex_spin(&m_vbuf);
 
-	vbuf = malloc(0x1000);
+	vbuf = valloc(80 * 25 * 2);
 	emap(vbuf, VMEM, PROT_READ | PROT_WRITE);
 
 	for (i = 0; i < WIDTH * HEIGHT; i++) {
@@ -46,7 +46,6 @@ int main() {
 	when(PORT_WRITE, terminal_write);
 
 	send(PORT_SYNC, 1, NULL);
-
 	_done();
 
 	return 0;

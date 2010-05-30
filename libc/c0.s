@@ -9,6 +9,7 @@ global _start
 extern main
 extern _cini
 extern _exit
+extern _fini
 
 _start:
 	mov eax, 0xE0010004
@@ -17,6 +18,7 @@ _start:
 	mov edx, [eax]
 	push edx ; argc
 
+	call _fini ; libflux initialization
 	call _cini ; libc initialization
 
 	call main

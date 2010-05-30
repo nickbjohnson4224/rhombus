@@ -35,11 +35,11 @@ struct vfs *vfs_get(struct vfs *root, const char *path) {
 	size_t i;
 
 	for (i = 0; path[i]; i++) {
-		if (root->link && path[i] == '/' || path[i] == '\0') {
+		if (root && root->link && path[i] == '/' || path[i] == '\0') {
 			root = root->link;
 		}
 		else {
-			if (!root || !root->next && !root->link) {
+			if (!root || !root->next) {
 				return NULL;
 			}
 			root = root->next[(size_t) path[i]];

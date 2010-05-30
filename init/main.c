@@ -118,6 +118,10 @@ int main() {
 		execiv(file->start, file->size, NULL);
 	}
 
+	waits(PORT_DEATH, 0);
+
+	printf("INIT PANIC: system daemon died\n");
+
 	for(;;);
 
 	return 0;
