@@ -4,9 +4,10 @@ LIB_DIRS  = driver/pci
 
 DRIVERS  := driver/term driver/kbd driver/tarfs
 DAEMONS  := daemon/vfsd daemon/pmdd daemon/devd
+UTILS    := util/ls util/echo
 
 BIN_DIRS  = kernel init fish
-BIN_DIRS += $(DRIVERS) $(DAEMONS)
+BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS)
 
 CC := clang
 LD := ld
@@ -18,7 +19,7 @@ CFLAGS	:= -pipe -Wall -Werror -Wextra -pedantic -std=c99
 CFLAGS	+= -Wpointer-arith -Wcast-align -Wwrite-strings
 CFLAGS	+= -Wno-unused-parameter -Wno-unused-function
 CFLAGS  += -mno-mmx
-#CFLAGS	+= -O3 -fomit-frame-pointer
+CFLAGS	+= -O3 -fomit-frame-pointer
 CFLAGS	+= -ffreestanding -I$(BUILDDIR)/inc
 LDFLAGS := -L$(BUILDDIR)/lib
 ARFLAGS := rcs
@@ -63,8 +64,8 @@ clean:
 	@ rm $(shell find . -name "*.pp")
 	@ echo " CLEAN	" bin/*
 	@ rm bin/*
-	@ echo " CLEAN	" boot/*
-	@ rm boot/*
+#	@ echo " CLEAN	" boot/*
+#	@ rm boot/*
 
 image:	all
 

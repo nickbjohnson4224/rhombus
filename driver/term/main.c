@@ -17,7 +17,7 @@
 #define VMEM 0xB8000
 #define WIDTH 80
 #define HEIGHT 25
-#define TAB 4
+#define TAB 8
 
 static void terminal_write(uint32_t caller, struct packet *packet);
 

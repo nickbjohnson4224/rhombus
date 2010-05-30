@@ -24,11 +24,9 @@ static char *path_preprocess(char *path) {
 	size_t i, j;
 
 	i = 0;
+	j = 0;
 
-	buffer[0] = '/';
-	j = 1;
-
-	for (;path[i] == '/'; i++);
+	for (; path[i] == '/'; i++);
 
 	for (; path[i]; i++, j++) {
 		if (!(path[i] == '/' && path[i+1] == '/')) {
@@ -36,12 +34,7 @@ static char *path_preprocess(char *path) {
 		}
 	}
 
-	if (path[i-1] == '/') {
-		buffer[j-1] = '\0';
-	}
-	else {
-		buffer[j] = '\0';
-	}
+	buffer[j] = '\0';
 
 	strcpy(path, buffer);
 
@@ -78,6 +71,12 @@ void vfs_handle(uint32_t caller, struct packet *packet) {
 	case VFS_CMD_ADD:
 		mutex_spin(&m_vfs);
 		vfs_add(vfs_root, path_preprocess(q->path0), q->server, q->inode);
+		mutex_free(&m_vfs);
+		break;
+	case VFS_CMD_LIST:
+		mutex_spin(&m_vfs);
+		path_preprocess(q->path0);
+		vfs_list(vfs_root, q->path0, q->path1);
 		mutex_free(&m_vfs);
 		break;
 	}

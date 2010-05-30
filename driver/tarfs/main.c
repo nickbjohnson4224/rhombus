@@ -53,6 +53,18 @@ static void tarfs_info(uint32_t source, struct packet *packet) {
 	packet_free(packet);
 }
 
+static void tarfs_read(uint32_t source, struct packet *packet) {
+	uint32_t offset;
+
+	offset = packet->offset + inode_table[packet->target_inode].offset;
+	
+	fseek(devicefile, offset, SEEK_SET);
+	fread(packet_getbuf(packet), packet->data_length, 1, devicefile);
+
+	send(PORT_REPLY, source, packet);
+	packet_free(packet);
+}
+
 static void getname(char *name, char *path) {
 	int i;
 	
@@ -76,8 +88,6 @@ int main(int argc, char **argv) {
 	strcat(name, ".");
 	strcat(name, argv[0]);
 
-	printf("%s: tape archive filesystem driver version 0.4a\n", name);
-
 	if (argc >= 3) {
 		strcpy(path, argv[2]);
 	}
@@ -86,10 +96,7 @@ int main(int argc, char **argv) {
 		strcat(path, name);
 	}
 
-	printf("%s: root at %s\n", name, path);
 	fadd(path, getpid(), 1);
-
-	printf("%s: populating filesystem\n", name);
 
 	device = find(argv[1]);
 	devicefile = fdopen(device, "r");
@@ -97,6 +104,7 @@ int main(int argc, char **argv) {
 	tar_parse(devicefile);
 
 	when(PORT_INFO, tarfs_info);
+	when(PORT_READ, tarfs_read);
 
 	printf("%s: ready\n", name);
 
@@ -153,9 +161,11 @@ static void tar_parse(FILE *driver) {
 		strcat(fpath, block->filename);
 		fadd(fpath, getpid(), n);
 
+		printf("file %s at %d\n", block->filename, (i + 1) * 512);
+
 		strcpy(inode_table[n].name, block->filename);
 
-		inode_table[n].offset = i;
+		inode_table[n].offset = (i + 1) * 512;
 		inode_table[n].size = getvalue(block->filesize, 12);
 
 		i += (inode_table[n].size / 512) + 1;

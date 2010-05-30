@@ -40,12 +40,15 @@ void fdfree(int fd);
 
 #define VFS_CMD_FIND  0
 #define VFS_CMD_ADD   1
+#define VFS_CMD_LIST  2
+#define VFS_CMD_LINK  3
 
-#define VFS_CMD_REPLY 3
-#define VFS_CMD_ERROR 4
+#define VFS_CMD_REPLY 10
+#define VFS_CMD_ERROR 11
 
 int find(const char *path);
 int fadd(const char *path, uint32_t server, uint64_t inode);
+int list(const char *path, char *buffer);
 
 #define creat fdsetup
 #define close fdfree

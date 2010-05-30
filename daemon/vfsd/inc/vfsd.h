@@ -12,8 +12,9 @@ struct vfs {
 };
 
 struct vfs *vfs_get(struct vfs *root, const char *path);
-void vfs_add(struct vfs *root, const char *path, uint32_t server, uint64_t inode);
-void vfs_lnk(struct vfs *root, const char *path, struct vfs *link);
-bool vfs_rem(struct vfs *root, const char *path);
+void vfs_add (struct vfs *root, const char *path, uint32_t server, uint64_t inode);
+void vfs_lnk (struct vfs *root, const char *path, struct vfs *link);
+bool vfs_rem (struct vfs *root, const char *path);
+void vfs_list(struct vfs *root, const char *path, char *buffer);
 
 #endif/*VFSD_H*/

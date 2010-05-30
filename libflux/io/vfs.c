@@ -11,10 +11,7 @@ int find(const char *path) {
 	size_t i;
 
 	q.command = VFS_CMD_FIND;
-	for (i = 0; path[i]; i++) {
-		q.path0[i] = path[i];
-	}
-	q.path0[i] = '\0';
+	arch_strcpy(q.path0, path);
 
 	i = query(FD_STDVFS, &q, &q, sizeof(struct vfs_query));
 
@@ -30,10 +27,7 @@ int fadd(const char *path, uint32_t server, uint64_t inode) {
 	size_t i;
 
 	q.command = VFS_CMD_ADD;
-	for (i = 0; path[i] && i < 999; i++) {
-		q.path0[i] = path[i];
-	}
-	q.path0[i] = '\0';
+	arch_strcpy(q.path0, path);
 
 	q.server = server;
 	q.inode  = inode;
@@ -43,6 +37,24 @@ int fadd(const char *path, uint32_t server, uint64_t inode) {
 	if (i == 0) {
 		return -1;
 	}
+
+	return 0;
+}
+
+int list(const char *path, char *buffer) {
+	struct vfs_query q;
+	size_t i;
+
+	q.command = VFS_CMD_LIST;
+	arch_strcpy(q.path0, path);
+
+	i = query(FD_STDVFS, &q, &q, sizeof(struct vfs_query));
+
+	if (i == 0) {
+		return -1;
+	}
+
+	arch_strcpy(buffer, q.path1);
 
 	return 0;
 }

@@ -5,21 +5,31 @@
 
 #include <flux/arch.h>
 #include <flux/io.h>
+#include <flux/exec.h>
+#include <flux/proc.h>
+#include <flux/ipc.h>
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-int main(int argc, char **argv) {
+int main() {
 	char buffer[100];
 	char fbuffer[1000];
 	FILE *file;
-	size_t i;
+	size_t i, j, n;
+	int err, pid;
+
+	char pwd[100];
+
+	char *argv[100];
 	
 	printf("\n");
 
+	strcpy(pwd, "/");
+
 	while (1) {
-		printf("$ ");
+		printf("%s $ ", pwd);
 
 		fgets(buffer, 100, stdin);
 
@@ -29,20 +39,32 @@ int main(int argc, char **argv) {
 			}
 		}
 
-		file = fopen(buffer, "r");
+		argv[0] = &buffer[0];
 
-		if (file) {
-			printf("%s: ", buffer);
-			printf("found %d:%d, ", fdget(file->filedes)->server, 
-									fdget(file->filedes)->inode);
+		for (i = 0, n = 1; buffer[i]; i++) {
+			if (buffer[i] == ' ') {
+				buffer[i] = '\0';
+				argv[n++] = &buffer[i+1];
+			}
+		}
 
-			info(file->filedes, fbuffer, "size");
-			printf("size %s bytes\n", fbuffer);
+		argv[n] = NULL;
 
-			fclose(file);
+		if (!strcmp(buffer, "cd")) {
+			strcat(pwd, argv[1]);
 		}
 		else {
-			printf("%s: not found\n", buffer);
+			pid = fork();
+			if (pid < 0) {
+				strcpy(fbuffer, pwd);
+				strcat(fbuffer, "/");
+				strcat(fbuffer, buffer);
+				err = execv(fbuffer, (char const**) argv);
+				if (err) {
+					printf("failed to execute: %d\n", err);
+				}
+				exit(0);
+			}
 		}
 	}
 
