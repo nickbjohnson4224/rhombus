@@ -86,9 +86,9 @@ size_t x86_strlcpy(char *dest, const char *src, size_t n);
 char  *x86_strcat (char *dest, const char *src);
 char  *x86_strncat(char *dest, const char *src);
 size_t x86_strlcat(char *dest, const char *src);
-int   x86_strcmp (const char *s1, const char *s2);
-int   x86_strncmp(const char *s1, const char *s2, size_t n);
-size_t x86_strlen(const char *s);
+int    x86_strcmp (const char *s1, const char *s2);
+int    x86_strncmp(const char *s1, const char *s2, size_t n);
+size_t x86_strlen (const char *s);
 
 #define arch_strcpy  x86_strcpy
 #define arch_strncpy x86_strncpy

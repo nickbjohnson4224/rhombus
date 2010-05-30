@@ -43,6 +43,7 @@ int main() {
 	extern void initrd_init(void);
 	struct tar_file *boot_image, *file;
 	char const **argv;
+	char test[100];
 
 	/* Boot Image */
 	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);
@@ -122,6 +123,10 @@ int main() {
 	if (fork() < 0) {
 		execiv(file->start, file->size, argv);
 	}
+
+	test[50] = 42;
+	memclr(test, 50);
+	printf("test: %d\n", test[50]);
 
 	free(argv);
 

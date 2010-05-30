@@ -4,41 +4,39 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 #include <vfsd.h>
 
 void vfs_add(struct vfs *root, const char *path, uint32_t server, uint64_t inode) {
+	size_t i, j;
 
-	if (root->link && (path[0] == '/' || path[0] == '\0')) {
-		vfs_add(root->link, path, server, inode);
-	}
-
-	if (path[0]) {
-		if (!root->next[(size_t) path[0]]) {
-			root->next[(size_t) path[0]] = calloc(sizeof(struct vfs), 1);
-			root->refc++;
+	for (i = 0; path[i]; i++) {
+		if (!root->next) {
+			root->next = calloc(sizeof(void*), 128);
 		}
-		vfs_add(root->next[(size_t) path[0]], &path[1], server, inode);
+		if (!root->next[(size_t) path[i]]) {
+			root->next[(size_t) path[i]] = calloc(sizeof(struct vfs), 1);
+		}
+		root = root->next[(size_t) path[i]];
 	}
-	else {
-		root->server = server;
-		root->inode  = inode;
-	}
+
+	root->server = server;
+	root->inode  = inode;
 }
 
 struct vfs *vfs_get(struct vfs *root, const char *path) {
+	size_t i;
 
-	if (root->link && (path[0] == '/' || path[0] == '\0')) {
-		return vfs_get(root->link, path);
+	for (i = 0; path[i]; i++) {
+		if (!root || !root->next) {
+			return NULL;
+		}
+
+		root = root->next[(size_t) path[i]];
 	}
 
-	if (path[0]) {
-		if (!root->next[(size_t) path[0]]) return NULL;
-		else return vfs_get(root->next[(size_t) path[0]], &path[1]);
-	}
-	else {
-		return root;
-	}
+	return root;
 }
 
 void  vfs_lnk(struct vfs *root, const char *path, struct vfs *link) {
@@ -49,41 +47,10 @@ void  vfs_lnk(struct vfs *root, const char *path, struct vfs *link) {
 	if (path[0]) {
 		if (!root->next[(size_t) path[0]]) {
 			root->next[(size_t) path[0]] = calloc(sizeof(struct vfs), 1);
-			root->refc++;
 		}
 		vfs_lnk(root->next[(size_t) path[0]], &path[1], link);
 	}
 	else {
 		root->link = link;
 	}
-}
-
-bool vfs_rem(struct vfs *root, const char *path) {
-	int f;
-
-	if (root->link && (path[0] == '/' || path[0] == '\0')) {
-		f = vfs_rem(root->link, path);
-		if (f) root->link = NULL;
-		return false;
-	}
-
-	if (path[0]) {
-		if (!root->next[(size_t) path[0]]) return 0;
-		else {
-			f = vfs_rem(root->next[(size_t) path[0]], &path[1]);
-			if (f) {
-				free(root->next[(size_t) path[0]]);
-				root->next[(size_t) path[0]] = NULL;
-				root->refc--;
-			}
-			if (!(root->refc || root->server || root->link)) {
-				return true;
-			}
-		}
-	}
-	else {
-		return true;
-	}
-	
-	return false;
 }

@@ -278,7 +278,12 @@ int vfprintf(FILE *stream, const char *format, va_list ap) {
 				break;
 			case 's':
 				str = va_arg(ap, const char*);
-				fwrite(str, strlen(str), sizeof(char), stream);
+				if (str) {
+					fwrite(str, strlen(str), sizeof(char), stream);
+				}
+				else {
+					fprintf(stream, "(null)");
+				}
 				break;
 			case 'c':
 				c = va_arg(ap, int);

@@ -32,9 +32,12 @@ int main(int argc, char **argv) {
 		file = fopen(buffer, "r");
 
 		if (file) {
-			info(file->filedes, fbuffer, "size");
+			printf("%s: ", buffer);
+			printf("found %d:%d, ", fdget(file->filedes)->server, 
+									fdget(file->filedes)->inode);
 
-			printf("%s: found, size %s bytes\n", buffer, fbuffer);
+			info(file->filedes, fbuffer, "size");
+			printf("size %s bytes\n", fbuffer);
 
 			fclose(file);
 		}

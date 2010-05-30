@@ -67,7 +67,7 @@ void vfs_handle(uint32_t caller, struct packet *packet) {
 		file = vfs_get(vfs_root, path_preprocess(q->path0));
 		mutex_free(&m_vfs);
 
-		if (file) {
+		if (file && file->server) {
 			q->server = file->server;
 			q->inode  = file->inode;
 		}

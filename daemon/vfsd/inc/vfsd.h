@@ -4,10 +4,8 @@
 #include <stdint.h>
 
 struct vfs {
-	struct vfs *next[256];
+	struct vfs **next;
 	struct vfs *link;
-
-	uint8_t refc;
 
 	uint32_t server;
 	uint64_t inode;
