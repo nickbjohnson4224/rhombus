@@ -57,7 +57,13 @@ static void tarfs_read(uint32_t source, struct packet *packet) {
 	uint32_t offset;
 
 	offset = packet->offset + inode_table[packet->target_inode].offset;
-	
+
+	if (packet->offset + packet->data_length > 
+		inode_table[packet->target_inode].size) {
+		packet_setbuf(&packet, inode_table[packet->target_inode].size
+			- packet->offset);
+	}
+
 	fseek(devicefile, offset, SEEK_SET);
 	fread(packet_getbuf(packet), packet->data_length, 1, devicefile);
 
@@ -108,7 +114,7 @@ int main(int argc, char **argv) {
 
 	printf("%s: ready\n", name);
 
-	send(PORT_SYNC, 1, NULL);
+	send(PORT_SYNC, getppid(), NULL);
 	_done();
 
 	return 0;
@@ -155,21 +161,27 @@ static void tar_parse(FILE *driver) {
 		if (block->filename[0] == '\0' || block->filename[0] == ' ') {
 			break;
 		}
-		
+
 		strcpy(fpath, path);
 		strcat(fpath, "/");
 		strcat(fpath, block->filename);
 		fadd(fpath, getpid(), n);
 
-		printf("file %s at %d\n", block->filename, (i + 1) * 512);
+		printf("file %s at %d\n", block->filename, i + 512);
 
 		strcpy(inode_table[n].name, block->filename);
 
-		inode_table[n].offset = (i + 1) * 512;
+		inode_table[n].offset = i + 512;
 		inode_table[n].size = getvalue(block->filesize, 12);
 
-		i += (inode_table[n].size / 512) + 1;
-		fseek(driver, ((inode_table[n].size / 512) + 1) * 512, SEEK_CUR);
+		if (inode_table[n].size % 512) {
+			i += ((inode_table[n].size / 512) + 2) * 512;
+		}
+		else {
+			i += inode_table[n].size + 512;
+		}
+
+		fseek(driver, i, SEEK_SET);
 
 		n++;
 	}

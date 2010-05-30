@@ -1,8 +1,8 @@
 SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
 SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
 SOURCES += $(BUILDDIR)/lib/c0.o
-SUBDIR	:= util/echo
-TARGET	:= echo
+SUBDIR	:= util/halt
+TARGET	:= halt
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
 LDFLAGS += -lc -lflux -T$(BUILDDIR)/inc/link.ld
 ASFLAGS := -felf

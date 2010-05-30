@@ -7,6 +7,7 @@
 #include <flux/ipc.h>
 #include <flux/proc.h>
 #include <flux/exec.h>
+#include <flux/mmap.h>
 #include <flux/io.h>
 
 #include <stdint.h>

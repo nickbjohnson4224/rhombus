@@ -10,6 +10,6 @@ x86_mutex_free:
 	mov edx, [esp+4]
 
 	xor eax, eax
-	lock mov [edx], eax
+	mov [edx], eax
 
 	ret

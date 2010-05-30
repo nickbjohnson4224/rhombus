@@ -27,7 +27,7 @@ int main() {
 
 	printf("kbd: ready\n");
 
-	send(PORT_SYNC, 1, NULL);
+	send(PORT_SYNC, getppid(), NULL);
 	_done();
 
 	return 0;

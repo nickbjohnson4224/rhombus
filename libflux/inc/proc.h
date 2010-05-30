@@ -10,5 +10,6 @@ void block(bool v);		/* (Dis)allow scheduling */
 void sleep(void);		/* Relinquish timeslice */
 
 uint32_t getpid(void);
+uint32_t getppid(void);
 
 #endif

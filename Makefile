@@ -3,10 +3,10 @@ BUILDDIR=$(PWD)
 LIB_DIRS  = driver/pci
 
 DRIVERS  := driver/term driver/kbd driver/tarfs
-DAEMONS  := daemon/vfsd daemon/pmdd daemon/devd
-UTILS    := util/ls util/echo
+DAEMONS  := daemon/vfsd daemon/pmdd daemon/devd daemon/init
+UTILS    := util/ls util/echo util/halt util/cat
 
-BIN_DIRS  = kernel init fish
+BIN_DIRS  = kernel fish
 BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS)
 
 CC := clang
@@ -64,14 +64,11 @@ clean:
 	@ rm $(shell find . -name "*.pp")
 	@ echo " CLEAN	" bin/*
 	@ rm bin/*
-#	@ echo " CLEAN	" boot/*
-#	@ rm boot/*
 
 image:	all
 
 	@ - mkdir boot
 	@ cp bin/* boot
-	@ strip boot/*
 
 	@ export BUILDDIR
 	@ sudo run/image.sh

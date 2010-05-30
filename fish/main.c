@@ -20,11 +20,14 @@ int main() {
 	size_t i, j, n;
 	int err, pid;
 	char pwd[100];
+	char path[100];
 	char *argv[100];
+	bool daemon;
 	
 	printf("\n");
 
 	strcpy(pwd, "/");
+	strcpy(path, "/initrd.tarfs");
 
 	while (1) {
 		printf("%s $ ", pwd);
@@ -48,13 +51,21 @@ int main() {
 
 		argv[n] = NULL;
 
+		if (argv[n-1][0] == '&') {
+			argv[n-1] = NULL;
+			daemon = true;
+		}
+		else {
+			daemon = false;
+		}
+
 		if (!strcmp(buffer, "cd")) {
 			strcat(pwd, argv[1]);
 		}
 		else {
 			pid = fork();
 			if (pid < 0) {
-				strcpy(fbuffer, pwd);
+				strcpy(fbuffer, path);
 				strcat(fbuffer, "/");
 				strcat(fbuffer, buffer);
 				err = execv(fbuffer, (char const**) argv);
@@ -63,7 +74,12 @@ int main() {
 				}
 				exit(0);
 			}
-			waits(PORT_DEATH, pid);
+			if (!daemon) {
+				waits(PORT_DEATH, pid);
+			}
+			else {
+				waits(PORT_SYNC, pid);
+			}
 		}
 	}
 
