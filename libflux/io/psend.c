@@ -56,8 +56,8 @@ size_t psend(int fd, char *r, char *s, size_t size, uint64_t off, uint8_t port) 
 		size -= p_in->data_length;
 		off  += p_in->data_length;
 
-		if (p_in->data_length == 0) {
-			packet_free(p_in);
+		if (!p_in || p_in->data_length == 0) {
+			if (p_in) packet_free(p_in);
 			break;
 		}
 

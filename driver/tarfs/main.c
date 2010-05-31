@@ -4,7 +4,6 @@
  */
 
 #include <flux/arch.h>
-#include <flux/driver.h>
 #include <flux/proc.h>
 #include <flux/ipc.h>
 #include <flux/io.h>
@@ -14,62 +13,21 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "tarfs.h"
+
+struct tarfs_inode inode[256];
+
+uint32_t m_parent;
+FILE *parent;
+
 char name[100];
-char path[100];
+char root[100];
 
-int device;
-FILE *devicefile;
-
-static void tar_parse(FILE *driver);
-
-static struct tarfs_inode {
-	char name[100];
-	uint32_t offset;
-	uint32_t size;
-} inode_table[256];
-
-static void tarfs_info(uint32_t source, struct packet *packet) {
-	struct info_query *query;
-	
-	if (!packet) {
-		return;
-	}
-
-	query = packet_getbuf(packet);
-
-	if (!strcmp(query->field, "size")) {
-		if (packet->target_inode == 0) {
-			strcpy(query->value, "");
-		}
-		else {
-			sprintf(query->value, "%d", inode_table[packet->target_inode].size);
-		}
-	}
-	else {
-		strcpy(query->value, "");
-	}
-
-	send(PORT_REPLY, source, packet);
-	packet_free(packet);
-}
-
-static void tarfs_read(uint32_t source, struct packet *packet) {
-	uint32_t offset;
-
-	offset = packet->offset + inode_table[packet->target_inode].offset;
-
-	if (packet->offset + packet->data_length > 
-		inode_table[packet->target_inode].size) {
-		packet_setbuf(&packet, inode_table[packet->target_inode].size
-			- packet->offset);
-	}
-
-	fseek(devicefile, offset, SEEK_SET);
-	fread(packet_getbuf(packet), packet->data_length, 1, devicefile);
-
-	send(PORT_REPLY, source, packet);
-	packet_free(packet);
-}
+/****************************************************************************
+ * getname
+ *
+ * Copies the last part of a path into the buffer name.
+ */
 
 static void getname(char *name, char *path) {
 	int i;
@@ -84,107 +42,59 @@ static void getname(char *name, char *path) {
 	strcpy(name, &path[i]);
 }
 
+/****************************************************************************
+ * tarfs - tape archive filesystem driver
+ *
+ * Usage: tarfs [parent] <root>
+ *
+ * Constructs a filesystem using the tarfile parent as a parent driver. If no 
+ * root is specified, the path /<parent>.tarfs will be assumed.
+ */
+
 int main(int argc, char **argv) {
 
+	/* reject if no parent is speicified */
 	if (argc < 2) {
 		return 1;
 	}
 
+	/* figure out name */
 	getname(name, argv[1]);
-	strcat(name, ".");
-	strcat(name, argv[0]);
+	strcat (name, ".");
+	strcat (name, argv[0]);
 
 	if (argc >= 3) {
-		strcpy(path, argv[2]);
+		/* root is specified */
+		strcpy(root, argv[2]);
 	}
 	else {
-		strcpy(path, "/");
-		strcat(path, name);
+		/* root is implicit */
+		strcpy(root, "/");
+		strcat(root, name);
 	}
 
-	fadd(path, getpid(), 1);
+	/* get parent driver stream */
+	parent = fopen(argv[1], "r");
 
-	device = find(argv[1]);
-	devicefile = fdopen(device, "r");
+	if (!parent) {
+		/* parent does not exist - fail */
+		return 1;
+	}
 
-	tar_parse(devicefile);
+	/* initialize tarfs on parent driver */
+	tarfs_init();
 
+	/* register handlers */
 	when(PORT_INFO, tarfs_info);
 	when(PORT_READ, tarfs_read);
 
 	printf("%s: ready\n", name);
 
+	/* synchronize with parent process */
 	send(PORT_SYNC, getppid(), NULL);
+
+	/* daemonize */
 	_done();
 
 	return 0;
-}
-
-struct tar_block {
-	char filename[100];
-	char mode[8];
-	char owner[8];
-	char group[8];
-	char filesize[12];
-	char timestamp[12];
-	char checksum[8];
-	char link[1];
-	char linkname[100];
-};
-
-static uintptr_t getvalue(char *field, size_t size) {
-	uintptr_t sum, i;
-
-	sum = 0;
-
-	for (i = 0; i < size && field[i]; i++) {
-		sum *= 8;
-		sum += field[i] - '0';
-	}
-
-	return sum;
-}
-
-static void tar_parse(FILE *driver) {
-	struct tar_block *block;
-	char fpath[100];
-	uintptr_t i, n;
-
-	block = malloc(512);
-
-	i = 0;
-	n = 2;
-
-	while (1) {
-		fread(block, 1, 512, driver);
-
-		if (block->filename[0] == '\0' || block->filename[0] == ' ') {
-			break;
-		}
-
-		strcpy(fpath, path);
-		strcat(fpath, "/");
-		strcat(fpath, block->filename);
-		fadd(fpath, getpid(), n);
-
-		printf("file %s at %d\n", block->filename, i + 512);
-
-		strcpy(inode_table[n].name, block->filename);
-
-		inode_table[n].offset = i + 512;
-		inode_table[n].size = getvalue(block->filesize, 12);
-
-		if (inode_table[n].size % 512) {
-			i += ((inode_table[n].size / 512) + 2) * 512;
-		}
-		else {
-			i += inode_table[n].size + 512;
-		}
-
-		fseek(driver, i, SEEK_SET);
-
-		n++;
-	}
-
-	free(block);
 }
