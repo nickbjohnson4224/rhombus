@@ -64,6 +64,8 @@ int main() {
 		for(;;);
 	}
 	daemon_start(FD_STDVFS, file->start, file->size, NULL);
+	fadd("/vfsd", fdget(FD_STDVFS)->server, fdget(FD_STDVFS)->inode);
+	fadd("/term", fdget(FD_STDOUT)->server, fdget(FD_STDOUT)->inode);
 
 	/* Device Daemon */
 	file = tar_find(boot_image, (char*) "devd");
@@ -72,9 +74,10 @@ int main() {
 		for(;;);
 	}
 	daemon_start(FD_STDDEV, file->start, file->size, NULL);
+	fadd("/devd", fdget(FD_STDDEV)->server, fdget(FD_STDDEV)->inode);
 
+	/* Initrd */
 	initrd_init();
-
 	fadd("/initrd", getpid(), 0);
 
 	/* Initrd over TARFS */
@@ -99,6 +102,7 @@ int main() {
 		for(;;);
 	}
 	daemon_start(FD_STDPMD, file->start, file->size, NULL);
+	fadd("/pmdd", fdget(FD_STDPMD)->server, fdget(FD_STDPMD)->inode);
 
 	/* Keyboard Driver */
 	file = tar_find(boot_image, (char*) "kbd");
@@ -107,6 +111,7 @@ int main() {
 		for(;;);
 	}
 	daemon_start(FD_STDIN, file->start, file->size, NULL);
+	fadd("/kbd", fdget(FD_STDIN)->server, fdget(FD_STDIN)->inode);
 
 	/* Flux Init Shell */
 	file = tar_find(boot_image, (char*) "fish");

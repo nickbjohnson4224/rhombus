@@ -8,7 +8,7 @@
 #include <flux/ipc.h>
 
 static void segfault(uint32_t caller, struct packet *packet) {
-	
+
 	exit(0);
 }
 

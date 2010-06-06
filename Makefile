@@ -2,9 +2,9 @@ BUILDDIR=$(PWD)
 
 LIB_DIRS  = driver/pci
 
-DRIVERS  := driver/term driver/kbd driver/tarfs
+DRIVERS  := driver/term driver/kbd driver/tarfs driver/vga
 DAEMONS  := daemon/vfsd daemon/pmdd daemon/devd daemon/init
-UTILS    := util/ls util/echo util/halt util/cat
+UTILS    := util/ls util/echo util/halt util/cat util/kevin
 
 BIN_DIRS  = kernel fish
 BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS)
@@ -19,7 +19,7 @@ CFLAGS	:= -pipe -Wall -Werror -Wextra -pedantic -std=c99
 CFLAGS	+= -Wpointer-arith -Wcast-align -Wwrite-strings
 CFLAGS	+= -Wno-unused-parameter -Wno-unused-function
 CFLAGS  += -mno-mmx
-#CFLAGS	+= -O3 -fomit-frame-pointer
+CFLAGS	+= -O3 -fomit-frame-pointer
 CFLAGS	+= -ffreestanding -I$(BUILDDIR)/inc
 LDFLAGS := -L$(BUILDDIR)/lib
 ARFLAGS := rcs
