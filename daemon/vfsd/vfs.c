@@ -57,7 +57,7 @@ void  vfs_lnk(struct vfs *root, const char *path, struct vfs *link) {
 			root = root->link;
 		}
 		else {
-			if (!root || !root->next && !root->link) {
+			if (!root || !root->next) {
 				return;
 			}
 			root = root->next[(size_t) path[i]];
@@ -106,7 +106,7 @@ void vfs_list(struct vfs *root, const char *path, char *buffer) {
 			root = root->link;
 		}
 		else {
-			if (!root || !root->next && !root->link) {
+			if (!root || !root->next) {
 				return;
 			}
 			root = root->next[(size_t) path[i]];
