@@ -116,8 +116,12 @@ thread_t *int_handler(thread_t *image) {
 		/* Set TSS to generate images in the proper position */
 		tss_set_esp((uintptr_t) &new_image->tss_start);
 
+		new_image->eflags |= 0x200;
+
 		return thread_switch(image, new_image);
 	}
+
+	image->eflags |= 0x200;
 
 	return image;
 }

@@ -63,6 +63,8 @@ void *heap_alloc(size_t size) {
 	block = heap_bucket[bucket];
 	heap_bucket[bucket] = heap_bucket[bucket]->next;
 
+	memclr(block, size);
+
 	return block;
 }
 
