@@ -102,7 +102,7 @@ void vfs_list(struct vfs *root, const char *path, char *buffer) {
 	strcpy(buffer, "");
 
 	for (i = 0; path[i]; i++) {
-		if (root->link && path[i] == '/' || path[i] == '\0') {
+		if (root && root->link && path[i] == '/' || path[i] == '\0') {
 			root = root->link;
 		}
 		else {

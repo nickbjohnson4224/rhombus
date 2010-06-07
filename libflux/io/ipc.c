@@ -7,6 +7,7 @@
 #include <flux/ipc.h>
 #include <flux/heap.h>
 #include <flux/mmap.h>
+#include <flux/proc.h>
 
 /****************************************************************************
  * event_handler
@@ -72,7 +73,8 @@ struct packet *recv(uint32_t port) {
  * waits
  *
  * Recieves a packet (or waits if one does not yet exist) from the specified
- * port that originated from the pid <source>.
+ * port that originated from the pid <source>. If the specified port is not
+ * open, 
  */
 
 struct packet *waits(uint32_t port, uint32_t source) {

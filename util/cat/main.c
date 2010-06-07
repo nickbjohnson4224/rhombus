@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
 	for (n = 1; n < argc; n++) {
 		file = fopen(argv[n], "r");
 
-		if (!file) continue;
+		if (!file) printf("%s: file not found\n", argv[n]);
 
 		while (1) {
 			i = fread(buffer, sizeof(char), 1000, file);

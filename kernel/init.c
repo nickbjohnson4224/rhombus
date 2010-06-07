@@ -45,8 +45,13 @@ void *init(void *mboot_ptr, uint32_t mboot_magic) {
 
 	for (i = 0; init_list[i]; i++) {
 		init_list[i]();
+		printk("%d ", i);
 	}
+	printk("\n");
 
 	boot_image = thread_alloc();
+
+	printk("dropping to usermode\n");
+
 	return &boot_image->tss_start;
 }

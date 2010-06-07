@@ -18,7 +18,9 @@ uint64_t tick = 0;
 thread_t *pit_handler(thread_t *image) {
 	tick++;
 
-	return schedule_next();
+	image = schedule_next();
+
+	return image;
 }
 
 thread_t *irq_redirect(thread_t *image) {
