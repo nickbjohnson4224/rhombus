@@ -46,6 +46,7 @@ static uint32_t m_bucket[PTRBITS];
 
 static size_t get_bucket(size_t size) {
 	register size_t rslt = 0;
+	size_t osize = size;
 
 	#if   (INTBITS == 64)
 	if (size & 0xFFFFFFFF00000000) {
@@ -74,7 +75,7 @@ static size_t get_bucket(size_t size) {
 		rslt |=  0x01;
 	}
 
-	return rslt;
+	return (1 << rslt == osize) ? rslt : rslt + 1;
 }
 
 /****************************************************************************

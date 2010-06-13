@@ -11,16 +11,14 @@
 
 void *calloc(size_t nmemb, size_t size) {
 	void *ptr;
-	
-	size *= nmemb;
 
-	ptr = heap_malloc(size);
+	ptr = heap_malloc(size * nmemb);
 
 	if (!ptr) {
 		return NULL;
 	}
 
-	memclr(ptr, size);
+	memclr(ptr, size * nmemb);
 	
 	return ptr;
 }

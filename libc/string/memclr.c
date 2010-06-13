@@ -7,7 +7,7 @@
 #include <string.h>
 
 void *memclr(void *s, size_t n) {
-	#ifndef arch_memclr
+//	#ifndef arch_memclr
 		size_t i;
 		uint8_t *src = (uint8_t*) s;
 
@@ -16,7 +16,7 @@ void *memclr(void *s, size_t n) {
 		}
 
 		return src;
-	#else
-		return arch_memclr(s, n);
-	#endif
+//	#else
+//		return arch_memclr(s, n);
+//	#endif
 }

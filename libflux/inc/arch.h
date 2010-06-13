@@ -125,6 +125,7 @@ void x86_mutex_free(uint32_t *mutex);
 #define BOOT_IMAGE	0xD0000000
 #define FD_TABLE    0xE0000000
 #define ARGV_TABLE	0xE0010000
+#define INFO_TABLE	0xE8000000
 
 #define TMP_DST     0xFF000000
 #define TMP_SRC     0xFF010000

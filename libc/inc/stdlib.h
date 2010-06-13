@@ -12,4 +12,8 @@ void *realloc(void *ptr, size_t size);
 
 int atoi(const char *nptr);
 
+char *getenv(const char *name);
+int   setenv(const char *name, const char *value, int overwrite);
+int   unsetenv(const char *name);
+
 #endif/*STDLIB_H*/

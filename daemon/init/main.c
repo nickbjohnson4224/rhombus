@@ -68,7 +68,7 @@ int main() {
 	fadd("/term", fdget(FD_STDOUT)->server, fdget(FD_STDOUT)->inode);
 
 	/* Device Daemon */
-	file = tar_find(boot_image, (char*) "devd");
+	file = tar_find(boot_image, (char*) "dict");
 	if (!file) {
 		printf("critical error: no DEVd image found\n");
 		for(;;);

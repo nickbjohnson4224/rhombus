@@ -8,6 +8,7 @@
 #include <flux/exec.h>
 #include <flux/proc.h>
 #include <flux/ipc.h>
+#include <flux/info.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -19,18 +20,16 @@ int main() {
 	FILE *file;
 	size_t i, j, n;
 	int err, pid;
-	char pwd[100];
-	char path[100];
 	char *argv[100];
 	bool daemon;
 	
 	printf("\n");
 
-	strcpy(pwd, "/");
-	strcpy(path, "/initrd.tarfs");
+	setinfo("env/PWD", "/");
+	setinfo("env/PATH", "/initrd.tarfs");
 
 	while (1) {
-		printf("%s $ ", pwd);
+		printf("%s $ ", getinfo("env/PWD"));
 
 		fgets(buffer, 100, stdin);
 
@@ -60,12 +59,25 @@ int main() {
 		}
 
 		if (!strcmp(buffer, "cd")) {
-			strcat(pwd, argv[1]);
+			if (buffer[0] == '/') {
+				setinfo("env/PWD", buffer);
+			}
+			else {
+				strcpy(buffer, getinfo("env/PWD"));
+				strcat(buffer, argv[1]);
+				setinfo("env/PWD", buffer);
+			}
+		}
+		else if (!strcmp(buffer, "set")) {
+			setinfo(argv[1], argv[2]);
+		}
+		else if (!strcmp(buffer, "get")) {
+			printf("%s\n", getinfo(argv[1]));
 		}
 		else {
 			pid = fork();
 			if (pid < 0) {
-				strcpy(fbuffer, path);
+				strcpy(fbuffer, getinfo("env/PATH"));
 				strcat(fbuffer, "/");
 				strcat(fbuffer, buffer);
 				err = execv(fbuffer, (char const**) argv);

@@ -9,6 +9,7 @@
 
 int mmap(void *addr, size_t length, int prot) {
 	addr = (void*) ((uintptr_t) addr &~ (PAGESZ - 1));
+	length += (uintptr_t) addr & (PAGESZ - 1);
 
 	if (length % PAGESZ == 0) {
 		length /= PAGESZ;

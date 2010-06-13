@@ -16,6 +16,8 @@
 FILE *fdopen(int fd, const char *mode) {
 	FILE *new = malloc(sizeof(FILE));
 
+	if (!new) return NULL;
+
 	new->filedes       = fd;
 	new->position      = 0;
 	new->size          = -1;
