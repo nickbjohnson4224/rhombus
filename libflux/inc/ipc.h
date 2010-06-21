@@ -5,29 +5,14 @@
 
 /*** Flux Packet Protocol (FPP) ***/
 
-#define PACKET_MAXDATA		(PAGESZ - 64)
-
-#define PACKET_PROTOCOL		1	/* protocol version */
-#define PACKET_SOFTWARE		1	/* software version */
-
-#define PACKET_ENC_UNK		0
-#define PACKET_ENC_ASCII	1
-#define PACKET_ENC_UTF8		2
-#define PACKET_ENC_UTF32	3
-#define PACKET_ENC_GRAPH	4
-
-#define PACKET_FLAG_BENDIAN	0x01
-#define PACKET_FLAG_EXTOFF	0x02
+#define PACKET_MAXDATA		(PAGESZ - 58)
+#define PACKET_PROTOCOL		2	/* protocol version */
 
 struct packet {
 
 	/* general information */
-	uint32_t identity;
-	uint16_t reserved;
+	uint16_t identity;
 	uint16_t protocol;
-	uint16_t software;
-	uint8_t  encoding;
-	uint8_t  flags;
 
 	/* fragment information */
 	uint16_t fragment_index;
@@ -66,6 +51,8 @@ void  packet_free (struct packet *packet);
 
 #define PORT_READ	16
 #define PORT_WRITE	17
+#define PORT_CALL	42
+#define PORT_DICT	18
 #define PORT_INFO	18
 #define PORT_CTRL	19
 #define PORT_QUERY	20

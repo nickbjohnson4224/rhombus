@@ -6,6 +6,19 @@
 #include <flux/heap.h>
 #include <flux/io.h>
 
+#include <stdlib.h>
+
+static int _atoi(const char *nptr) {
+	int i, sum;
+
+	for (sum = 0, i = 0; nptr[i] >= '0' && nptr[i] <= '9'; i++) {
+		sum *= 10;
+		sum += nptr[i] - '0';
+	}
+
+	return sum;
+}
+
 int find(const char *path) {
 	struct vfs_query q;
 	size_t i;

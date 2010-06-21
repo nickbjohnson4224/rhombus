@@ -96,7 +96,7 @@ size_t x86_strlen (const char *s);
 //#define arch_strcat  x86_strcat
 //#define arch_strncat x86_strncat
 //#define arch_strlcat x86_strlcat
-//#define arch_strlen  x86_strlen
+#define arch_strlen  x86_strlen
 
 /* mutex functions */
 bool x86_mutex_lock(uint32_t *mutex);

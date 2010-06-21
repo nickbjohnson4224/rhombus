@@ -67,14 +67,14 @@ int main() {
 	fadd("/vfsd", fdget(FD_STDVFS)->server, fdget(FD_STDVFS)->inode);
 	fadd("/term", fdget(FD_STDOUT)->server, fdget(FD_STDOUT)->inode);
 
-	/* Device Daemon */
-	file = tar_find(boot_image, (char*) "dict");
-	if (!file) {
-		printf("critical error: no DEVd image found\n");
-		for(;;);
-	}
-	daemon_start(FD_STDDEV, file->start, file->size, NULL);
-	fadd("/devd", fdget(FD_STDDEV)->server, fdget(FD_STDDEV)->inode);
+//	/* Device Daemon */
+//	file = tar_find(boot_image, (char*) "dict");
+//	if (!file) {
+//		printf("critical error: no DEVd image found\n");
+//		for(;;);
+//	}
+//	daemon_start(FD_STDDEV, file->start, file->size, NULL);
+//	fadd("/devd", fdget(FD_STDDEV)->server, fdget(FD_STDDEV)->inode);
 
 	/* Initrd */
 	initrd_init();
@@ -95,14 +95,14 @@ int main() {
 
 	free(argv);
 
-	/* Process Metadata Daemon */
-	file = tar_find(boot_image, (char*) "pmdd");
-	if (!file) {
-		printf("critical error: no PMDd image found\n");
-		for(;;);
-	}
-	daemon_start(FD_STDPMD, file->start, file->size, NULL);
-	fadd("/pmdd", fdget(FD_STDPMD)->server, fdget(FD_STDPMD)->inode);
+//	/* Process Metadata Daemon */
+//	file = tar_find(boot_image, (char*) "pmdd");
+//	if (!file) {
+//		printf("critical error: no PMDd image found\n");
+//		for(;;);
+//	}
+//	daemon_start(FD_STDPMD, file->start, file->size, NULL);
+//	fadd("/pmdd", fdget(FD_STDPMD)->server, fdget(FD_STDPMD)->inode);
 
 	/* Keyboard Driver */
 	file = tar_find(boot_image, (char*) "kbd");

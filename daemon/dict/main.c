@@ -15,17 +15,30 @@
 
 #include "dict.h"
 
+struct dict_node *dict;
+uint32_t m_dict;
+
+void dict_handle(uint32_t caller, struct packet *packet) {
+	return;
+}
+
 int main() {
-	struct dict_node *d = calloc(sizeof(struct dict_node), 1);	
+	dict = calloc(sizeof(struct dict_node), 1);	
 
-	dict_add(d, "hello/", "world");
+	mutex_spin(&m_dict);
 
-	printf("hello/: %s\n", dict_get(d, "hello/"));
+	dict_add(dict, "/", "0:0");
+	dict_lnk(dict, "//", "/");
+	dict_lnk(dict, "/./", "/");
+	dict_lnk(dict, "/../", "/");
 
-	dict_add(d, "potato/", "potato");
+	printf("%s\n", dict_get(dict, "/"));
+	printf("%s\n", dict_get(dict, "/./../..//"));
+	printf("%s\n", dict_get(dict, "/.///"));
 
-	printf("hello/: %s\n", dict_get(d, "hello/"));
-	printf("potato/: %s\n", dict_get(d, "potato/"));
+	mutex_free(&m_dict);
+
+	when(PORT_DICT, dict_handle);
 
 	printf("dict: ready\n");
 

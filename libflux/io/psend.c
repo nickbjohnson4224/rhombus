@@ -30,9 +30,6 @@ size_t psend(int fd, char *r, char *s, size_t size, uint64_t off, uint8_t port) 
 
 		p_out->identity = 0;
 		p_out->protocol = PACKET_PROTOCOL;
-		p_out->software = PACKET_SOFTWARE;
-		p_out->encoding = PACKET_ENC_ASCII;
-		p_out->flags    = 0;
 
 		p_out->fragment_index = frag;
 		p_out->fragment_count = ((size - 1) / PACKET_MAXDATA + 1);
