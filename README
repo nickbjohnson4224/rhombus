@@ -4,38 +4,48 @@ Build Instructions
 
 Toolchain Dependencies:
 
-Bourne shell compatible shell
-	- tested: GNU Bash 3.2.39(1)-release
-	- tested: Debian Dash 0.5.4.11
-	- etc; almost *anything* will work
-
 C99 compliant C compiler
-	- tested: GCC 4.3.4
-	- tested: TCC 0.9.25
-	- tested: CLang 1.0 (LLVM 2.6)
+tested:
+	GCC 4.3.4 for i686-pc-linux-gnu
+	GCC 4.4.3 for i686-pc-linux-gnu
+	GCC 4.3.2 for i586-elf
+	TCC 0.9.25
+	CLang 1.0 (LLVM 2.6)
+tested flags:
+	-O0, -O1, -Os, -O2, -O3
+	-fomit-frame-pointer
+	*all* warning flags under -pedantic -c99
 
 The Netwide Assembler (NASM)
-	- tested: NASM 2.05.01
-	- tested: NASM 2.07
+tested:
+	NASM 2.05.01
+	NASM 2.07
+	NASM 2.08
 
-ELF based linker
-	- tested: GNU binutils 2.18
+ELF-based linker
+tested:
+	GNU binutils 2.18 for i686-pc-linux-gnu
+	GNU binutils 2.19 for i586-elf
+	GNU binutils 2.20 for i686-pc-linux-gnu
 
 GNU Make or equivalent
-	- tested: GNU Make 3.81
+tested: 
+	GNU Make 3.81
 
 ===============================
 
 Testing Dependencies:
 
-Linux 2.4 or greater with loopback support
-	- tested: Zen 2.6.29-3
-	- tested: Zen 2.6.31
+Linux 2.4 or newer with loopback support
+tested:
+	Zen 2.6.29-3
+	Zen 2.6.31
 
 QEMU emulator (or other VM - scripts will have to be modified)
-	- tested: QEMU 0.10.6, i386
-	- tested: Bochs 2.4.1, i586 emulation level
-	- tested: VirtualBox OSE 2.2.2, on Celeron-M (PIII clone) (deprecated)
+tested:
+	QEMU 0.10.6, i386 emulation level
+	Bochs 2.4.1, i586 emulation level
+	VirtualBox OSE 2.2.2, on Celeron-M (PIII clone) (deprecated)
 
 ===============================
 
@@ -43,16 +53,15 @@ Build Instructions:
 
 To make each piece of the operating system, simply type "make 
 <subproject>", or just "make" to make everything. The kernel, init, 
-libc, and at least basic drivers must be built for the system to boot 
-correctly. "make -C <subproject> clean" will remove all object files 
-from the subprojects' directories, and "make clean" will remove all 
-object files.
+libc, libflux, vfsd, and at least basic drivers must be built for the 
+system to boot correctly. "make -C <subproject> clean" will remove 
+all object files from the subprojects' directories, and "make clean" 
+will remove all object files.
 
 Test Instructions:
 
 To test the operating system, use "make test". This will make 
-it run in a virtual machine: Bochs. run/bochsrc.txt is the 
-configuration file for Bochs - modify it to your liking.
+it run in a virtual machine: QEMU.
 
 ===============================
 
@@ -65,3 +74,4 @@ QEMU 0.10.6 i386
 Actual Machines:
 Asus Eee 900 - 900MHz Celeron M, 2048MB RAM
 Dell Dimension 2350 - 2.3GHz Pentium IV, 512MB RAM
+Intel DP35DPM with Intel 2.4GHz Q6600, 2048MB RAM
