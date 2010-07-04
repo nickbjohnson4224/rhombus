@@ -79,27 +79,29 @@ struct thread *schedule_next(void) {
 
 	thread = schedule_queue.out;
 
-	if (thread) {
-		schedule_queue.out = thread->next;
+	do {
+		if (thread) {
+			schedule_queue.out = thread->next;
 
-		if (!thread->next) {
-			schedule_queue.in = NULL;
+			if (!thread->next) {
+				schedule_queue.in = NULL;
+			}
 		}
-	}
-	else {
-		return NULL;
-	}
+		else {
+			return NULL;
+		}
 
-	if (!schedule_queue.in) {
-		schedule_queue.out = thread;
-		schedule_queue.in  = thread;
-		thread->next = NULL;
-	}
-	else {
-		schedule_queue.in->next = thread;
-		schedule_queue.in = thread;
-		thread->next = NULL;
-	}
+		if (!schedule_queue.in) {
+			schedule_queue.out = thread;
+			schedule_queue.in  = thread;
+			thread->next = NULL;
+		}
+		else {
+			schedule_queue.in->next = thread;
+			schedule_queue.in = thread;
+			thread->next = NULL;
+		}
+	} while (thread->frozen);		
 
 	return thread;
 }

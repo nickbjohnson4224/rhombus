@@ -42,6 +42,7 @@ thread_t *fault_generic(thread_t *image) {
 	}
 	#endif
 
+	process_freeze(image->proc);
 	return thread_send(image, image->proc->pid, SSIG_FAULT);
 }
 
@@ -71,6 +72,7 @@ thread_t *fault_page(thread_t *image) {
 	}
 	else {
 		/* fault */
+		process_freeze(image->proc);
 		return thread_send(image, image->proc->pid, SSIG_FAULT);
 	}
 }
@@ -86,6 +88,7 @@ thread_t *fault_float(thread_t *image) {
 	}
 	#endif
 
+	process_freeze(image->proc);
 	return thread_send(image, image->proc->pid, SSIG_FLOAT);
 }
 
@@ -105,7 +108,10 @@ thread_t *fault_nomath(thread_t *image) {
 	extern void fpu_load(void *fxdata);
 	extern uint32_t can_use_fpu;
 
-	printk("nomath at %x\n", image->eip);
+	if (!can_use_fpu) {
+		process_freeze(image->proc);
+		return thread_send(image, image->proc->pid, SSIG_FLOAT);
+	}
 
 	if (image->fxdata) {
 		fpu_load(image->fxdata);
@@ -113,10 +119,6 @@ thread_t *fault_nomath(thread_t *image) {
 	}
 
 	clr_ts();
-
-	if (!can_use_fpu) {	
-		panic("no fpu");
-	}
 
 	return image;
 }
@@ -126,8 +128,6 @@ thread_t *fault_nomath(thread_t *image) {
 thread_t *syscall_send(thread_t *image) {
 	uint32_t   target = image->eax;
 	uint32_t   port   = image->ecx;
-
-//	printk("%d SEND %d %d\n", image->proc->pid, target, port);
 
 	if (target == 0) {
 		image->eax = 0;
@@ -165,8 +165,6 @@ thread_t *syscall_recv(thread_t *image) {
 	struct packet *sq, *found;
 	struct packet **mailbox_in;
 	struct packet **mailbox_out;
-
-//	printk("%d RECV %d %d\n", image->proc->pid, port, source);
 
 	mailbox_in  = &image->proc->port[port].in;
 	mailbox_out = &image->proc->port[port].out;
@@ -226,8 +224,6 @@ thread_t *syscall_recv(thread_t *image) {
 thread_t *syscall_svpr(thread_t *image) {
 	uintptr_t addr = image->eax;
 
-//	printk("%d SVPR %x\n", image->proc->pid, addr);
-
 	if (image->packet) {
 		if (image->packet->frame) {
 			frame_free(image->packet->frame);
@@ -248,8 +244,6 @@ thread_t *syscall_svpr(thread_t *image) {
 
 thread_t *syscall_gvpr(thread_t *image) {
 	uintptr_t addr = image->eax;
-
-//	printk("%d GVPR %d\n", image->proc->pid, addr);
 
 	if (!image->packet || !image->packet->frame) {
 		image->eax = 0;

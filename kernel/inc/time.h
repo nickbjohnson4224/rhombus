@@ -72,6 +72,8 @@ struct process *process_alloc (void);
 struct process *process_clone (struct process *parent, struct thread *active_thread);
 void            process_free  (struct process *proc);
 void            process_kill  (struct process *proc);
+void            process_freeze(struct process *proc);
+void            process_thaw  (struct process *proc);
 void            process_touch (uint32_t pid);
 void            process_switch(struct process *proc);
 
@@ -146,6 +148,7 @@ typedef struct thread {
 
 	/* scheduler information */
 	struct thread *next;
+	uint32_t frozen;
 
 } __attribute__ ((packed)) thread_t;
 
@@ -153,9 +156,11 @@ void      thread_init  (void);
 thread_t *thread_alloc (void);
 void      thread_free  (thread_t *thread);
 thread_t *thread_switch(thread_t *old, thread_t *new);
-thread_t *thread_send(thread_t *image, uint16_t targ, uint16_t sig);
-thread_t *thread_exit(thread_t *image);
-uintptr_t thread_bind(thread_t *thread, process_t *proc);
+thread_t *thread_send  (thread_t *image, uint16_t targ, uint16_t sig);
+thread_t *thread_freeze(thread_t *image);
+thread_t *thread_thaw  (thread_t *image);
+thread_t *thread_exit  (thread_t *image);
+uintptr_t thread_bind  (thread_t *thread, process_t *proc);
 
 /***** SYSTEM CALLS AND OTHER INTERRUPTS *****/
 

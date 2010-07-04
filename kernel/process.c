@@ -150,6 +150,38 @@ void process_init() {
 }
 
 /****************************************************************************
+ * process_freeze
+ *
+ * Freeze all threads in a process once.
+ */
+
+void process_freeze(struct process *proc) {
+	size_t i;
+
+	for (i = 0; i < 256; i++) {
+		if (proc->thread[i]) {
+			thread_freeze(proc->thread[i]);
+		}
+	}
+}
+
+/****************************************************************************
+ * process_thaw
+ *
+ * Thaw all threads in a process once.
+ */
+
+void process_thaw(struct process *proc) {
+	size_t i;
+
+	for (i = 0; i < 256; i++) {
+		if (proc->thread[i]) {
+			thread_thaw(proc->thread[i]);
+		}
+	}
+}
+
+/****************************************************************************
  * process_kill
  *
  * Frees a process entirely.

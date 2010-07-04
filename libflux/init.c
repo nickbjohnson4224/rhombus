@@ -25,6 +25,12 @@ static void segfault(uint32_t caller, struct packet *packet) {
 	exit(0);
 }
 
+static void fpufault(uint32_t caller, struct packet *packet) {
+	write(FD_STDOUT, "Floating Point Exception\n", 25, 0);
+
+	exit(0);
+}
+
 void _fini(void) {
 	when(PORT_FAULT, segfault);
 	when(PORT_READ,  reject);

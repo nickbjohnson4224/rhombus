@@ -42,14 +42,10 @@ thread_t *thread_exit(thread_t *image) {
  * thread_send
  *
  * Sends a signal to the process with pid targ of the type sig with the
- * granted page at current virtual address grant. If the target process cannot
- * accept it or has value SIG_POLICY_QUEUE at the signals' offset in 
- * signal_policy, the signal is added to that process' mailbox. Otherwise, a 
- * new thread is created in the target process to handle the incoming signal, 
- * and that thread is made active.
- *
- * The granted page in the current process is replaced with a page with
- * undefined contents and the same permissions as the granted page.
+ * If the target process cannot accept it or has value SIG_POLICY_QUEUE 
+ * at the signals' offset in signal_policy, the signal is added to that 
+ * process' mailbox. Otherwise, a new thread is created in the target process 
+ * to handle the incoming signal, and that thread is made active.
  *
  * Returns a runnable and active thread that may or may not be the thread
  * passed as image.
@@ -202,6 +198,46 @@ void thread_init(void) {
 
 	/* initialize FPU/MMX/SSE */
 	init_fpu();
+}
+
+/****************************************************************************
+ * thread_freeze
+ *
+ * Prevents the given thread from running until it is later thawed. If the
+ * thread is already frozen, the frozen count is incremented. Returns the 
+ * given thread.
+ */
+
+thread_t *thread_freeze(thread_t *thread) {
+
+	if (!thread->frozen) {
+		schedule_remove(thread);
+	}
+
+	thread->frozen++;
+
+	return thread;
+}
+
+/****************************************************************************
+ * thread_thaw
+ *
+ * Allows the given thread to run if its frozen count is less than two.
+ * Otherwise, the given thread's frozen count is decremented. Returns the
+ * given thread.
+ */
+
+thread_t *thread_thaw(thread_t *thread) {
+	
+	if (thread->frozen) {
+		thread->frozen--;
+	}
+
+	if (!thread->frozen) {
+		schedule_insert(thread);
+	}
+
+	return thread;
 }
 
 /****************************************************************************
