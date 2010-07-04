@@ -64,6 +64,9 @@ void  packet_free (struct packet *packet);
 
 typedef void (*event_t) (uint32_t source, struct packet *packet);
 
+void setpacket(struct packet *packet);
+struct packet *getpacket(void);
+
 uint32_t       send (uint32_t port, uint32_t target, struct packet *packet);
 struct packet *recv (uint32_t port);
 struct packet *recvs(uint32_t port, uint32_t source);

@@ -3,10 +3,10 @@
 
 [bits 32]
 
-global _pack
+global _gvpr
 
-_pack:
-
+_gvpr:
+	
 	mov eax, [esp+4]
 	int 0x44
 

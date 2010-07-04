@@ -34,7 +34,7 @@
 struct packet {
 	struct packet *next;
 	uint32_t signal;
-	uint32_t grant;
+	uint32_t frame;
 	uint32_t source;
 };
 
@@ -135,7 +135,7 @@ typedef struct thread {
 	uint32_t tss_start;
 	uint32_t *fxdata;
 	
-	/* signal descriptor */
+	/* virtual packet register */
 	struct packet *packet;
 
 	/* owning process */
@@ -153,7 +153,7 @@ void      thread_init  (void);
 thread_t *thread_alloc (void);
 void      thread_free  (thread_t *thread);
 thread_t *thread_switch(thread_t *old, thread_t *new);
-thread_t *thread_send(thread_t *image, uint16_t targ, uint16_t sig, uintptr_t grant);
+thread_t *thread_send(thread_t *image, uint16_t targ, uint16_t sig);
 thread_t *thread_exit(thread_t *image);
 uintptr_t thread_bind(thread_t *thread, process_t *proc);
 
@@ -172,7 +172,8 @@ thread_t *syscall_send(thread_t *image); /* send signals / create threads */
 thread_t *syscall_done(thread_t *image); /* exit from thread */
 thread_t *syscall_when(thread_t *image); /* set event handlers */
 thread_t *syscall_recv(thread_t *image); /* recieve signals */
-thread_t *syscall_pack(thread_t *image); /* recieve packets */
+thread_t *syscall_gvpr(thread_t *image); /* get virtual packet register */
+thread_t *syscall_svpr(thread_t *image); /* set virtual packet register */
 
 thread_t *syscall_fork(thread_t *image); /* create process */
 thread_t *syscall_exit(thread_t *image); /* exit from process */

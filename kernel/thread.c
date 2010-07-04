@@ -55,36 +55,25 @@ thread_t *thread_exit(thread_t *image) {
  * passed as image.
  */
 
-thread_t *thread_send(thread_t *image, 
-		uint16_t targ, uint16_t sig, uintptr_t grant) {
+thread_t *thread_send(thread_t *image, uint16_t targ, uint16_t sig) {
 	extern void set_ts(void);
 	process_t *p_targ;
 	thread_t *new_image;
-	uintptr_t addr;
-	struct packet *packet;
 
 	p_targ = process_get(targ);
 
-	if (grant) {
-		addr   = grant;
-		grant  = page_get(grant);
-		page_set(addr, page_fmt(frame_new(), (grant & 0xFFF) | PF_PRES));
-		grant &= ~0xFFF;
-	}
+	if (image) {
+		image->packet->signal = sig;
+		image->packet->source = image->proc->pid;
 
-	packet = heap_alloc(sizeof(struct packet));
-	packet->signal = sig;
-	packet->grant  = grant;
-	packet->source = (image) ? image->proc->pid : 0;
-	packet->next   = NULL;
-
-	if (p_targ->port[sig].out) {
-		p_targ->port[sig].in->next = packet;
-		p_targ->port[sig].in = packet;
-	}
-	else {
-		p_targ->port[sig].out = packet;
-		p_targ->port[sig].in  = packet;
+		if (p_targ->port[sig].out) {
+			p_targ->port[sig].in->next = image->packet;
+			p_targ->port[sig].in = image->packet;
+		}
+		else {
+			p_targ->port[sig].out = image->packet;
+			p_targ->port[sig].in  = image->packet;
+		}
 	}
 
 	if (p_targ->port[sig].entry) {
@@ -169,7 +158,8 @@ void thread_init(void) {
 	register_int(0x41, syscall_done);
 	register_int(0x42, syscall_when);
 	register_int(0x43, syscall_recv);
-	register_int(0x44, syscall_pack);
+	register_int(0x44, syscall_gvpr);
+	register_int(0x45, syscall_svpr);
 
 	register_int(0x48, syscall_fork);
 	register_int(0x49, syscall_exit);
@@ -260,7 +250,7 @@ thread_t *thread_switch(thread_t *old, thread_t *new) {
 	}
 
 	/* save FPU state */
-	if (old && tst_ts()) {
+	if (old && !tst_ts()) {
 		if (!old->fxdata) {
 			old->fxdata = heap_alloc(512);
 		}

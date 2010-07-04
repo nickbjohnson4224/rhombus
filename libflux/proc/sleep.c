@@ -7,5 +7,5 @@
 #include <flux/abi.h>
 
 void sleep() {
-	_send(0, 0, NULL);
+	_send(0, 0);
 }

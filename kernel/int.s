@@ -65,7 +65,8 @@ INTN	64	; send
 INTN	65	; drop
 INTN	66	; evnt
 INTN	67	; recv
-INTN	68	; pget
+INTN	68	; gvpr
+INTN	69	; svpr
 
 INTN	72	; fork
 INTN	73	; exit

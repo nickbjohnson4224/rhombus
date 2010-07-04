@@ -1,14 +1,14 @@
-megs: 8
+megs: 64
 romimage: file=/usr/share/bochs/BIOS-bochs-latest, address=0xe0000
 vgaromimage: file=/usr/share/bochs/VGABIOS-lgpl-latest
 ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x13f0, irq=14
 ata0-master: type=cdrom, path="$BUILDDIR/run/flux.iso", status=inserted
 #image="$BUILDDIR/run/flux.iso", status=inserted
-floppya: 1_44="$BUILDDIR/run/floppy.img", status=inserted
-boot: floppy
+#floppya: 1_44="$BUILDDIR/run/floppy.img", status=inserted
+boot: cdrom
 log: /dev/stdout
 mouse: enabled=0
 clock: sync=none
-cpu: ips=1000000
+cpu: ips=10000000
 
 debugger_log: /dev/null

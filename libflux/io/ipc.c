@@ -18,6 +18,34 @@
 static volatile event_t event_handler[256];
 
 /****************************************************************************
+ * setpacket
+ *
+ * Sets the current thread's virtual packet register to the given packet.
+ * The packet's virtual memory is freed.
+ */
+
+void setpacket(struct packet *packet) {
+	_svpr((uintptr_t) packet);
+	packet_free(packet);
+}
+
+/****************************************************************************
+ * getpacket
+ *
+ * Gets the packet contained in the current thread's virtual packet register,
+ * allocates virtual memory for it, and returns it.
+ */
+
+struct packet *getpacket(void) {
+	struct packet *packet;
+
+	packet = packet_alloc(PAGESZ);
+	_gvpr((uintptr_t) packet);
+
+	return packet;
+}
+
+/****************************************************************************
  * send
  *
  * Sends a packet to the specified port of the specified target process.
@@ -27,11 +55,8 @@ static volatile event_t event_handler[256];
 uint32_t send(uint32_t port, uint32_t target, struct packet *packet) {
 	uint32_t err;
 
-	err = _send(port, target, packet);
-
-	if (!err && packet) {
-		packet_free(packet);
-	}
+	setpacket(packet);	
+	err = _send(port, target);
 
 	return err;
 }
@@ -45,18 +70,15 @@ uint32_t send(uint32_t port, uint32_t target, struct packet *packet) {
 
 struct packet *recvs(uint32_t port, uint32_t source) {
 	uintptr_t packet_size;
-	struct packet *packet;
 
 	packet_size = _recv(port, source);
 
 	if (packet_size == (uintptr_t) -1 || packet_size == 0) {
 		return NULL;
 	}
-
-	packet = packet_alloc(packet_size * PAGESZ);
-	_pack((uintptr_t) packet);
-
-	return packet;
+	else {
+		return getpacket();
+	}
 }
 
 /****************************************************************************
@@ -91,8 +113,7 @@ struct packet *waits(uint32_t port, uint32_t source) {
 		}
 
 		if (packet_size > 0) {
-			packet = packet_alloc(packet_size * PAGESZ);
-			_pack((uintptr_t) packet);
+			packet = getpacket();
 		}
 
 		break;

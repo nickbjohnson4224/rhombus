@@ -26,7 +26,7 @@ thread_t *pit_handler(thread_t *image) {
 thread_t *irq_redirect(thread_t *image) {
 
 	/* Send S_IRQ signal to the task registered with the IRQ */
-	return thread_send(NULL, irq_holder[DEIRQ(image->num)], SSIG_IRQ, 0);
+	return thread_send(NULL, irq_holder[DEIRQ(image->num)], SSIG_IRQ);
 }
 
 /***** FAULT HANDLERS *****/
@@ -42,7 +42,7 @@ thread_t *fault_generic(thread_t *image) {
 	}
 	#endif
 
-	return thread_send(image, image->proc->pid, SSIG_FAULT, 0);
+	return thread_send(image, image->proc->pid, SSIG_FAULT);
 }
 
 /* Page fault */
@@ -71,7 +71,7 @@ thread_t *fault_page(thread_t *image) {
 	}
 	else {
 		/* fault */
-		return thread_send(image, image->proc->pid, SSIG_FAULT, 0);
+		return thread_send(image, image->proc->pid, SSIG_FAULT);
 	}
 }
 
@@ -86,7 +86,7 @@ thread_t *fault_float(thread_t *image) {
 	}
 	#endif
 
-	return thread_send(image, image->proc->pid, SSIG_FLOAT, 0);
+	return thread_send(image, image->proc->pid, SSIG_FLOAT);
 }
 
 /* Double fault */
@@ -103,12 +103,20 @@ thread_t *fault_double(thread_t *image) {
 thread_t *fault_nomath(thread_t *image) {
 	extern void clr_ts(void);
 	extern void fpu_load(void *fxdata);
+	extern uint32_t can_use_fpu;
+
+	printk("nomath at %x\n", image->eip);
 
 	if (image->fxdata) {
 		fpu_load(image->fxdata);
+		printk("loading\n");
 	}
 
 	clr_ts();
+
+	if (!can_use_fpu) {	
+		panic("no fpu");
+	}
 
 	return image;
 }
@@ -118,7 +126,8 @@ thread_t *fault_nomath(thread_t *image) {
 thread_t *syscall_send(thread_t *image) {
 	uint32_t   target = image->eax;
 	uint32_t   port   = image->ecx;
-	uint32_t   packet = image->ebx;
+
+//	printk("%d SEND %d %d\n", image->proc->pid, target, port);
 
 	if (target == 0) {
 		image->eax = 0;
@@ -133,7 +142,7 @@ thread_t *syscall_send(thread_t *image) {
 		image->eax = 0;
 	}
 
-	return thread_send(image, target, port, packet);
+	return thread_send(image, target, port);
 }
 
 thread_t *syscall_done(thread_t *image) {
@@ -156,6 +165,8 @@ thread_t *syscall_recv(thread_t *image) {
 	struct packet *sq, *found;
 	struct packet **mailbox_in;
 	struct packet **mailbox_out;
+
+//	printk("%d RECV %d %d\n", image->proc->pid, port, source);
 
 	mailbox_in  = &image->proc->port[port].in;
 	mailbox_out = &image->proc->port[port].out;
@@ -202,7 +213,7 @@ thread_t *syscall_recv(thread_t *image) {
 
 	image->packet = sq;
 
-	if (sq->grant) {
+	if (sq->frame) {
 		image->eax = 1;
 	}
 	else {
@@ -212,10 +223,35 @@ thread_t *syscall_recv(thread_t *image) {
 	return image;
 }
 
-thread_t *syscall_pack(thread_t *image) {
+thread_t *syscall_svpr(thread_t *image) {
 	uintptr_t addr = image->eax;
 
-	if (!image->packet || !image->packet->grant) {
+//	printk("%d SVPR %x\n", image->proc->pid, addr);
+
+	if (image->packet) {
+		if (image->packet->frame) {
+			frame_free(image->packet->frame);
+		}
+	}
+	else {
+		image->packet = heap_alloc(sizeof(struct packet));
+	}
+
+	if (addr) {
+		image->packet->frame = page_get(addr);
+		page_set(addr, page_fmt(frame_new(), image->packet->frame));
+	}
+
+	image->eax = 0;
+	return image;
+}
+
+thread_t *syscall_gvpr(thread_t *image) {
+	uintptr_t addr = image->eax;
+
+//	printk("%d GVPR %d\n", image->proc->pid, addr);
+
+	if (!image->packet || !image->packet->frame) {
 		image->eax = 0;
 		return image;
 	}
@@ -229,7 +265,7 @@ thread_t *syscall_pack(thread_t *image) {
 		frame_free(page_get(addr));
 	}
 
-	page_set(addr, page_fmt(image->packet->grant, PF_PRES | PF_USER | PF_RW));
+	page_set(addr, page_fmt(image->packet->frame, PF_PRES | PF_USER | PF_RW));
 
 	image->eax = 1;
 	return image;
@@ -366,7 +402,7 @@ thread_t *syscall_mmap(thread_t *image) {
 		image->eax = 0;
 		return image;
 	}
-	
+
 	pflags = PF_USER | PF_PRES | ((flags & MMAP_WRITE) ? PF_RW : 0);
 
 	if (flags & MMAP_FRAME) {

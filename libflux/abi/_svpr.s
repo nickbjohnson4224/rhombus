@@ -1,13 +1,13 @@
 ; Copyright 2010 Nick Johnson
 ; ISC Licensed, see LICENSE for details
 
-global _send
+[bits 32]
 
-_send:
+global _svpr
 
-	mov ecx, [esp+4]
-	mov eax, [esp+8]
+_svpr:
 
-	int 0x40
+	mov eax, [esp+4]
+	int 0x45
 
 	ret

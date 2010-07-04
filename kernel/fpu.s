@@ -25,7 +25,7 @@ init_fpu:
 	mov eax, 1
 	cpuid
 	test edx, 0x01000000
-	jne .nofx
+;	jne .nofx
 
 	; set OSFXSR bit in CR4
 	mov eax, cr4
