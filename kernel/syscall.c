@@ -8,8 +8,6 @@
 #include <time.h>
 #include <space.h>
 
-#define PARANOID
-
 /***** IRQ HANDLERS *****/
 
 uint16_t irq_holder[256];
@@ -74,11 +72,6 @@ thread_t *fault_page(thread_t *image) {
 	}
 	else {
 		/* fault */	
-		printk("page fault at %x, ip = %x frame %x process %d\n", 
-			cr2, image->eip, page_get(cr2), image->proc->pid);
-
-		panic("page fault exception");
-
 		process_freeze(image->proc);
 		return thread_send(image, image->proc->pid, SSIG_FAULT);
 	}
