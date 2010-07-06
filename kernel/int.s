@@ -64,7 +64,7 @@ INTN	47
 INTN	64	; send
 INTN	65	; drop
 INTN	66	; evnt
-INTN	67	; recv
+
 INTN	68	; gvpr
 INTN	69	; svpr
 

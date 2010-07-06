@@ -33,7 +33,7 @@
 
 struct packet {
 	struct packet *next;
-	uint32_t signal;
+	uint32_t port;
 	uint32_t frame;
 	uint32_t source;
 };
@@ -58,8 +58,7 @@ typedef struct process {
 	struct process *parent;
 
 	/* ports */
-	struct port port[256];
-	uintptr_t signal_handle;
+	uintptr_t entry;
 	
 	/* threads */
 	struct thread *thread[256];

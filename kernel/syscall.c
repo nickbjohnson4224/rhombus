@@ -8,6 +8,8 @@
 #include <time.h>
 #include <space.h>
 
+#define PARANOID
+
 /***** IRQ HANDLERS *****/
 
 uint16_t irq_holder[256];
@@ -71,7 +73,12 @@ thread_t *fault_page(thread_t *image) {
 		return image;
 	}
 	else {
-		/* fault */
+		/* fault */	
+		printk("page fault at %x, ip = %x frame %x process %d\n", 
+			cr2, image->eip, page_get(cr2), image->proc->pid);
+
+		panic("page fault exception");
+
 		process_freeze(image->proc);
 		return thread_send(image, image->proc->pid, SSIG_FAULT);
 	}
@@ -115,7 +122,6 @@ thread_t *fault_nomath(thread_t *image) {
 
 	if (image->fxdata) {
 		fpu_load(image->fxdata);
-		printk("loading\n");
 	}
 
 	clr_ts();
@@ -126,8 +132,8 @@ thread_t *fault_nomath(thread_t *image) {
 /***** System Calls *****/
 
 thread_t *syscall_send(thread_t *image) {
-	uint32_t   target = image->eax;
-	uint32_t   port   = image->ecx;
+	uint32_t   target = image->ecx;
+	uint32_t   port   = image->eax;
 
 	if (target == 0) {
 		image->eax = 0;
@@ -149,119 +155,87 @@ thread_t *syscall_done(thread_t *image) {
 	return thread_exit(image);
 }
 
-thread_t *syscall_when(thread_t *image) {
-	uint32_t port   = image->ecx & 0xFF;
-	uint32_t handle = image->edx;
-
-	image->eax = image->proc->port[port].entry;
-	image->proc->port[port].entry = handle;
-
-	return image;
-}
-
-thread_t *syscall_recv(thread_t *image) {
-	uint32_t port   = image->ecx % 256;
-	uint32_t source = image->edx;
-	struct packet *sq, *found;
-	struct packet **mailbox_in;
-	struct packet **mailbox_out;
-
-	mailbox_in  = &image->proc->port[port].in;
-	mailbox_out = &image->proc->port[port].out;
-
-	sq = *mailbox_out;
-
-	if (!sq) {
-		image->eax = -1;
-		return image;
-	}
-
-	if (source) {
-		if (sq->source == source) {
-			*mailbox_out = (*mailbox_out)->next;
-		}
-		else {
-			for (found = NULL; sq->next; sq = sq->next) {
-				if (sq->next->source == source) {
-					found = sq->next;
-					sq->next = sq->next->next;
-					
-					if (*mailbox_in == found) {
-						*mailbox_in = sq;
-					}
-	
-					sq = found;
-					break;
-				}
-			}
-
-			if (!found) {
-				image->eax = -1;
-				return image;
-			}
-		}
-	}
-	else {
-		*mailbox_out = (*mailbox_out)->next;
-	}
-
-	if (!(*mailbox_out)) {
-		*mailbox_in = NULL;
-	}
-
-	image->packet = sq;
-
-	if (sq->frame) {
-		image->eax = 1;
-	}
-	else {
-		image->eax = 0;
-	}
-
-	return image;
-}
-
 thread_t *syscall_svpr(thread_t *image) {
 	uintptr_t addr = image->eax;
+	uint32_t field = image->ecx;
 
-	if (image->packet) {
-		if (image->packet->frame) {
-			frame_free(image->packet->frame);
+	if (field == 0) {
+		if (image->packet) {
+			if (image->packet->frame) {
+				frame_free(image->packet->frame);
+			}
 		}
-	}
-	else {
-		image->packet = heap_alloc(sizeof(struct packet));
-	}
+		else {
+			image->packet = heap_alloc(sizeof(struct packet));
+		}
 
-	if (addr) {
-		image->packet->frame = page_get(addr);
-		page_set(addr, page_fmt(frame_new(), image->packet->frame));
-	}
+		if (addr) {
+			image->packet->frame  = page_get(addr);
+			page_set(addr, page_fmt(frame_new(), image->packet->frame));
+		}
+		else {
+			image->packet->frame  = 0;
+		}
 
-	image->eax = 0;
+		image->eax = 0;
+		return image;
+	}
+	
+	image->eax = -1;
 	return image;
 }
 
 thread_t *syscall_gvpr(thread_t *image) {
 	uintptr_t addr = image->eax;
+	uint32_t field = image->ecx;
 
-	if (!image->packet || !image->packet->frame) {
-		image->eax = 0;
-		return image;
+	if (field == 0) {
+		if (!image->packet || !image->packet->frame) {
+			image->eax = 0;
+		}
+
+		else if (addr & 0xFFF || addr + PAGESZ >= KSPACE) {
+			image->eax = -1;
+		}
+
+		else {
+			if (page_get(addr) & PF_PRES) {
+				frame_free(page_get(addr));
+			}
+		
+			page_set(addr, page_fmt(image->packet->frame, PF_PRES|PF_USER|PF_RW));
+
+			image->eax = 1;
+		}
 	}
 
-	if (addr & 0xFFF || addr + PAGESZ >= KSPACE) {
-		image->eax = -1;
-		return image;
+	else if (field == 1) {
+		if (!image->packet) {
+			image->eax = 0;
+		}
+		else {
+			image->eax = image->packet->source;
+		}
 	}
 
-	if (page_get(addr) & PF_PRES) {
-		frame_free(page_get(addr));
+	else if (field == 2) {
+		if (!image->packet || !image->packet->frame) {
+			image->eax = 0;
+		}
+		else {
+			image->eax = PAGESZ;
+		}
 	}
 
-	page_set(addr, page_fmt(image->packet->frame, PF_PRES | PF_USER | PF_RW));
+	else if (field == 3) {
+		if (!image->packet) {
+			image->eax = 0;
+		}
+		else {
+			image->eax = image->packet->port;
+		}
+	}
 
-	image->eax = 1;
 	return image;
 }
 

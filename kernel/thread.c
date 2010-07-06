@@ -41,65 +41,44 @@ thread_t *thread_exit(thread_t *image) {
 /****************************************************************************
  * thread_send
  *
- * Sends a signal to the process with pid targ of the type sig with the
- * If the target process cannot accept it or has value SIG_POLICY_QUEUE 
- * at the signals' offset in signal_policy, the signal is added to that 
- * process' mailbox. Otherwise, a new thread is created in the target process 
- * to handle the incoming signal, and that thread is made active.
+ * Sends an event to the process with pid target and port port. A new thread 
+ * is created in the target process to handle the incoming event, and that 
+ * thread is made active.
  *
  * Returns a runnable and active thread that may or may not be the thread
  * passed as image.
  */
 
-thread_t *thread_send(thread_t *image, uint16_t targ, uint16_t sig) {
+thread_t *thread_send(thread_t *image, uint16_t target, uint16_t port) {
 	extern void set_ts(void);
 	process_t *p_targ;
 	thread_t *new_image;
 
-	p_targ = process_get(targ);
+	p_targ = process_get(target);
+	new_image = thread_alloc();
+	thread_bind(new_image, p_targ);
+	schedule_insert(new_image);
+
+	new_image->ds      = 0x23;
+	new_image->cs      = 0x1B;
+	new_image->ss      = 0x23;
+	new_image->eflags  = p_targ->thread[0]->eflags | 0x3000;
+	new_image->useresp = new_image->stack + SEGSZ;
+	new_image->proc    = p_targ;
+	new_image->eip     = 0xC000;
+	new_image->fxdata  = NULL;
 
 	if (image) {
-		image->packet->signal = sig;
-		image->packet->source = image->proc->pid;
-
-		if (p_targ->port[sig].out) {
-			p_targ->port[sig].in->next = image->packet;
-			p_targ->port[sig].in = image->packet;
-		}
-		else {
-			p_targ->port[sig].out = image->packet;
-			p_targ->port[sig].in  = image->packet;
-		}
-	}
-
-	if (p_targ->port[sig].entry) {
-		new_image = thread_alloc();
-		thread_bind(new_image, p_targ);
-
-		new_image->ds      = 0x23;
-		new_image->cs      = 0x1B;
-		new_image->ss      = 0x23;
-		new_image->eflags  = p_targ->thread[0]->eflags | 0x3000;
-		new_image->useresp = new_image->stack + SEGSZ;
-		new_image->proc    = p_targ;
-		new_image->esi     = (image) ? image->proc->pid : 0;
-		new_image->edi     = sig;
-		new_image->eip     = p_targ->port[sig].entry;
-		new_image->fxdata  = NULL;
-		schedule_insert(new_image);
-
-		if (image) {
-			return thread_switch(image, new_image);
-		}
-		else {
-			process_switch(new_image->proc);
-			set_ts();
-			return new_image;
-		}
+		new_image->packet         = image->packet;
+		new_image->packet->source = image->proc->pid;
+		new_image->packet->port   = port;
 	}
 	else {
-		return image;
+		new_image->packet         = heap_alloc(sizeof(struct packet));
+		new_image->packet->port   = port;
 	}
+
+	return thread_switch(image, new_image);
 }
 
 /****************************************************************************
@@ -152,8 +131,7 @@ void thread_init(void) {
 	/* register system calls */
 	register_int(0x40, syscall_send);
 	register_int(0x41, syscall_done);
-	register_int(0x42, syscall_when);
-	register_int(0x43, syscall_recv);
+
 	register_int(0x44, syscall_gvpr);
 	register_int(0x45, syscall_svpr);
 

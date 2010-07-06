@@ -83,13 +83,6 @@ process_t *process_clone(process_t *parent, thread_t *active_thread) {
 	/* add child's thread to the scheduler */
 	schedule_insert(new_thread);
 
-	/* fix child's ports */
-	for (i = 0; i < 256; i++) {
-		child->port[i].in  = NULL;
-		child->port[i].out = NULL;
-		child->port[i].entry = parent->port[i].entry;
-	}
-
 	return child;
 }
 

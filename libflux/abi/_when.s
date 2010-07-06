@@ -8,7 +8,6 @@ global _when
 _when:
 
 	mov ecx, [esp+4]
-	mov edx, [esp+8]
 	int 0x42
 
 	ret

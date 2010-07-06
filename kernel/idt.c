@@ -30,9 +30,8 @@ extern void
  int18(void), int19(void), int32(void), int33(void), int34(void), int35(void), 
  int36(void), int37(void), int38(void), int39(void), int40(void), int41(void), 
  int42(void), int43(void), int44(void), int45(void), int46(void), int47(void), 
- int64(void), int65(void), int66(void), int67(void), int68(void), int69(void),
- int72(void), int73(void), int74(void), int75(void), int76(void), int80(void), 
- int81(void);
+ int64(void), int65(void), int66(void), int68(void), int69(void), int72(void), 
+ int73(void), int74(void), int75(void), int76(void), int80(void), int81(void);
 
 /* Handlers to be put into the IDT, in order */
 typedef void (*int_handler_t) (void);
@@ -52,7 +51,7 @@ NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL,
 NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
 
 /* ABI 4 system calls */
-int64, 	int65, 	int66, 	int67, 	int68, 	int69, 	NULL, 	NULL, 
+int64, 	int65, 	int66, 	NULL, 	int68, 	int69, 	NULL, 	NULL, 
 int72, 	int73, 	int74, 	int75, 	int76, 	NULL, 	NULL, 	NULL, 
 int80, 	int81, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
 NULL, 	NULL, 	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,

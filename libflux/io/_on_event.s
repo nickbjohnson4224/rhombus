@@ -8,6 +8,8 @@ global _on_event
 extern on_event
 extern _done
 
+section .event
+
 _on_event:
 	
 	push esi

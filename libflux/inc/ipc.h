@@ -6,7 +6,7 @@
 /*** Flux Packet Protocol (FPP) ***/
 
 #define PACKET_MAXDATA		(PAGESZ - 58)
-#define PACKET_PROTOCOL		2	/* protocol version */
+#define PACKET_PROTOCOL		3	/* protocol version */
 
 struct packet {
 

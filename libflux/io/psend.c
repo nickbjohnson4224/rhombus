@@ -45,6 +45,11 @@ size_t psend(int fd, char *r, char *s, size_t size, uint64_t off, uint8_t port) 
 		send(port, file->server, p_out);
 		p_in = waits(PORT_REPLY, file->server);
 
+		if (!p_in || p_in->data_length == 0) {
+			if (p_in) packet_free(p_in);
+			break;
+		}
+
 		if (r) {
 			arch_memcpy(&r[rpos], packet_getbuf(p_in), p_in->data_length);
 			rpos += p_in->data_length;
@@ -52,11 +57,6 @@ size_t psend(int fd, char *r, char *s, size_t size, uint64_t off, uint8_t port) 
 
 		size -= p_in->data_length;
 		off  += p_in->data_length;
-
-		if (!p_in || p_in->data_length == 0) {
-			if (p_in) packet_free(p_in);
-			break;
-		}
 
 		packet_free(p_in);
 
