@@ -3,8 +3,8 @@ BUILDDIR=$(PWD)
 LIB_DIRS  = driver/pci
 
 DRIVERS  := driver/term driver/kbd driver/tarfs driver/vga
-DAEMONS  := daemon/vfsd daemon/pmdd daemon/dict daemon/init
-UTILS    := util/ls util/echo util/halt util/cat util/info util/kevin
+DAEMONS  := daemon/vfsd daemon/dict daemon/init
+UTILS    := util/ls util/echo util/halt util/cat util/info
 
 BIN_DIRS  = kernel fish
 BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS)

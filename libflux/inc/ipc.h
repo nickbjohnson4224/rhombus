@@ -62,16 +62,49 @@ void  packet_free (struct packet *packet);
 #define PORT_PING	33
 #define PORT_ERROR	34
 
-typedef void (*event_t) (uint32_t source, struct packet *packet);
+/* queueing */
+struct message {
+	struct message *next;
+	struct message *prev;
+	struct packet *packet;
+	uint32_t source;
+};
 
-void setpacket(struct packet *packet);
-struct packet *getpacket(void);
+extern struct   message msg_queue[256];
+extern uint32_t m_msg_queue[256];
 
-uint32_t       send (uint32_t port, uint32_t target, struct packet *packet);
-struct packet *recv (uint32_t port);
-struct packet *recvs(uint32_t port, uint32_t source);
-struct packet *wait (uint32_t port);
-struct packet *waits(uint32_t port, uint32_t source);
-event_t        when (uint32_t port, event_t handler);
+void           stash(struct packet *packet, uint8_t port, uint32_t source);
+
+/* send */
+int            send (uint8_t port, uint32_t target, struct packet *packet);
+
+/* recv family - asynchronous */
+struct packet *recv (uint8_t port);
+struct packet *recvs(uint8_t port, uint32_t source);
+struct packet *recvn(uint8_t port, uint32_t source, uint64_t inode);
+struct packet *recvi(uint8_t port, uint32_t source, uint16_t id);
+struct packet *recvf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag);
+
+/* wait family - synchronous */
+struct packet *wait (uint8_t port);
+struct packet *waits(uint8_t port, uint32_t source);
+struct packet *waitn(uint8_t port, uint32_t source, uint64_t inode);
+struct packet *waiti(uint8_t port, uint32_t source, uint16_t id);
+struct packet *waitf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag);
+
+/* dump family */
+void           dump (uint8_t port);
+void           dumps(uint8_t port, uint32_t source);
+void           dumpn(uint8_t port, uint32_t source, uint64_t inode);
+void           dumpi(uint8_t port, uint32_t source, uint16_t id);
+void           dumpf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag);
+
+/* events */
+typedef void (*event_t)(uint32_t, struct packet*);
+
+event_t        when (uint8_t port, event_t handler);
+
+extern event_t event_handler[256];
+extern uint32_t m_event_handler;
 
 #endif/*FLUX_IPC_H*/
