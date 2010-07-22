@@ -3,7 +3,8 @@
 #ifndef SPACE_H
 #define SPACE_H
 
-#include <flux/arch.h>
+#include <stdint.h>
+#include <arch.h>
 
 /***** PAGE FLAGS *****/
 

@@ -3,11 +3,10 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <flux/arch.h>
-#include <flux/driver.h>
-#include <flux/ipc.h>
-#include <flux/proc.h>
-#include <flux/mmap.h>
+#include <driver.h>
+#include <ipc.h>
+#include <proc.h>
+#include <mmap.h>
 
 #include <stdint.h>
 #include <stdbool.h>

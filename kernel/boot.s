@@ -2,7 +2,7 @@
 ; ISC Licensed, see LICENSE for details
 
 #define ASM
-#include <flux/arch.h>
+#include <arch.h>
 
 [bits 32]
 

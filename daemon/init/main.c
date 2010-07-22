@@ -3,12 +3,11 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <flux/arch.h>
-#include <flux/ipc.h>
-#include <flux/proc.h>
-#include <flux/exec.h>
-#include <flux/mmap.h>
-#include <flux/io.h>
+#include <ipc.h>
+#include <proc.h>
+#include <exec.h>
+#include <mmap.h>
+#include <io.h>
 
 #include <stdint.h>
 #include <string.h>
@@ -18,7 +17,7 @@
 #include "inc/tar.h"
 
 const char *splash ="\
-Flux Operating System 0.4a\n\
+Flux Operating System 0.5a\n\
 Copyright 2010 Nick Johnson\n\
 \n";
 
@@ -44,6 +43,7 @@ int main() {
 	extern void initrd_init(void);
 	struct tar_file *boot_image, *file;
 	char const **argv;
+	size_t i;
 
 	/* Boot Image */
 	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);
@@ -53,7 +53,7 @@ int main() {
 	if (!file) {
 		for(;;);
 	}
-	daemon_start(FD_STDOUT, file->start, file->size, NULL);
+	daemon_start(STDOUT, file->start, file->size, NULL);
 
 	printf(splash);
 
@@ -63,9 +63,9 @@ int main() {
 		printf("critical error: no VFSd image found\n");
 		for(;;);
 	}
-	daemon_start(FD_STDVFS, file->start, file->size, NULL);
-	fadd("/vfsd", fdget(FD_STDVFS)->server, fdget(FD_STDVFS)->inode);
-	fadd("/term", fdget(FD_STDOUT)->server, fdget(FD_STDOUT)->inode);
+	daemon_start(STDVFS, file->start, file->size, NULL);
+	fadd("/vfsd", fdget(STDVFS)->server, fdget(STDVFS)->inode);
+	fadd("/term", fdget(STDOUT)->server, fdget(STDOUT)->inode);
 
 	/* Initrd */
 	initrd_init();
@@ -92,8 +92,8 @@ int main() {
 		printf("critical error: no keyboard driver found\n");
 		for(;;);
 	}
-	daemon_start(FD_STDIN, file->start, file->size, NULL);
-	fadd("/kbd", fdget(FD_STDIN)->server, fdget(FD_STDIN)->inode);
+	daemon_start(STDIN, file->start, file->size, NULL);
+	fadd("/kbd", fdget(STDIN)->server, fdget(STDIN)->inode);
 
 	/* Flux Init Shell */
 	file = tar_find(boot_image, (char*) "fish");

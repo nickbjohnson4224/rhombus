@@ -1,9 +1,9 @@
 BUILDDIR=$(PWD)
 
-LIB_DIRS  = driver/pci
+LIB_DIRS  = 
 
 DRIVERS  := driver/term driver/kbd driver/tarfs driver/vga
-DAEMONS  := daemon/vfsd daemon/dict daemon/init
+DAEMONS  := daemon/vfsd daemon/init
 UTILS    := util/ls util/echo util/halt util/cat util/info
 
 BIN_DIRS  = kernel fish
@@ -27,23 +27,19 @@ PPFLAGS := -x assembler-with-cpp -I$(BUILDDIR)/inc
 
 export BUILDDIR CC LD AR AS PP CFLAGS LDFLAGS ARFLAGS PPFLAGS
 
-.PHONY: $(LIB_DIRS) $(BIN_DIRS) clean test cd distclean makedirs libc libflux
+.PHONY: $(LIB_DIRS) $(BIN_DIRS) clean test cd distclean makedirs libc
 
-all: makedirs $(LIB_DIRS) $(BIN_DIRS) libc libflux
+all: makedirs $(LIB_DIRS) $(BIN_DIRS) libc
 
-$(BIN_DIRS): $(LIB_DIRS) libc libflux
+$(BIN_DIRS): $(LIB_DIRS) libc
 	@ echo " MAKE	" $@
 	@ make -s -C $@
 
-$(LIB_DIRS): libc libflux
+$(LIB_DIRS): libc
 	@ echo " MAKE	" $@
 	@ make -s -C $@
 
-libflux:
-	@ echo " MAKE	" $@
-	@ make -s -C $@
-
-libc: libflux
+libc:
 	@ echo " MAKE	" $@
 	@ make -s -C $@
 

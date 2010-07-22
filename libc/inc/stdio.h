@@ -1,11 +1,11 @@
 #ifndef STDIO_H
 #define STDIO_H
 
-#include <flux/io.h>
+#include <io.h>
+#include <stdint.h>
 
 /*** Type Definitions ***/
 
-#include <stdint.h>
 typedef size_t fpos_t;
 
 /*** File Structure ***/

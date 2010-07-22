@@ -6,7 +6,7 @@ section .text
 global _start
 extern main
 extern fdinit
-extern _cini
+extern _init
 extern _exit
 
 _start:
@@ -15,7 +15,7 @@ _start:
 	push ecx ; argc
 
 	call fdinit
-	call _cini
+	call _init
 
 	call main
 

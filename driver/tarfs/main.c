@@ -3,10 +3,10 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <flux/arch.h>
-#include <flux/proc.h>
-#include <flux/ipc.h>
-#include <flux/io.h>
+#include <mutex.h>
+#include <proc.h>
+#include <ipc.h>
+#include <io.h>
 
 #include <stdint.h>
 #include <string.h>
@@ -17,7 +17,7 @@
 
 struct tarfs_inode inode[256];
 
-uint32_t m_parent;
+bool m_parent;
 FILE *parent;
 
 char name[100];

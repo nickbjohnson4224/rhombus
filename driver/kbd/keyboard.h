@@ -1,7 +1,7 @@
 #ifndef KEYBOARD_H
 #define KEYBOARD_H
 
-#include <flux/arch.h>
+#include <stdint.h>
 
 /* keymap */
 extern const char keymap[];

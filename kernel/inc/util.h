@@ -3,7 +3,9 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include <flux/arch.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <arch.h>
 
 /***** I/O, ETC. *****/
 void outb(uint16_t port, uint8_t val);

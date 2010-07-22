@@ -3,11 +3,11 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <flux/arch.h>
-#include <flux/ipc.h>
-#include <flux/proc.h>
-#include <flux/driver.h>
-#include <flux/io.h>
+#include <ipc.h>
+#include <proc.h>
+#include <mutex.h>
+#include <driver.h>
+#include <io.h>
 
 #include <stdint.h>
 #include <string.h>
@@ -17,7 +17,7 @@
 #include <vfsd.h>
 
 struct vfs *vfs_root;
-uint32_t m_vfs;
+bool m_vfs;
 
 static char *path_preprocess(char *path) {
 	char buffer[1000];

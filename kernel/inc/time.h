@@ -3,7 +3,8 @@
 #ifndef TIME_H
 #define TIME_H
 
-#include <flux/arch.h>
+#include <stdint.h>
+#include <arch.h>
 #include <space.h>
 
 /***** Limits *****/

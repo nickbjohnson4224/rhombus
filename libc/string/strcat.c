@@ -4,7 +4,6 @@
  */
 
 #include <string.h>
-#include <stdint.h>
 
 char *strcat(char *d, const char *s) {
 	size_t i, e;

@@ -4,7 +4,6 @@
  */
 
 #include <string.h>
-#include <stdint.h>
 
 char *strchr(const char *s, char c) {
 	size_t i;

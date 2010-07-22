@@ -1,9 +1,9 @@
 SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
 SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
-SUBDIR	:= init
+SUBDIR	:= daemon/init
 TARGET	:= init
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -lc -lflux -T$(BUILDDIR)/inc/link.ld
+LDFLAGS += -lc -T$(BUILDDIR)/inc/link.ld
 ASFLAGS := -felf
 
 all: $(TARGET)

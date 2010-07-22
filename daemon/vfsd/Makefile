@@ -4,7 +4,7 @@ SOURCES += $(BUILDDIR)/lib/c0.o
 SUBDIR	:= daemon/vfsd
 TARGET	:= vfsd
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -lc -lflux -T$(BUILDDIR)/inc/link.ld
+LDFLAGS += -lc -T$(BUILDDIR)/inc/link.ld
 ASFLAGS := -felf
 
 all: $(TARGET)

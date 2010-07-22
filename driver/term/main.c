@@ -3,11 +3,11 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <flux/arch.h>
-#include <flux/driver.h>
-#include <flux/ipc.h>
-#include <flux/proc.h>
-#include <flux/mmap.h>
+#include <driver.h>
+#include <mutex.h>
+#include <ipc.h>
+#include <proc.h>
+#include <mmap.h>
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -27,7 +27,7 @@ static uint16_t cursor = 0;
 static uint16_t buffer = 0;
 static void char_write(char c);
 
-static uint32_t m_vbuf = 0;
+static bool m_vbuf = 0;
 
 int main() {
 	size_t i;

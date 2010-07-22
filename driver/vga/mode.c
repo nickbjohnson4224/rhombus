@@ -3,8 +3,8 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <flux/arch.h>
-#include <flux/driver.h>
+#include <stdint.h>
+#include <driver.h>
 
 #include "vga.h"
 

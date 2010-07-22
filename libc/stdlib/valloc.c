@@ -3,11 +3,10 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <flux/heap.h>
-
 #include <stdint.h>
 #include <stdlib.h>
+#include <arch.h>
 
 void *valloc(size_t size) {
-	return heap_valloc(size);
+	return aalloc(size, PAGESZ);
 }

@@ -3,10 +3,10 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <flux/arch.h>
-#include <flux/ipc.h>
-#include <flux/proc.h>
-#include <flux/io.h>
+#include <mutex.h>
+#include <ipc.h>
+#include <proc.h>
+#include <io.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -15,7 +15,7 @@
 
 static uint8_t *initrd;
 static size_t   initrd_size;
-static uint32_t m_initrd;
+static bool   m_initrd;
 
 static void initrd_info(uint32_t source, struct packet *packet) {
 	struct info_query *query;

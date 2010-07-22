@@ -9,8 +9,8 @@
 #include <init.h>
 
 #define FLUX_VERSION_MAJOR 0
-#define FLUX_VERSION_MINOR 4
-#define FLUX_KERNEL_REVISN 1
+#define FLUX_VERSION_MINOR 5
+#define FLUX_KERNEL_REVISN 0
 
 const char *stamp = "\
 Flux Operating System Kernel v%x.%x\n\

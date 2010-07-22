@@ -3,12 +3,12 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <flux/arch.h>
-#include <flux/io.h>
-#include <flux/exec.h>
-#include <flux/proc.h>
-#include <flux/ipc.h>
-#include <flux/info.h>
+#include <arch.h>
+#include <io.h>
+#include <exec.h>
+#include <proc.h>
+#include <ipc.h>
+#include <info.h>
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -5,8 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
-#include <flux/io.h>
+#include <io.h>
 
 /****************************************************************************
  * fclose - close a stream

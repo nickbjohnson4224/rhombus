@@ -3,9 +3,10 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <flux/arch.h>
-#include <flux/proc.h>
+#include <stdint.h>
 #include <stdlib.h>
+#include <mutex.h>
+#include <proc.h>
 
 #include "keyboard.h"
 
@@ -15,7 +16,7 @@ static struct line {
 	char *data;
 } *line_buf_in, *line_buf_out;
 
-uint32_t m_line_buf;
+bool m_line_buf;
 
 void push_line(char *l) {
 	struct line *line;
@@ -62,7 +63,7 @@ char *pop_line(void) {
 }
 
 void push_char(char c) {
-	static uint32_t mutex;
+	static bool mutex;
 	static char *buffer;
 	static size_t buffer_top;
 
@@ -90,7 +91,7 @@ void push_char(char c) {
 }
 
 char pop_char() {
-	static uint32_t mutex;
+	static bool mutex;
 	static char *line;
 	static size_t line_pos;
 

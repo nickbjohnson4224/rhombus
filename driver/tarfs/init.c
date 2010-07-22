@@ -3,8 +3,8 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <flux/io.h>
-#include <flux/proc.h>
+#include <io.h>
+#include <proc.h>
 
 #include <stdlib.h>
 #include <string.h>

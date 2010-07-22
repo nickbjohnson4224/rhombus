@@ -3,9 +3,8 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <flux/arch.h>
-#include <flux/io.h>
-#include <flux/info.h>
+#include <io.h>
+#include <info.h>
 
 #include <stdlib.h>
 #include <stdio.h>

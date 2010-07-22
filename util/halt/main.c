@@ -3,8 +3,7 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <flux/arch.h>
-#include <flux/driver.h>
+#include <driver.h>
 
 #include <stdlib.h>
 #include <stdio.h>
