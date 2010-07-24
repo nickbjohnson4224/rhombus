@@ -59,6 +59,9 @@ void  packet_free (struct packet *packet);
 #define PORT_CTRL	19
 #define PORT_QUERY	20
 
+#define PORT_DREAD	24
+#define PORT_DWRITE	25
+
 #define PORT_REPLY	31
 #define PORT_SYNC	32
 #define PORT_PING	33

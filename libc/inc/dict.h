@@ -1,16 +1,50 @@
+/*
+ * Copyright 2010 Nick Johnson
+ * ISC Licensed, see LICENSE for details
+ */
+
 #ifndef FLUX_DICT_H
 #define FLUX_DICT_H
 
-char *dfind(const char *key, char *value);
-char *dlink(const char *key, const char *link);
-char *dremv(const char *key);
-char *dinst(const char *key, char *value);
-char *dcmd(const char *cmd, const char *key, char *value);
+#include <stdint.h>
+#include <stdbool.h>
 
-struct dict_query {
-	char cmd[12];
-	char key[2060];
-	char val[1024];
+/* dictionary interface ****************************************************/
+
+struct dict {
+	struct dict *next[256];
+	const uint8_t *value;
 };
+
+extern struct dict_info {
+	struct dict root;
+	bool        mutex;
+	uintptr_t   brk;
+} *dict_info;
+
+void dict_init(void);
+
+const uint8_t *dict_read
+	(const uint8_t *key, size_t keylen);
+
+const uint8_t *dict_readstr
+	(const char *key);
+
+void dict_write
+	(const uint8_t *key, size_t keylen, 
+	const uint8_t *val, size_t vallen);
+
+void dict_writestr
+	(const char *key, const uint8_t *val, size_t vallen);
+
+void dict_setlink
+	(const uint8_t *key, size_t keylen, 
+	const uint8_t *prefix, size_t prefixlen,
+	uint32_t server, uint64_t inode);
+
+/* dictionary heap - garbage collected *************************************/
+
+void *dict_alloc(size_t size, bool data);
+void  dict_sweep(void);
 
 #endif/*FLUX_DICT_H*/

@@ -4,7 +4,7 @@ LIB_DIRS  =
 
 DRIVERS  := driver/term driver/kbd driver/tarfs driver/vga
 DAEMONS  := daemon/vfsd daemon/init
-UTILS    := util/ls util/echo util/halt util/cat util/info
+UTILS    := util/ls util/echo util/halt util/cat
 
 BIN_DIRS  = kernel fish
 BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS)

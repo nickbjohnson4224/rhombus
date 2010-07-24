@@ -4,7 +4,6 @@
  */
 
 #include <io.h>
-#include <info.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -15,7 +14,7 @@ int main(int argc, char **argv) {
 	size_t n, i, j;
 
 	if (argc == 1) {
-		list(getinfo("env/PWD"), filelist);
+		list(getenv("PWD"), filelist);
 
 		for (i = 0, j = 1; filelist[i]; i++) {
 			if (filelist[i] == ' ') {

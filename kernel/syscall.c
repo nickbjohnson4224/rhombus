@@ -71,7 +71,7 @@ thread_t *fault_page(thread_t *image) {
 		return image;
 	}
 	else {
-		/* fault */
+		/* fault */	
 		process_freeze(image->proc);
 		return thread_send(image, image->proc->pid, SSIG_FAULT);
 	}

@@ -37,8 +37,8 @@ uint32_t rand(void);
 
 /* Environment variables and system ****************************************/
 
-char *getenv(const char *name);
-int   setenv(const char *name, const char *value);
+const char *getenv(const char *name);
+int         setenv(const char *name, const char *value);
 
 int   system(const char *s);
 

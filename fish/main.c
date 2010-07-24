@@ -3,12 +3,10 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <arch.h>
 #include <io.h>
 #include <exec.h>
 #include <proc.h>
 #include <ipc.h>
-#include <info.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -22,14 +20,14 @@ int main() {
 	int err, pid;
 	char *argv[100];
 	bool daemon;
-	
+
 	printf("\n");
 
-	setinfo("env/PWD", "/");
-	setinfo("env/PATH", "/initrd.tarfs");
+	setenv("PWD", "/");
+	setenv("PATH", "/initrd.tarfs");
 
 	while (1) {
-		printf("%s $ ", getinfo("env/PWD"));
+		printf("%s $ ", getenv("PWD"));
 
 		fgets(buffer, 100, stdin);
 
@@ -60,24 +58,24 @@ int main() {
 
 		if (!strcmp(buffer, "cd")) {
 			if (buffer[0] == '/') {
-				setinfo("env/PWD", buffer);
+				setenv("PWD", buffer);
 			}
 			else {
-				strcpy(buffer, getinfo("env/PWD"));
+				strcpy(buffer, getenv("PWD"));
 				strcat(buffer, argv[1]);
-				setinfo("env/PWD", buffer);
+				setenv("PWD", buffer);
 			}
 		}
 		else if (!strcmp(buffer, "set")) {
-			setinfo(argv[1], argv[2]);
+			setenv(argv[1], argv[2]);
 		}
 		else if (!strcmp(buffer, "get")) {
-			printf("%s\n", getinfo(argv[1]));
+			printf("%s\n", getenv(argv[1]));
 		}
 		else {
 			pid = fork();
 			if (pid < 0) {
-				strcpy(fbuffer, getinfo("env/PATH"));
+				strcpy(fbuffer, getenv("PATH"));
 				strcat(fbuffer, "/");
 				strcat(fbuffer, buffer);
 				err = execv(fbuffer, (char const**) argv);

@@ -9,7 +9,6 @@
 #include <proc.h>
 #include <ipc.h>
 #include <io.h>
-#include <info.h>
 #include <stdio.h>
 #include <mmap.h>
 
@@ -51,10 +50,4 @@ void _init(void) {
 	when(PORT_CTRL,  reject);
 	when(PORT_QUERY, reject);
 
-	mmap(infospace, sizeof(struct info_node), PROT_READ | PROT_WRITE);
-	
-	if (infospace[0].value[0] != '!') {
-		memclr(infospace, sizeof(struct info_node));
-		infospace[0].value[0] = '!';
-	}
 }
