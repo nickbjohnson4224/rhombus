@@ -18,12 +18,6 @@ struct info_query {
 	char value[1000];
 };
 
-struct call {
-	char   name[16];
-	size_t size;
-	char   args[];
-};
-
 struct file {
 	uint32_t status;
 	uint32_t server;
@@ -37,7 +31,6 @@ size_t write(int fd, void *buf, size_t size, uint64_t offset);
 size_t query(int fd, void *rbuf, void *sbuf, size_t size);
 bool   info (int fd, char *value, const char *field);
 bool   ctrl (int fd, char *value, const char *field);
-char  *call (int fd, const char *name, const char *args);
 
 struct file *fdget(int fd);
 void         fdset(int fd, uint32_t target, uint32_t resource);

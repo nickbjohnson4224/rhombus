@@ -41,42 +41,6 @@ static char *path_preprocess(char *path) {
 	return path;
 }
 
-void vfs_call(uint32_t caller, struct packet *packet) {
-	struct call *header;
-	struct vfs *file;
-
-	if (!packet) {
-		send(PORT_REPLY, caller, NULL);
-		return;
-	}
-
-	header = packet_getbuf(packet);
-
-	if (!strncmp(header->name, "getdict", 16)) {
-		path_preprocess(header->args);
-
-		mutex_spin(&m_vfs);
-		file = vfs_get(vfs_root, header->args);
-		
-		if (file && file->server) {
-			header->size = sprintf(header->args, 
-				"%d:%d", file->server, (uint32_t) file->inode);
-		}
-		else {
-			header->name[0] = '!';
-			header->size = 0;
-		}
-	}
-	else {
-		header->name[0] = '!';
-		header->size = 0;
-	}
-
-	packet_setbuf(&packet, header->size + sizeof(struct call));
-	send(PORT_REPLY, caller, packet);
-	packet_free(packet);
-}
-
 void vfs_handle(uint32_t caller, struct packet *packet) {
 	struct vfs_query *q;
 	struct vfs *file;
@@ -130,7 +94,6 @@ void vfs_handle(uint32_t caller, struct packet *packet) {
 int main() {
 
 	when(PORT_QUERY, vfs_handle);
-	when(PORT_CALL,  vfs_call);
 
 	mutex_spin(&m_vfs);
 	vfs_root = calloc(sizeof(struct vfs), 1);

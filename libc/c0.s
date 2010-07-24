@@ -11,9 +11,9 @@ extern _init
 extern _exit
 
 _start:
-	mov eax, 0xE0010004
+	mov eax, 0xD0010004
 	push eax ; argv
-	mov eax, 0xE0010000
+	mov eax, 0xD0010000
 	mov edx, [eax]
 	push edx ; argc
 
