@@ -5,9 +5,9 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <io.h>
+#include <stdio.h>
 #include <ipc.h>
 
-size_t read(int fd, void *buf, size_t size, uint64_t offset) {
-	return psend(fd, buf, NULL, size, offset, PORT_READ);
+size_t read(FILE *file, void *buf, size_t size, uint64_t offset) {
+	return ssend(file, buf, NULL, size, offset, PORT_READ);
 }

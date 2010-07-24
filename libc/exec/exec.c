@@ -6,10 +6,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include <arch.h>
 #include <exec.h>
 #include <mmap.h>
-#include <io.h>
 
 static uint8_t *bootstrap = (void*) ESPACE;
 
@@ -18,6 +18,15 @@ static struct {
 	char *argv[100];
 	char argvv[100][100];
 } *argv_table = (void*) ARGV_TABLE;
+
+static void _file_save(void) {
+	
+	fsave("stdin", stdin);
+	fsave("stdout", stdout);
+	fsave("stderr", stderr);
+	fsave("stdvfs", stdvfs);
+
+}
 
 static void _argv_copy(char const **argv) {
 	size_t i;
@@ -45,6 +54,7 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 	memcpy(bootstrap, image, size);
 
 	_argv_copy(argv);
+	_file_save();
 
 	return _exec((uintptr_t) bootstrap);
 }
@@ -54,17 +64,17 @@ int execi(uint8_t *image, size_t size) {
 }
 
 int execv(const char *path, char const **argv) {
-	int file;
+	FILE *image;
 	size_t size;
 	char buffer[20];
 
-	file = find(path);
+	image = fopen(path, "r");
 
-	if (file == -1) {
+	if (!image) {
 		return 1;
 	}
 
-	info(file, buffer, "size");
+	info(image, buffer, "size");
 
 	size = atoi(buffer);
 
@@ -73,9 +83,10 @@ int execv(const char *path, char const **argv) {
 	}
 
 	mmap(bootstrap, size, MMAP_READ | MMAP_WRITE);
-	read(file, bootstrap, size, 0);
+	read(image, bootstrap, size, 0);
 
 	_argv_copy(argv);
+	_file_save();
 
 	return _exec((uintptr_t) bootstrap);
 }

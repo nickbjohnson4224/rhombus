@@ -4,7 +4,6 @@
  */
 
 #include <stdio.h>
-#include <io.h>
 
 /****************************************************************************
  * fflush
@@ -16,7 +15,7 @@
 int fflush(FILE *stream) {
 
 	if (stream->buffer && stream->buffpos) {
-		write(stream->filedes, stream->buffer, stream->buffpos, stream->position);
+		write(stream, stream->buffer, stream->buffpos, stream->position);
 		stream->position += stream->buffpos;
 		stream->buffpos = 0;
 	}

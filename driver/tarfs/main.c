@@ -6,7 +6,6 @@
 #include <mutex.h>
 #include <proc.h>
 #include <ipc.h>
-#include <io.h>
 
 #include <stdint.h>
 #include <string.h>

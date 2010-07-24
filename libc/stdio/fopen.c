@@ -4,7 +4,7 @@
  */
 
 #include <stdio.h>
-#include <io.h>
+#include <stdlib.h>
 
 /****************************************************************************
  * fopen
@@ -14,13 +14,25 @@
  */
 
 FILE *fopen(const char *path, const char *mode) {
-	int fd;
+	FILE *new = malloc(sizeof(FILE));
+	int err;
 
-	fd = find(path);
-
-	if (fd == -1) {
+	if (!new) {
 		return NULL;
 	}
 
-	return fdopen(fd, mode);
+	err = find(path, &new->server, &new->inode);
+	new->position      = 0;
+	new->size          = -1;
+	new->buffer        = NULL;
+	new->buffsize      = 0;
+	new->buffpos       = 0;
+	new->revbuf        = EOF;
+	new->flags         = FILE_NBF | FILE_READ | FILE_WRITE;
+
+	if (err) {
+		return NULL;
+	}
+
+	return new;
 }

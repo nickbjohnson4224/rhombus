@@ -5,6 +5,7 @@
 
 #include <dict.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <mutex.h>
 #include <string.h>
 
@@ -65,4 +66,25 @@ void dict_write
 
 void dict_writestr(const char *key, const uint8_t *val, size_t vallen) {
 	dict_write((uint8_t*) key, strlen(key), val, vallen);
+}
+
+/****************************************************************************
+ * dict_readstrns
+ *
+ * Read from the dictionary from a given namespace using the given string as
+ * a key. Returns null on failure, pointer to dictionary value on success.
+ * This function is thread-safe.
+ */
+
+void dict_writestrns(const char *namespace, const char *key,
+		const uint8_t *val, size_t vallen) {
+	char *buffer;
+
+	buffer = malloc(strlen(namespace) + strlen(key) + 1);
+	strcpy(buffer, namespace);
+	strcat(buffer, key);
+
+	dict_writestr(buffer, val, vallen);
+
+	free(buffer);
 }

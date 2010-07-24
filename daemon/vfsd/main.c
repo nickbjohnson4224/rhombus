@@ -7,7 +7,6 @@
 #include <proc.h>
 #include <mutex.h>
 #include <driver.h>
-#include <io.h>
 
 #include <stdint.h>
 #include <string.h>

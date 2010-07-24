@@ -1,8 +1,8 @@
 #ifndef STDIO_H
 #define STDIO_H
 
-#include <io.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 /*** Type Definitions ***/
 
@@ -11,7 +11,9 @@ typedef size_t fpos_t;
 /*** File Structure ***/
 
 typedef struct _file {
-	int filedes;			/* File descriptor */	
+	uint32_t server;		/* Server PID */
+	uint64_t inode;			/* File inode on server */
+	uint8_t naddr[16];		/* Network address of server node */
 
 	fpos_t position;		/* File position */
 	fpos_t size;			/* File size */
@@ -47,28 +49,27 @@ typedef struct _file {
 
 #define BUFSIZ		(PAGESZ - 256)
 
-/*** Standard Streams ***/
+/* Standard Streams ********************************************************/
 
 extern FILE *stdin;
 extern FILE *stdout;
 extern FILE *stderr;
 extern FILE *stdvfs;
-extern FILE *stddev;
-extern FILE *stdpmd;
-extern FILE *extin;
-extern FILE *extout;
 
-/*** File Operations ***/
+/*** File Operations *******************************************************/
 
 int   fclose(FILE *stream);
 FILE *fopen(const char *path, const char *mode);
-FILE *fdopen(int fd, const char *mode);
+
+FILE *fload(const char *name);
+int   fsave(const char *name, FILE *fd);
+FILE *fcons(uint32_t server, uint64_t inode);
 
 int  fflush(FILE *stream);
 int  setvbuf(FILE *stream, char *buf, int mode, size_t size);
 void setbuf(FILE *stream, char *buf);
 
-/*** I/O Operations ***/
+/* I/O Operations **********************************************************/
 
 size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
 size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream);
@@ -92,7 +93,7 @@ int fprintf(FILE *stream, const char *format, ...);
 int printf(const char *format, ...);
 int sprintf(char *str, const char *format, ...);
 
-/*** File Control Operations ***/
+/* File Control Operations *************************************************/
 
 int    fseek(FILE *stream, fpos_t offset, int whence);
 fpos_t ftell(FILE *stream);
@@ -103,5 +104,41 @@ int    fsetpos(FILE *stream, fpos_t *pos);
 void   clearerr(FILE *stream);
 int    feof(FILE *stream);
 int    ferror(FILE *stream);
+
+/* Native I/O Routines *****************************************************/
+
+size_t ssend(FILE *file, char *r, char *s, size_t size, uint64_t off, uint8_t port);
+size_t read (FILE *file, void *buf, size_t size, uint64_t offset);
+size_t write(FILE *file, void *buf, size_t size, uint64_t offset);
+size_t query(FILE *file, void *rbuf, void *sbuf, size_t size);
+bool   info (FILE *file, char *value, const char *field);
+bool   ctrl (FILE *file, char *value, const char *field);
+
+
+#define VFS_CMD_FIND  0
+#define VFS_CMD_ADD   1
+#define VFS_CMD_LIST  2
+#define VFS_CMD_LINK  3
+
+#define VFS_CMD_REPLY 10
+#define VFS_CMD_ERROR 11
+
+struct vfs_query {
+	uint32_t command;
+	uint32_t server;
+	uint64_t inode;
+	uint8_t  naddr[16];
+	char path0[1000];
+	char path1[1000];
+};
+
+int find(const char *path, uint32_t *server, uint64_t *inode);
+int fadd(const char *path, uint32_t server, uint64_t inode);
+int list(const char *path, char *buffer);
+
+struct info_query {
+	char field[100];
+	char value[1000];
+};
 
 #endif

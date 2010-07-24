@@ -1,7 +1,7 @@
 #ifndef EXEC_H
 #define EXEC_H
 
-#include <arch.h>
+#include <stdint.h>
 
 int execiv(uint8_t *image, size_t size, char const **argv);
 int execi (uint8_t *image, size_t size);

@@ -5,14 +5,13 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 #include <arch.h>
-#include <io.h>
 #include <ipc.h>
 
-size_t psend(int fd, char *r, char *s, size_t size, uint64_t off, uint8_t port) {
+size_t ssend(FILE *fd, char *r, char *s, size_t size, uint64_t off, uint8_t port) {
 	struct packet *p_out;
 	struct packet *p_in;
-	struct file   *file;
 	size_t datasize, oldsize, frag;
 	size_t spos, rpos;
 	event_t old_handler;
@@ -21,7 +20,6 @@ size_t psend(int fd, char *r, char *s, size_t size, uint64_t off, uint8_t port) 
 	oldsize     = size;
 	p_out       = packet_alloc(0);
 	p_in        = NULL;
-	file        = fdget(fd);
 	frag        = 0;
 	spos        = 0;
 	rpos        = 0;
@@ -36,8 +34,8 @@ size_t psend(int fd, char *r, char *s, size_t size, uint64_t off, uint8_t port) 
 
 		p_out->fragment_index = frag;
 		p_out->fragment_count = ((size - 1) / PACKET_MAXDATA + 1);
-		p_out->target_pid     = file->server;
-		p_out->target_inode   = file->inode;
+		p_out->target_pid     = fd->server;
+		p_out->target_inode   = fd->inode;
 		p_out->offset         = off;
 
 		if (s) {
@@ -45,8 +43,8 @@ size_t psend(int fd, char *r, char *s, size_t size, uint64_t off, uint8_t port) 
 			spos += datasize;
 		}
 
-		send(port, file->server, p_out);
-		p_in = waits(PORT_REPLY, file->server);
+		send(port, fd->server, p_out);
+		p_in = waits(PORT_REPLY, fd->server);
 
 		if (!p_in || p_in->data_length == 0) {
 			if (p_in) packet_free(p_in);

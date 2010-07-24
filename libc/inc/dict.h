@@ -30,12 +30,19 @@ const uint8_t *dict_read
 const uint8_t *dict_readstr
 	(const char *key);
 
+const uint8_t *dict_readstrns
+	(const char *namespace, const char *key);
+
 void dict_write
 	(const uint8_t *key, size_t keylen, 
 	const uint8_t *val, size_t vallen);
 
 void dict_writestr
 	(const char *key, const uint8_t *val, size_t vallen);
+
+void dict_writestrns
+	(const char *namespace, const char *key, 
+	const uint8_t *val, size_t vallen);
 
 void dict_setlink
 	(const uint8_t *key, size_t keylen, 

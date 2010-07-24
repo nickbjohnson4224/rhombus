@@ -5,6 +5,7 @@
 
 #include <dict.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <mutex.h>
 #include <string.h>
 
@@ -60,4 +61,27 @@ const uint8_t *dict_read(const uint8_t *key, size_t keylen) {
 
 const uint8_t *dict_readstr(const char *key) {
 	return dict_read((uint8_t*) key, strlen(key));
+}
+
+/****************************************************************************
+ * dict_readstrns
+ *
+ * Read from the dictionary from a given namespace using the given string as
+ * a key. Returns null on failure, pointer to dictionary value on success.
+ * This function is thread-safe.
+ */
+
+const uint8_t *dict_readstrns(const char *namespace, const char *key) {
+	char *buffer;
+	const uint8_t *val;
+
+	buffer = malloc(strlen(namespace) + strlen(key) + 1);
+	strcpy(buffer, namespace);
+	strcat(buffer, key);
+
+	val = dict_readstr(buffer);
+
+	free(buffer);
+
+	return val;
 }

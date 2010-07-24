@@ -1,24 +1,20 @@
 /*
  * Copyright 2010 Nick Johnson
- * ISC Licensed, see LICENSE for details
+ * ISC Licensed, see LICENSE for details.
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 
-/****************************************************************************
- * fdopen
- *
- * The fdopen() function associates a stream with the existing file 
- * descriptor fd.
- */
-
-FILE *fdopen(int fd, const char *mode) {
+FILE *fcons(uint32_t server, uint64_t inode) {
 	FILE *new = malloc(sizeof(FILE));
 
-	if (!new) return NULL;
+	if (!new) {
+		return NULL;
+	}
 
-	new->filedes       = fd;
+	new->server        = server;
+	new->inode         = inode;
 	new->position      = 0;
 	new->size          = -1;
 	new->buffer        = NULL;

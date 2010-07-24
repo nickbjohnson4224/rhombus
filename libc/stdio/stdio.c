@@ -8,7 +8,6 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include <io.h>
 #include <arch.h>
 
 /***** File Operations *****/
@@ -73,7 +72,7 @@ int ferror(FILE *stream) {
 size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 	size_t ret;
 
-	ret = read(stream->filedes, ptr, size * nmemb, stream->position);
+	ret = read(stream, ptr, size * nmemb, stream->position);
 	stream->position += ret;
 
 	return ret;
@@ -84,7 +83,7 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
 	size_t i, ret;
 
 	if (stream->flags & FILE_NBF) {
-		ret = write(stream->filedes, (void*) ptr, size * nmemb, stream->position);
+		ret = write(stream, (void*) ptr, size * nmemb, stream->position);
 		stream->position += ret;
 		return ret;
 	}

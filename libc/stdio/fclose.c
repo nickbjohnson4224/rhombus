@@ -5,7 +5,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <io.h>
 
 /****************************************************************************
  * fclose - close a stream
@@ -29,9 +28,6 @@ int fclose(FILE *fp) {
 	if (fp->buffer) {
 		free(fp->buffer);
 	}
-
-	/* close file descriptor */
-	close(fp->filedes);
 
 	/* free file structure */
 	free(fp);

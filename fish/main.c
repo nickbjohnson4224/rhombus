@@ -3,7 +3,6 @@
  * ISC Licensed, see LICENSE for details
  */
 
-#include <io.h>
 #include <exec.h>
 #include <proc.h>
 #include <ipc.h>

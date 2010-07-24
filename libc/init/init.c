@@ -8,7 +8,6 @@
 #include <string.h>
 #include <proc.h>
 #include <ipc.h>
-#include <io.h>
 #include <stdio.h>
 #include <mmap.h>
 
@@ -22,13 +21,13 @@ static void reject(uint32_t caller, struct packet *packet) {
 }
 
 static void segfault(uint32_t caller, struct packet *packet) {
-	write(STDOUT, "Segmentation Fault\n", 19, 0);
+	printf("Segmentation Fault\n");
 
 	exit(0);
 }
 
 static void fpufault(uint32_t caller, struct packet *packet) {
-	write(STDOUT, "Floating Point Exception\n", 25, 0);
+	printf("Floating Point Exception\n");
 
 	exit(0);
 }
@@ -36,12 +35,10 @@ static void fpufault(uint32_t caller, struct packet *packet) {
 void _init(void) {
 
 	/* setup standard streams */
-	stdin  = fdopen(STDIN,  "w");
-	stdout = fdopen(STDOUT, "r");
-	stderr = fdopen(STDERR, "w");
-	stdvfs = fdopen(STDVFS, "rw");
-	extin  = fdopen(EXTIN,  "r");
-	extout = fdopen(EXTOUT, "w");
+	stdin  = fload("stdin");
+	stdout = fload("stdout");
+	stderr = fload("stderr");
+	stdvfs = fload("stdvfs");
 
 	when(PORT_FAULT, segfault);
 	when(PORT_READ,  reject);

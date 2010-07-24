@@ -4,7 +4,6 @@
  */
 
 #include <ipc.h>
-#include <io.h>
 
 #include <stdio.h>
 #include <string.h>

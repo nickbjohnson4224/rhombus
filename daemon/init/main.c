@@ -7,7 +7,6 @@
 #include <proc.h>
 #include <exec.h>
 #include <mmap.h>
-#include <io.h>
 
 #include <stdint.h>
 #include <string.h>
@@ -21,7 +20,7 @@ Flux Operating System 0.5a\n\
 Copyright 2010 Nick Johnson\n\
 \n";
 
-void daemon_start(int fd, void *image, size_t image_size, char const **argv) {
+void daemon_start(FILE **file, void *image, size_t image_size, char const **argv) {
 	int32_t pid, i;
 
 	pid = fork();
@@ -33,8 +32,8 @@ void daemon_start(int fd, void *image, size_t image_size, char const **argv) {
 
 	waits(PORT_SYNC, pid);
 
-	if (fd != -1) {
-		fdset(fd, pid, 0);
+	if (file) {
+		*file = fcons(pid, 0);
 	}
 }
 
@@ -53,7 +52,7 @@ int main() {
 	if (!file) {
 		for(;;);
 	}
-	daemon_start(STDOUT, file->start, file->size, NULL);
+	daemon_start(&stdout, file->start, file->size, NULL);
 
 	printf(splash);
 
@@ -63,9 +62,9 @@ int main() {
 		printf("critical error: no VFSd image found\n");
 		for(;;);
 	}
-	daemon_start(STDVFS, file->start, file->size, NULL);
-	fadd("/vfsd", fdget(STDVFS)->server, fdget(STDVFS)->inode);
-	fadd("/term", fdget(STDOUT)->server, fdget(STDOUT)->inode);
+	daemon_start(&stdvfs, file->start, file->size, NULL);
+	fadd("/vfsd", stdvfs->server, stdvfs->inode);
+	fadd("/term", stdout->server, stdout->inode);
 
 	/* Initrd */
 	initrd_init();
@@ -82,7 +81,7 @@ int main() {
 		printf("critical error: no TARFS image found\n");
 		for(;;);
 	}
-	daemon_start(-1, file->start, file->size, argv);
+	daemon_start(NULL, file->start, file->size, argv);
 
 	free(argv);
 
@@ -92,8 +91,8 @@ int main() {
 		printf("critical error: no keyboard driver found\n");
 		for(;;);
 	}
-	daemon_start(STDIN, file->start, file->size, NULL);
-	fadd("/kbd", fdget(STDIN)->server, fdget(STDIN)->inode);
+	daemon_start(&stdin, file->start, file->size, NULL);
+	fadd("/kbd", stdin->server, stdin->inode);
 
 	/* Flux Init Shell */
 	file = tar_find(boot_image, (char*) "fish");

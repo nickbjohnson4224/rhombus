@@ -6,7 +6,6 @@ section .text
 global _start
 extern main
 extern dict_init
-extern fdinit
 extern _init
 extern _exit
 
@@ -15,7 +14,6 @@ _start:
 	push eax ; argv
 	push ecx ; argc
 
-	call fdinit
 	call dict_init
 	call _init
 
