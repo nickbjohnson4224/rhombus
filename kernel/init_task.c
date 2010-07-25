@@ -10,7 +10,7 @@
 
 void init_task() {
 	extern uint32_t get_eflags(void);
-	process_t *init;
+	struct process *init;
 	struct module *module;
 	uintptr_t boot_size;
 	void *init_image;

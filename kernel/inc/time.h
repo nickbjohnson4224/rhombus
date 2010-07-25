@@ -14,23 +14,10 @@
 
 /***** IPC *****/
 
-/* Signals (system) (sig < 16) */
-#define SSIG_FAULT	0	/* Generic fault */
-#define SSIG_ENTER	1	/* Reentrance */
-#define SSIG_PAGE	2	/* Page fault */
-#define SSIG_IRQ	3	/* Registered IRQ */
-#define SSIG_KILL	4	/* System kill signal */
-#define SSIG_IMAGE	5	/* Image overflow */
-#define SSIG_FLOAT	6	/* FPU exception */
-#define SSIG_DEATH	7	/* Child death */
-
 #define PORT_FAULT	0
 #define PORT_IRQRD	3
 #define PORT_FLOAT	6
 #define PORT_DEATH	7
-
-#define SIG_POLICY_QUEUE 0 /* Queue signal */
-#define SIG_POLICY_EVENT 1 /* Handle signal */
 
 struct packet {
 	struct packet *next;
@@ -46,7 +33,7 @@ struct port {
 	uintptr_t entry;
 };
 
-typedef struct process {
+struct process {
 
 	/* address space */
 	space_t space;
@@ -64,7 +51,7 @@ typedef struct process {
 	/* threads */
 	struct thread *thread[256];
 
-} process_t;
+};
 
 void            process_init  (void);
 struct process *process_get   (uint32_t pid);
@@ -115,7 +102,7 @@ struct thread *schedule_next(void);
 
 /***** THREADS ******/
 
-typedef struct thread {
+struct thread {
 
 	/* stored continuation */
 	uint32_t ds;
@@ -150,22 +137,22 @@ typedef struct thread {
 	struct thread *next;
 	uint32_t frozen;
 
-} __attribute__ ((packed)) thread_t;
+} __attribute__ ((packed));
 
-void      thread_init  (void);
-thread_t *thread_alloc (void);
-void      thread_free  (thread_t *thread);
-thread_t *thread_switch(thread_t *old, thread_t *new);
-thread_t *thread_send  (thread_t *image, uint16_t targ, uint16_t sig);
-thread_t *thread_freeze(thread_t *image);
-thread_t *thread_thaw  (thread_t *image);
-thread_t *thread_exit  (thread_t *image);
-uintptr_t thread_bind  (thread_t *thread, process_t *proc);
+void           thread_init  (void);
+struct thread *thread_alloc (void);
+void           thread_free  (struct thread *thread);
+struct thread *thread_switch(struct thread *old, struct thread *new);
+struct thread *thread_send  (struct thread *image, uint16_t targ, uint16_t sig);
+struct thread *thread_freeze(struct thread *image);
+struct thread *thread_thaw  (struct thread *image);
+struct thread *thread_exit  (struct thread *image);
+uintptr_t      thread_bind  (struct thread *thread, struct process *proc);
 
 /***** SYSTEM CALLS AND OTHER INTERRUPTS *****/
 
-typedef thread_t* (*handler_t) (thread_t*);
-thread_t *pit_handler(thread_t *image);
+typedef struct thread* (*handler_t) (struct thread *);
+struct thread *pit_handler(struct thread *image);
 
 #define IRQ(n) (n + 32)
 #define DEIRQ(n) (n - 32)
@@ -173,29 +160,29 @@ void register_int(uint8_t n, handler_t handler);
 void tss_set_esp(uint32_t esp);
 void pic_mask(uint16_t mask);
 
-thread_t *syscall_send(thread_t *image); /* send signals / create threads */
-thread_t *syscall_done(thread_t *image); /* exit from thread */
-thread_t *syscall_when(thread_t *image); /* set event handlers */
-thread_t *syscall_recv(thread_t *image); /* recieve signals */
-thread_t *syscall_gvpr(thread_t *image); /* get virtual packet register */
-thread_t *syscall_svpr(thread_t *image); /* set virtual packet register */
+struct thread *syscall_send(struct thread *image);
+struct thread *syscall_done(struct thread *image);
+struct thread *syscall_when(struct thread *image);
+struct thread *syscall_recv(struct thread *image);
+struct thread *syscall_gvpr(struct thread *image);
+struct thread *syscall_svpr(struct thread *image);
 
-thread_t *syscall_fork(thread_t *image); /* create process */
-thread_t *syscall_exit(thread_t *image); /* exit from process */
-thread_t *syscall_pctl(thread_t *image); /* query process metadata */
-thread_t *syscall_exec(thread_t *image); /* execute new process */
-thread_t *syscall_gpid(thread_t *image); /* get current pid */
-thread_t *syscall_time(thread_t *image); /* get kernel time */
+struct thread *syscall_fork(struct thread *image);
+struct thread *syscall_exit(struct thread *image);
+struct thread *syscall_pctl(struct thread *image);
+struct thread *syscall_exec(struct thread *image);
+struct thread *syscall_gpid(struct thread *image);
+struct thread *syscall_time(struct thread *image);
 
-thread_t *syscall_mmap(thread_t *image); /* manage memory */
-thread_t *syscall_mctl(thread_t *image); /* query memory subsystem */
+struct thread *syscall_mmap(struct thread *image);
+struct thread *syscall_mctl(struct thread *image);
 
-thread_t *fault_generic(thread_t *image);
-thread_t *fault_page   (thread_t *image);
-thread_t *fault_float  (thread_t *image);
-thread_t *fault_double (thread_t *image);
-thread_t *fault_nomath (thread_t *image);
+struct thread *fault_generic(struct thread *image);
+struct thread *fault_page   (struct thread *image);
+struct thread *fault_float  (struct thread *image);
+struct thread *fault_double (struct thread *image);
+struct thread *fault_nomath (struct thread *image);
 
-thread_t *int_handler(thread_t *image);
+struct thread *int_handler(struct thread *image);
 
 #endif

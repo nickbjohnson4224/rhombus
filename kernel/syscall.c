@@ -15,7 +15,7 @@ uint16_t irq_holder[256];
 /* Handles IRQ 0, and advances a simple counter used as a clock */
 uint64_t tick = 0;
 
-thread_t *pit_handler(thread_t *image) {
+struct thread *pit_handler(struct thread *image) {
 	tick++;
 
 	image = schedule_next();
@@ -23,16 +23,16 @@ thread_t *pit_handler(thread_t *image) {
 	return image;
 }
 
-thread_t *irq_redirect(thread_t *image) {
+struct thread *irq_redirect(struct thread *image) {
 
 	/* Send S_IRQ signal to the task registered with the IRQ */
-	return thread_send(NULL, irq_holder[DEIRQ(image->num)], SSIG_IRQ);
+	return thread_send(NULL, irq_holder[DEIRQ(image->num)], PORT_IRQRD);
 }
 
 /***** FAULT HANDLERS *****/
 
 /* Generic fault */
-thread_t *fault_generic(thread_t *image) {
+struct thread *fault_generic(struct thread *image) {
 
 	#ifdef PARANOID
 	/* If in kernelspace, panic */
@@ -43,11 +43,11 @@ thread_t *fault_generic(thread_t *image) {
 	#endif
 
 	process_freeze(image->proc);
-	return thread_send(image, image->proc->pid, SSIG_FAULT);
+	return thread_send(image, image->proc->pid, PORT_FAULT);
 }
 
 /* Page fault */
-thread_t *fault_page(thread_t *image) {
+struct thread *fault_page(struct thread *image) {
 	extern uint32_t get_cr2(void);
 	uint32_t cr2;
 
@@ -73,12 +73,12 @@ thread_t *fault_page(thread_t *image) {
 	else {
 		/* fault */	
 		process_freeze(image->proc);
-		return thread_send(image, image->proc->pid, SSIG_FAULT);
+		return thread_send(image, image->proc->pid, PORT_FAULT);
 	}
 }
 
 /* Floating point exception */
-thread_t *fault_float(thread_t *image) {
+struct thread *fault_float(struct thread *image) {
 
 	#ifdef PARANOID
 	/* If in kernelspace, panic */
@@ -89,11 +89,11 @@ thread_t *fault_float(thread_t *image) {
 	#endif
 
 	process_freeze(image->proc);
-	return thread_send(image, image->proc->pid, SSIG_FLOAT);
+	return thread_send(image, image->proc->pid, PORT_FLOAT);
 }
 
 /* Double fault */
-thread_t *fault_double(thread_t *image) {
+struct thread *fault_double(struct thread *image) {
 
 	/* Can only come from kernel problems */
 	printk("DS:%x CS:%x\n", image->ds, image->cs);
@@ -103,14 +103,14 @@ thread_t *fault_double(thread_t *image) {
 }
 
 /* Coprocessor Existence Failure */
-thread_t *fault_nomath(thread_t *image) {
+struct thread *fault_nomath(struct thread *image) {
 	extern void clr_ts(void);
 	extern void fpu_load(void *fxdata);
 	extern uint32_t can_use_fpu;
 
 	if (!can_use_fpu) {
 		process_freeze(image->proc);
-		return thread_send(image, image->proc->pid, SSIG_FLOAT);
+		return thread_send(image, image->proc->pid, PORT_FLOAT);
 	}
 
 	if (image->fxdata) {
@@ -124,7 +124,7 @@ thread_t *fault_nomath(thread_t *image) {
 
 /***** System Calls *****/
 
-thread_t *syscall_send(thread_t *image) {
+struct thread *syscall_send(struct thread *image) {
 	uint32_t   target = image->ecx;
 	uint32_t   port   = image->eax;
 
@@ -144,11 +144,11 @@ thread_t *syscall_send(thread_t *image) {
 	return thread_send(image, target, port);
 }
 
-thread_t *syscall_done(thread_t *image) {
+struct thread *syscall_done(struct thread *image) {
 	return thread_exit(image);
 }
 
-thread_t *syscall_svpr(thread_t *image) {
+struct thread *syscall_svpr(struct thread *image) {
 	uintptr_t addr = image->eax;
 	uint32_t field = image->ecx;
 
@@ -178,7 +178,7 @@ thread_t *syscall_svpr(thread_t *image) {
 	return image;
 }
 
-thread_t *syscall_gvpr(thread_t *image) {
+struct thread *syscall_gvpr(struct thread *image) {
 	uintptr_t addr = image->eax;
 	uint32_t field = image->ecx;
 
@@ -232,9 +232,9 @@ thread_t *syscall_gvpr(thread_t *image) {
 	return image;
 }
 
-thread_t *syscall_fork(thread_t *image) {
-	process_t *parent;
-	process_t *child;
+struct thread *syscall_fork(struct thread *image) {
+	struct process *parent;
+	struct process *child;
 
 	parent = image->proc;
 	child = process_clone(parent, image);
@@ -256,7 +256,7 @@ thread_t *syscall_fork(thread_t *image) {
 	return image;
 }
 
-thread_t *syscall_exit(thread_t *image) {
+struct thread *syscall_exit(struct thread *image) {
 
 	if (image->proc->pid == 1) {
 		panic("init died");
@@ -268,7 +268,7 @@ thread_t *syscall_exit(thread_t *image) {
 	return thread_switch(image, schedule_next());
 }
 
-thread_t *syscall_pctl(thread_t *image) {
+struct thread *syscall_pctl(struct thread *image) {
 	uint32_t flags = image->eax;
 	uint32_t mask  = image->edx;
 	uint8_t irq;
@@ -305,7 +305,7 @@ thread_t *syscall_pctl(thread_t *image) {
 	return image;
 }
 
-thread_t *syscall_gpid(thread_t *image) {
+struct thread *syscall_gpid(struct thread *image) {
 	
 	switch (image->eax) {
 	case 0: image->eax = image->proc->pid; break;
@@ -315,13 +315,13 @@ thread_t *syscall_gpid(thread_t *image) {
 	return image;
 }
 
-thread_t *syscall_time(thread_t *image) {
+struct thread *syscall_time(struct thread *image) {
 	image->eax = (tick >> 0);
 	image->edx = (tick >> 32);
 	return image;
 }
 
-thread_t *syscall_exec(thread_t *image) {
+struct thread *syscall_exec(struct thread *image) {
 
 	if (elf_check((void*) image->eax)) {
 		image->eax = -1;
@@ -336,7 +336,7 @@ thread_t *syscall_exec(thread_t *image) {
 	return image;
 }
 
-thread_t *syscall_mmap(thread_t *image) {
+struct thread *syscall_mmap(struct thread *image) {
 	uintptr_t addr;
 	uintptr_t count;
 	uintptr_t flags;
@@ -389,6 +389,6 @@ thread_t *syscall_mmap(thread_t *image) {
 	return image;
 }
 
-thread_t *syscall_mctl(thread_t *image) {
+struct thread *syscall_mctl(struct thread *image) {
 	return image;
 }

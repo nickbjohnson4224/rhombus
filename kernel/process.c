@@ -14,7 +14,7 @@
  * processes with their corresponding PIDs and otherwise keep track of them.
  */
 
-process_t *process_table[MAX_TASKS];
+struct process *process_table[MAX_TASKS];
 
 /****************************************************************************
  * process_alloc
@@ -23,7 +23,7 @@ process_t *process_table[MAX_TASKS];
  * sets the field 'pid' in that process structure. Returns null on error.
  */
 
-process_t *process_alloc(void) {
+struct process *process_alloc(void) {
 	uintptr_t i;
 
 	for (i = 0; i < MAX_TASKS; i++) {
@@ -32,7 +32,7 @@ process_t *process_alloc(void) {
 		}
 	}
 
-	process_table[i] = heap_alloc(sizeof(process_t));
+	process_table[i] = heap_alloc(sizeof(struct process));
 	process_table[i]->pid = i;
 	return process_table[i];
 }
@@ -45,9 +45,9 @@ process_t *process_alloc(void) {
  * as the 'child'.
  */
 
-process_t *process_clone(process_t *parent, thread_t *active_thread) {
-	process_t *child;
-	thread_t *new_thread;
+struct process *process_clone(struct process *parent, struct thread *active) {
+	struct process *child;
+	struct thread *new_thread;
 	uint32_t pid, i;
 
 	/* allocate new process structure for child */
@@ -55,7 +55,7 @@ process_t *process_clone(process_t *parent, thread_t *active_thread) {
 	pid   = child->pid;
 
 	/* copy parent */
-	memcpy(child, parent, sizeof(process_t));
+	memcpy(child, parent, sizeof(struct process));
 
 	/* setup child */
 	child->space  = space_clone();
@@ -67,13 +67,13 @@ process_t *process_clone(process_t *parent, thread_t *active_thread) {
 	new_thread = thread_alloc();
 
 	/* copy parent thread */
-	if (active_thread) {
-		memcpy(new_thread, active_thread, sizeof(thread_t));
+	if (active) {
+		memcpy(new_thread, active, sizeof(struct thread));
 
 		/* copy parent FPU/SSE state */
-		if (active_thread->fxdata) {
+		if (active->fxdata) {
 			new_thread->fxdata = heap_alloc(512);
-			memcpy(new_thread->fxdata, active_thread->fxdata, 512);
+			memcpy(new_thread->fxdata, active->fxdata, 512);
 		}
 	}
 
@@ -93,7 +93,7 @@ process_t *process_clone(process_t *parent, thread_t *active_thread) {
  * include threads: use process_kill() for more complete freeing.
  */
 
-void process_free(process_t *proc) {
+void process_free(struct process *proc) {
 	uintptr_t i;
 
 	for (i = 0; i < MAX_PID; i++) {
@@ -103,7 +103,7 @@ void process_free(process_t *proc) {
 	}
 
 	process_table[i] = NULL;
-	heap_free(proc, sizeof(process_t));
+	heap_free(proc, sizeof(struct process));
 }
 
 /****************************************************************************
@@ -113,7 +113,7 @@ void process_free(process_t *proc) {
  * exists, and null otherwise.
  */
 
-process_t *process_get(uint32_t pid) {
+struct process *process_get(uint32_t pid) {
 
 	if (pid >= MAX_TASKS) {
 		return NULL;
@@ -131,7 +131,7 @@ process_t *process_get(uint32_t pid) {
 
 void process_init() {
 	extern uint32_t get_cr3(void);
-	process_t *idle;
+	struct process *idle;
 
 	/* bootstrap process 0 (idle) */
 	idle = process_alloc();
@@ -180,7 +180,7 @@ void process_thaw(struct process *proc) {
  * Frees a process entirely.
  */
 
-void process_kill(process_t *proc) {
+void process_kill(struct process *proc) {
 	size_t i;
 
 	for (i = 0; i < 256; i++) {

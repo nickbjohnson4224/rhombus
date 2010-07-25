@@ -15,8 +15,8 @@
  * null on error. The thread structure is page aligned.
  */
 
-thread_t *thread_alloc(void) {
-	return heap_alloc(sizeof(thread_t));
+struct thread *thread_alloc(void) {
+	return heap_alloc(sizeof(struct thread));
 }
 
 /****************************************************************************
@@ -25,8 +25,8 @@ thread_t *thread_alloc(void) {
  * Kills the given thread and switches to another runnable thread.
  */
 
-thread_t *thread_exit(thread_t *image) {
-	thread_t *old_image;
+struct thread *thread_exit(struct thread *image) {
+	struct thread *old_image;
 
 	old_image = image;
 	schedule_remove(old_image);
@@ -49,10 +49,10 @@ thread_t *thread_exit(thread_t *image) {
  * passed as image.
  */
 
-thread_t *thread_send(thread_t *image, uint16_t target, uint16_t port) {
+struct thread *thread_send(struct thread *image, uint16_t target, uint16_t port) {
 	extern void set_ts(void);
-	process_t *p_targ;
-	thread_t *new_image;
+	struct process *p_targ;
+	struct thread *new_image;
 
 	p_targ = process_get(target);
 	new_image = thread_alloc();
@@ -87,7 +87,7 @@ thread_t *thread_send(thread_t *image, uint16_t target, uint16_t port) {
  * Frees a thread and its associated memory.
  */
 
-void thread_free(thread_t *thread) {
+void thread_free(struct thread *thread) {
 	uintptr_t i;
 
 	schedule_remove(thread);
@@ -107,7 +107,7 @@ void thread_free(thread_t *thread) {
 		}
 	}
 
-	heap_free(thread, sizeof(thread_t));
+	heap_free(thread, sizeof(struct thread));
 }
 
 /****************************************************************************
@@ -186,7 +186,7 @@ void thread_init(void) {
  * given thread.
  */
 
-thread_t *thread_freeze(thread_t *thread) {
+struct thread *thread_freeze(struct thread *thread) {
 
 	if (!thread->frozen) {
 		schedule_remove(thread);
@@ -205,7 +205,7 @@ thread_t *thread_freeze(thread_t *thread) {
  * given thread.
  */
 
-thread_t *thread_thaw(thread_t *thread) {
+struct thread *thread_thaw(struct thread *thread) {
 	
 	if (thread->frozen) {
 		thread->frozen--;
@@ -225,7 +225,7 @@ thread_t *thread_thaw(thread_t *thread) {
  * Associates the thread with this stack with the process.
  */
 
-uintptr_t thread_bind(thread_t *thread, process_t *proc) {
+uintptr_t thread_bind(struct thread *thread, struct process *proc) {
 	uintptr_t i;
 	uintptr_t addr;
 
@@ -253,7 +253,7 @@ uintptr_t thread_bind(thread_t *thread, process_t *proc) {
  * next thread switch attempt.
  */
 
-thread_t *thread_switch(thread_t *old, thread_t *new) {
+struct thread *thread_switch(struct thread *old, struct thread *new) {
 	extern void fpu_save(void *fxdata);
 	extern bool tst_ts(void);
 	extern void set_ts(void);

@@ -33,7 +33,7 @@ typedef void (*entry_t)();
 void *init(void *mboot_ptr, uint32_t mboot_magic) {
 	extern void halt(void);
 	uint32_t i;
-	thread_t *boot_image;
+	struct thread *boot_image;
 
 	cleark(); 
 	printk(stamp, FLUX_VERSION_MAJOR, FLUX_VERSION_MINOR);
