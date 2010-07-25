@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * 
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
 #ifndef STDIO_H
 #define STDIO_H
 
@@ -49,14 +65,14 @@ typedef struct _file {
 
 #define BUFSIZ		(PAGESZ - 256)
 
-/* Standard Streams ********************************************************/
+/* standard streams ********************************************************/
 
 extern FILE *stdin;
 extern FILE *stdout;
 extern FILE *stderr;
 extern FILE *stdvfs;
 
-/*** File Operations *******************************************************/
+/* file operations *********************************************************/
 
 int   fclose(FILE *stream);
 FILE *fopen(const char *path, const char *mode);
@@ -69,7 +85,7 @@ int  fflush(FILE *stream);
 int  setvbuf(FILE *stream, char *buf, int mode, size_t size);
 void setbuf(FILE *stream, char *buf);
 
-/* I/O Operations **********************************************************/
+/* I/O operations **********************************************************/
 
 size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
 size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream);
@@ -93,7 +109,7 @@ int fprintf(FILE *stream, const char *format, ...);
 int printf(const char *format, ...);
 int sprintf(char *str, const char *format, ...);
 
-/* File Control Operations *************************************************/
+/* file control operations *************************************************/
 
 int    fseek(FILE *stream, fpos_t offset, int whence);
 fpos_t ftell(FILE *stream);
@@ -105,7 +121,7 @@ void   clearerr(FILE *stream);
 int    feof(FILE *stream);
 int    ferror(FILE *stream);
 
-/* Native I/O Routines *****************************************************/
+/* native I/O routines *****************************************************/
 
 size_t ssend(FILE *file, char *r, char *s, size_t size, uint64_t off, uint8_t port);
 size_t read (FILE *file, void *buf, size_t size, uint64_t offset);
@@ -113,7 +129,6 @@ size_t write(FILE *file, void *buf, size_t size, uint64_t offset);
 size_t query(FILE *file, void *rbuf, void *sbuf, size_t size);
 bool   info (FILE *file, char *value, const char *field);
 bool   ctrl (FILE *file, char *value, const char *field);
-
 
 #define VFS_CMD_FIND  0
 #define VFS_CMD_ADD   1
@@ -141,4 +156,4 @@ struct info_query {
 	char value[1000];
 };
 
-#endif
+#endif/*STDIO_H*/

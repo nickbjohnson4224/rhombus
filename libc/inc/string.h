@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-/* Memory functions ********************************************************/
+/* memory functions ********************************************************/
 
 void  *memchr (const void *, uint8_t, size_t n);
 int	   memcmp (const void *, const void *, size_t);
@@ -14,22 +14,22 @@ void  *memmove(void *, const void *, size_t);
 void  *memset (void *, uint8_t, size_t);
 void  *memclr (void *, size_t);
 
-/* Basic string functions **************************************************/
+/* basic string functions **************************************************/
 
 char  *strcpy (char *, const char *);
 char  *strncpy(char *, const char *, size_t);
-size_t strlcpy(char *, const char *, size_t);	// XXX - not implemented
+size_t strlcpy(char *, const char *, size_t);
 
 char  *strcat (char *, const char *);
 char  *strncat(char *, const char *, size_t);
-size_t strlcat(char *, const char *, size_t);	// XXX - not implemented
+size_t strlcat(char *, const char *, size_t);
 
 int    strcmp (const char *, const char *);
 int    strncmp(const char *, const char *, size_t);
 
 size_t strlen (const char *);
 
-/* Advanced string functions ***********************************************/
+/* advanced string functions ***********************************************/
 
 char  *strchr (const char *, char);
 char  *strrchr(const char *, char);

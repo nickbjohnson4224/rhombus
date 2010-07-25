@@ -1,6 +1,17 @@
 /*
- * Copyright 2010 Nick Johnson
- * ISC Licensed, see LICENSE for details
+ * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * 
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 #ifndef STDLIB_H
@@ -9,7 +20,7 @@
 #include <stddef.h>
 #include <mutex.h>
 
-/* Memory allocation *******************************************************/
+/* memory management *******************************************************/
 
 void   *calloc(size_t nmemb, size_t size);
 void   *valloc(size_t size);
@@ -19,7 +30,7 @@ size_t msize(void *ptr);
 void   free(void *ptr);
 void   *realloc(void *ptr, size_t size);
 
-/* Type conversion *********************************************************/
+/* type conversion *********************************************************/
 
 int      atoi(const char *nptr);
 double   atof(const char *nptr);
@@ -28,21 +39,21 @@ double   strtod(const char *nptr);
 int32_t  strtol(const char *nptr);
 uint32_t strtoul(const char *nptr);
 
-/* Random number generaton *************************************************/
+/* random number generaton *************************************************/
 
 #define RAND_MAX UINT32_MAX
 
 void    srand(uint32_t seed);
 uint32_t rand(void);
 
-/* Environment variables and system ****************************************/
+/* environment variables and system ****************************************/
 
 const char *getenv(const char *name);
 int         setenv(const char *name, const char *value);
 
 int   system(const char *s);
 
-/* Process Control *********************************************************/
+/* process control *********************************************************/
 
 #define EXIT_FAILURE	1
 #define EXIT_SUCCESS	0
@@ -51,7 +62,7 @@ void exit(int status);
 void abort(void);
 int  atexit(void (*function)(void));
 
-/* Math functions **********************************************************/
+/* math functions **********************************************************/
 
 typedef struct {
 	short int quot;
@@ -69,7 +80,7 @@ long int labs(long int n);
 div_t   div(short int num, short int denom);
 ldiv_t ldiv(long int num,  long int denom);
 
-/* Searching and sorting ***************************************************/
+/* searching and sorting ***************************************************/
 
 void *bsearch(const void *key, const void *base, size_t n, size_t size,
 	int (*cmp)(const void *keyval, const void *datum));
