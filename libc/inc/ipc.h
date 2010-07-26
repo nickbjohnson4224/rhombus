@@ -63,9 +63,9 @@ void  packet_free (struct packet *packet);
 /* port numbers ************************************************************/
 
 #define PORT_FAULT	0
-#define PORT_IRQ	3
-#define PORT_FLOAT	6
-#define PORT_DEATH	7
+#define PORT_IRQ	1
+#define PORT_FLOAT	2
+#define PORT_DEATH	3
 
 #define PORT_READ	16
 #define PORT_WRITE	17

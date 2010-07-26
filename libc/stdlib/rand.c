@@ -44,7 +44,6 @@ static uint32_t rand_state[25];
 
 static void rand_regen(void) {
 	size_t i;
-	register uint32_t t;
 
 	for (i = 0; i < 18; i++) {
 		rand_state[i] = 

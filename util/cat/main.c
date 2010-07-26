@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
 	char buffer[1000];
 	FILE *file;
 
-	for (n = 1; n < argc; n++) {
+	for (n = 1; n < (size_t) argc; n++) {
 		file = fopen(argv[n], "r");
 
 		if (!file) printf("%s: file not found\n", argv[n]);

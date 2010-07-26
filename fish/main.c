@@ -14,8 +14,7 @@
 int main() {
 	char buffer[100];
 	char fbuffer[1000];
-	FILE *file;
-	size_t i, j, n;
+	size_t i, n;
 	int err, pid;
 	char *argv[100];
 	bool daemon;

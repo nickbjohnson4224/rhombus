@@ -37,6 +37,7 @@ int main(int argc, char **argv) {
 
 	for (x = 0; x < mode->width; x++) {
 		for (y = 0; y < mode->height; y++) {
+			c = 0;
 			if (x < 40)       c = 0x040000 | 0x000100 * ((x - 0)   / 10);
 			else if (x < 80)  c = 0x000400 | 0x010000 * (((79 - x)  / 10) + 1);
 			else if (x < 120) c = 0x000400 | 0x000001 * ((x - 80)  / 10);

@@ -9,7 +9,7 @@ UTILS    := util/ls util/echo util/halt util/cat
 BIN_DIRS  = kernel fish
 BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS)
 
-CC := clang
+CC := gcc
 LD := ld
 AR := ar
 AS := nasm

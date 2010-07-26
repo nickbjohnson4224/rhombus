@@ -28,7 +28,6 @@
 
 bool info(FILE *fd, char *value, const char *field) {
 	struct info_query query;
-	size_t i;
 
 	strcpy(query.field, field);
 	ssend(fd, (char*) &query, (char*) &query, sizeof(query), 0, PORT_INFO);

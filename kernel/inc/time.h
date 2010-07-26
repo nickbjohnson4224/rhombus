@@ -1,4 +1,18 @@
-/* Copyright 2010 Nick Johnson */
+/*
+ * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * 
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
 
 #ifndef TIME_H
 #define TIME_H
@@ -7,31 +21,25 @@
 #include <arch.h>
 #include <space.h>
 
-/***** Limits *****/
+/* limits ******************************************************************/
 
 #define MAX_TASKS 1024
 #define MAX_PID   1024
 
-/***** IPC *****/
+/* IPC *********************************************************************/
 
 #define PORT_FAULT	0
-#define PORT_IRQRD	3
-#define PORT_FLOAT	6
-#define PORT_DEATH	7
+#define PORT_IRQRD	1
+#define PORT_FLOAT	2
+#define PORT_DEATH	3
 
 struct packet {
-	struct packet *next;
 	uint32_t port;
 	uint32_t frame;
 	uint32_t source;
 };
 
-/***** PROCESSES *****/
-struct port {
-	struct packet *in;
-	struct packet *out;
-	uintptr_t entry;
-};
+/* processes ***************************************************************/
 
 struct process {
 
@@ -45,18 +53,16 @@ struct process {
 	struct process *next_task;
 	struct process *parent;
 
-	/* ports */
 	uintptr_t entry;
 	
 	/* threads */
 	struct thread *thread[256];
-
 };
 
 void            process_init  (void);
 struct process *process_get   (uint32_t pid);
 struct process *process_alloc (void);
-struct process *process_clone (struct process *parent, struct thread *active_thread);
+struct process *process_clone (struct process *parent, struct thread *active);
 void            process_free  (struct process *proc);
 void            process_kill  (struct process *proc);
 void            process_freeze(struct process *proc);
@@ -64,7 +70,7 @@ void            process_thaw  (struct process *proc);
 void            process_touch (uint32_t pid);
 void            process_switch(struct process *proc);
 
-/***** CONTROL SPACE *****/
+/* process control space ***************************************************/
 
 #define CTRL_PSPACE	0
 #define CTRL_SSPACE 1
@@ -94,13 +100,13 @@ void            process_switch(struct process *proc);
 #define CTRL_SFLOAT	0x00000040
 #define CTRL_SDEATH	0x00000080
 
-/***** SCHEDULER *****/
+/* scheduler ****************************************************************/
 
-void schedule_insert(struct thread *thread);
-void schedule_remove(struct thread *thread);
-struct thread *schedule_next(void);
+void           schedule_insert(struct thread *thread);
+void           schedule_remove(struct thread *thread);
+struct thread *schedule_next  (void);
 
-/***** THREADS ******/
+/* threads *****************************************************************/
 
 struct thread {
 
@@ -149,16 +155,22 @@ struct thread *thread_thaw  (struct thread *image);
 struct thread *thread_exit  (struct thread *image);
 uintptr_t      thread_bind  (struct thread *thread, struct process *proc);
 
-/***** SYSTEM CALLS AND OTHER INTERRUPTS *****/
+/* interrupt handling ******************************************************/
 
 typedef struct thread* (*handler_t) (struct thread *);
+void register_int(uint8_t n, handler_t handler);
+struct thread *int_handler(struct thread *image);
+void tss_set_esp(uint32_t esp);
+
+/* IRQs ********************************************************************/
+
 struct thread *pit_handler(struct thread *image);
 
 #define IRQ(n) (n + 32)
 #define DEIRQ(n) (n - 32)
-void register_int(uint8_t n, handler_t handler);
-void tss_set_esp(uint32_t esp);
 void pic_mask(uint16_t mask);
+
+/* system calls ************************************************************/
 
 struct thread *syscall_send(struct thread *image);
 struct thread *syscall_done(struct thread *image);
@@ -177,12 +189,12 @@ struct thread *syscall_time(struct thread *image);
 struct thread *syscall_mmap(struct thread *image);
 struct thread *syscall_mctl(struct thread *image);
 
+/* faults and exceptions ***************************************************/
+
 struct thread *fault_generic(struct thread *image);
 struct thread *fault_page   (struct thread *image);
 struct thread *fault_float  (struct thread *image);
 struct thread *fault_double (struct thread *image);
 struct thread *fault_nomath (struct thread *image);
-
-struct thread *int_handler(struct thread *image);
 
 #endif

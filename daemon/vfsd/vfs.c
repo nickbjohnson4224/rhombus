@@ -9,7 +9,7 @@
 #include <vfsd.h>
 
 void vfs_add(struct vfs *root, const char *path, uint32_t server, uint64_t inode) {
-	size_t i, j;
+	size_t i;
 
 	for (i = 0; path[i]; i++) {
 		if (root->link && (path[i] == '/' || path[i] == '\0')) {
@@ -35,7 +35,7 @@ struct vfs *vfs_get(struct vfs *root, const char *path) {
 	size_t i;
 
 	for (i = 0; path[i]; i++) {
-		if (root && root->link && path[i] == '/' || path[i] == '\0') {
+		if ((root && root->link && path[i] == '/') || path[i] == '\0') {
 			root = root->link;
 		}
 		else {
@@ -53,7 +53,7 @@ void  vfs_lnk(struct vfs *root, const char *path, struct vfs *link) {
 	size_t i;
 
 	for (i = 0; path[i]; i++) {
-		if (root->link && path[i] == '/' || path[i] == '\0') {
+		if ((root->link && path[i] == '/') || path[i] == '\0') {
 			root = root->link;
 		}
 		else {
@@ -67,7 +67,7 @@ void  vfs_lnk(struct vfs *root, const char *path, struct vfs *link) {
 	root->link = link;
 }
 
-static void vfs_reclist(struct vfs *root, char *buffer, char *path) {
+static void vfs_reclist(struct vfs *root, char *buffer, const char *path) {
 	char *pathbuffer, m[2];
 	size_t i;
 
@@ -102,7 +102,7 @@ void vfs_list(struct vfs *root, const char *path, char *buffer) {
 	strcpy(buffer, "");
 
 	for (i = 0; path[i]; i++) {
-		if (root && root->link && path[i] == '/' || path[i] == '\0') {
+		if ((root && root->link && path[i] == '/') || path[i] == '\0') {
 			root = root->link;
 		}
 		else {

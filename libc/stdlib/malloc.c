@@ -64,7 +64,7 @@ static size_t get_bucket(size_t size) {
 		rslt |=  0x01;
 	}
 
-	return (1 << rslt == osize) ? rslt : rslt + 1;
+	return (((size_t) 1 << rslt) == osize) ? rslt : rslt + 1;
 }
 
 /****************************************************************************

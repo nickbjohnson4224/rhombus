@@ -28,7 +28,6 @@
 static void _dumpm
 	(uint8_t port, uint32_t source, uint64_t inode, uint16_t id, uint16_t frag) {
 	struct message *m, *tm;
-	struct packet *packet;
 	bool match;
 
 	mutex_spin(&m_msg_queue[port]);

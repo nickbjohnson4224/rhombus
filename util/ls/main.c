@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
 		printf("%s\n", filelist);
 	}
 
-	else for (n = 1; n < argc; n++) {
+	else for (n = 1; n < (size_t) argc; n++) {
 
 		if (argc > 2) {
 			printf("%s:\n", argv[n]);

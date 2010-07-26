@@ -48,7 +48,7 @@ struct process *process_alloc(void) {
 struct process *process_clone(struct process *parent, struct thread *active) {
 	struct process *child;
 	struct thread *new_thread;
-	uint32_t pid, i;
+	uint32_t pid;
 
 	/* allocate new process structure for child */
 	child = process_alloc();
@@ -94,15 +94,7 @@ struct process *process_clone(struct process *parent, struct thread *active) {
  */
 
 void process_free(struct process *proc) {
-	uintptr_t i;
-
-	for (i = 0; i < MAX_PID; i++) {
-		if (process_table[i] == proc) {
-			break;
-		}
-	}
-
-	process_table[i] = NULL;
+	process_table[proc->pid] = NULL;
 	heap_free(proc, sizeof(struct process));
 }
 

@@ -21,7 +21,7 @@ Copyright 2010 Nick Johnson\n\
 \n";
 
 void daemon_start(FILE **file, void *image, size_t image_size, char const **argv) {
-	int32_t pid, i;
+	int32_t pid;
 
 	pid = fork();
 
@@ -42,7 +42,6 @@ int main() {
 	extern void initrd_init(void);
 	struct tar_file *boot_image, *file;
 	char const **argv;
-	size_t i;
 
 	/* Boot Image */
 	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);

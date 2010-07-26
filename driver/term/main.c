@@ -9,6 +9,7 @@
 #include <proc.h>
 #include <mmap.h>
 
+#include <ctype.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -80,6 +81,8 @@ static void terminal_write(uint32_t caller, struct packet *packet) {
 
 static void char_write(char c) {
 	uint16_t i;
+
+	if (!isprint(c)) return;
 
 	if (cursor >= WIDTH * HEIGHT) {
 		for (i = 0; i < WIDTH * HEIGHT - WIDTH; i++) {

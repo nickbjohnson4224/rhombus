@@ -22,7 +22,7 @@ _exit:
 	mov eax, 1
 	int 0x4C
 	push eax
-	push dword 7
+	push dword 3
 	call send
 	add esp, 12
 

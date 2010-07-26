@@ -32,7 +32,7 @@ static struct packet *_recvm
 	(uint8_t port, uint32_t source, uint64_t inode, uint16_t id, uint16_t frag) {
 	struct message *m;
 	struct packet *packet;
-	bool match;
+	bool match = false;
 
 	mutex_spin(&m_msg_queue[port]);
 	m = msg_queue[port].next;
