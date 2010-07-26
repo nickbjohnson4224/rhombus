@@ -24,6 +24,8 @@ int main() {
 	setenv("PWD", "/");
 	setenv("PATH", "/initrd.tarfs");
 
+	printf("PATH = %s\n", getenv("PATH"));
+
 	while (1) {
 		printf("%s $ ", getenv("PWD"));
 
@@ -78,7 +80,12 @@ int main() {
 				strcat(fbuffer, buffer);
 				err = execv(fbuffer, (char const**) argv);
 				if (err) {
-					printf("failed to execute: %d\n", err);
+					if (err == 1) {
+						printf("%s: command not found\n", buffer);
+					}
+					else {
+						printf("failed to execute: %d\n", err);
+					}
 				}
 				exit(0);
 			}

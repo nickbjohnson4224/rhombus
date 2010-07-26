@@ -1,0 +1,26 @@
+Urgent:
+
+- fix "PATH bug" in shell
+- move arg list to dictionary
+- add links to dictionary
+- migrate from vfsd to dictionary vfs
+- finish libc string functions
+- finish libc stdio functions
+
+Less Urgent:
+
+- comment all kernel source
+- clean up abi
+- reduce permissions when init launches fish
+- device manager
+- finish libc math functions
+- finish libc
+- add garbage collection for dictionary
+
+Would Like:
+
+- add VT100 support for term
+- port Lua
+- port UDI
+- interface manager
+- graphics control language
