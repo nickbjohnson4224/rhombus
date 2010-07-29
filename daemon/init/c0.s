@@ -4,20 +4,12 @@
 section .text
 
 global _start
-extern main
 extern dict_init
 extern _init
-extern _exit
 
 _start:
-	push edx ; envp
-	push eax ; argv
-	push ecx ; argc
 
 	call dict_init
+
+	push dword 1
 	call _init
-
-	call main
-
-	push eax ; return value of main
-	call _exit

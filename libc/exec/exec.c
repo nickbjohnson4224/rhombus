@@ -31,55 +31,24 @@
 static uint8_t *bootstrap = (void*) ESPACE;
 
 /****************************************************************************
- * argv_table
+ * _save
  *
- * Exec-persistent structure storing arguments for the new program.
+ * Save all important (standard) file descriptors and command line arguments 
+ * to the dictionary for later retrieval.
  */
 
-static struct {
-	size_t argc;
-	char *argv[100];
-	char argvv[100][100];
-} *argv_table = (void*) ARGV_TABLE;
-
-/****************************************************************************
- * _file_save
- *
- * Save all important (standard) file descriptors to the dictionary for
- * later retrieval.
- */
-
-static void _file_save(void) {
+static void _save(const char **argv) {
+	int argc;
 	
 	fsave("stdin", stdin);
 	fsave("stdout", stdout);
 	fsave("stderr", stderr);
 	fsave("stdvfs", stdvfs);
-}
-
-/****************************************************************************
- * _argv_copy
- *
- * Save all arguments to argv_table for later retrieval.
- */
-
-static void _argv_copy(char const **argv) {
-	size_t i;
-
-	mmap(argv_table, 0x10000, MMAP_READ | MMAP_WRITE);
 
 	if (argv) {
-		for (i = 0; argv[i]; i++) {
-			argv_table->argv[i] = (char*) &argv_table->argvv[i];
-			strlcpy(argv_table->argv[i], argv[i], 100);
-		}
+		for (argc = 0; argv[argc]; argc++);
 
-		argv_table->argv[i] = NULL;
-		argv_table->argc = i;
-	}
-	else {
-		argv_table->argc = 0;
-		argv_table->argv[0] = NULL;
+		argv_pack(argc, argv);
 	}
 }
 
@@ -94,8 +63,7 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 	mmap(bootstrap, size, MMAP_READ | MMAP_WRITE);
 	memcpy(bootstrap, image, size);
 
-	_argv_copy(argv);
-	_file_save();
+	_save(argv);
 
 	return _exec((uintptr_t) bootstrap);
 }
@@ -138,8 +106,7 @@ int execv(const char *path, char const **argv) {
 	mmap(bootstrap, size, MMAP_READ | MMAP_WRITE);
 	read(image, bootstrap, size, 0);
 
-	_argv_copy(argv);
-	_file_save();
+	_save(argv);
 
 	return _exec((uintptr_t) bootstrap);
 }

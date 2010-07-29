@@ -29,4 +29,15 @@ int execi (uint8_t *image, size_t size);
 int execv (const char *path, char const **argv);
 int exec  (const char *path);
 
+/* argument lists **********************************************************/
+
+void   argv_pack  (int argc, const char **argv);
+int    argc_unpack(void);
+char **argv_unpack(void);
+
+/* file descriptors ********************************************************/
+
+void file_pack  (void);
+void file_unpack(void);
+
 #endif/*EXEC_H*/

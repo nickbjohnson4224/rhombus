@@ -40,7 +40,7 @@ const char *getenv(const char *name) {
 
 int setenv(const char *name, const char *value) {
 
-	dict_writestrns("env:", name, (const uint8_t*) value, strlen(value));
+	dict_writestrns("env:", name, (const uint8_t*) value, strlen(value) + 1);
 
 	return 0;
 }

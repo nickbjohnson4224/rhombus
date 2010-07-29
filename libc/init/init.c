@@ -19,6 +19,7 @@
 #include <string.h>
 #include <proc.h>
 #include <ipc.h>
+#include <exec.h>
 #include <stdio.h>
 #include <mmap.h>
 
@@ -68,7 +69,8 @@ static void fpufault(uint32_t caller, struct packet *packet) {
  * library.
  */
 
-void _init(void) {
+void _init(bool is_init) {
+	extern int main(int argc, char **argv);
 
 	/* setup standard streams */
 	stdin  = fload("stdin");
@@ -83,4 +85,12 @@ void _init(void) {
 	when(PORT_INFO,  reject);
 	when(PORT_CTRL,  reject);
 	when(PORT_QUERY, reject);
+
+	if (is_init) {
+		exit(main(0, NULL));
+	}
+	else {
+		exit(main(argc_unpack(), argv_unpack()));
+	}
+
 }
