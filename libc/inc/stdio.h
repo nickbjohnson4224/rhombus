@@ -51,7 +51,7 @@ typedef struct _file {
 #define FILE_READ	0x20	/* Read Access */
 #define FILE_WRITE	0x40	/* Write Access */
 
-/*** Constants ***/
+/* constants ***************************************************************/
 
 #define EOF 		(-1)
 
@@ -123,7 +123,7 @@ int    ferror(FILE *stream);
 
 /* native I/O routines *****************************************************/
 
-size_t ssend(FILE *file, char *r, char *s, size_t size, uint64_t off, uint8_t port);
+size_t ssend(FILE *file, void *r, void *s, size_t size, uint64_t off, uint8_t port);
 size_t read (FILE *file, void *buf, size_t size, uint64_t offset);
 size_t write(FILE *file, void *buf, size_t size, uint64_t offset);
 size_t query(FILE *file, void *rbuf, void *sbuf, size_t size);

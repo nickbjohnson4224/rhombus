@@ -66,19 +66,25 @@ void push_char(char c) {
 	static bool mutex;
 	static char *buffer;
 	static size_t buffer_top;
+	static size_t buffer_size;
 
 	mutex_spin(&mutex);
 
 	if (!buffer) {
-		buffer = malloc(200);
+		buffer = malloc(256);
+		buffer_size = 256;
 		buffer_top = 0;
 	}
 
 	if (c == '\b') {
-		buffer_top--;
+		if (buffer_top) buffer_top--;
 	}
 	else {
 		buffer[buffer_top++] = c;
+		if (buffer_top >= buffer_size) {
+			buffer_size += 256;
+			buffer = realloc(buffer, buffer_size);
+		}
 	}
 
 	if (c == '\n' || buffer_top > 195) {

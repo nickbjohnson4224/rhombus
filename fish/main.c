@@ -17,6 +17,7 @@
 #include <exec.h>
 #include <proc.h>
 #include <ipc.h>
+#include <dict.h>
 
 #include <stdlib.h>
 #include <stdio.h>

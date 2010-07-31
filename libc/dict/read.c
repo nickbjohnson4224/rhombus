@@ -24,19 +24,37 @@
  * dict_read_rec
  *
  * Recursive dictionary reading function, used by interface read functions.
- * Returns null on failure, pointer to dictionary value on success. This
- * function is not thread-safe.
+ * Returns null on failure, pointer to dictionary value on success. Follows
+ * all links found. This function is not thread-safe.
  */
 
 static const uint8_t *dict_read_rec
-		(struct dict *root, const uint8_t *key, size_t keylen, size_t keypos) {
+		(struct dict *root, const uint8_t *key, 
+		size_t keylen, size_t keypos, size_t *vallen) {
+
+	uint8_t *value;
+
+	if (root->link) {
+		value = malloc(1024);
+		*vallen = 1024;
+
+		dict_link_read(root->link, &key[keypos], keylen - keypos, value, vallen);
+
+		if (!vallen) {
+			return NULL;
+		}
+		
+		return value;
+	}
 
 	if (keypos >= keylen) {
+		*vallen = root->vallen;
 		return root->value;
 	}
 	
 	if (root->next[key[keypos]]) {
-		return dict_read_rec(root->next[key[keypos]], key, keylen, keypos + 1);
+		return dict_read_rec(root->next[key[keypos]], 
+			key, keylen, keypos + 1, vallen);
 	}
 	else {
 		return NULL;
@@ -50,12 +68,12 @@ static const uint8_t *dict_read_rec
  * to dictionary value on success. This function is thread-safe.
  */
 
-const uint8_t *dict_read(const uint8_t *key, size_t keylen) {
+const uint8_t *dict_read(const uint8_t *key, size_t keylen, size_t *vallen) {
 	const uint8_t *value;
 
 	mutex_spin(&dict_info->mutex);
 
-	value = dict_read_rec(&dict_info->root, key, keylen, 0);
+	value = dict_read_rec(&dict_info->root, key, keylen, 0, vallen);
 
 	mutex_free(&dict_info->mutex);
 
@@ -70,8 +88,8 @@ const uint8_t *dict_read(const uint8_t *key, size_t keylen) {
  * safe.
  */
 
-const uint8_t *dict_readstr(const char *key) {
-	return dict_read((uint8_t*) key, strlen(key));
+const uint8_t *dict_readstr(const char *key, size_t *vallen) {
+	return dict_read((uint8_t*) key, strlen(key), vallen);
 }
 
 /****************************************************************************
@@ -82,7 +100,8 @@ const uint8_t *dict_readstr(const char *key) {
  * This function is thread-safe.
  */
 
-const uint8_t *dict_readstrns(const char *namespace, const char *key) {
+const uint8_t *dict_readstrns(const char *namespace, 
+		const char *key, size_t *vallen) {
 	char *buffer;
 	const uint8_t *val;
 
@@ -90,7 +109,7 @@ const uint8_t *dict_readstrns(const char *namespace, const char *key) {
 	strcpy(buffer, namespace);
 	strcat(buffer, key);
 
-	val = dict_readstr(buffer);
+	val = dict_readstr(buffer, vallen);
 
 	free(buffer);
 

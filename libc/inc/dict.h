@@ -19,12 +19,29 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <ipc.h>
 
 /* dictionary interface ****************************************************/
+
+struct dict_link {
+	const uint8_t *prefix;
+	size_t prefixlen;
+	uint32_t server;
+	uint64_t inode;
+};
+
+struct dict_link_req {
+	uint8_t key[1024];
+	size_t  keylen;
+	uint8_t val[1024];
+	size_t  vallen;
+};
 
 struct dict {
 	struct dict *next[256];
 	const uint8_t *value;
+	size_t vallen;
+	struct dict_link *link;
 };
 
 extern struct dict_info {
@@ -36,13 +53,13 @@ extern struct dict_info {
 void dict_init(void);
 
 const uint8_t *dict_read
-	(const uint8_t *key, size_t keylen);
+	(const uint8_t *key, size_t keylen, size_t *vallen);
 
 const uint8_t *dict_readstr
-	(const char *key);
+	(const char *key, size_t *vallen);
 
 const uint8_t *dict_readstrns
-	(const char *namespace, const char *key);
+	(const char *namespace, const char *key, size_t *vallen);
 
 void dict_write
 	(const uint8_t *key, size_t keylen, 
@@ -52,13 +69,38 @@ void dict_writestr
 	(const char *key, const uint8_t *val, size_t vallen);
 
 void dict_writestrns
-	(const char *namespace, const char *key, 
+	(const char *namespace, const char *key,
 	const uint8_t *val, size_t vallen);
 
-void dict_setlink
+void dict_link
 	(const uint8_t *key, size_t keylen, 
 	const uint8_t *prefix, size_t prefixlen,
 	uint32_t server, uint64_t inode);
+
+void dict_linkstr
+	(const char *key, const char *prefix, uint32_t server, uint64_t inode);
+
+void dict_linkstrns
+	(const char *namespace, const char *key,
+	const char *prefix, uint32_t server, uint64_t inode);
+
+void dict_link_read 
+	(struct dict_link *link, const uint8_t *key, size_t keylen, 
+	uint8_t *value, size_t *vallen);
+
+void dict_link_write
+	(struct dict_link *link, const uint8_t *key, size_t keylen,
+	const uint8_t *value, size_t vallen);
+
+void dict_link_link
+	(struct dict_link *link, const uint8_t *key, size_t keylen,
+	struct dict_link *newlink);
+
+/* dictionary event handlers ***********************************************/
+
+void _dict_read (uint32_t caller, struct packet *packet);
+void _dict_write(uint32_t caller, struct packet *packet);
+void _dict_link (uint32_t caller, struct packet *packet);
 
 /* dictionary heap - garbage collected *************************************/
 

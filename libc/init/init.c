@@ -22,6 +22,7 @@
 #include <exec.h>
 #include <stdio.h>
 #include <mmap.h>
+#include <dict.h>
 
 /****************************************************************************
  * reject
@@ -85,6 +86,10 @@ void _init(bool is_init) {
 	when(PORT_INFO,  reject);
 	when(PORT_CTRL,  reject);
 	when(PORT_QUERY, reject);
+
+	when(PORT_DREAD, _dict_read);
+	when(PORT_DWRITE, _dict_write);
+	when(PORT_DLINK, _dict_link);
 
 	if (is_init) {
 		exit(main(0, NULL));

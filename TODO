@@ -1,6 +1,5 @@
 Urgent:
 
-- add links to dictionary
 - migrate from vfsd to dictionary vfs
 - finish libc string functions
 - finish libc stdio functions

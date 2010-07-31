@@ -33,12 +33,20 @@ static void dict_write_rec
 		(struct dict *root, const uint8_t *key, size_t keylen, size_t keypos,
 		const uint8_t *val, size_t vallen) {
 
+	if (root->link) {
+		dict_link_write(root->link, &key[keypos], keylen - keypos, val, vallen);
+
+		return;
+	}
+
 	if (keypos >= keylen) {
 		if (val) {
 			root->value = memcpy(dict_alloc(vallen, true), val, vallen);
+			root->vallen = vallen;
 		}
 		else {
 			root->value = NULL;
+			root->vallen = 0;
 		}
 		return;
 	}
@@ -83,8 +91,7 @@ void dict_writestr(const char *key, const uint8_t *val, size_t vallen) {
  * dict_readstrns
  *
  * Read from the dictionary from a given namespace using the given string as
- * a key. Returns null on failure, pointer to dictionary value on success.
- * This function is thread-safe.
+ * a key. This function is thread-safe.
  */
 
 void dict_writestrns(const char *namespace, const char *key,

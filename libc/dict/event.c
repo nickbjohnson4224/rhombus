@@ -14,34 +14,39 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <stdint.h>
 #include <dict.h>
+#include <ipc.h>
 #include <string.h>
 
-/****************************************************************************
- * getenv
- *
- * Searches the current environment for the key <name>. Returns the found
- * value on success, or NULL on failure.
- */
+void _dict_read(uint32_t caller, struct packet *packet) {
+	struct dict_link_req *request;
+	const uint8_t *value;
 
-const char *getenv(const char *name) {
-	size_t length;
+	request = packet_getbuf(packet);
 
-	return (const char*) dict_readstrns("env:", name, &length);
+	value = dict_read(request->key, request->keylen, &request->vallen);
+
+	if (value) {
+		memcpy(request->val, value, request->vallen);
+	}
+
+	send(PORT_REPLY, caller, packet);
 }
 
-/****************************************************************************
- * setenv
- *
- * Sets the value of the environment key <key> to the value <value>. Returns
- * 0 on success, or nonzero on failure.
- */
+void _dict_write(uint32_t caller, struct packet *packet) {
+	
+	if (packet) {
+		packet_free(packet);
+	}
 
-int setenv(const char *name, const char *value) {
+	send(PORT_REPLY, caller, NULL);
+}
 
-	dict_writestrns("env:", name, (const uint8_t*) value, strlen(value) + 1);
+void _dict_link(uint32_t caller, struct packet *packet) {
+	
+	if (packet) {
+		packet_free(packet);
+	}
 
-	return 0;
+	send(PORT_REPLY, caller, NULL);
 }

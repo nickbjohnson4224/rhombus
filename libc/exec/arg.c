@@ -54,8 +54,9 @@ void argv_pack(int argc, const char **argv) {
 
 int argc_unpack(void) {
 	const int *packed;
+	size_t length;
 
-	packed = (const int*) dict_readstr("arg:argc");
+	packed = (const int*) dict_readstr("arg:argc", &length);
 
 	if (!packed) {
 		return 0;
@@ -73,6 +74,7 @@ int argc_unpack(void) {
 
 char **argv_unpack(void) {
 	int argc, i, j, k;
+	size_t length;
 	const char *packed;
 	char **argv, buffer[12];
 
@@ -86,14 +88,14 @@ char **argv_unpack(void) {
 		}
 		buffer[k] = '\0';
 
-		packed = (const char*) dict_readstrns("arg:", buffer);
+		packed = (const char*) dict_readstrns("arg:", buffer, &length);
 
 		if (!packed) {
 			argv[i] = NULL;
 		}
 		else {
-			argv[i] = malloc(strlen(packed) + 1);
-			strcpy(argv[i], packed);
+			argv[i] = malloc(length);
+			memcpy(argv[i], packed, length);
 		}
 	}
 

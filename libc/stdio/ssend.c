@@ -33,9 +33,10 @@
  * Returns the number of bytes sent.
  */
 
-size_t ssend(FILE *fd, char *r, char *s, size_t size, uint64_t off, uint8_t port) {
+size_t ssend(FILE *fd, void *re, void *se, size_t size, uint64_t off, uint8_t port) {
 	struct packet *p_out;
 	struct packet *p_in;
+	uint8_t *r, *s;
 	size_t datasize, oldsize, frag;
 	size_t spos, rpos;
 	event_t old_handler;
@@ -47,6 +48,8 @@ size_t ssend(FILE *fd, char *r, char *s, size_t size, uint64_t off, uint8_t port
 	frag        = 0;
 	spos        = 0;
 	rpos        = 0;
+	r           = (uint8_t*) re;
+	s           = (uint8_t*) se;
 
 	while (size) {
 		datasize = (size > PACKET_MAXDATA) ? PACKET_MAXDATA : size;
