@@ -89,8 +89,8 @@ void tarfs_init() {
 		/* add file to inode table */
 		strcpy(inode[n].name, block->filename);
 		inode[n].offset = i + 512;
-		inode[n].size   = getvalue(block->filesize, sizeof(block->filesize));	
-
+		inode[n].size   = getvalue(block->filesize, sizeof(block->filesize));		
+		
 		/* move to next file header */
 		i += ((inode[n].size / 512) + 1) * 512;
 		if (inode[n].size % 512) i += 512;

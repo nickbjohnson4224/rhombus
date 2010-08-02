@@ -25,7 +25,6 @@
 
 int main() {
 	char buffer[100];
-	char fbuffer[1000];
 	size_t i, n;
 	int err, pid;
 	char *argv[100];

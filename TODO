@@ -1,5 +1,7 @@
 Urgent:
 
+- random command hang bug
+- strtok bug
 - migrate from vfsd to dictionary vfs
 - finish libc stdio functions
 

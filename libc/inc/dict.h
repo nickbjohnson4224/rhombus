@@ -19,6 +19,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <vdatum.h>
 #include <ipc.h>
 
 /* dictionary interface ****************************************************/
@@ -52,6 +53,8 @@ extern struct dict_info {
 
 void dict_init(void);
 
+/* read functions **********************************************************/
+
 const void *dict_read
 	(const void *key, size_t keylen, size_t *vallen);
 
@@ -60,6 +63,12 @@ const void *dict_readstr
 
 const void *dict_readstrns
 	(const char *namespace, const char *key, size_t *vallen);
+
+vdatum dict_readvd(vdatum key);
+
+vdatum dict_readvdns(const char *namespace, vdatum key);
+
+/* write functions *********************************************************/
 
 void dict_write
 	(const void *key, size_t keylen, 
@@ -72,6 +81,12 @@ void dict_writestrns
 	(const char *namespace, const char *key,
 	const void *val, size_t vallen);
 
+vdatum dict_writevd(vdatum key, vdatum val);
+
+vdatum dict_writevdns(const char *namespace, vdatum key, vdatum val);
+
+/* link functions **********************************************************/
+
 void dict_link
 	(const void *key, size_t keylen, 
 	const void *prefix, size_t prefixlen,
@@ -83,6 +98,15 @@ void dict_linkstr
 void dict_linkstrns
 	(const char *namespace, const char *key,
 	const char *prefix, uint32_t server, uint64_t inode);
+
+vdatum dict_linkvd
+	(vdatum key, vdatum prefix, uint32_t server, uint64_t inode);
+
+vdatum dict_linkvdns
+	(const char *namespace, vdatum key, vdatum prefix,
+	uint32_t server, uint64_t inode);
+
+/* internal functions ******************************************************/
 
 void dict_link_read 
 	(struct dict_link *link, const void *key, size_t keylen, 

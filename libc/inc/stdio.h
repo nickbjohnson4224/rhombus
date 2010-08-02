@@ -70,7 +70,6 @@ typedef struct _file {
 extern FILE *stdin;
 extern FILE *stdout;
 extern FILE *stderr;
-extern FILE *stdvfs;
 
 /* file operations *********************************************************/
 
@@ -122,6 +121,8 @@ int    feof(FILE *stream);
 int    ferror(FILE *stream);
 
 /* native I/O routines *****************************************************/
+
+extern FILE *stdvfs;
 
 size_t ssend(FILE *file, void *r, void *s, size_t size, uint64_t off, uint8_t port);
 size_t read (FILE *file, void *buf, size_t size, uint64_t offset);
