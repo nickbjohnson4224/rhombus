@@ -88,8 +88,14 @@ int execv(const char *path, char const **argv) {
 	FILE *image;
 	size_t size;
 	char buffer[20];
+	char *fullpath;
 
-	image = fopen(path, "r");
+	fullpath = malloc(strlen(path) + strlen(getenv("PATH")) + 2);
+	strcpy(fullpath, getenv("PATH"));
+	strcat(fullpath, "/");
+	strcat(fullpath, path);
+
+	image = fopen(fullpath, "r");
 
 	if (!image) {
 		return 1;

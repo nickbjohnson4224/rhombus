@@ -14,38 +14,24 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
 
-/****************************************************************************
- * fopen
- *
- * The fopen() function opens the file whose name is the string pointed to
- * by path and associates a stream with it. Returns the newly opened stream
- * on success, and NULL on failure.
- */
+size_t strcspn(const char *s, const char *reject) {
+	uint16_t mask[16];
+	size_t i;
 
-FILE *fopen(const char *path, const char *mode) {
-	FILE *new = malloc(sizeof(FILE));
-	int err;
-
-	if (!new) {
-		return NULL;
+	memclr(mask, sizeof(uint16_t) * 16);
+	
+	for (i = 0; reject[i]; i++) {
+		mask[(size_t) reject[i] >> 4] |= (1 << ((size_t) reject[i] & 0xF));
 	}
 
-	err = find(path, &new->server, &new->inode);
-	new->position      = 0;
-	new->size          = -1;
-	new->buffer        = NULL;
-	new->buffsize      = 0;
-	new->buffpos       = 0;
-	new->revbuf        = EOF;
-	new->flags         = FILE_NBF | FILE_READ | FILE_WRITE;
-
-	if (err) {
-		free(new);
-		return NULL;
+	for (i = 0; s[i]; i++) {
+		if (mask[(size_t) s[i] >> 4] & (1 << ((size_t) s[i] & 0xF))) {
+			break;
+		}
 	}
 
-	return new;
+	return i;
 }

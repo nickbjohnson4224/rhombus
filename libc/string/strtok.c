@@ -14,38 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <string.h>
 
-/****************************************************************************
- * fopen
- *
- * The fopen() function opens the file whose name is the string pointed to
- * by path and associates a stream with it. Returns the newly opened stream
- * on success, and NULL on failure.
- */
+char *strtok(char *str, const char *delim) {
+	static char *saveptr = NULL;
+	char *token;
+	
+	token = strtok_r(str, delim, &saveptr);
 
-FILE *fopen(const char *path, const char *mode) {
-	FILE *new = malloc(sizeof(FILE));
-	int err;
-
-	if (!new) {
-		return NULL;
+	if (!token) {
+		saveptr = NULL;
 	}
 
-	err = find(path, &new->server, &new->inode);
-	new->position      = 0;
-	new->size          = -1;
-	new->buffer        = NULL;
-	new->buffsize      = 0;
-	new->buffpos       = 0;
-	new->revbuf        = EOF;
-	new->flags         = FILE_NBF | FILE_READ | FILE_WRITE;
-
-	if (err) {
-		free(new);
-		return NULL;
-	}
-
-	return new;
+	return token;
 }

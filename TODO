@@ -1,7 +1,6 @@
 Urgent:
 
 - migrate from vfsd to dictionary vfs
-- finish libc string functions
 - finish libc stdio functions
 
 Less Urgent:

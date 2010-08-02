@@ -14,38 +14,55 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
 
-/****************************************************************************
- * fopen
- *
- * The fopen() function opens the file whose name is the string pointed to
- * by path and associates a stream with it. Returns the newly opened stream
- * on success, and NULL on failure.
- */
+char *strtok_r(char *str, const char *delim, char **saveptr) {
+	size_t i;
+	size_t j;
+	bool delimp;
 
-FILE *fopen(const char *path, const char *mode) {
-	FILE *new = malloc(sizeof(FILE));
-	int err;
-
-	if (!new) {
-		return NULL;
+	if (str) {
+		*saveptr = str;
+	}
+	else {
+		if (!*saveptr) {
+			return NULL;
+		}
+		else {
+			str = *saveptr;
+		}
 	}
 
-	err = find(path, &new->server, &new->inode);
-	new->position      = 0;
-	new->size          = -1;
-	new->buffer        = NULL;
-	new->buffsize      = 0;
-	new->buffpos       = 0;
-	new->revbuf        = EOF;
-	new->flags         = FILE_NBF | FILE_READ | FILE_WRITE;
+	/* skip leading delimiter characters */
+	for (i = 0; str[i]; i++) {
+		delimp = false;
 
-	if (err) {
-		free(new);
-		return NULL;
+		for (j = 0; delim[j]; j++) {
+			if (str[i] == delim[j]) {
+				delimp = true;
+				break;
+			}
+		}
+
+		if (!delimp) {
+			break;
+		}
 	}
 
-	return new;
+	/* skip non-delimiters until one is found */
+	for (; str[i]; i++) {
+		for (j = 0; delim[j]; j++) {
+			if (str[i] == delim[j]) {
+
+				/* terminate token and return */
+				str[i] = '\0';
+				return &str[i + 1];
+			}
+		}
+	}
+
+	*saveptr = NULL;
+	return str;
 }

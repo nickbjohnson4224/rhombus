@@ -47,16 +47,8 @@ int main() {
 			}
 		}
 
-		argv[0] = &buffer[0];
-
-		for (i = 0, n = 1; buffer[i]; i++) {
-			if (buffer[i] == ' ') {
-				buffer[i] = '\0';
-				argv[n++] = &buffer[i+1];
-			}
-		}
-
-		argv[n] = NULL;
+		argv[n = 0] = strtok(buffer, " ");
+		while (argv[++n] = strtok(NULL, " "));
 
 		if (argv[n-1][0] == '&') {
 			argv[n-1] = NULL;
@@ -66,45 +58,23 @@ int main() {
 			daemon = false;
 		}
 
-		if (!strcmp(buffer, "cd")) {
-			if (buffer[0] == '/') {
-				setenv("PWD", buffer);
+		pid = fork();
+		if (pid < 0) {
+			if (execv(argv[0], (char const **) argv)) {
+				if (err == 1) {
+					printf("%s: command not found\n", buffer);
+				}
+				else {
+					printf("failed to execute: %d\n", err);
+				}
 			}
-			else {
-				strcpy(buffer, getenv("PWD"));
-				strcat(buffer, argv[1]);
-				setenv("PWD", buffer);
-			}
+			exit(0);
 		}
-		else if (!strcmp(buffer, "set")) {
-			setenv(argv[1], argv[2]);
-		}
-		else if (!strcmp(buffer, "get")) {
-			printf("%s\n", getenv(argv[1]));
+		if (!daemon) {
+			waits(PORT_DEATH, pid);
 		}
 		else {
-			pid = fork();
-			if (pid < 0) {
-				strcpy(fbuffer, getenv("PATH"));
-				strcat(fbuffer, "/");
-				strcat(fbuffer, buffer);
-				err = execv(fbuffer, (char const**) argv);
-				if (err) {
-					if (err == 1) {
-						printf("%s: command not found\n", buffer);
-					}
-					else {
-						printf("failed to execute: %d\n", err);
-					}
-				}
-				exit(0);
-			}
-			if (!daemon) {
-				waits(PORT_DEATH, pid);
-			}
-			else {
-				waits(PORT_SYNC, pid);
-			}
+			waits(PORT_SYNC, pid);
 		}
 	}
 
