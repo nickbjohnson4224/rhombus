@@ -46,7 +46,7 @@ int main() {
 
 	when(PORT_WRITE, terminal_write);
 
-	send(PORT_SYNC, getppid(), NULL);
+	psend(PORT_SYNC, getppid(), NULL);
 	_done();
 
 	return 0;
@@ -60,7 +60,7 @@ static void terminal_write(uint32_t caller, struct packet *packet) {
 		return;
 	}
 
-	buffer = packet_getbuf(packet);
+	buffer = pgetbuf(packet);
 
 	mutex_spin(&m_vbuf);
 
@@ -75,8 +75,8 @@ static void terminal_write(uint32_t caller, struct packet *packet) {
 
 	mutex_free(&m_vbuf);
 
-	send(PORT_REPLY, caller, packet);
-	packet_free(packet);
+	psend(PORT_REPLY, caller, packet);
+	pfree(packet);
 }
 
 static void char_write(char c) {

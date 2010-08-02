@@ -23,14 +23,14 @@ static void initrd_info(uint32_t source, struct packet *packet) {
 		return;
 	}
 
-	query = packet_getbuf(packet);
+	query = pgetbuf(packet);
 
 	if (!strcmp(query->field, "size")) {
 		sprintf(query->value, "%d", initrd_size);
 	}
 
-	send(PORT_REPLY, source, packet);
-	packet_free(packet);
+	psend(PORT_REPLY, source, packet);
+	pfree(packet);
 }
 
 static void initrd_read(uint32_t source, struct packet *packet) {
@@ -52,10 +52,10 @@ static void initrd_read(uint32_t source, struct packet *packet) {
 	}
 
 	mutex_spin(&m_initrd);
-	memcpy(packet_getbuf(packet), &initrd[offset], packet->data_length);
+	memcpy(pgetbuf(packet), &initrd[offset], packet->data_length);
 	mutex_free(&m_initrd);
 
-	send(PORT_REPLY, source, packet);
+	psend(PORT_REPLY, source, packet);
 }
 
 void initrd_init() {

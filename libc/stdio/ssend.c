@@ -43,7 +43,7 @@ size_t ssend(FILE *fd, void *re, void *se, size_t size, uint64_t off, uint8_t po
 
 	old_handler = when(PORT_REPLY, NULL);
 	oldsize     = size;
-	p_out       = packet_alloc(0);
+	p_out       = palloc(0);
 	p_in        = NULL;
 	frag        = 0;
 	spos        = 0;
@@ -54,7 +54,7 @@ size_t ssend(FILE *fd, void *re, void *se, size_t size, uint64_t off, uint8_t po
 	while (size) {
 		datasize = (size > PACKET_MAXDATA) ? PACKET_MAXDATA : size;
 
-		packet_setbuf(&p_out, datasize);
+		psetbuf(&p_out, datasize);
 
 		p_out->identity = 0;
 		p_out->protocol = PACKET_PROTOCOL;
@@ -66,32 +66,32 @@ size_t ssend(FILE *fd, void *re, void *se, size_t size, uint64_t off, uint8_t po
 		p_out->offset         = off;
 
 		if (s) {
-			memcpy(packet_getbuf(p_out), &s[spos], datasize);
+			memcpy(pgetbuf(p_out), &s[spos], datasize);
 			spos += datasize;
 		}
 
-		send(port, fd->server, p_out);
-		p_in = waits(PORT_REPLY, fd->server);
+		psend(port, fd->server, p_out);
+		p_in = pwaits(PORT_REPLY, fd->server);
 
 		if (!p_in || p_in->data_length == 0) {
-			if (p_in) packet_free(p_in);
+			if (p_in) pfree(p_in);
 			break;
 		}
 
 		if (r) {
-			memcpy(&r[rpos], packet_getbuf(p_in), p_in->data_length);
+			memcpy(&r[rpos], pgetbuf(p_in), p_in->data_length);
 			rpos += p_in->data_length;
 		}
 
 		size -= p_in->data_length;
 		off  += p_in->data_length;
 
-		packet_free(p_in);
+		pfree(p_in);
 
 		frag++;
 	}
 
-	packet_free(p_out);
+	pfree(p_out);
 	when(PORT_REPLY, old_handler);
 
 	return (oldsize - size);

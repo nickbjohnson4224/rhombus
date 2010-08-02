@@ -19,12 +19,12 @@
 #include <ipc.h>
 
 /****************************************************************************
- * stash
+ * pstash
  *
  * Queues a message based on its metadata.
  */
 
-void stash(struct packet *packet, uint8_t port, uint32_t source) {
+void pstash(struct packet *packet, uint8_t port, uint32_t source) {
 	struct message *m;
 
 	m = malloc(sizeof(struct message));

@@ -14,112 +14,112 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <mutex.h>
-#include <abi.h>
 #include <ipc.h>
 
 /****************************************************************************
- * _recvm
+ * _pwaitm
  *
- * Attempts to find a matching message. Returns the found message on 
- * success, and NULL on failure or empty packet. Used internally by recv* 
- * family of functions.
+ * Waits until a matching message is in the message queue. Returns the found
+ * message, which may be NULL if the packet is empty. Used internally by the
+ * wait* family of functions.
  */
 
-static struct packet *_recvm
+static struct packet *_pwaitm
 	(uint8_t port, uint32_t source, uint64_t inode, uint16_t id, uint16_t frag) {
 	struct message *m;
 	struct packet *packet;
-	bool match = false;
+	bool match;
 
-	mutex_spin(&m_msg_queue[port]);
-	m = msg_queue[port].next;
-	
-	while (m) {
-		match = true;
+	do {
+		mutex_spin(&m_msg_queue[port]);
+		m = msg_queue[port].next;
 
-		if (source) {
-			if (source != m->source) {
-				match = false;
+		while (m) {
+			match = true;
+
+			if (source) {
+				if (source != m->source) {
+					match = false;
+				}
 			}
-		}
 
-		if (inode) {
-			if (!m->packet || inode != m->packet->source_inode) {
-				match = false;
+			if (inode) {
+				if (!m->packet || inode != m->packet->source_inode) {
+					match = false;
+				}
 			}
-		}
 
-		if (id) {
-			if (!m->packet || id != m->packet->identity) {
-				match = false;
+			if (id) {
+				if (!m->packet || id != m->packet->identity) {
+					match = false;
+				}
 			}
-		}
 
-		if (frag != 0xFFFF) {
-			if (!m->packet || frag != m->packet->fragment_index) {
-				match = false;
+			if (frag != 0xFFFF) {
+				if (!m->packet || frag != m->packet->fragment_index) {
+					match = false;
+				}
 			}
-		}
 
 			if (match == true) break;
 			m = m->next;
-	}
+		}
 
-	if (match) {
-		if (m->prev) m->prev->next = m->next;
-		if (m->next) m->next->prev = m->prev;
+		if (m) {
+			if (m->next) m->next->prev = m->prev;
+			if (m->prev) m->prev->next = m->next;
 
-		packet = m->packet;
-		free(m);
-	}
-	else {
-		packet = NULL;
-	}
+			packet = m->packet;
+			free(m);
+			break;
+		}
 
-	mutex_free(&m_msg_queue[port]);
+		mutex_free(&m_msg_queue[port]);
+
+	} while (1);
 
 	return packet;
 }
 
 /****************************************************************************
- * recv
+ * wait
  */
 
-struct packet *recv(uint8_t port) {
-	return _recvm(port, 0, 0, 0, -1);
+struct packet *pwait(uint8_t port) {
+	return _pwaitm(port, 0, 0, 0, -1);
 }
 
 /****************************************************************************
- * recvs
+ * waits
  */
 
-struct packet *recvs(uint8_t port, uint32_t source) {
-	return _recvm(port, source, 0, 0, -1);
+struct packet *pwaits(uint8_t port, uint32_t source) {
+	return _pwaitm(port, source, 0, 0, -1);
 }
 
 /****************************************************************************
- * recvn
+ * waitn
  */
 
-struct packet *recvn(uint8_t port, uint32_t source, uint64_t inode) {
-	return _recvm(port, source, inode, 0, -1);
+struct packet *pwaitn(uint8_t port, uint32_t source, uint64_t inode) {
+	return _pwaitm(port, source, inode, 0, -1);
 }
 
 /****************************************************************************
- * recvi
+ * waiti
  */
 
-struct packet *recvi(uint8_t port, uint32_t source, uint16_t id) {
-	return _recvm(port, source, 0, id, -1);
+struct packet *pwaiti(uint8_t port, uint32_t source, uint16_t id) {
+	return _pwaitm(port, source, 0, id, -1);
 }
 
 /****************************************************************************
- * recvf
+ * waitf
  */
 
-struct packet *recvf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag) {
-	return _recvm(port, source, 0, id, frag);
+struct packet *pwaitf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag) {
+	return _pwaitm(port, source, 0, id, frag);
 }

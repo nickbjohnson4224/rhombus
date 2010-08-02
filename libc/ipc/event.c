@@ -43,7 +43,7 @@ void on_event(void) {
 	length = _gvpr(0, VPR_LENGTH);
 
 	if (length) {
-		packet = packet_alloc(length);
+		packet = palloc(length);
 		_gvpr((uintptr_t) packet, VPR_FRAME);
 	}
 	else {
@@ -59,7 +59,7 @@ void on_event(void) {
 		event_handler[port](source, packet);
 	}
 	else {
-		stash(packet, port, source);
+		pstash(packet, port, source);
 	}
 
 	mutex_free(&m_event_handler);

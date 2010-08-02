@@ -18,7 +18,7 @@
 #include <ipc.h>
 
 /****************************************************************************
- * packet_setbuf
+ * psetbuf
  *
  * Sets the buffer size of a packet structure. If successful, this function
  * returns true and the size of the buffer returned by packet_getbuf will be
@@ -33,7 +33,7 @@
  * packet.data_length and packet.data_offset.
  */
 
-bool packet_setbuf(struct packet **packet, uint32_t length) {
+bool psetbuf(struct packet **packet, uint32_t length) {
 
 	if (!*packet) {
 		return false;
@@ -50,14 +50,14 @@ bool packet_setbuf(struct packet **packet, uint32_t length) {
 }
 
 /****************************************************************************
- * packet_getbuf
+ * pgetbuf
  *
  * Returns a pointer to the data buffer contained within the given packet.
  * The size of this buffer is packet.data_length bytes. Returns NULL on
  * error.
  */
 
-void *packet_getbuf(struct packet *packet) {
+void *pgetbuf(struct packet *packet) {
 
 	if (!packet) {
 		return NULL;
@@ -67,22 +67,22 @@ void *packet_getbuf(struct packet *packet) {
 }
 
 /****************************************************************************
- * packet_alloc
+ * palloc
  *
- * Returns a pointer to a packet suitable for use with the send() system call.
- * Contents of the packet's memory are undefined.
+ * Returns a pointer to a packet suitable for use with the psend() system 
+ * call. Contents of the packet's memory are undefined.
  */
 
-void *packet_alloc(uint32_t size) {
+void *palloc(uint32_t size) {
 	return valloc(size);
 }
 
 /****************************************************************************
- * packet_free
+ * pfree
  *
  * Frees a packet and all of its associated memory.
  */
 
-void packet_free(struct packet *packet) {
+void pfree(struct packet *packet) {
 	free(packet);
 }

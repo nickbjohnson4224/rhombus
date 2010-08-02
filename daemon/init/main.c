@@ -30,7 +30,7 @@ void daemon_start(FILE **file, void *image, size_t image_size, char const **argv
 		for(;;);
 	}
 
-	waits(PORT_SYNC, pid);
+	pwaits(PORT_SYNC, pid);
 
 	if (file) {
 		*file = fcons(pid, 0);
@@ -104,7 +104,7 @@ int main() {
 		execiv(file->start, file->size, NULL);
 	}
 
-	waits(PORT_DEATH, 0);
+	pwaits(PORT_DEATH, 0);
 
 	printf("INIT PANIC: system daemon died\n");
 

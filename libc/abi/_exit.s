@@ -15,7 +15,7 @@
 [bits 32]
 
 global _exit
-extern send
+extern psend
 
 _exit:
 	push dword 0
@@ -23,7 +23,7 @@ _exit:
 	int 0x4C
 	push eax
 	push dword 3
-	call send
+	call psend
 	add esp, 12
 
 	mov eax, [esp+4]

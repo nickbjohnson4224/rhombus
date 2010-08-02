@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <dict.h>
 
 #include "tarfs.h"
 
@@ -60,6 +61,7 @@ void tarfs_init() {
 	struct tar_block *block;
 	char   path[100];
 	size_t i, n;
+	uint32_t data[2];
 
 	/* allocate buffer space for header block */
 	block = malloc(512);
@@ -87,7 +89,7 @@ void tarfs_init() {
 		/* add file to inode table */
 		strcpy(inode[n].name, block->filename);
 		inode[n].offset = i + 512;
-		inode[n].size   = getvalue(block->filesize, sizeof(block->filesize));
+		inode[n].size   = getvalue(block->filesize, sizeof(block->filesize));	
 
 		/* move to next file header */
 		i += ((inode[n].size / 512) + 1) * 512;

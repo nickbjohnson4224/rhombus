@@ -25,8 +25,8 @@ void tarfs_read(uint32_t source, struct packet *packet) {
 
 	/* reject requests to nonexistent inodes */
 	if (i > 256 || inode[i].name[0] == '\0') {
-		packet_free(packet);
-		send(PORT_REPLY, source, NULL);
+		pfree(packet);
+		psend(PORT_REPLY, source, NULL);
 		return;
 	}
 
@@ -37,14 +37,14 @@ void tarfs_read(uint32_t source, struct packet *packet) {
 	/* bounds check size */
 	if (packet->offset + size > inode[i].size) {
 		size = inode[i].size - packet->offset;
-		packet_setbuf(&packet, size);
+		psetbuf(&packet, size);
 	}
 
 	mutex_spin(&m_parent);
 	fseek(parent, offset, SEEK_SET);
-	fread(packet_getbuf(packet), size, 1, parent);
+	fread(pgetbuf(packet), size, 1, parent);
 	mutex_free(&m_parent);
 
-	send(PORT_REPLY, source, packet);
-	packet_free(packet);
+	psend(PORT_REPLY, source, packet);
+	pfree(packet);
 }

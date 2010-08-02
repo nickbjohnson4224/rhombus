@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
 	mode->fill(cx - 30, cy - 10, cx + 10, cy + 10, 0xFFFFFF);
 	mode->fill(cx - 10, cy + 10, cx + 10, cy + 30, 0xFFFFFF);
 
-	send(PORT_SYNC, getppid(), NULL);
+	psend(PORT_SYNC, getppid(), NULL);
 	_done();
 
 	return 0;

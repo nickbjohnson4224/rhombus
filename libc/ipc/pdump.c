@@ -15,111 +15,112 @@
  */
 
 #include <stdlib.h>
-#include <stdbool.h>
 #include <mutex.h>
 #include <ipc.h>
 
 /****************************************************************************
- * _waitm
+ * _pdumpm
  *
- * Waits until a matching message is in the message queue. Returns the found
- * message, which may be NULL if the packet is empty. Used internally by the
- * wait* family of functions.
+ * For all matching messages in the message queue, either resend their events
+ * if possible or delete them. Used internally by dump* family of functions.
  */
 
-static struct packet *_waitm
+static void _pdumpm
 	(uint8_t port, uint32_t source, uint64_t inode, uint16_t id, uint16_t frag) {
-	struct message *m;
-	struct packet *packet;
+	struct message *m, *tm;
 	bool match;
 
-	do {
-		mutex_spin(&m_msg_queue[port]);
-		m = msg_queue[port].next;
+	mutex_spin(&m_msg_queue[port]);
+	m = msg_queue[port].next;
+	
+	while (m) {
+		match = true;
 
-		while (m) {
-			match = true;
-
-			if (source) {
-				if (source != m->source) {
-					match = false;
-				}
+		if (source) {
+			if (source != m->source) {
+				match = false;
 			}
+		}
 
-			if (inode) {
-				if (!m->packet || inode != m->packet->source_inode) {
-					match = false;
-				}
+		if (inode) {
+			if (!m->packet || inode != m->packet->source_inode) {
+				match = false;
 			}
+		}
 
-			if (id) {
-				if (!m->packet || id != m->packet->identity) {
-					match = false;
-				}
+		if (id) {
+			if (!m->packet || id != m->packet->identity) {
+				match = false;
 			}
+		}
 
-			if (frag != 0xFFFF) {
-				if (!m->packet || frag != m->packet->fragment_index) {
-					match = false;
-				}
+		if (frag != 0xFFFF) {
+			if (!m->packet || frag != m->packet->fragment_index) {
+				match = false;
 			}
+		}
 
-			if (match == true) break;
+		if (match == true) {
+			tm = m->next;
+
+			if (m->prev) m->prev->next = m->next;
+			if (m->next) m->next->prev = m->prev;
+
+			mutex_spin(&m_event_handler);
+
+			if (event_handler[port]) {
+				event_handler[port](m->source, m->packet);
+			}
+			
+			mutex_free(&m_event_handler);
+
+			free(m);
+			m = tm;
+		}
+		else {
 			m = m->next;
 		}
+	}
 
-		if (m) {
-			if (m->next) m->next->prev = m->prev;
-			if (m->prev) m->prev->next = m->next;
-
-			packet = m->packet;
-			free(m);
-			break;
-		}
-
-		mutex_free(&m_msg_queue[port]);
-
-	} while (1);
-
-	return packet;
+	mutex_free(&m_msg_queue[port]);
 }
 
 /****************************************************************************
- * wait
+ * pdump
  */
 
-struct packet *wait(uint8_t port) {
-	return _waitm(port, 0, 0, 0, -1);
+void pdump(uint8_t port) {
+	_pdumpm(port, 0, 0, 0, -1);
 }
 
 /****************************************************************************
- * waits
+ * pdumps
  */
 
-struct packet *waits(uint8_t port, uint32_t source) {
-	return _waitm(port, source, 0, 0, -1);
+void pdumps(uint8_t port, uint32_t source) {
+	_pdumpm(port, source, 0, 0, -1);
 }
 
 /****************************************************************************
- * waitn
+ * pdumpn
  */
 
-struct packet *waitn(uint8_t port, uint32_t source, uint64_t inode) {
-	return _waitm(port, source, inode, 0, -1);
+void pdumpn(uint8_t port, uint32_t source, uint64_t inode) {
+	_pdumpm(port, source, inode, 0, -1);
 }
 
 /****************************************************************************
- * waiti
+ * pdumpi
  */
 
-struct packet *waiti(uint8_t port, uint32_t source, uint16_t id) {
-	return _waitm(port, source, 0, id, -1);
+void pdumpi(uint8_t port, uint32_t source, uint16_t id) {
+	_pdumpm(port, source, 0, id, -1);
 }
 
 /****************************************************************************
- * waitf
+ * pdumpf
  */
 
-struct packet *waitf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag) {
-	return _waitm(port, source, 0, id, frag);
+void pdumpf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag) {
+	_pdumpm(port, source, 0, id, frag);
 }

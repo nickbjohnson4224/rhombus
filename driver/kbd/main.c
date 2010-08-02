@@ -26,7 +26,7 @@ int main() {
 
 	printf("kbd: ready\n");
 
-	send(PORT_SYNC, getppid(), NULL);
+	psend(PORT_SYNC, getppid(), NULL);
 	_done();
 
 	return 0;
@@ -72,12 +72,12 @@ void keyboard_read(uint32_t source, struct packet *packet) {
 		return;
 	}
 
-	data = packet_getbuf(packet);
+	data = pgetbuf(packet);
 	offset = 0;
 
 	for (offset = 0; offset < packet->data_length; offset++) {
 		data[offset] = pop_char();
 	}
 
-	send(PORT_REPLY, source, packet);
+	psend(PORT_REPLY, source, packet);
 }

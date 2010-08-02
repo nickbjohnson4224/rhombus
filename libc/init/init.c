@@ -33,10 +33,10 @@
 static void reject(uint32_t caller, struct packet *packet) {
 
 	if (packet) {
-		packet_free(packet);
+		pfree(packet);
 	}
 
-	send(PORT_REPLY, caller, NULL);
+	psend(PORT_REPLY, caller, NULL);
 }
 
 /****************************************************************************

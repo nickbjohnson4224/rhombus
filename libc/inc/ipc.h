@@ -54,11 +54,11 @@ struct packet {
 
 } __attribute__ ((packed));
 
-bool  packet_setbuf(struct packet **packet, uint32_t length);
-void *packet_getbuf(struct packet *packet);
+bool  psetbuf(struct packet **packet, uint32_t length);
+void *pgetbuf(struct packet *packet);
 
-void *packet_alloc(uint32_t size);
-void  packet_free (struct packet *packet);
+void *palloc(uint32_t size);
+void  pfree (struct packet *packet);
 
 /* port numbers ************************************************************/
 
@@ -69,7 +69,6 @@ void  packet_free (struct packet *packet);
 
 #define PORT_READ	16
 #define PORT_WRITE	17
-#define PORT_CALL	42
 #define PORT_DICT	18
 #define PORT_INFO	18
 #define PORT_CTRL	19
@@ -96,35 +95,35 @@ struct message {
 extern struct message msg_queue[256];
 extern bool         m_msg_queue[256];
 
-void           stash(struct packet *packet, uint8_t port, uint32_t source);
+void           pstash(struct packet *packet, uint8_t port, uint32_t source);
 
-/* send ********************************************************************/
+/* psend *******************************************************************/
 
-int            send (uint8_t port, uint32_t target, struct packet *packet);
+int            psend (uint8_t port, uint32_t target, struct packet *packet);
 
-/* recv family - asynchronous **********************************************/
+/* precv family - asynchronous *********************************************/
 
-struct packet *recv (uint8_t port);
-struct packet *recvs(uint8_t port, uint32_t source);
-struct packet *recvn(uint8_t port, uint32_t source, uint64_t inode);
-struct packet *recvi(uint8_t port, uint32_t source, uint16_t id);
-struct packet *recvf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag);
+struct packet *precv (uint8_t port);
+struct packet *precvs(uint8_t port, uint32_t source);
+struct packet *precvn(uint8_t port, uint32_t source, uint64_t inode);
+struct packet *precvi(uint8_t port, uint32_t source, uint16_t id);
+struct packet *precvf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag);
 
-/* wait family - synchronous ***********************************************/
+/* pwait family - synchronous **********************************************/
 
-struct packet *wait (uint8_t port);
-struct packet *waits(uint8_t port, uint32_t source);
-struct packet *waitn(uint8_t port, uint32_t source, uint64_t inode);
-struct packet *waiti(uint8_t port, uint32_t source, uint16_t id);
-struct packet *waitf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag);
+struct packet *pwait (uint8_t port);
+struct packet *pwaits(uint8_t port, uint32_t source);
+struct packet *pwaitn(uint8_t port, uint32_t source, uint64_t inode);
+struct packet *pwaiti(uint8_t port, uint32_t source, uint16_t id);
+struct packet *pwaitf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag);
 
-/* dump family *************************************************************/
+/* pdump family ************************************************************/
 
-void           dump (uint8_t port);
-void           dumps(uint8_t port, uint32_t source);
-void           dumpn(uint8_t port, uint32_t source, uint64_t inode);
-void           dumpi(uint8_t port, uint32_t source, uint16_t id);
-void           dumpf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag);
+void           pdump (uint8_t port);
+void           pdumps(uint8_t port, uint32_t source);
+void           pdumpn(uint8_t port, uint32_t source, uint64_t inode);
+void           pdumpi(uint8_t port, uint32_t source, uint16_t id);
+void           pdumpf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag);
 
 /* events ******************************************************************/
 

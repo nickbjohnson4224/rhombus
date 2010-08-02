@@ -68,12 +68,13 @@ static const uint8_t *dict_read_rec
  * to dictionary value on success. This function is thread-safe.
  */
 
-const uint8_t *dict_read(const uint8_t *key, size_t keylen, size_t *vallen) {
-	const uint8_t *value;
+const void *dict_read(const void *key, size_t keylen, size_t *vallen) {
+	const void *value;
+	const uint8_t *bkey = key;
 
 	mutex_spin(&dict_info->mutex);
 
-	value = dict_read_rec(&dict_info->root, key, keylen, 0, vallen);
+	value = dict_read_rec(&dict_info->root, bkey, keylen, 0, vallen);
 
 	mutex_free(&dict_info->mutex);
 
@@ -88,8 +89,8 @@ const uint8_t *dict_read(const uint8_t *key, size_t keylen, size_t *vallen) {
  * safe.
  */
 
-const uint8_t *dict_readstr(const char *key, size_t *vallen) {
-	return dict_read((uint8_t*) key, strlen(key), vallen);
+const void *dict_readstr(const char *key, size_t *vallen) {
+	return dict_read(key, strlen(key), vallen);
 }
 
 /****************************************************************************
@@ -100,10 +101,10 @@ const uint8_t *dict_readstr(const char *key, size_t *vallen) {
  * This function is thread-safe.
  */
 
-const uint8_t *dict_readstrns(const char *namespace, 
+const void *dict_readstrns(const char *namespace, 
 		const char *key, size_t *vallen) {
 	char *buffer;
-	const uint8_t *val;
+	const void *val;
 
 	buffer = malloc(strlen(namespace) + strlen(key) + 1);
 	strcpy(buffer, namespace);

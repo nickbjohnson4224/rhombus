@@ -14,21 +14,25 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <mutex.h>
+#include <abi.h>
 #include <ipc.h>
 
 /****************************************************************************
- * _dumpm
+ * _precvm
  *
- * For all matching messages in the message queue, either resend their events
- * if possible or delete them. Used internally by dump* family of functions.
+ * Attempts to find a matching message. Returns the found message on 
+ * success, and NULL on failure or empty packet. Used internally by recv* 
+ * family of functions.
  */
 
-static void _dumpm
+static struct packet *_precvm
 	(uint8_t port, uint32_t source, uint64_t inode, uint16_t id, uint16_t frag) {
-	struct message *m, *tm;
-	bool match;
+	struct message *m;
+	struct packet *packet;
+	bool match = false;
 
 	mutex_spin(&m_msg_queue[port]);
 	m = msg_queue[port].next;
@@ -60,67 +64,62 @@ static void _dumpm
 			}
 		}
 
-		if (match == true) {
-			tm = m->next;
-
-			if (m->prev) m->prev->next = m->next;
-			if (m->next) m->next->prev = m->prev;
-
-			mutex_spin(&m_event_handler);
-
-			if (event_handler[port]) {
-				event_handler[port](m->source, m->packet);
-			}
-			
-			mutex_free(&m_event_handler);
-
-			free(m);
-			m = tm;
-		}
-		else {
+			if (match == true) break;
 			m = m->next;
-		}
+	}
+
+	if (match) {
+		if (m->prev) m->prev->next = m->next;
+		if (m->next) m->next->prev = m->prev;
+
+		packet = m->packet;
+		free(m);
+	}
+	else {
+		packet = NULL;
 	}
 
 	mutex_free(&m_msg_queue[port]);
+
+	return packet;
 }
 
 /****************************************************************************
- * dump
+ * precv
  */
 
-void dump(uint8_t port) {
-	_dumpm(port, 0, 0, 0, -1);
+struct packet *precv(uint8_t port) {
+	return _precvm(port, 0, 0, 0, -1);
 }
 
 /****************************************************************************
- * dumps
+ * precvs
  */
 
-void dumps(uint8_t port, uint32_t source) {
-	_dumpm(port, source, 0, 0, -1);
+struct packet *precvs(uint8_t port, uint32_t source) {
+	return _precvm(port, source, 0, 0, -1);
 }
 
 /****************************************************************************
- * dumpn
+ * precvn
  */
 
-void dumpn(uint8_t port, uint32_t source, uint64_t inode) {
-	_dumpm(port, source, inode, 0, -1);
+struct packet *precvn(uint8_t port, uint32_t source, uint64_t inode) {
+	return _precvm(port, source, inode, 0, -1);
 }
 
 /****************************************************************************
- * dumpi
+ * precvi
  */
 
-void dumpi(uint8_t port, uint32_t source, uint16_t id) {
-	_dumpm(port, source, 0, id, -1);
+struct packet *precvi(uint8_t port, uint32_t source, uint16_t id) {
+	return _precvm(port, source, 0, id, -1);
 }
 
 /****************************************************************************
- * dumpf
+ * precvf
  */
 
-void dumpf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag) {
-	_dumpm(port, source, 0, id, frag);
+struct packet *precvf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag) {
+	return _precvm(port, source, 0, id, frag);
 }

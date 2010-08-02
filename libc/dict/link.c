@@ -29,9 +29,8 @@
  * null, in which case the link is deleted. This function is not thread-safe.
  */
 
-static void dict_link_rec
-		(struct dict *root, const uint8_t *key, size_t keylen, size_t keypos,
-		struct dict_link *link) {
+static void dict_link_rec (struct dict *root, const uint8_t *key, 
+		size_t keylen, size_t keypos, struct dict_link *link) {
 
 	if (root->link) {
 		dict_link_link(root->link, &key[keypos], keylen - keypos, link);
@@ -65,8 +64,7 @@ static void dict_link_rec
  * is thread-safe.
  */
 
-void dict_link
-		(const uint8_t *key, size_t keylen, const uint8_t *prefix, 
+void dict_link(const void *key, size_t keylen, const void *prefix, 
 		size_t prefixlen, uint32_t server, uint64_t inode) {
 
 	struct dict_link *link;
@@ -90,8 +88,7 @@ void dict_link
  * dict_linkstr
  */
 
-void dict_linkstr
-		(const char *key, const char *prefix, 
+void dict_linkstr(const char *key, const char *prefix, 
 		uint32_t server, uint64_t inode) {
 
 	dict_link((uint8_t*) key, strlen(key), (uint8_t*) prefix, strlen(prefix),
@@ -102,9 +99,8 @@ void dict_linkstr
  * dict_linkstrns
  */
 
-void dict_linkstrns
-		(const char *namespace, const char *key, const char *prefix,
-		uint32_t server, uint64_t inode) {
+void dict_linkstrns(const char *namespace, const char *key, 
+		const char *prefix, uint32_t server, uint64_t inode) {
 	
 	char *buffer;
 
@@ -117,9 +113,8 @@ void dict_linkstrns
 	free(buffer);
 }
 
-void dict_link_read
-		(struct dict_link *link, const uint8_t *key, size_t keylen,
-		uint8_t *value, size_t *vallen) {
+void dict_link_read(struct dict_link *link, const void *key, size_t keylen,
+		void *value, size_t *vallen) {
 
 	FILE *file;
 	size_t size;
@@ -151,9 +146,8 @@ void dict_link_read
 	fclose(file);
 }
 
-void dict_link_write
-		(struct dict_link *link, const uint8_t *key, size_t keylen,
-		const uint8_t *value, size_t vallen) {
+void dict_link_write(struct dict_link *link, const void *key, size_t keylen,
+		const void *value, size_t vallen) {
 	
 	FILE *file;
 	struct dict_link_req request;
@@ -176,8 +170,7 @@ void dict_link_write
 	fclose(file);
 }
 
-void dict_link_link
-		(struct dict_link *link, const uint8_t *key, size_t keylen,
+void dict_link_link(struct dict_link *link, const void *key, size_t keylen,
 		struct dict_link *newlink) {
 	
 	FILE *file;

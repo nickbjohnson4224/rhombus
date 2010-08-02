@@ -45,13 +45,13 @@ void vfs_handle(uint32_t caller, struct packet *packet) {
 	struct vfs *file;
 
 	if (!packet) {
-		packet = packet_alloc(0);
-		send(PORT_ERROR, caller, packet);
-		packet_free(packet);
+		packet = palloc(0);
+		psend(PORT_ERROR, caller, packet);
+		pfree(packet);
 		return;
 	}
 
-	q = packet_getbuf(packet);
+	q = pgetbuf(packet);
 
 	switch (q->command) {
 	case VFS_CMD_FIND:
@@ -86,8 +86,8 @@ void vfs_handle(uint32_t caller, struct packet *packet) {
 	}
 
 	q->command = VFS_CMD_REPLY;
-	send(PORT_REPLY, caller, packet);
-	packet_free(packet);
+	psend(PORT_REPLY, caller, packet);
+	pfree(packet);
 }
 
 int main() {
@@ -100,7 +100,7 @@ int main() {
 
 	printf("vfsd: ready\n");
 
-	send(PORT_SYNC, getppid(), NULL);
+	psend(PORT_SYNC, getppid(), NULL);
 	_done();
 
 	return 0;

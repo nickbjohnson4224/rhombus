@@ -22,7 +22,7 @@ void _dict_read(uint32_t caller, struct packet *packet) {
 	struct dict_link_req *request;
 	const uint8_t *value;
 
-	request = packet_getbuf(packet);
+	request = pgetbuf(packet);
 
 	value = dict_read(request->key, request->keylen, &request->vallen);
 
@@ -30,23 +30,23 @@ void _dict_read(uint32_t caller, struct packet *packet) {
 		memcpy(request->val, value, request->vallen);
 	}
 
-	send(PORT_REPLY, caller, packet);
+	psend(PORT_REPLY, caller, packet);
 }
 
 void _dict_write(uint32_t caller, struct packet *packet) {
 	
 	if (packet) {
-		packet_free(packet);
+		pfree(packet);
 	}
 
-	send(PORT_REPLY, caller, NULL);
+	psend(PORT_REPLY, caller, NULL);
 }
 
 void _dict_link(uint32_t caller, struct packet *packet) {
 	
 	if (packet) {
-		packet_free(packet);
+		pfree(packet);
 	}
 
-	send(PORT_REPLY, caller, NULL);
+	psend(PORT_REPLY, caller, NULL);
 }

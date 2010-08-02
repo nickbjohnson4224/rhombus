@@ -71,10 +71,10 @@ int main() {
 			exit(0);
 		}
 		if (!daemon) {
-			waits(PORT_DEATH, pid);
+			pwaits(PORT_DEATH, pid);
 		}
 		else {
-			waits(PORT_SYNC, pid);
+			pwaits(PORT_SYNC, pid);
 		}
 	}
 

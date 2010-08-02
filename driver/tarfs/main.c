@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
 	printf("%s: ready\n", name);
 
 	/* synchronize with parent process */
-	send(PORT_SYNC, getppid(), NULL);
+	psend(PORT_SYNC, getppid(), NULL);
 
 	/* daemonize */
 	_done();

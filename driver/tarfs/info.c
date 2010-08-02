@@ -22,11 +22,11 @@ void tarfs_info(uint32_t source, struct packet *packet) {
 	
 	/* reject null packets */
 	if (!packet) {
-		send(PORT_REPLY, source, NULL);
+		psend(PORT_REPLY, source, NULL);
 		return;
 	}
 
-	query = packet_getbuf(packet);
+	query = pgetbuf(packet);
 
 	if (!strcmp(query->field, "size")) {
 
@@ -42,6 +42,6 @@ void tarfs_info(uint32_t source, struct packet *packet) {
 		strcpy(query->value, "");
 	}
 
-	send(PORT_REPLY, source, packet);
-	packet_free(packet);
+	psend(PORT_REPLY, source, packet);
+	pfree(packet);
 }

@@ -66,8 +66,7 @@ static void dict_write_rec
  * thread-safe.
  */
 
-void dict_write
-	(const uint8_t *key, size_t keylen, const uint8_t *val, size_t vallen) {
+void dict_write(const void *key, size_t keylen, const void *val, size_t vallen) {
 
 	mutex_spin(&dict_info->mutex);
 
@@ -83,7 +82,7 @@ void dict_write
  * is thread-safe.
  */
 
-void dict_writestr(const char *key, const uint8_t *val, size_t vallen) {
+void dict_writestr(const char *key, const void *val, size_t vallen) {
 	dict_write((uint8_t*) key, strlen(key), val, vallen);
 }
 
@@ -95,7 +94,7 @@ void dict_writestr(const char *key, const uint8_t *val, size_t vallen) {
  */
 
 void dict_writestrns(const char *namespace, const char *key,
-		const uint8_t *val, size_t vallen) {
+		const void *val, size_t vallen) {
 	char *buffer;
 
 	buffer = malloc(strlen(namespace) + strlen(key) + 1);
