@@ -32,9 +32,9 @@ struct dict_link {
 };
 
 struct dict_link_req {
-	uint8_t key[1024];
+	uint8_t key[1532];
 	size_t  keylen;
-	uint8_t val[1024];
+	uint8_t val[1532];
 	size_t  vallen;
 };
 
@@ -64,10 +64,6 @@ const void *dict_readstr
 const void *dict_readstrns
 	(const char *namespace, const char *key, size_t *vallen);
 
-vdatum dict_readvd(vdatum key);
-
-vdatum dict_readvdns(const char *namespace, vdatum key);
-
 /* write functions *********************************************************/
 
 void dict_write
@@ -80,10 +76,6 @@ void dict_writestr
 void dict_writestrns
 	(const char *namespace, const char *key,
 	const void *val, size_t vallen);
-
-vdatum dict_writevd(vdatum key, vdatum val);
-
-vdatum dict_writevdns(const char *namespace, vdatum key, vdatum val);
 
 /* link functions **********************************************************/
 
@@ -98,13 +90,6 @@ void dict_linkstr
 void dict_linkstrns
 	(const char *namespace, const char *key,
 	const char *prefix, uint32_t server, uint64_t inode);
-
-vdatum dict_linkvd
-	(vdatum key, vdatum prefix, uint32_t server, uint64_t inode);
-
-vdatum dict_linkvdns
-	(const char *namespace, vdatum key, vdatum prefix,
-	uint32_t server, uint64_t inode);
 
 /* internal functions ******************************************************/
 

@@ -29,6 +29,7 @@ int main() {
 	int err, pid;
 	char *argv[100];
 	bool daemon;
+	size_t length;
 
 	printf("\n");
 
@@ -61,7 +62,7 @@ int main() {
 		if (pid < 0) {
 			if (execv(argv[0], (char const **) argv)) {
 				if (err == 1) {
-					printf("%s: command not found\n", buffer);
+					printf("%s: command not found\n", argv[0]);
 				}
 				else {
 					printf("failed to execute: %d\n", err);

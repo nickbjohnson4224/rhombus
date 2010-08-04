@@ -17,12 +17,20 @@
 #ifndef ARCH_H
 #define ARCH_H
 
+/* architecture *******************************************************/
+
+#define ARCH	X86
+#define BITS	32
+
 /* address space information ******************************************/
 
+#if ARCH == X86
 #define PAGESZ 0x1000
+#endif
 
 /* address space layout ***********************************************/
 
+#if ARCH == X86
 #define EXEC_START	0x00000000
 #define HEAP_START	0x10000000
 #define HEAP_MXBRK	0x20000000
@@ -41,5 +49,6 @@
 #define SSPACE	0x80000000	/* Stack space */
 #define ESPACE	0xC0000000	/* Exec persistent data */
 #define KSPACE 	0xF0000000	/* Kernel space */
+#endif
 
 #endif/*ARCH_H*/

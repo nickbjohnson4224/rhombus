@@ -7,6 +7,7 @@
 #include <proc.h>
 #include <mutex.h>
 #include <driver.h>
+#include <dict.h>
 
 #include <stdint.h>
 #include <string.h>
@@ -43,6 +44,7 @@ static char *path_preprocess(char *path) {
 void vfs_handle(uint32_t caller, struct packet *packet) {
 	struct vfs_query *q;
 	struct vfs *file;
+	char buffer[18];
 
 	if (!packet) {
 		packet = palloc(0);
@@ -75,6 +77,9 @@ void vfs_handle(uint32_t caller, struct packet *packet) {
 		mutex_spin(&m_vfs);
 		vfs_add(vfs_root, q->path0, q->server, q->inode);
 		mutex_free(&m_vfs);
+
+		sprintf(buffer, "%d:%d", q->server, q->inode);
+		dict_writestrns("vfs:/", q->path0, buffer, strlen(buffer) + 1);
 		break;
 	case VFS_CMD_LIST:
 		path_preprocess(q->path0);

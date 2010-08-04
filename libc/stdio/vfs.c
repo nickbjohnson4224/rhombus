@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <dict.h>
 
 /****************************************************************************
  * find
@@ -27,20 +28,23 @@
  */
 
 int find(const char *path, uint32_t *server, uint64_t *inode) {
-	struct vfs_query q;
-	size_t i;
+	const char *value;
+	char *buffer;
+	size_t length;
 
-	q.command = VFS_CMD_FIND;
-	strcpy(q.path0, path);
+	value = dict_readstrns("vfs:", path, &length);
 
-	i = query(stdvfs, &q, &q, sizeof(struct vfs_query));
-
-	if (i == 0) {
+	if (!value) {
 		return -1;
 	}
 
-	*server = q.server;
-	*inode  = q.inode;
+	buffer = malloc(length);
+	strcpy(buffer, value);
+
+	*server = atoi(strtok(buffer, ":"));
+	*inode  = atoi(strtok(NULL, ":"));
+
+	free(buffer);
 
 	return 0;
 }

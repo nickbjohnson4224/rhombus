@@ -35,12 +35,12 @@ static const uint8_t *dict_read_rec
 	uint8_t *value;
 
 	if (root->link) {
-		value = malloc(1024);
+		value = dict_alloc(1024, true);
 		*vallen = 1024;
 
 		dict_link_read(root->link, &key[keypos], keylen - keypos, value, vallen);
 
-		if (!vallen) {
+		if (!(*vallen)) {
 			return NULL;
 		}
 		

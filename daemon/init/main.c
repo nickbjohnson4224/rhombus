@@ -7,6 +7,7 @@
 #include <proc.h>
 #include <exec.h>
 #include <mmap.h>
+#include <dict.h>
 
 #include <stdint.h>
 #include <string.h>
@@ -42,6 +43,7 @@ int main() {
 	extern void initrd_init(void);
 	struct tar_file *boot_image, *file;
 	char const **argv;
+	size_t length;
 
 	/* Boot Image */
 	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);
@@ -64,6 +66,7 @@ int main() {
 	daemon_start(&stdvfs, file->start, file->size, NULL);
 	fadd("/vfsd", stdvfs->server, stdvfs->inode);
 	fadd("/term", stdout->server, stdout->inode);
+	dict_linkstr("vfs:", "vfs:", stdvfs->server, stdvfs->inode);
 
 	/* Initrd */
 	initrd_init();

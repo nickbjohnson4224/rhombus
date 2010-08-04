@@ -58,7 +58,8 @@ char *strtok_r(char *str, const char *delim, char **saveptr) {
 
 				/* terminate token and return */
 				str[i] = '\0';
-				return &str[i + 1];
+				*saveptr = &str[i + 1];
+				return str;
 			}
 		}
 	}
