@@ -103,8 +103,6 @@ int main() {
 	vfs_root = calloc(sizeof(struct vfs), 1);
 	mutex_free(&m_vfs);
 
-	printf("vfsd: ready\n");
-
 	psend(PORT_SYNC, getppid(), NULL);
 	_done();
 

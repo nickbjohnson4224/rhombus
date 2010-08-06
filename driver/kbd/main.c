@@ -24,8 +24,6 @@ int main() {
 	when(PORT_READ, keyboard_read);
 	rirq(1);
 
-	printf("kbd: ready\n");
-
 	psend(PORT_SYNC, getppid(), NULL);
 	_done();
 

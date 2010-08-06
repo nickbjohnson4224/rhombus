@@ -31,8 +31,6 @@ int main() {
 	bool daemon;
 	size_t length;
 
-	printf("\n");
-
 	setenv("PWD", "/");
 	setenv("PATH", "/initrd.tarfs");
 

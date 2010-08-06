@@ -27,6 +27,14 @@
 
 #include "inc/tar.h"
 
+char logo[] = {
+'\n',
+'\t', ' ', ' ', ' ', ' ', 219, 219, 219, 219, '\n',
+'\t', ' ', ' ', 219, 219, 219, 219, ' ', ' ', '\n',
+'\t', ' ', ' ', ' ', ' ', 219, 219, ' ', ' ', '\n',
+'\n', '\0'
+};
+
 const char *splash ="\
 Flux Operating System 0.5a\n\
 Copyright 2010 Nick Johnson\n\
@@ -65,7 +73,9 @@ int main() {
 		for(;;);
 	}
 	daemon_start(&stdout, file->start, file->size, NULL);
+	stderr = stdout;
 
+	printf(logo);
 	printf(splash);
 
 	/* VFS Daemon */

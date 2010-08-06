@@ -26,7 +26,8 @@ void *memclr(void *dest, uint32_t size) {
 	dest8  = ((uint8_t*) dest) + num_words*4;
 	for (i = 0; i < num_words; i++) dest32[i] = 0;
 	for (i = 0; i < num_bytes; i++) dest8[i] = 0;
-	return dest; */
+	return dest; 
+}*/
 
 void *memcpy(void *dest, void *src, uint32_t size) {
 	uint32_t i;

@@ -82,8 +82,6 @@ static void terminal_write(uint32_t caller, struct packet *packet) {
 static void char_write(char c) {
 	uint16_t i;
 
-	if (!isprint(c)) return;
-
 	if (cursor >= WIDTH * HEIGHT) {
 		for (i = 0; i < WIDTH * HEIGHT - WIDTH; i++) {
 			vbuf[i] = vbuf[i + WIDTH];
