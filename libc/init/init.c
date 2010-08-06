@@ -46,7 +46,12 @@ static void reject(uint32_t caller, struct packet *packet) {
  */
 
 static void pagefault(uint32_t caller, struct packet *packet) {
-	printf("Page Fault\n");
+	if (getenv("NAME") && (getenv("NAME")[0] != '\0')) {
+		printf("Page Fault (%s terminated)\n", getenv("NAME"));
+	}
+	else {
+		printf("Page Fault (pid %d terminated)\n", getpid());
+	}
 
 	exit(0);
 }
@@ -72,6 +77,8 @@ static void fpufault(uint32_t caller, struct packet *packet) {
 
 void _init(bool is_init) {
 	extern int main(int argc, char **argv);
+	char **argv;
+	int argc;
 
 	/* setup standard streams */
 	stdin  = fload("stdin");
@@ -87,15 +94,22 @@ void _init(bool is_init) {
 	when(PORT_CTRL,  reject);
 	when(PORT_QUERY, reject);
 
-	when(PORT_DREAD, _dict_read);
-	when(PORT_DWRITE, _dict_write);
-	when(PORT_DLINK, _dict_link);
+	when(PORT_DREAD,  _devent_read);
+	when(PORT_DWRITE, _devent_write);
+	when(PORT_DLINK,  _devent_link);
 
 	if (is_init) {
-		exit(main(0, NULL));
+		argc = 0;
+		argv = NULL;
 	}
 	else {
-		exit(main(argc_unpack(), argv_unpack()));
-	}
+		argc = argc_unpack();
+		argv = argv_unpack();
 
+		if (argc) {
+			setenv("NAME", argv[0]);
+		}
+	}
+	
+	exit(main(argc, argv));
 }

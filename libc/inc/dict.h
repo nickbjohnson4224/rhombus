@@ -19,101 +19,72 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <vdatum.h>
+#include <alloca.h>
+#include <stdio.h>
 #include <ipc.h>
 
 /* dictionary interface ****************************************************/
 
-struct dict_link {
-	const uint8_t *prefix;
-	size_t prefixlen;
+struct __link {
+	const char *pre;
 	uint32_t server;
 	uint64_t inode;
 };
 
-struct dict_link_req {
-	uint8_t key[1532];
-	size_t  keylen;
-	uint8_t val[1532];
-	size_t  vallen;
+struct __link_req {
+	char key[2048];
+	char val[1024];
 };
 
-struct dict {
-	struct dict *next[256];
-	const uint8_t *value;
-	size_t vallen;
-	struct dict_link *link;
+struct __dict {
+	struct __dict *next[256];
+	struct __link *link;
+	char *value;
 };
 
-extern struct dict_info {
-	struct dict root;
-	bool        mutex;
-	uintptr_t   brk;
+extern struct __info {
+	struct __dict root;
+	bool          mutex;
+	uintptr_t     brk;
 } *dict_info;
 
 void dict_init(void);
 
+/* data serialization ******************************************************/
+
+#define tdeflate(d, s) (deflate(d, s, alloca(((s)*2)+2)))
+
+char  *deflate(const void *data, size_t size, char *archivebuffer);
+size_t inflate(void *databuffer, size_t size, const char *archive);
+
 /* read functions **********************************************************/
 
-const void *dict_read
-	(const void *key, size_t keylen, size_t *vallen);
-
-const void *dict_readstr
-	(const char *key, size_t *vallen);
-
-const void *dict_readstrns
-	(const char *namespace, const char *key, size_t *vallen);
+char *dread  (const char *key);
+char *dreadns(const char *ns, const char *key);
 
 /* write functions *********************************************************/
 
-void dict_write
-	(const void *key, size_t keylen, 
-	const void *val, size_t vallen);
-
-void dict_writestr
-	(const char *key, const void *val, size_t vallen);
-
-void dict_writestrns
-	(const char *namespace, const char *key,
-	const void *val, size_t vallen);
+int dwrite   (const char *value, const char *key);
+int dwritens (const char *value, const char *ns, const char *key);
 
 /* link functions **********************************************************/
 
-void dict_link
-	(const void *key, size_t keylen, 
-	const void *prefix, size_t prefixlen,
-	uint32_t server, uint64_t inode);
-
-void dict_linkstr
-	(const char *key, const char *prefix, uint32_t server, uint64_t inode);
-
-void dict_linkstrns
-	(const char *namespace, const char *key,
-	const char *prefix, uint32_t server, uint64_t inode);
+int dlink    (const char *key, const char *pre, FILE *target);
 
 /* internal functions ******************************************************/
 
-void dict_link_read 
-	(struct dict_link *link, const void *key, size_t keylen, 
-	void *value, size_t *vallen);
-
-void dict_link_write
-	(struct dict_link *link, const void *key, size_t keylen,
-	const void *value, size_t vallen);
-
-void dict_link_link
-	(struct dict_link *link, const void *key, size_t keylen,
-	struct dict_link *newlink);
+char *_dlink_read (struct __link *l, const char *key);
+int   _dlink_write(struct __link *l, const char *val, const char *key);
+int   _dlink_link (struct __link *l, struct __link *new, const char *key);
 
 /* dictionary event handlers ***********************************************/
 
-void _dict_read (uint32_t caller, struct packet *packet);
-void _dict_write(uint32_t caller, struct packet *packet);
-void _dict_link (uint32_t caller, struct packet *packet);
+void _devent_read (uint32_t caller, struct packet *packet);
+void _devent_write(uint32_t caller, struct packet *packet);
+void _devent_link (uint32_t caller, struct packet *packet);
 
-/* dictionary heap - garbage collected *************************************/
+/* dictionary heap - persistent ********************************************/
 
-void *dict_alloc(size_t size, bool data);
-void  dict_sweep(void);
+void *dalloc(size_t size);
 
 #endif/*FLUX_DICT_H*/

@@ -28,23 +28,18 @@
  */
 
 int find(const char *path, uint32_t *server, uint64_t *inode) {
-	const char *value;
-	char *buffer;
-	size_t length;
+	char *value;
 
-	value = dict_readstrns("vfs:", path, &length);
+	value = dreadns("vfs:", path);
 
 	if (!value) {
 		return -1;
 	}
 
-	buffer = malloc(length);
-	strcpy(buffer, value);
-
-	*server = atoi(strtok(buffer, ":"));
+	*server = atoi(strtok(value, ":"));
 	*inode  = atoi(strtok(NULL, ":"));
 
-	free(buffer);
+	free(value);
 
 	return 0;
 }

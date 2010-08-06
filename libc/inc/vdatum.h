@@ -14,40 +14,36 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#ifndef VDATUM_H
+#define VDATUM_H
 
-/****************************************************************************
- * fopen
- *
- * The fopen() function opens the file whose name is the string pointed to
- * by path and associates a stream with it. Returns the newly opened stream
- * on success, and NULL on failure.
- */
+#include <string.h>
+#include <stddef.h>
 
-FILE *fopen(const char *path, const char *mode) {
-	FILE *new;
-	int err;
+/* vdatum definition *******************************************************/
 
-	new = malloc(sizeof(FILE));
+struct vdatum {
+	size_t size;
+	void *value;
+};
 
-	if (!new) {
-		return NULL;
-	}
+typedef struct vdatum vdatum;
 
-	err = find(path, &new->server, &new->inode);
-	new->position      = 0;
-	new->size          = -1;
-	new->buffer        = NULL;
-	new->buffsize      = 0;
-	new->buffpos       = 0;
-	new->revbuf        = EOF;
-	new->flags         = FILE_NBF | FILE_READ | FILE_WRITE;
-	
-	if (err) {
-		free(new);
-		return NULL;
-	}
+/* manipulation functions **************************************************/
 
-	return new;
-}
+vdatum vdstr  (char *str);
+vdatum vdcons (void *ptr, size_t size);
+vdatum vdalloc(size_t size);
+void   vdfree (vdatum v);
+
+vdatum vdcpy(vdatum dest, vdatum src);
+vdatum vdcat(vdatum dest, size_t count, ...);
+
+vdatum vdslice(vdatum v, ptrdiff_t start, ptrdiff_t end);
+vdatum vdshift(vdatum v, ptrdiff_t amount);
+vdatum vdresiz(vdatum v, ptrdiff_t amount);
+
+size_t vdlen(vdatum v);
+void  *vdval(vdatum v);
+
+#endif/*VDATUM_H*/

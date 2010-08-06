@@ -28,21 +28,14 @@
  */
 
 void argv_pack(int argc, const char **argv) {
-	int i, j, k;
-	char buffer[12];
+	int i;
+	char key[16];
 
-	dict_writestr("arg:argc", (const uint8_t*) &argc, sizeof(int));
+	dwrite(tdeflate(&argc, sizeof(int)), "arg:argc");
 
 	for (i = 0; i < argc; i++) {
-
-		/* XXX - replace with sprintf when possible */
-		for (k = 0, j = i; j > 0; j /= 10) {
-			buffer[k++] = '0' + (j % 10);
-		}
-		buffer[k] = '\0';
-
-		dict_writestrns("arg:", buffer, 
-			(const uint8_t*) argv[i], strlen(argv[i]) + 1);
+		sprintf(key, "arg:%d", i);
+		dwrite(argv[i], key);
 	}
 }
 
@@ -53,16 +46,18 @@ void argv_pack(int argc, const char **argv) {
  */
 
 int argc_unpack(void) {
-	const int *packed;
-	size_t length;
+	int argc;
+	char *value;
 
-	packed = (const int*) dict_readstr("arg:argc", &length);
+	value = dread("arg:argc");
 
-	if (!packed) {
+	if (!value) {
 		return 0;
 	}
 	else {
-		return *packed;
+		inflate(&argc, sizeof(int), value);
+		free(value);
+		return argc;
 	}
 }
 
@@ -73,29 +68,24 @@ int argc_unpack(void) {
  */
 
 char **argv_unpack(void) {
-	int argc, i, j, k;
-	size_t length;
-	const char *packed;
-	char **argv, buffer[12];
+	int argc, i;
+	char *value;
+	char **argv, key[12];
 
 	argc = argc_unpack();
 	argv = malloc(sizeof(char*) * (argc + 1));
 
 	for (i = 0; i < argc; i++) {
-		
-		for (k = 0, j = i; j > 0; j /= 10) {
-			buffer[k++] = '0' + (j % 10);
-		}
-		buffer[k] = '\0';
+		sprintf(key, "arg:%d", i);	
+		value = dread(key);
 
-		packed = (const char*) dict_readstrns("arg:", buffer, &length);
-
-		if (!packed) {
+		if (!value) {
 			argv[i] = NULL;
 		}
 		else {
-			argv[i] = malloc(length);
-			memcpy(argv[i], packed, length);
+			argv[i] = malloc(strlen(value) + 1);
+			strcpy(argv[i], value);
+			free(value);
 		}
 	}
 

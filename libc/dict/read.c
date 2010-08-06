@@ -24,95 +24,75 @@
  * dict_read_rec
  *
  * Recursive dictionary reading function, used by interface read functions.
- * Returns null on failure, pointer to dictionary value on success. Follows
- * all links found. This function is not thread-safe.
+ * Returns null on failure, pointer to dictionary value copy on success. The
+ * returned pointer is allocated on the heap and must be freed later with 
+ * free. Follows all links found. This function is not thread-safe.
  */
 
-static const uint8_t *dict_read_rec
-		(struct dict *root, const uint8_t *key, 
-		size_t keylen, size_t keypos, size_t *vallen) {
-
-	uint8_t *value;
+static char *dread_rec(struct __dict *root, const char *key) {
+	char *buffer;
 
 	if (root->link) {
-		value = dict_alloc(1024, true);
-		*vallen = 1024;
+		return _dlink_read(root->link, key);
+	}
 
-		dict_link_read(root->link, &key[keypos], keylen - keypos, value, vallen);
-
-		if (!(*vallen)) {
+	if (!key[0]) {
+		if (root->value) {
+			buffer = malloc(strlen(root->value) + 1);
+			strcpy(buffer, root->value);
+			return buffer;
+		}
+		else {
 			return NULL;
 		}
-		
-		return value;
 	}
 
-	if (keypos >= keylen) {
-		*vallen = root->vallen;
-		return root->value;
+	if (root->next[key[0]]) {
+		return dread_rec(root->next[key[0]], &key[1]);
 	}
 	
-	if (root->next[key[keypos]]) {
-		return dict_read_rec(root->next[key[keypos]], 
-			key, keylen, keypos + 1, vallen);
-	}
-	else {
-		return NULL;
-	}
+	return NULL;
 }
 
 /****************************************************************************
- * dict_read
+ * dread
  *
- * Read from dictionary with the given key. Returns null on failure, pointer
- * to dictionary value on success. This function is thread-safe.
+ * Read from dictionary with the given key into the buffer <val>, which must
+ * have the size stored in <vlen>. <vlen> is set to the number of bytes
+ * written into <val>. Returns -1 on failure, 0 on success. This function is 
+ * thread-safe.
  */
 
-const void *dict_read(const void *key, size_t keylen, size_t *vallen) {
-	const void *value;
-	const uint8_t *bkey = key;
+char *dread(const char *key) {
+	char *value;
 
-	mutex_spin(&dict_info->mutex);
-
-	value = dict_read_rec(&dict_info->root, bkey, keylen, 0, vallen);
-
-	mutex_free(&dict_info->mutex);
+	mutex_spin(&(dict_info->mutex));
+	value = dread_rec(&dict_info->root, key);
+	mutex_free(&(dict_info->mutex));
 
 	return value;
 }
 
 /****************************************************************************
- * dict_readstr
- *
- * Read from dictionary using the given string as a key. Returns null on
- * failure, pointer to dictionary value on success. This function is thread
- * safe.
- */
-
-const void *dict_readstr(const char *key, size_t *vallen) {
-	return dict_read(key, strlen(key), vallen);
-}
-
-/****************************************************************************
- * dict_readstrns
+ * dreadns
  *
  * Read from the dictionary from a given namespace using the given string as
- * a key. Returns null on failure, pointer to dictionary value on success.
- * This function is thread-safe.
+ * a key into the buffer <val>, which must have the size stored in <vlen>.
+ * <vlen is then set to the number of bytes written into <val>. Returns -1
+ * on failure, 0 on success. This function is thread-safe.
  */
 
-const void *dict_readstrns(const char *namespace, 
-		const char *key, size_t *vallen) {
-	char *buffer;
-	const void *val;
+char *dreadns(const char *ns, const char *key) {
+	char *buffer, *value;
+	int err;
 
-	buffer = malloc(strlen(namespace) + strlen(key) + 1);
-	strcpy(buffer, namespace);
+	buffer = malloc(strlen(ns) + strlen(key) + 1);
+	strcpy(buffer, ns);
 	strcat(buffer, key);
 
-	val = dict_readstr(buffer, vallen);
+	value = dread(buffer);
 
 	free(buffer);
 
-	return val;
+	return value;
 }

@@ -87,6 +87,8 @@ int ferror(FILE *stream) {
 size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 	size_t ret;
 
+	if (!stream) return 0;
+
 	ret = read(stream, ptr, size * nmemb, stream->position);
 	stream->position += ret;
 
@@ -96,6 +98,8 @@ size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
 	const uint8_t *data = ptr;
 	size_t i, ret;
+	
+	if (!stream) return 0;
 
 	if (stream->flags & FILE_NBF) {
 		ret = write(stream, (void*) ptr, size * nmemb, stream->position);
@@ -218,6 +222,8 @@ int vfprintf(FILE *stream, const char *format, va_list ap) {
 	char *fmtbuffer;
 	const char *str;
 	char c;
+
+	if (!stream) return 1;
 
 	fmtbuffer = malloc(sizeof(char) * strlen(format));
 	fbt = 0;

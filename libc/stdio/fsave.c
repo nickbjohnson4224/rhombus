@@ -37,7 +37,5 @@ int fsave(const char *name, FILE *fd) {
 	fflush(fd);
 
 	/* write file to dictionary */
-	dict_writestrns("file:", name, (const uint8_t*) fd, sizeof(FILE));
-
-	return 0;
+	return dwritens(tdeflate(fd, sizeof(FILE)), "file:", name);
 }

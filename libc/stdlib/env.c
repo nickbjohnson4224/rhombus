@@ -24,12 +24,12 @@
  *
  * Searches the current environment for the key <name>. Returns the found
  * value on success, or NULL on failure.
+ *
+ * XXX - value returned is in heap because of copying - known memory leak
  */
 
 const char *getenv(const char *name) {
-	size_t length;
-
-	return (const char*) dict_readstrns("env:", name, &length);
+	return dreadns("env:", name);
 }
 
 /****************************************************************************
@@ -40,8 +40,5 @@ const char *getenv(const char *name) {
  */
 
 int setenv(const char *name, const char *value) {
-
-	dict_writestrns("env:", name, (const uint8_t*) value, strlen(value) + 1);
-
-	return 0;
+	return dwritens(value, "env:", name);
 }

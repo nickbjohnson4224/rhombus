@@ -94,7 +94,7 @@ int execv(const char *path, char const **argv) {
 	strcpy(fullpath, getenv("PATH"));
 	strcat(fullpath, "/");
 	strcat(fullpath, path);
-
+	
 	image = fopen(fullpath, "r");
 
 	if (!image) {
@@ -102,7 +102,7 @@ int execv(const char *path, char const **argv) {
 	}
 
 	info(image, buffer, "size");
-
+	
 	size = atoi(buffer);
 
 	if (!size) {

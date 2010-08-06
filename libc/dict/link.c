@@ -29,163 +29,121 @@
  * null, in which case the link is deleted. This function is not thread-safe.
  */
 
-static void dict_link_rec (struct dict *root, const uint8_t *key, 
-		size_t keylen, size_t keypos, struct dict_link *link) {
+static 
+int dlink_rec(struct __dict *root, struct __link *link, const char *key) {
 
 	if (root->link) {
-		dict_link_link(root->link, &key[keypos], keylen - keypos, link);
-
-		return;
+		return _dlink_link(root->link, link, key);
 	}
 
-	if (keypos >= keylen) {
+	if (!key[0]) {
 		if (link) {
-			root->link = memcpy(dict_alloc(sizeof(struct dict_link), true), 
-				link, sizeof(struct dict_link));
+			root->link = link;
 		}
 		else {
 			root->link = NULL;
 		}
 
-		return;
+		return 0;
 	}
 
-	if (!root->next[key[keypos]]) {
-		root->next[key[keypos]] = dict_alloc(sizeof(struct dict), false);
+	if (!root->next[key[0]]) {
+		root->next[key[0]] = dalloc(sizeof(struct __dict));
 	}
 
-	dict_link_rec(root->next[key[keypos]], key, keylen, keypos + 1, link);
+	return dlink_rec(root->next[key[0]], link, &key[1]);
 }
 
 /****************************************************************************
- * dict_link
+ * dlink
  *
  * Write link to dictionary with the given key/link pair. This function
  * is thread-safe.
  */
 
-void dict_link(const void *key, size_t keylen, const void *prefix, 
-		size_t prefixlen, uint32_t server, uint64_t inode) {
+int dlink(const char *key, const char *pre, FILE *target) {
+	struct __link *link;
+	int err;
 
-	struct dict_link *link;
-
-	link = malloc(sizeof(struct dict_link));
-	link->prefix = prefix;
-	link->prefixlen = prefixlen;
-	link->server = server;
-	link->inode = inode;
+	link = dalloc(sizeof(struct __link));
+	link->pre    = strcpy(dalloc(strlen(pre) + 1), pre);
+	link->server = target->server;
+	link->inode  = target->inode;
 
 	mutex_spin(&dict_info->mutex);
-
-	dict_link_rec(&dict_info->root, key, keylen, 0, link);
-
+	err = dlink_rec(&dict_info->root, link, key);
 	mutex_free(&dict_info->mutex);
 
-	free(link);
+	return err;
 }
 
-/****************************************************************************
- * dict_linkstr
- */
-
-void dict_linkstr(const char *key, const char *prefix, 
-		uint32_t server, uint64_t inode) {
-
-	dict_link((uint8_t*) key, strlen(key), (uint8_t*) prefix, strlen(prefix),
-		server, inode);
-}
-
-/****************************************************************************
- * dict_linkstrns
- */
-
-void dict_linkstrns(const char *namespace, const char *key, 
-		const char *prefix, uint32_t server, uint64_t inode) {
-	
-	char *buffer;
-
-	buffer = malloc(strlen(namespace) + strlen(key) + 1);
-	strcpy(buffer, namespace);
-	strcat(buffer, key);
-
-	dict_linkstr(buffer, prefix, server, inode);
-
-	free(buffer);
-}
-
-void dict_link_read(struct dict_link *link, const void *key, size_t keylen,
-		void *value, size_t *vallen) {
-
+char *_dlink_read(struct __link *link, const char *key) {
 	FILE *file;
 	size_t size;
-	struct dict_link_req request;
+	struct __link_req req;
+	char *value;
 
 	file = fcons(link->server, link->inode);
 
-	memcpy(&request.key[0], link->prefix, link->prefixlen);
-	memcpy(&request.key[link->prefixlen], key, keylen);
-	request.keylen = link->prefixlen + keylen;
+	strlcpy(req.key, link->pre, 2048);
+	strlcat(req.key, key,       2048);
 
-	size = ssend(file, &request, &request, 
-		sizeof(struct dict_link_req), 0, PORT_DREAD);
+	size = ssend(file, &req, &req, sizeof(struct __link_req), 0, PORT_DREAD);
 
 	if (!size) {
-		*vallen = 0;
 		fclose(file);
-		return;
+		return NULL;
 	}
 
-	if (*vallen < request.vallen) {
-		memcpy(value, request.val, *vallen);
+	value = malloc(strlen(req.val) + 1);
+	strcpy(value, req.val);
+
+	fclose(file);
+	return value;
+}
+
+int _dlink_write(struct __link *link, const char *val, const char *key) {
+	FILE *file;
+	size_t size;
+	struct __link_req req;
+
+	file = fcons(link->server, link->inode);
+
+	strlcpy(req.key, link->pre, 2048);
+	strlcat(req.key, key,       2048);
+	strlcpy(req.val, val,       1024);
+
+	size = ssend(file, &req, &req, sizeof(struct __link_req), 0, PORT_DWRITE);
+
+	if (!size) {
+		fclose(file);
+		return -1;
 	}
 	else {
-		memcpy(value, request.val, request.vallen);
-		*vallen = request.vallen;
+		fclose(file);
+		return 0;
 	}
-
-	fclose(file);
 }
 
-void dict_link_write(struct dict_link *link, const void *key, size_t keylen,
-		const void *value, size_t vallen) {
-	
+int _dlink_link(struct __link *link, struct __link *new, const char *key) {
 	FILE *file;
-	struct dict_link_req request;
+	size_t size;
+	struct __link_req req;
 
 	file = fcons(link->server, link->inode);
 
-	memcpy(&request.key[0], link->prefix, link->prefixlen);
-	memcpy(&request.key[link->prefixlen], key, keylen);
-	request.keylen = link->prefixlen + keylen;
+	strlcpy(req.key, link->pre, 2048);
+	strlcat(req.key, key,       2048);
+	strlcpy(req.val, tdeflate(link, sizeof(struct __link_req)), 1024);
 
-	if (vallen > 1024) {
-		vallen = 1024;
+	size = ssend(file, &req, &req, sizeof(struct __link_req), 0, PORT_DLINK);
+
+	if (!size) {
+		fclose(file);
+		return -1;
 	}
 
-	memcpy(request.val, value, vallen);
-	request.vallen = vallen;
-
-	ssend(file, &request, &request, sizeof(struct dict_link_req), 0, PORT_DWRITE);
-
 	fclose(file);
-}
 
-void dict_link_link(struct dict_link *link, const void *key, size_t keylen,
-		struct dict_link *newlink) {
-	
-	FILE *file;
-	struct dict_link_req request;
-
-	file = fcons(link->server, link->inode);
-
-	memcpy(&request.key[0], link->prefix, link->prefixlen);
-	memcpy(&request.key[link->prefixlen], key, keylen);
-	request.keylen = link->prefixlen + keylen;
-
-	memcpy(request.val, newlink, sizeof(struct dict_link_req));
-	request.vallen = sizeof(struct dict_link_req);
-
-	ssend(file, &request, &request, sizeof(struct dict_link_req), 0, PORT_DLINK);
-
-	fclose(file);
+	return 0;
 }

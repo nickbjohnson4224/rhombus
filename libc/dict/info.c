@@ -26,7 +26,7 @@
  * information about the dictionary state.
  */
 
-struct dict_info *dict_info = (void*) DICTIONARY;
+struct __info *dict_info = (void*) DICTIONARY;
 
 /****************************************************************************
  * dict_init
@@ -38,8 +38,8 @@ struct dict_info *dict_info = (void*) DICTIONARY;
 
 void dict_init(void) {
 	
-	mmap(dict_info, sizeof(struct dict_info), MMAP_READ | MMAP_WRITE);
+	mmap(dict_info, sizeof(struct __info), MMAP_READ | MMAP_WRITE);
 
-	memclr(dict_info, sizeof(struct dict_info));
-	dict_info->brk = (uintptr_t) dict_info + sizeof(struct dict_info);
+	memclr(dict_info, sizeof(struct __info));
+	dict_info->brk = (uintptr_t) dict_info + sizeof(struct __info);
 }

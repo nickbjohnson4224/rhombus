@@ -79,7 +79,7 @@ void vfs_handle(uint32_t caller, struct packet *packet) {
 		mutex_free(&m_vfs);
 
 		sprintf(buffer, "%d:%d", q->server, q->inode);
-		dict_writestrns("vfs:/", q->path0, buffer, strlen(buffer) + 1);
+		dwritens(buffer, "vfs:/", q->path0);
 		break;
 	case VFS_CMD_LIST:
 		path_preprocess(q->path0);

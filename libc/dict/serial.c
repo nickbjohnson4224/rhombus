@@ -15,42 +15,59 @@
  */
 
 #include <dict.h>
-#include <ipc.h>
-#include <proc.h>
 #include <string.h>
+#include <ctype.h>
 
-void _devent_read(uint32_t caller, struct packet *packet) {
-	struct __link_req *req;
-	char *value;
-
-	req = pgetbuf(packet);
-
-	value = dread(req->key);
-
-	if (value) {
-		strlcpy(req->val, value, 1024);
-		psend(PORT_REPLY, caller, packet);
+static char tohex(int n) {
+	if (n > 9) {
+		return (char) ('A' + n - 10);
 	}
 	else {
-		pfree(packet);
-		psend(PORT_REPLY, caller, NULL);
+		return (char) ('0' + n);
 	}
 }
 
-void _devent_write(uint32_t caller, struct packet *packet) {
-	
-	if (packet) {
-		pfree(packet);
+static int fromhex(char c) {
+	if (isdigit(c)) {
+		return (int) (c - '0');
 	}
-
-	psend(PORT_REPLY, caller, NULL);
+	else {
+		return (int) (c - 'A');
+	}
 }
 
-void _devent_link(uint32_t caller, struct packet *packet) {
-	
-	if (packet) {
-		pfree(packet);
+char *deflate(const void *data, size_t size, char *arcbuffer) {
+	size_t i, j;
+	const uint8_t *bytes;
+
+	if (!data) return NULL;
+
+	bytes = data;
+
+	arcbuffer[0] = 'e'; // little endian
+
+	for (i = 0, j = 1; i < size; i++) {
+		arcbuffer[j++] = tohex(bytes[i] >> 4);
+		arcbuffer[j++] = tohex(bytes[i] & 15);
 	}
 
-	psend(PORT_REPLY, caller, NULL);
+	arcbuffer[j] = '\0';
+
+	return arcbuffer;
+}
+
+size_t inflate(void *datbuffer, size_t size, const char *arc) {
+	size_t i, j;
+	uint8_t *bytes;
+
+	if (!arc) return 0;
+
+	bytes = datbuffer;
+	
+	for (i = 0, j = 1; i < size && arc[j]; i++) {
+		bytes[i] = (fromhex(arc[j++]) << 4);
+		bytes[i] |= fromhex(arc[j++]);
+	}
+
+	return i;
 }

@@ -1,7 +1,5 @@
 Urgent:
 
-- dictionary interface refactor
-- random command hang bug
 - migrate from vfsd to dictionary vfs
 - finish libc stdio functions
 

@@ -54,6 +54,8 @@ int main(int argc, char **argv) {
 
 	/* reject if no parent is speicified */
 	if (argc < 2) {
+		printf("%s: no parent driver specified", argv[0]);
+
 		return 1;
 	}
 
@@ -77,6 +79,8 @@ int main(int argc, char **argv) {
 
 	if (!parent) {
 		/* parent does not exist - fail */
+		printf("%s: no parent driver %s\n", argv[0], argv[1]);
+
 		return 1;
 	}
 

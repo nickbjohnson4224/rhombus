@@ -21,7 +21,7 @@
 #include <string.h>
 
 /****************************************************************************
- * dict_write_rec
+ * dwrite_rec
  *
  * Recursive dictionary writing function, used by interface write functions.
  * Sets the dictionary value to the given value unless the given value is
@@ -29,79 +29,66 @@
  * thread-safe.
  */
 
-static void dict_write_rec
-		(struct dict *root, const uint8_t *key, size_t keylen, size_t keypos,
-		const uint8_t *val, size_t vallen) {
+static int dwrite_rec(struct __dict *root, const char *value, const char *key) {
 
 	if (root->link) {
-		dict_link_write(root->link, &key[keypos], keylen - keypos, val, vallen);
-
-		return;
+		return _dlink_write(root->link, value, key);
 	}
 
-	if (keypos >= keylen) {
-		if (val) {
-			root->value = memcpy(dict_alloc(vallen, true), val, vallen);
-			root->vallen = vallen;
+	if (!key[0]) {
+		if (value) {
+			root->value = dalloc(strlen(value) + 1);
+			strcpy(root->value, value);
 		}
 		else {
 			root->value = NULL;
-			root->vallen = 0;
 		}
-		return;
+		return 0;
 	}
 	
-	if (!root->next[key[keypos]]) {
-		root->next[key[keypos]] = dict_alloc(sizeof(struct dict), false);
+	if (!root->next[key[0]]) {
+		root->next[key[0]] = dalloc(sizeof(struct __dict));
 	}
 
-	dict_write_rec(root->next[key[keypos]], 
-		key, keylen, keypos + 1, val, vallen);
+	return dwrite_rec(root->next[key[0]], value, &key[1]);
 }
 
 /****************************************************************************
- * dict_write
+ * dwrite
  *
- * Write value to dictionary with the given key pair. This function is 
+ * Write value to dictionary with the given key pair. Returns 0 on success,
+ * nonzero on failure. This function is thread-safe.
+ */
+
+int dwrite(const char *value, const char *key) {
+	int err;
+
+	mutex_spin(&(dict_info->mutex));
+	err = dwrite_rec(&dict_info->root, value, key);
+	mutex_free(&(dict_info->mutex));
+
+	return err;
+}
+
+/****************************************************************************
+ * dwritens
+ *
+ * Read from the dictionary from a given namespace using the given string as
+ * a key. Returns 0 on success, nonzero on failure. This function is 
  * thread-safe.
  */
 
-void dict_write(const void *key, size_t keylen, const void *val, size_t vallen) {
-
-	mutex_spin(&dict_info->mutex);
-
-	dict_write_rec(&dict_info->root, key, keylen, 0, val, vallen);
-
-	mutex_free(&dict_info->mutex);
-}
-
-/****************************************************************************
- * dict_writestr
- *
- * Write value to dictionary using the given string as a key. This function 
- * is thread-safe.
- */
-
-void dict_writestr(const char *key, const void *val, size_t vallen) {
-	dict_write((uint8_t*) key, strlen(key), val, vallen);
-}
-
-/****************************************************************************
- * dict_readstrns
- *
- * Read from the dictionary from a given namespace using the given string as
- * a key. This function is thread-safe.
- */
-
-void dict_writestrns(const char *namespace, const char *key,
-		const void *val, size_t vallen) {
+int dwritens(const char *value, const char *ns, const char *key) {
 	char *buffer;
+	int err;
 
-	buffer = malloc(strlen(namespace) + strlen(key) + 1);
-	strcpy(buffer, namespace);
+	buffer = malloc(strlen(ns) + strlen(key) + 1);
+	strcpy(buffer, ns);
 	strcat(buffer, key);
 
-	dict_writestr(buffer, val, vallen);
+	err = dwrite(value, buffer);
 
 	free(buffer);
+
+	return err;
 }

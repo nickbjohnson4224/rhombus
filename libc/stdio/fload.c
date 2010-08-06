@@ -31,16 +31,7 @@
 
 FILE *fload(const char *name) {
 	FILE *new;
-	const FILE *old;
 	size_t length;
-
-	/* read file from dictionary */
-	old = (const FILE*) dict_readstrns("file:", name, &length);
-
-	/* reject invalid keys */
-	if ((!old) || (length != sizeof(FILE))) {
-		return NULL;
-	}
 
 	/* allocate space for new file */
 	new = malloc(sizeof(FILE));
@@ -50,16 +41,19 @@ FILE *fload(const char *name) {
 		return NULL;
 	}
 
-	/* copy old file excluding position and buffers */
-	new->server	       = old->server;
-	new->inode         = old->inode;
-	new->position      = old->position;
-	new->size          = old->size;
+	/* read file from dictionary */
+	length = inflate(new, sizeof(FILE), dreadns("file:", name));
+	
+	/* reject invalid keys */
+	if (length != sizeof(FILE)) {
+		free(new);
+		return NULL;
+	}
+
+	/* reset position and buffers */
 	new->buffer        = NULL;
 	new->buffsize      = 0;
 	new->buffpos       = 0;
-	new->revbuf        = old->revbuf;
-	new->flags         = old->flags;
 
 	return new;
 }

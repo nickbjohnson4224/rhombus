@@ -16,6 +16,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <mutex.h>
 #include <arch.h>
 #include <mmap.h>

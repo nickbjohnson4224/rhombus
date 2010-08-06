@@ -20,7 +20,7 @@
 #include <mmap.h>
 
 /****************************************************************************
- * dict_alloc
+ * dalloc
  *
  * Returns a pointer to a readable and writable region of memory of at least 
  * size <size>, which is persisted when a process executes and is garbage
@@ -28,7 +28,7 @@
  * thread safe outside of thread safe dictionary functions.
  */
 
-void *dict_alloc(size_t size, bool data) {
+void *dalloc(size_t size) {
 	void *ptr;
 
 	ptr = (void*) dict_info->brk;
@@ -38,16 +38,4 @@ void *dict_alloc(size_t size, bool data) {
 
 	memclr(ptr, size);
 	return ptr;
-}
-
-/****************************************************************************
- * dict_sweep
- *
- * Perform garbage collection on the dictionary heap manually. Normally this
- * function is only called internally by the dictionary. This function is
- * not thread safe outside of thread safe dictionary functions.
- */
-
-void dict_sweep(void) {
-	return;
 }
