@@ -24,6 +24,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <natio.h>
 
 #include "inc/tar.h"
 
@@ -75,7 +76,7 @@ int main() {
 	daemon_start(&stdout, file->start, file->size, NULL);
 	stderr = stdout;
 
-	printf(logo);
+//	printf(logo);
 	printf(splash);
 
 	/* VFS Daemon */

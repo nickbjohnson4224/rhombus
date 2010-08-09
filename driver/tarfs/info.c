@@ -6,6 +6,7 @@
 #include <ipc.h>
 
 #include <stdio.h>
+#include <natio.h>
 #include <string.h>
 #include <stdlib.h>
 

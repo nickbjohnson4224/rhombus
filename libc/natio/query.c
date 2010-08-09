@@ -15,16 +15,13 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
+#include <natio.h>
 #include <ipc.h>
 
 /****************************************************************************
- * write
- *
- * Write <size> bytes from <buf> to offset <offset> in stream <file>. 
- * Returns the number of bytes written.
+ * query (DEPRECATED)
  */
 
-size_t write(FILE *file, void *buf, size_t size, uint64_t offset) {
-	return ssend(file, NULL, buf, size, offset, PORT_WRITE);
+size_t query(FILE *fd, void *rbuf, void *sbuf, size_t size) {
+	return ssend(fd, rbuf, sbuf, size, 0, PORT_QUERY);
 }

@@ -16,7 +16,7 @@
 
 #include <dict.h>
 #include <string.h>
-#include <stdio.h>
+#include <natio.h>
 #include <ipc.h>
 #include <mutex.h>
 #include <stdlib.h>

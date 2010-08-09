@@ -16,7 +16,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <stdio.h>
+#include <natio.h>
 #include <ipc.h>
 
 /****************************************************************************

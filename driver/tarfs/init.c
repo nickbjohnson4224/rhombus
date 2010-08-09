@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <natio.h>
 #include <dict.h>
 
 #include "tarfs.h"

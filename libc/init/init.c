@@ -21,6 +21,7 @@
 #include <ipc.h>
 #include <exec.h>
 #include <stdio.h>
+#include <natio.h>
 #include <mmap.h>
 #include <dict.h>
 

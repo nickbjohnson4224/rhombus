@@ -72,17 +72,6 @@ struct thread *fault_page(struct thread *image) {
 	}
 	else {
 		/* fault */	
-		printk("page fault at %x, ip = %x frame %x pid %d\n", 
-			cr2, image->eip, page_get(cr2), image->proc->pid);
-
-		printk("stack[0]: %x\n", ((uint32_t*) image->useresp)[0]);
-		printk("stack[1]: %x\n", ((uint32_t*) image->useresp)[1]);
-		printk("stack[2]: %x\n", ((uint32_t*) image->useresp)[2]);
-		printk("stack[3]: %x\n", ((uint32_t*) image->useresp)[3]);
-		printk("stack[4]: %x\n", ((uint32_t*) image->useresp)[4]);
-
-		panic("page fault exception");
-
 		process_freeze(image->proc);
 		return thread_send(image, image->proc->pid, PORT_FAULT);
 	}
