@@ -41,6 +41,8 @@ uint32_t    _gpid(uint32_t selector);
 
 #define GPID_SELF	0
 #define GPID_PARENT	1
+#define GPID_THREAD	2
+#define GPID_TLS	3
 
 #define MMAP_READ	0x001
 #define MMAP_WRITE	0x002

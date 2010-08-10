@@ -14,32 +14,19 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdio.h>
 #include <string.h>
 #include <errno.h>
 
 /****************************************************************************
- * strerror
+ * perror
  *
- * Returns a string corresponding to the error code <errnum>.
+ * Prints a string starting with "<s>: " that contains the string given by
+ * strerror(errno) on standard error. Prints nothing if errno is clear.
  */
 
-const char *strerror(int errnum) {
-	switch (errnum) {
-	case EDOM:
-		return "argument out of range";
-	case ERANGE:
-		return "argument out of range";
-	case EILSEQ:
-		return "illegal character sequence";
-	case ENOMEM:
-		return "out of memory";
-	case EEXEC:
-		return "execution failed";
-	case ENOCMD:
-		return "command not found";
-	case ENOFILE:
-		return "file not found";
-	default:
-		return "unknown error";
+void perror(const char *s) {
+	if (errno) {
+		fprintf(stderr, "%s: %s\n", s, strerror(errno));
 	}
 }

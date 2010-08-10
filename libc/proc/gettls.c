@@ -14,32 +14,21 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <string.h>
-#include <errno.h>
+#include <stdint.h>
+#include <abi.h>
+#include <proc.h>
 
 /****************************************************************************
- * strerror
+ * gettls
  *
- * Returns a string corresponding to the error code <errnum>.
+ * Returns the current thread's "thread-local segment", an area of memory
+ * which is associated only with the current thread. This area of memory
+ * contains the stack, which grows downward from the top. All of this
+ * segment will be dynamically allocated by the kernel on page faults, for
+ * stack reasons. Other data may be stored in the segment, but be wary of
+ * stack overflows.
  */
 
-const char *strerror(int errnum) {
-	switch (errnum) {
-	case EDOM:
-		return "argument out of range";
-	case ERANGE:
-		return "argument out of range";
-	case EILSEQ:
-		return "illegal character sequence";
-	case ENOMEM:
-		return "out of memory";
-	case EEXEC:
-		return "execution failed";
-	case ENOCMD:
-		return "command not found";
-	case ENOFILE:
-		return "file not found";
-	default:
-		return "unknown error";
-	}
+uint32_t gettls(void) {
+	return _gpid(GPID_TLS);
 }

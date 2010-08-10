@@ -229,7 +229,7 @@ uintptr_t thread_bind(struct thread *thread, struct process *proc) {
 	uintptr_t i;
 	uintptr_t addr;
 
-	for (addr = 0, i = 0; i < 256; i++) {
+	for (addr = 0, i = 0; i < MAX_THREADS; i++) {
 		if (!proc->thread[i]) {
 			proc->thread[i] = thread;
 			addr = SSPACE + (SEGSZ * i);
@@ -237,6 +237,7 @@ uintptr_t thread_bind(struct thread *thread, struct process *proc) {
 		}
 	}
 
+	thread->id    = 
 	thread->stack = addr;
 	thread->proc  = proc;
 

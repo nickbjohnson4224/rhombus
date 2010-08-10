@@ -310,6 +310,8 @@ struct thread *syscall_gpid(struct thread *image) {
 	switch (image->eax) {
 	case 0: image->eax = image->proc->pid; break;
 	case 1: image->eax = image->proc->parent->pid; break;
+	case 2: image->eax = image->id; break;
+	case 3: image->eax = image->stack; break;
 	}
 
 	return image;

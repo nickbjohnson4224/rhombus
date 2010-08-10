@@ -108,6 +108,8 @@ int fprintf(FILE *stream, const char *format, ...);
 int printf(const char *format, ...);
 int sprintf(char *str, const char *format, ...);
 
+void perror(const char *s);
+
 /* file control operations *************************************************/
 
 int    fseek(FILE *stream, fpos_t offset, int whence);

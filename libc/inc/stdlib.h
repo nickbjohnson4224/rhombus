@@ -18,7 +18,6 @@
 #define STDLIB_H
 
 #include <stddef.h>
-#include <mutex.h>
 
 /* memory management *******************************************************/
 

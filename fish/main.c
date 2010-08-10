@@ -59,12 +59,7 @@ int main() {
 		pid = fork();
 		if (pid < 0) {
 			if (execv(argv[0], (char const **) argv)) {
-				if (err == 1) {
-					printf("%s: command not found\n", argv[0]);
-				}
-				else {
-					printf("failed to execute: %d\n", err);
-				}
+				perror(argv[0]);
 			}
 			exit(0);
 		}

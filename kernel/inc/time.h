@@ -23,8 +23,9 @@
 
 /* limits ******************************************************************/
 
-#define MAX_TASKS 1024
-#define MAX_PID   1024
+#define MAX_TASKS   1024
+#define MAX_PID     1024
+#define MAX_THREADS 256
 
 /* IPC *********************************************************************/
 
@@ -135,9 +136,8 @@ struct thread {
 
 	/* owning process */
 	struct process *proc;
-
-	/* user stack segment base */
 	uintptr_t stack;
+	uint32_t id;
 
 	/* scheduler information */
 	struct thread *next;

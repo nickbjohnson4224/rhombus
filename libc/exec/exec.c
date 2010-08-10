@@ -22,6 +22,7 @@
 #include <arch.h>
 #include <exec.h>
 #include <mmap.h>
+#include <errno.h>
 
 /****************************************************************************
  * bootstrap
@@ -66,7 +67,12 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 
 	_save(argv);
 
-	return _exec((uintptr_t) bootstrap);
+	if (_exec((uintptr_t) bootstrap)) {
+		errno = EEXEC;
+		return -1;
+	}
+
+	return 0;
 }
 
 /****************************************************************************
@@ -99,7 +105,8 @@ int execv(const char *path, char const **argv) {
 	image = fopen(fullpath, "r");
 
 	if (!image) {
-		return 1;
+		errno = ENOFILE;
+		return -1;
 	}
 
 	info(image, buffer, "size");
@@ -107,7 +114,8 @@ int execv(const char *path, char const **argv) {
 	size = atoi(buffer);
 
 	if (!size) {
-		return 2;
+		errno = ENOFILE;
+		return -1;
 	}
 
 	mmap(bootstrap, size, MMAP_READ | MMAP_WRITE);
@@ -115,5 +123,10 @@ int execv(const char *path, char const **argv) {
 
 	_save(argv);
 
-	return _exec((uintptr_t) bootstrap);
+	if (_exec((uintptr_t) bootstrap)) {
+		errno = EEXEC;
+		return -1;
+	}
+
+	return 0;
 }

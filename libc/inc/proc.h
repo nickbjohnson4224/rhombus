@@ -19,6 +19,11 @@
 
 #include <abi.h>
 
+/* constants ***************************************************************/
+
+#define MAX_PID     1024
+#define MAX_THREADS 256
+
 /* process management ******************************************************/
 
 #define fork _fork		/* Spawn new process */
@@ -29,7 +34,9 @@ void sleep(void);
 
 /* PIDs ********************************************************************/
 
-uint32_t getpid(void);
-uint32_t getppid(void);
+uint32_t  getpid(void);
+uint32_t  getppid(void);
+uint32_t  gettid(void);
+uintptr_t gettls(void);
 
 #endif/*PROC_H*/

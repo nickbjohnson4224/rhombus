@@ -14,32 +14,25 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <string.h>
-#include <errno.h>
+#ifndef ERRNO_H
+#define ERRNO_H
 
-/****************************************************************************
- * strerror
- *
- * Returns a string corresponding to the error code <errnum>.
- */
+#include <proc.h>
 
-const char *strerror(int errnum) {
-	switch (errnum) {
-	case EDOM:
-		return "argument out of range";
-	case ERANGE:
-		return "argument out of range";
-	case EILSEQ:
-		return "illegal character sequence";
-	case ENOMEM:
-		return "out of memory";
-	case EEXEC:
-		return "execution failed";
-	case ENOCMD:
-		return "command not found";
-	case ENOFILE:
-		return "file not found";
-	default:
-		return "unknown error";
-	}
-}
+/* errno *******************************************************************/
+
+extern int errnov[MAX_THREADS];
+
+#define errno (errnov[gettid()])
+
+/* error codes *************************************************************/
+
+#define EDOM	1
+#define ERANGE	2
+#define EILSEQ	3
+#define ENOMEM	4
+#define EEXEC	5
+#define ENOCMD	6
+#define ENOFILE	7
+
+#endif/*ERRNO_H*/
