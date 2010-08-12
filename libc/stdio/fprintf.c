@@ -14,25 +14,22 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <stdio.h>
+#include <stdarg.h>
 
-#include <proc.h>
+/****************************************************************************
+ * fprintf
+ *
+ * Prints a formatted string to <stream>. See vfprintf for format details.
+ */
 
-/* errno *******************************************************************/
+int fprintf(FILE *stream, const char *format, ...) {
+	va_list ap;
+	int ret;
 
-extern int errnov[MAX_THREADS];
+	va_start(ap, format);
+	ret = vfprintf(stream, format, ap);
+	va_end(ap);
 
-#define errno (errnov[gettid()])
-
-/* error codes *************************************************************/
-
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-
-#endif/*ERRNO_H*/
+	return ret;
+}

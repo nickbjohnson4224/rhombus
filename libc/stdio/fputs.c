@@ -14,25 +14,22 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <stdio.h>
+#include <string.h>
 
-#include <proc.h>
+/****************************************************************************
+ * fputs
+ *
+ * Writes the string <s> to <stream>. Returns 0 on success, nonzero on
+ * error.
+ */
 
-/* errno *******************************************************************/
+int fputs(const char *s, FILE *stream) {
 
-extern int errnov[MAX_THREADS];
-
-#define errno (errnov[gettid()])
-
-/* error codes *************************************************************/
-
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-
-#endif/*ERRNO_H*/
+	if (fwrite(s, strlen(s), sizeof(char), stream) == 0) {
+		return -1;
+	}
+	else {
+		return 0;
+	}
+}

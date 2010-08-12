@@ -14,25 +14,21 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <stdio.h>
 
-#include <proc.h>
+/****************************************************************************
+ * fgetc
+ *
+ * Reads the next character from <stream> and returns it cast to an int on 
+ * success. Returns EOF on error.
+ */
 
-/* errno *******************************************************************/
+int fgetc(FILE *stream) {
+	char c;
 
-extern int errnov[MAX_THREADS];
+	if (fread(&c, sizeof(char), 1, stream) == 0) {
+		return EOF;
+	}
 
-#define errno (errnov[gettid()])
-
-/* error codes *************************************************************/
-
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-
-#endif/*ERRNO_H*/
+	return c;
+}

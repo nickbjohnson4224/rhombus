@@ -14,25 +14,20 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
-
+#include <stdio.h>
+#include <string.h>
 #include <proc.h>
 
-/* errno *******************************************************************/
+static char     buffer[L_tmpnam];
+static uint32_t state;
 
-extern int errnov[MAX_THREADS];
+char *tmpnam(char *s) {
+	
+	if (!s) {
+		s = buffer;
+	}
 
-#define errno (errnov[gettid()])
+	sprintf(s, "/tmp/t%x%x", getpid(), state++);
 
-/* error codes *************************************************************/
-
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-
-#endif/*ERRNO_H*/
+	return s;
+}

@@ -35,8 +35,8 @@ const char *strerror(int errnum) {
 		return "out of memory";
 	case EEXEC:
 		return "execution failed";
-	case ENOCMD:
-		return "command not found";
+	case ENOSYS:
+		return "function not implemented";
 	case ENOFILE:
 		return "file not found";
 	default:

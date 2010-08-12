@@ -15,33 +15,47 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
+#include <natio.h>
 
 /****************************************************************************
- * fcons
+ * fwrite
  *
- * Constructs a stream pointing to the file at server PID <server> and inode
- * number <inode>. Returns the newly opened stream on success, and NULL on
- * failure.
+ * Writes <nmemb> * <size> bytes of data from <stream> from the buffer <ptr>.
+ * Returns the number of bytes / <size> successfully written; on error or 
+ * EOF, a lessened or zero value is returned.
  */
 
-FILE *fcons(uint32_t server, uint64_t inode) {
-	FILE *new = malloc(sizeof(FILE));
-
-	if (!new) {
-		return NULL;
+size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
+	const uint8_t *data = ptr;
+	size_t i, ret;
+	
+	if (!stream) {
+		return 0;
 	}
 
-	new->server   = server;
-	new->inode    = inode;
-	new->mutex    = false;
-	new->position = 0;
-	new->size     = -1;
-	new->buffer   = NULL;
-	new->buffsize = 0;
-	new->buffpos  = 0;
-	new->revbuf   = EOF;
-	new->flags    = FILE_NBF | FILE_READ | FILE_WRITE;
+	if (stream->flags & FILE_NBF) {
 
-	return new;
+		ret = write(stream, (void*) ptr, size * nmemb, stream->position);
+		stream->position += ret;
+
+		return (ret / size);
+	}
+
+	for (i = 0; i < size * nmemb; i++) {
+		stream->buffer[stream->buffpos++] = data[i];
+
+		if (stream->flags & FILE_LBF) {
+			if ((data[i] == '\n') || (stream->buffpos > stream->buffsize)) {
+				fflush(stream);
+			}
+		}
+
+		if (stream->flags & FILE_FBF) {
+			if (stream->buffpos >= stream->buffsize) {
+				fflush(stream);
+			}
+		}
+	}
+
+	return nmemb;
 }

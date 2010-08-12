@@ -14,25 +14,21 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <stdio.h>
+#include <stdarg.h>
 
-#include <proc.h>
+/****************************************************************************
+ * sprintf
+ *
+ */
 
-/* errno *******************************************************************/
+int sprintf(char *str, const char *format, ...) {
+	va_list ap;
+	int ret;
 
-extern int errnov[MAX_THREADS];
+	va_start(ap, format);
+	ret = vsprintf(str, format, ap);
+	va_end(ap);
 
-#define errno (errnov[gettid()])
-
-/* error codes *************************************************************/
-
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-
-#endif/*ERRNO_H*/
+	return ret;
+}

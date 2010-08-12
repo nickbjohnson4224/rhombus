@@ -14,25 +14,20 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <stdio.h>
 
-#include <proc.h>
+/****************************************************************************
+ * feof
+ *
+ * Returns 1 if the EOF flag is set on <stream>, and 0 otherwise.
+ */
 
-/* errno *******************************************************************/
+int feof(FILE *stream) {
 
-extern int errnov[MAX_THREADS];
-
-#define errno (errnov[gettid()])
-
-/* error codes *************************************************************/
-
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-
-#endif/*ERRNO_H*/
+	if (stream->flags & FILE_EOF) {
+		return 1;
+	}
+	else {	
+		return 0;
+	}
+}

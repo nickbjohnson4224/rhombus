@@ -14,25 +14,27 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <stdio.h>
 
-#include <proc.h>
+/****************************************************************************
+ * fgets
+ *
+ * Reads at most (<size> - 1) characters from <stream> and stores them in
+ * <s>. Stops after a newline or EOF character. Newlines are included in the
+ * returned buffer.
+ */
 
-/* errno *******************************************************************/
+char *fgets(char *s, int size, FILE *stream) {
+	size_t i;
+	int ch;
 
-extern int errnov[MAX_THREADS];
+	for (i = 0; i < (size_t) size; i++) {
+		ch = fgetc(stream);
+		s[i] = ch;
 
-#define errno (errnov[gettid()])
+		if (ch == EOF || ch == '\n') break;
+	}
 
-/* error codes *************************************************************/
-
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-
-#endif/*ERRNO_H*/
+	s[i+1] = '\0';
+	return s;
+}

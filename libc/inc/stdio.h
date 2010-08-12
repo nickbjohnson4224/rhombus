@@ -17,19 +17,23 @@
 #ifndef STDIO_H
 #define STDIO_H
 
+#include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdarg.h>
+#include <arch.h>
 
 /*** Type Definitions ***/
 
-typedef size_t fpos_t;
+typedef uint64_t fpos_t;
 
 /*** File Structure ***/
 
 typedef struct _file {
 	uint32_t server;		/* Server PID */
 	uint64_t inode;			/* File inode on server */
-	uint8_t naddr[16];		/* Network address of server node */
+
+	bool mutex;				/* Mutex for buffers/position */
 
 	fpos_t position;		/* File position */
 	fpos_t size;			/* File size */
@@ -65,6 +69,9 @@ typedef struct _file {
 
 #define BUFSIZ		(PAGESZ - 256)
 
+#define TMP_MAX		0xFFFFFFFF
+#define L_tmpnam	24
+
 /* standard streams ********************************************************/
 
 extern FILE *stdin;
@@ -73,21 +80,30 @@ extern FILE *stderr;
 
 /* file operations *********************************************************/
 
+int   remove (const char *path);
+int   rename (const char *oldpath, const char *newpath);
+FILE *tmpfile(void);
+char *tmpnam (char *s);
+
+/* file access *************************************************************/
+
+FILE *fload (const char *name);
+int   fsave (const char *name, FILE *fd);
+FILE *fcons (uint32_t server, uint64_t inode);
+
 int   fclose(FILE *stream);
-FILE *fopen(const char *path, const char *mode);
+FILE *fopen (const char *path, const char *mode);
 
-FILE *fload(const char *name);
-int   fsave(const char *name, FILE *fd);
-FILE *fcons(uint32_t server, uint64_t inode);
-
-int  fflush(FILE *stream);
+int  fflush (FILE *stream);
 int  setvbuf(FILE *stream, char *buf, int mode, size_t size);
-void setbuf(FILE *stream, char *buf);
+void setbuf (FILE *stream, char *buf);
 
-/* I/O operations **********************************************************/
+/* direct input/output *****************************************************/
 
-size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
+size_t fread (void *ptr, size_t size, size_t nmemb, FILE *stream);
 size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream);
+
+/* character input/output **************************************************/
 
 int   fgetc(FILE *stream);
 char *fgets(char *s, int size, FILE *stream);
@@ -104,22 +120,38 @@ int puts(const char *s);
 #define putchar(c) (fputc(c, stdout))
 #define fputchar(c) (fputc(c, stdout))
 
-int fprintf(FILE *stream, const char *format, ...);
-int printf(const char *format, ...);
-int sprintf(char *str, const char *format, ...);
+/* formatted input/output **************************************************/
 
-void perror(const char *s);
+int __utoa(char *buffer, unsigned int n, int base, bool ucase);
+int __itoa(char *buffer, int n, int base, bool ucase);
 
-/* file control operations *************************************************/
+int printf   (const char *format, ...);
+int vprintf  (const char *format, va_list ap);
+int fprintf  (FILE *stream, const char *format, ...);
+int vfprintf (FILE *stream, const char *format, va_list ap);
+int sprintf  (char *str, const char *format, ...);
+int vsprintf (char *str, const char *format, va_list ap);
 
-int    fseek(FILE *stream, fpos_t offset, int whence);
-fpos_t ftell(FILE *stream);
-void   rewind(FILE *stream);
+int scanf    (const char *format, ...);
+int vscanf   (const char *format, va_list ap);
+int fscanf   (FILE *stream, const char *format, ...);
+int vfscanf  (FILE *stream, const char *format, va_list ap);
+int sscanf   (const char *str, const char *format, ...);
+int vsscanf  (const char *str, const char *format, va_list ap);
+
+/* file positioning ********************************************************/
+
+int    fseek  (FILE *stream, fpos_t offset, int whence);
+fpos_t ftell  (FILE *stream);
+void   rewind (FILE *stream);
 int    fgetpos(FILE *stream, fpos_t *pos);
 int    fsetpos(FILE *stream, fpos_t *pos);
 
+/* error handling **********************************************************/
+
 void   clearerr(FILE *stream);
-int    feof(FILE *stream);
-int    ferror(FILE *stream);
+int    feof    (FILE *stream);
+int    ferror  (FILE *stream);
+void   perror  (const char *s);
 
 #endif/*STDIO_H*/

@@ -14,25 +14,22 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <stdio.h>
 
-#include <proc.h>
+/****************************************************************************
+ * puts
+ *
+ * Writes the string <s> and a trailing newline to stdout. Returns 0 on
+ * success, nonzero on error.
+ */
 
-/* errno *******************************************************************/
+int puts(const char *s) {
 
-extern int errnov[MAX_THREADS];
-
-#define errno (errnov[gettid()])
-
-/* error codes *************************************************************/
-
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-
-#endif/*ERRNO_H*/
+	if (fputs(s, stdout)) {
+		return -1;
+	}
+	else {
+		fputc('\n', stdout);
+		return 0;
+	}
+}

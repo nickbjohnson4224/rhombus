@@ -14,25 +14,36 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <stdio.h>
+#include <natio.h>
 
-#include <proc.h>
+/****************************************************************************
+ * fread
+ *
+ * Reads <nmemb> * <size> bytes of data from <stream> into the buffer <ptr>.
+ * Returns the number of bytes / <size> successfully read; on error or EOF,
+ * a lessened or zero value is returned.
+ */
 
-/* errno *******************************************************************/
+size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+	size_t ret;
+	char *cptr;
 
-extern int errnov[MAX_THREADS];
+	if (!stream) {
+		return 0;
+	}
 
-#define errno (errnov[gettid()])
+	nmemb *= size;
 
-/* error codes *************************************************************/
+/*	if (stream->revbuf != EOF) {
+		cptr = ptr;
+		cptr[0] = stream->revbuf;
+		stream->revbuf = EOF;
+		nmemb--;
+	} */
 
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
+	ret = read(stream, ptr, nmemb, stream->position);
+	stream->position += ret;
 
-#endif/*ERRNO_H*/
+	return (ret / size);
+}

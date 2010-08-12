@@ -14,25 +14,15 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <stdio.h>
+#include <stdarg.h>
 
-#include <proc.h>
+/****************************************************************************
+ * vscanf
+ *
+ * XXX - doc
+ */
 
-/* errno *******************************************************************/
-
-extern int errnov[MAX_THREADS];
-
-#define errno (errnov[gettid()])
-
-/* error codes *************************************************************/
-
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-
-#endif/*ERRNO_H*/
+int vscanf(const char *format, va_list ap) {
+	return vfscanf(stdin, format, ap);
+}

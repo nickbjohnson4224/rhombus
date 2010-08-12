@@ -27,28 +27,12 @@
  */
 
 FILE *fopen(const char *path, const char *mode) {
-	FILE *new;
-	int err;
+	uint32_t server;
+	uint64_t inode;
 
-	new = malloc(sizeof(FILE));
-
-	if (!new) {
+	if (find(path, &server, &inode)) {
 		return NULL;
 	}
 
-	err = find(path, &new->server, &new->inode);
-	new->position      = 0;
-	new->size          = -1;
-	new->buffer        = NULL;
-	new->buffsize      = 0;
-	new->buffpos       = 0;
-	new->revbuf        = EOF;
-	new->flags         = FILE_NBF | FILE_READ | FILE_WRITE;
-	
-	if (err) {
-		free(new);
-		return NULL;
-	}
-
-	return new;
+	return fcons(server, inode);
 }

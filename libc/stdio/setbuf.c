@@ -14,25 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <stdio.h>
+#include <stdlib.h>
 
-#include <proc.h>
+/****************************************************************************
+ * setbuf
+ *
+ * Set the buffering properties and buffer size of a stream. Exactly 
+ * equivlant to setvbuf(stream, buf, buf ? _IOFBF : _IONBF, BUFSIZ).
+ */
 
-/* errno *******************************************************************/
-
-extern int errnov[MAX_THREADS];
-
-#define errno (errnov[gettid()])
-
-/* error codes *************************************************************/
-
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-
-#endif/*ERRNO_H*/
+void setbuf(FILE *stream, char *buf) {
+	int mode = buf ? _IOFBF : _IONBF;
+	setvbuf(stream, buf, mode, BUFSIZ);	
+}

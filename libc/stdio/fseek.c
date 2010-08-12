@@ -14,25 +14,31 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <stdio.h>
+#include <mutex.h>
 
-#include <proc.h>
+/****************************************************************************
+ * fseek
+ *
+ * Moves the file position of a stream to <offset> bytes from the position
+ * specified by <whence>.
+ */
 
-/* errno *******************************************************************/
+int fseek(FILE *stream, fpos_t offset, int whence) {
 
-extern int errnov[MAX_THREADS];
+	fflush(stream);
 
-#define errno (errnov[gettid()])
+	switch (whence) {
+	case SEEK_CUR:
+		stream->position += offset;
+		break;
+	case SEEK_END:
+		stream->position = stream->size - offset;
+		break;
+	case SEEK_SET:
+		stream->position = offset;
+		break;
+	}
 
-/* error codes *************************************************************/
-
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-
-#endif/*ERRNO_H*/
+	return 0;
+}

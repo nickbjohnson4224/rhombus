@@ -15,33 +15,56 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
 
 /****************************************************************************
- * fcons
+ * __itoa
  *
- * Constructs a stream pointing to the file at server PID <server> and inode
- * number <inode>. Returns the newly opened stream on success, and NULL on
- * failure.
+ * Convert the integer <n> to a string in base <base> and store in <buffer>. 
+ * Letters (for bases > 10) are lowercase if <ucase> is false, and uppercase 
+ * if <ucase> is true. Returns 0 on success, nonzero on error. Used 
+ * internally by vsnprintf().
  */
 
-FILE *fcons(uint32_t server, uint64_t inode) {
-	FILE *new = malloc(sizeof(FILE));
+int __itoa(char *buffer, int n, int b, bool ucase) {
+	const char *d;
+	char temp;
+	size_t i, size;
 
-	if (!new) {
-		return NULL;
+	d = (ucase) ? "0123456789ABCDEF" : "0123456789abcdef";
+
+	if (n < 0) {
+		buffer[0] = '-';
+		buffer = &buffer[1];
+		n = -n;
 	}
 
-	new->server   = server;
-	new->inode    = inode;
-	new->mutex    = false;
-	new->position = 0;
-	new->size     = -1;
-	new->buffer   = NULL;
-	new->buffsize = 0;
-	new->buffpos  = 0;
-	new->revbuf   = EOF;
-	new->flags    = FILE_NBF | FILE_READ | FILE_WRITE;
+	if (n == 0) {
+		buffer[0] = '0';
+		buffer[1] = '\0';
+		return 0;
+	}
 
-	return new;
+	if (b > 16) {
+		buffer[0] = '\0';
+		errno = ERANGE;
+		return -1;
+	}
+
+	for (i = 0; n; i++) {
+		buffer[i] = d[n % b];
+		n /= b;
+	}
+
+	buffer[i] = '\0';
+	size = i;
+
+	for (i = 0; i < (size / 2); i++) {
+		temp = buffer[size - i - 1];
+		buffer[size - i - 1] = buffer[i];
+		buffer[i] = temp;
+	}
+
+	return 0;
 }

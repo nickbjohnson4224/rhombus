@@ -14,25 +14,28 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <stdio.h>
+#include <mutex.h>
 
-#include <proc.h>
+/****************************************************************************
+ * ungetc
+ *
+ * Pushes <c> back into <stream>, where it can be read again. Returns <c> on 
+ * success, EOF on error.
+ */
 
-/* errno *******************************************************************/
+int ungetc(int c, FILE *stream) {
 
-extern int errnov[MAX_THREADS];
+	mutex_spin(&stream->mutex);
 
-#define errno (errnov[gettid()])
+	if (stream->revbuf != EOF) {
+		c = EOF;
+	}
+	else {
+		stream->revbuf = c;
+	}
 
-/* error codes *************************************************************/
+	mutex_free(&stream->mutex);
 
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-
-#endif/*ERRNO_H*/
+	return c;
+}

@@ -14,25 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <stdio.h>
 
-#include <proc.h>
+/****************************************************************************
+ * rewind
+ *
+ * Moves the absolute position of <stream> to 0.
+ */
 
-/* errno *******************************************************************/
-
-extern int errnov[MAX_THREADS];
-
-#define errno (errnov[gettid()])
-
-/* error codes *************************************************************/
-
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-
-#endif/*ERRNO_H*/
+void rewind(FILE *stream) {
+	stream->position = 0;
+}
