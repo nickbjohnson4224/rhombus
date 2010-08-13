@@ -15,18 +15,27 @@
  */
 
 #include <stdio.h>
-#include <natio.h>
+#include <stdbool.h>
+#include <dict.h>
+#include <string.h>
 #include <stdlib.h>
 
 /****************************************************************************
- * fopen
+ * __fsave
  *
- * The fopen() function opens the file whose name is the string pointed to
- * by path and associates a stream with it. Returns the newly opened stream
- * on success, and NULL on failure.
+ * Save a file descriptor to the dictionary. Saves the file descriptor <fd>
+ * to the dictionary under the name <name> in the namespace "file:". Returns
+ * 0 on success and nonzero on failure.
  */
 
-FILE *fopen(const char *path, const char *mode) {
+int __fsave(const char *name, FILE *fd) {
 
-	return freopen(path, mode, malloc(sizeof(FILE)));
+	/* reject null files */
+	if (!fd) return 1;
+
+	/* flush any buffers */
+	fflush(fd);
+
+	/* write file to dictionary */
+	return dwritens(tdeflate(fd, sizeof(FILE)), "file:", name);
 }

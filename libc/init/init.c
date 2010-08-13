@@ -82,10 +82,10 @@ void _init(bool is_init) {
 	int argc;
 
 	/* setup standard streams */
-	stdin  = fload("stdin");
-	stdout = fload("stdout");
-	stderr = fload("stderr");
-	stdvfs = fload("stdvfs");
+	stdin  = __fload("stdin");
+	stdout = __fload("stdout");
+	stderr = __fload("stderr");
+	stdvfs = __fload("stdvfs");
 
 	when(PORT_FAULT, pagefault);
 	when(PORT_FLOAT, fpufault);

@@ -14,46 +14,19 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdbool.h>
-#include <dict.h>
-#include <string.h>
 #include <stdlib.h>
 
 /****************************************************************************
- * fload
+ * strtod
  *
- * Load a file descriptor from the dictionary. Searches for the dictionary
- * entry <name> in the namespace "file:". If it is found, a new file
- * descriptor is cloned from the dictionary version. Used to persist files
- * across process execution.
+ * XXX - dummy functon
  */
 
-FILE *fload(const char *name) {
-	FILE *new;
-	size_t length;
+double strtod(const char *nptr, char **endptr) {
 
-	/* allocate space for new file */
-	new = malloc(sizeof(FILE));
-
-	/* check for allocation errors */
-	if (!new) {
-		return NULL;
+	if (endptr) {
+		*endptr = (char*) nptr;
 	}
 
-	/* read file from dictionary */
-	length = inflate(new, sizeof(FILE), dreadns("file:", name));
-	
-	/* reject invalid keys */
-	if (length != sizeof(FILE)) {
-		free(new);
-		return NULL;
-	}
-
-	/* reset position and buffers */
-	new->buffer        = NULL;
-	new->buffsize      = 0;
-	new->buffpos       = 0;
-
-	return new;
+	return 0.0;
 }

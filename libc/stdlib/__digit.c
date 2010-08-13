@@ -14,19 +14,28 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
-#include <natio.h>
+#include <ctype.h>
 #include <stdlib.h>
 
 /****************************************************************************
- * fopen
+ * __digit
  *
- * The fopen() function opens the file whose name is the string pointed to
- * by path and associates a stream with it. Returns the newly opened stream
- * on success, and NULL on failure.
+ * Returns the value of digit <digit> in base <base>.
  */
 
-FILE *fopen(const char *path, const char *mode) {
+int __digit(char digit, int base) {
+	int val;
 
-	return freopen(path, mode, malloc(sizeof(FILE)));
+	if (isdigit(digit)) {
+		val = digit - '0';
+	}
+	else if (isalpha(digit)) {
+		toupper(digit);
+		val = digit - 'A';
+	}
+	else {
+		val = 0;
+	}
+
+	return (val >= base) ? 0 : val;
 }

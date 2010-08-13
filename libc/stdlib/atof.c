@@ -14,19 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
-#include <natio.h>
 #include <stdlib.h>
 
 /****************************************************************************
- * fopen
+ * atof
  *
- * The fopen() function opens the file whose name is the string pointed to
- * by path and associates a stream with it. Returns the newly opened stream
- * on success, and NULL on failure.
+ * Same as strtod(nptr, NULL).
  */
 
-FILE *fopen(const char *path, const char *mode) {
-
-	return freopen(path, mode, malloc(sizeof(FILE)));
+double atof(const char *nptr) {
+	return strtod(nptr, NULL);
 }

@@ -14,34 +14,29 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 /****************************************************************************
- * fcons
+ * strtoul
  *
- * Constructs a stream pointing to the file at server PID <server> and inode
- * number <inode>. Returns the newly opened stream on success, and NULL on
- * failure.
+ * Convert the contents of a string containing a <base>-ary number to an 
+ * unsigned long integer. If endptr is non-NULL, a pointer to the character
+ * after the last character parsed is stored in it.
  */
 
-FILE *fcons(uint32_t server, uint64_t inode) {
-	FILE *new = malloc(sizeof(FILE));
+uint32_t strtoul(const char *nptr, char **endptr, int base) {
+	int i;
+	uint32_t sum;
 
-	if (!new) {
-		return NULL;
+	for (sum = 0, i = 0; nptr[i] && isdigit(nptr[i]); i++) {
+		sum *= base;
+		sum += __digit(nptr[i], base);
 	}
 
-	new->server   = server;
-	new->inode    = inode;
-	new->mutex    = false;
-	new->position = 0;
-	new->size     = -1;
-	new->buffer   = NULL;
-	new->buffsize = 0;
-	new->buffpos  = 0;
-	new->revbuf   = EOF;
-	new->flags    = FILE_NBF | FILE_READ | FILE_WRITE;
+	if (endptr) {
+		*endptr = (char*) &nptr[i];
+	}
 
-	return new;
+	return sum;
 }

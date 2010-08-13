@@ -15,18 +15,45 @@
  */
 
 #include <stdio.h>
-#include <natio.h>
+#include <stdbool.h>
+#include <dict.h>
+#include <string.h>
 #include <stdlib.h>
 
 /****************************************************************************
- * fopen
+ * __fload
  *
- * The fopen() function opens the file whose name is the string pointed to
- * by path and associates a stream with it. Returns the newly opened stream
- * on success, and NULL on failure.
+ * Load a file descriptor from the dictionary. Searches for the dictionary
+ * entry <name> in the namespace "file:". If it is found, a new file
+ * descriptor is cloned from the dictionary version. Used to persist files
+ * across process execution.
  */
 
-FILE *fopen(const char *path, const char *mode) {
+FILE *__fload(const char *name) {
+	FILE *new;
+	size_t length;
 
-	return freopen(path, mode, malloc(sizeof(FILE)));
+	/* allocate space for new file */
+	new = malloc(sizeof(FILE));
+
+	/* check for allocation errors */
+	if (!new) {
+		return NULL;
+	}
+
+	/* read file from dictionary */
+	length = inflate(new, sizeof(FILE), dreadns("file:", name));
+	
+	/* reject invalid keys */
+	if (length != sizeof(FILE)) {
+		free(new);
+		return NULL;
+	}
+
+	/* reset position and buffers */
+	new->buffer        = NULL;
+	new->buffsize      = 0;
+	new->buffpos       = 0;
+
+	return new;
 }

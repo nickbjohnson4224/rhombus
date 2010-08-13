@@ -54,7 +54,7 @@ void daemon_start(FILE **file, void *image, size_t image_size, char const **argv
 	pwaits(PORT_SYNC, pid);
 
 	if (file) {
-		*file = fcons(pid, 0);
+		*file = __fcons(pid, 0, NULL);
 	}
 }
 

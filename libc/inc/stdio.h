@@ -80,23 +80,24 @@ extern FILE *stderr;
 
 /* file operations *********************************************************/
 
-int   remove (const char *path);
-int   rename (const char *oldpath, const char *newpath);
+int   remove (const char *path);	// XXX - not implemented
+int   rename (const char *oldpath, const char *newpath);	// XXX - n impl
 FILE *tmpfile(void);
 char *tmpnam (char *s);
 
 /* file access *************************************************************/
 
-FILE *fload (const char *name);
-int   fsave (const char *name, FILE *fd);
-FILE *fcons (uint32_t server, uint64_t inode);
+FILE *__fload(const char *name);
+int   __fsave(const char *name, FILE *fd);
+FILE *__fcons(uint32_t server, uint64_t inode, FILE *stream);
 
-int   fclose(FILE *stream);
-FILE *fopen (const char *path, const char *mode);
+int   fclose (FILE *stream);
+FILE *fopen  (const char *path, const char *mode);
+FILE *freopen(const char *path, const char *mode, FILE *stream);
 
-int  fflush (FILE *stream);
-int  setvbuf(FILE *stream, char *buf, int mode, size_t size);
-void setbuf (FILE *stream, char *buf);
+int  fflush  (FILE *stream);
+int  setvbuf (FILE *stream, char *buf, int mode, size_t size);
+void setbuf  (FILE *stream, char *buf);
 
 /* direct input/output *****************************************************/
 

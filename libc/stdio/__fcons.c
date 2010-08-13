@@ -15,27 +15,38 @@
  */
 
 #include <stdio.h>
-#include <stdbool.h>
-#include <dict.h>
-#include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 
 /****************************************************************************
- * fsave
+ * __fcons
  *
- * Save a file descriptor to the dictionary. Saves the file descriptor <fd>
- * to the dictionary under the name <name> in the namespace "file:". Returns
- * 0 on success and nonzero on failure.
+ * Constructs a stream pointing to the file at server PID <server> and inode
+ * number <inode>. Returns the newly opened stream on success, and NULL on
+ * failure.
  */
 
-int fsave(const char *name, FILE *fd) {
+FILE *__fcons(uint32_t server, uint64_t inode, FILE *new) {
 
-	/* reject null files */
-	if (!fd) return 1;
+	if (!new) {
+		new = malloc(sizeof(FILE));
 
-	/* flush any buffers */
-	fflush(fd);
+		if (!new) {
+			errno = ENOMEM;
+			return NULL;
+		}
+	}
 
-	/* write file to dictionary */
-	return dwritens(tdeflate(fd, sizeof(FILE)), "file:", name);
+	new->server   = server;
+	new->inode    = inode;
+	new->mutex    = false;
+	new->position = 0;
+	new->size     = -1;
+	new->buffer   = NULL;
+	new->buffsize = 0;
+	new->buffpos  = 0;
+	new->revbuf   = EOF;
+	new->flags    = FILE_NBF | FILE_READ | FILE_WRITE;
+
+	return new;
 }

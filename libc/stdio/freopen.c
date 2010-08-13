@@ -15,18 +15,26 @@
  */
 
 #include <stdio.h>
-#include <natio.h>
 #include <stdlib.h>
+#include <natio.h>
 
 /****************************************************************************
- * fopen
+ * freopen
  *
- * The fopen() function opens the file whose name is the string pointed to
- * by path and associates a stream with it. Returns the newly opened stream
- * on success, and NULL on failure.
+ * Same as fopen(), but result is stored in <stream>.
  */
 
-FILE *fopen(const char *path, const char *mode) {
+FILE *freopen(const char *path, const char *mode, FILE *stream) {
+	uint32_t server;
+	uint64_t inode;
 
-	return freopen(path, mode, malloc(sizeof(FILE)));
+	if (!stream) {
+		return NULL;
+	}
+
+	if (find(path, &server, &inode)) {
+		return NULL;
+	}
+
+	return __fcons(server, inode, stream);
 }

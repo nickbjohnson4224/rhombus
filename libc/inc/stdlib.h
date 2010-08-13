@@ -31,12 +31,21 @@ void   *realloc(void *ptr, size_t size);
 
 /* type conversion *********************************************************/
 
-int      atoi(const char *nptr);
-double   atof(const char *nptr);
-int32_t  atol(const char *nptr);
-double   strtod(const char *nptr);
-int32_t  strtol(const char *nptr);
-uint32_t strtoul(const char *nptr);
+int  __digit(char digit, int base);
+
+int     atoi(const char *nptr);
+double  atof(const char *nptr);
+int32_t atol(const char *nptr);
+
+double      strtod (const char *nptr, char **endptr);
+//float       strtof (const char *nptr, char **endptr);
+//long double strtold(const char *nptr, char **endptr);
+
+#define strof(n,e)   ((float) strtod(n,e))
+#define strtold(n,e) ((long double) strtod(n,e))
+
+int32_t  strtol (const char *nptr, char **endptr, int base);
+uint32_t strtoul(const char *nptr, char **endptr, int base);
 
 /* random number generaton *************************************************/
 
@@ -57,11 +66,13 @@ int   system(const char *s);
 #define EXIT_FAILURE	1
 #define EXIT_SUCCESS	0
 
-void exit(int status);
-void abort(void);
-int  atexit(void (*function)(void));
+void exit(int status) __attribute__ ((noreturn));
+void abort(void)      __attribute__ ((noreturn));
+int  atexit(void (*function)(void));	// XXX - not implemented
 
 /* math functions **********************************************************/
+
+// XXX - not implemented
 
 typedef struct {
 	short int quot;
@@ -80,6 +91,8 @@ div_t   div(short int num, short int denom);
 ldiv_t ldiv(long int num,  long int denom);
 
 /* searching and sorting ***************************************************/
+
+// XXX - not implemented
 
 void *bsearch(const void *key, const void *base, size_t n, size_t size,
 	int (*cmp)(const void *keyval, const void *datum));

@@ -14,19 +14,29 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
-#include <natio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 /****************************************************************************
- * fopen
+ * strtol
  *
- * The fopen() function opens the file whose name is the string pointed to
- * by path and associates a stream with it. Returns the newly opened stream
- * on success, and NULL on failure.
+ * Convert the contents of a string containing a <base>ary number to a signed
+ * long integer. If endptr is non-NULL, a pointer to the character after the
+ * last character parsed is stored in it.
  */
 
-FILE *fopen(const char *path, const char *mode) {
+int32_t strtol(const char *nptr, char **endptr, int base) {
+	int i;
+	int32_t sum;
 
-	return freopen(path, mode, malloc(sizeof(FILE)));
+	for (sum = 0, i = 0; nptr[i] && isdigit(nptr[i]); i++) {
+		sum *= 10;
+		sum += __digit(nptr[i], base);
+	}
+
+	if (endptr) {
+		*endptr = (char*) &nptr[i];
+	}
+
+	return sum;
 }

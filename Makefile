@@ -5,9 +5,10 @@ LIB_DIRS  =
 DRIVERS  := driver/term driver/kbd driver/tarfs driver/vga
 DAEMONS  := daemon/vfsd daemon/init
 UTILS    := util/ls util/echo util/halt util/cat
+PORTS    := ports/lua
 
 BIN_DIRS  = kernel fish
-BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS)
+BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS) #$(PORTS)
 
 CC := clang
 LD := ld
@@ -27,7 +28,7 @@ PPFLAGS := -x assembler-with-cpp -I$(BUILDDIR)/inc
 
 export BUILDDIR CC LD AR AS PP CFLAGS LDFLAGS ARFLAGS PPFLAGS
 
-.PHONY: $(LIB_DIRS) $(BIN_DIRS) clean test cd distclean makedirs libc
+.PHONY: $(LIB_DIRS) $(BIN_DIRS) clean test cd distclean makedirs libc ports
 
 all: makedirs $(LIB_DIRS) $(BIN_DIRS) libc
 

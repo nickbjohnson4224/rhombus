@@ -83,7 +83,7 @@ char *_dlink_read(struct __link *link, const char *key) {
 	struct __link_req req;
 	char *value;
 
-	file = fcons(link->server, link->inode);
+	file = __fcons(link->server, link->inode, NULL);
 
 	strlcpy(req.key, link->pre, 2048);
 	strlcat(req.key, key,       2048);
@@ -107,7 +107,7 @@ int _dlink_write(struct __link *link, const char *val, const char *key) {
 	size_t size;
 	struct __link_req req;
 
-	file = fcons(link->server, link->inode);
+	file = __fcons(link->server, link->inode, NULL);
 
 	strlcpy(req.key, link->pre, 2048);
 	strlcat(req.key, key,       2048);
@@ -130,7 +130,7 @@ int _dlink_link(struct __link *link, struct __link *new, const char *key) {
 	size_t size;
 	struct __link_req req;
 
-	file = fcons(link->server, link->inode);
+	file = __fcons(link->server, link->inode, NULL);
 
 	strlcpy(req.key, link->pre, 2048);
 	strlcat(req.key, key,       2048);
