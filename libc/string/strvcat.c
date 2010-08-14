@@ -14,24 +14,52 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
 #include <string.h>
-#include <natio.h>
-#include <ipc.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <errno.h>
 
 /****************************************************************************
- * info (DEPRECATED)
+ * strvcat
  *
- * Send an info query to the given file requesting the value in field <field>
- * <value> is used as a buffer. Returns true on success, false on failure.
+ * Concatenates a list of strings and returns the result as a buffer in
+ * the global heap. Returns NULL on error.
  */
 
-bool info(FILE *fd, char *value, const char *field) {
-	struct info_query query;
+char *strvcat(const char *s1, ...) {
+	va_list ap;
+	const char *argv[16];
+	char *fullstring;
+	size_t i, length, pos;
 
-	strcpy(query.field, field);
-	ssend(fd, (char*) &query, (char*) &query, sizeof(query), 0, PORT_INFO);
-	strcpy(value, query.value);
+	va_start(ap, s1);
 
-	return (value[0] != '\0');
+	argv[0] = s1;
+	
+	for (i = 1; i < 16; i++) {
+		argv[i] = va_arg(ap, const char*);
+		if (!argv[i]) {
+			break;
+		}
+	}
+
+	for (length = 0, i = 0; i < 16 && argv[i]; i++) {
+		length += strlen(argv[i]);
+	}
+
+	fullstring = malloc(length + 1);
+
+	if (!fullstring) {
+		errno = ENOMEM;
+		return NULL;
+	}
+
+	fullstring[0] = '\0';
+
+	for (i = 0, pos = 0; i < 16 && argv[i]; i++) {
+		strcat(&fullstring[pos], argv[i]);
+		pos += strlen(argv[i]);
+	}
+
+	return fullstring;
 }

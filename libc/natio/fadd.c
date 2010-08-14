@@ -15,55 +15,24 @@
  */
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <natio.h>
 #include <string.h>
+#include <natio.h>
 
-int main(int argc, char **argv) {
-	char filelist[2048];
-	size_t n, i, j;
-	int err;
+/****************************************************************************
+ * fadd
+ *
+ * XXX - doc
+ */
 
-	if (argc == 1) {
-		err = flist(getenv("PWD"), filelist);
-		
-		if (err) {
-			printf("%s: no such directory\n", getenv("PWD"));
-			return EXIT_FAILURE;
-		}
+int fadd(const char *dir, const char *name, uint32_t server, uint64_t inode) {
+	char *path;
 
-		for (i = 0, j = 1; filelist[i]; i++) {
-			if (filelist[i] == ':') {
-				filelist[i] = (j % 6) ? '\t' : '\n';
-				j++;
-			}
-		}
+	path = strvcat(dir, name, NULL);
 
-		printf("%s\n", filelist);
-	}
+	flctrl(path, "addr", "%d %d", server, inode);
+	fdir  (dir, name);
 
-	else for (n = 1; n < (size_t) argc; n++) {
-
-		if (argc > 2) {
-			printf("%s:\n", argv[n]);
-		}
-
-		err = flist(argv[n], filelist);
-
-		if (err) {
-			printf("%s: no such directory\n", argv[n]);
-			continue;
-		}
-
-		for (i = 0, j = 1; filelist[i]; i++) {
-			if (filelist[i] == ':') {
-				filelist[i] = (j % 6) ? '\t' : '\n';
-				j++;
-			}
-		}
-
-		printf("%s\n", filelist);
-	}
+	free(path);
 
 	return 0;
 }

@@ -15,55 +15,25 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 #include <natio.h>
-#include <string.h>
+#include <dict.h>
 
-int main(int argc, char **argv) {
-	char filelist[2048];
-	size_t n, i, j;
+/****************************************************************************
+ * fmnt
+ *
+ * Mount the locat vfs of <target> as <name> in <dir>. Returns 0 on success,
+ * nonzero on failure.
+ */
+
+int fmnt(const char *dir, const char *name, FILE *target) {
+	char *buffer;
 	int err;
 
-	if (argc == 1) {
-		err = flist(getenv("PWD"), filelist);
-		
-		if (err) {
-			printf("%s: no such directory\n", getenv("PWD"));
-			return EXIT_FAILURE;
-		}
-
-		for (i = 0, j = 1; filelist[i]; i++) {
-			if (filelist[i] == ':') {
-				filelist[i] = (j % 6) ? '\t' : '\n';
-				j++;
-			}
-		}
-
-		printf("%s\n", filelist);
-	}
-
-	else for (n = 1; n < (size_t) argc; n++) {
-
-		if (argc > 2) {
-			printf("%s:\n", argv[n]);
-		}
-
-		err = flist(argv[n], filelist);
-
-		if (err) {
-			printf("%s: no such directory\n", argv[n]);
-			continue;
-		}
-
-		for (i = 0, j = 1; filelist[i]; i++) {
-			if (filelist[i] == ':') {
-				filelist[i] = (j % 6) ? '\t' : '\n';
-				j++;
-			}
-		}
-
-		printf("%s\n", filelist);
-	}
-
-	return 0;
+	buffer = strvcat("vfs:", dir, name, NULL);
+	err = dlink(buffer, "vfs:", target);
+	free(buffer);
+	
+	return err;
 }

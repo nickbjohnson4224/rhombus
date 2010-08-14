@@ -14,34 +14,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <natio.h>
 
 /****************************************************************************
- * freopen
+ * ffind
  *
- * Same as fopen(), but result is stored in <stream>.
+ * Finds the server and inode of a file given its path. On success, returns
+ * zero and sets *<server> to the server and *<inode> to the inode. On 
+ * failure, returns nonzero.
  */
 
-FILE *freopen(const char *path, const char *mode, FILE *stream) {
-	uint32_t server;
-	uint64_t inode;
-	FILE *file;
-
-	if (!stream) {
-		return NULL;
-	}
-
-	if (ffind(path, &server, &inode)) {
-		return NULL;
-	}
-
-	file = __fcons(server, inode, stream);
-
-	if (fstat(path, "size", "%d", &file->size)) {
-		file->size = 0;
-	}
-
-	return file;
+int ffind(const char *path, uint32_t *server, uint64_t *inode) {
+	return fstat(path, "addr", "%d %d", server, inode);
 }

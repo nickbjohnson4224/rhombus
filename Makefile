@@ -3,7 +3,7 @@ BUILDDIR=$(PWD)
 LIB_DIRS  = 
 
 DRIVERS  := driver/term driver/kbd driver/tarfs driver/vga
-DAEMONS  := daemon/vfsd daemon/init
+DAEMONS  := daemon/init
 UTILS    := util/ls util/echo util/halt util/cat
 PORTS    := ports/lua
 

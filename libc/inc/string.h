@@ -39,6 +39,7 @@ size_t strlcpy(char *, const char *, size_t);
 char  *strcat (char *, const char *);
 char  *strncat(char *, const char *, size_t);
 size_t strlcat(char *, const char *, size_t);
+char  *strvcat(const char *, ...);
 
 int    strcmp (const char *, const char *);
 int    strncmp(const char *, const char *, size_t);

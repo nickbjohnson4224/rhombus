@@ -60,15 +60,12 @@ static uintptr_t getvalue(char *field, size_t size) {
 
 void tarfs_init() {
 	struct tar_block *block;
-	char   path[100];
+	char   *path;
 	size_t i, n;
 	uint32_t data[2];
 
 	/* allocate buffer space for header block */
 	block = malloc(512);
-
-	/* add root directory */
-	fadd(root, getpid(), 1);
 
 	for (i = 0, n = 2;; n++) {
 
@@ -81,17 +78,17 @@ void tarfs_init() {
 			break;
 		}
 
-		/* add file to VFS */
-		strcpy(path, root);
-		strcat(path, "/");
-		strcat(path, block->filename);
-		fadd  (path, getpid(), n);
-
 		/* add file to inode table */
 		strcpy(inode[n].name, block->filename);
 		inode[n].offset = i + 512;
-		inode[n].size   = getvalue(block->filesize, sizeof(block->filesize));		
-		
+		inode[n].size   = getvalue(block->filesize, sizeof(block->filesize));	
+
+		/* add file to VFS */
+		fadd("/", block->filename, getpid(), n);
+		path = strvcat("/", block->filename, NULL);
+		flctrl(path, "size", "%d", inode[n].size);
+		free(path);
+
 		/* move to next file header */
 		i += ((inode[n].size / 512) + 1) * 512;
 		if (inode[n].size % 512) i += 512;

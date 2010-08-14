@@ -41,6 +41,11 @@ Flux Operating System 0.5a\n\
 Copyright 2010 Nick Johnson\n\
 \n";
 
+void panic(const char *message) {
+	printf("INIT PANIC: %s\n", message);
+	for(;;);
+}
+
 void daemon_start(FILE **file, void *image, size_t image_size, char const **argv) {
 	int32_t pid;
 
@@ -63,9 +68,17 @@ int main() {
 	extern void initrd_init(void);
 	struct tar_file *boot_image, *file;
 	char const **argv;
+	char *path;
 	size_t length;
+	uint32_t server;
+	uint64_t inode;
+	FILE *temp, *init;
+
+	init = __fcons(getpid(), 0, NULL);
 
 	setenv("NAME", "unknown");
+	froot(init);
+	fdir("/", "dev");
 
 	/* Boot Image */
 	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);
@@ -75,54 +88,34 @@ int main() {
 	
 	/* Terminal Driver */
 	argv[0] = "term";
-	file = tar_find(boot_image, (char*) "term");
-	if (!file) {
-		for(;;);
-	}
+	if (!(file = tar_find(boot_image, (char*) "term"))) panic("no term found");
 	daemon_start(&stdout, file->start, file->size, argv);
+	fadd("/dev/", "term", stdout->server, stdout->inode);
+
 	stderr = stdout;
 
-//	printf(logo);
 	printf(splash);
-
-	/* VFS Daemon */
-	argv[0] = "vfsd";
-	file = tar_find(boot_image, (char*) "vfsd");
-	if (!file) {
-		printf("critical error: no VFSd image found\n");
-		for(;;);
-	}
-	daemon_start(&stdvfs, file->start, file->size, argv);
-	fadd("/vfsd", stdvfs->server, stdvfs->inode);
-	fadd("/term", stdout->server, stdout->inode);
-	
-	dlink("vfs:", "vfs:", stdvfs);
 
 	/* Initrd */
 	initrd_init();
-	fadd("/initrd", getpid(), 0);
+	fadd ("/dev/", "initrd", getpid(), 0);
 
 	/* Initrd over TARFS */
 	argv[0] = "tarfs";
-	argv[1] = "/initrd";
+	argv[1] = "/dev/initrd";
 	argv[2] = NULL;
-	file = tar_find(boot_image, (char*) "tarfs");
-	if (!file) {
-		printf("critical error: no TARFS image found\n");
-		for(;;);
-	}
-	daemon_start(NULL, file->start, file->size, argv);
+
+	if (!(file = tar_find(boot_image, (char*) "tarfs"))) panic("no tarfs found");
+	daemon_start(&temp, file->start, file->size, argv);
+
+	flmnt("/", "boot", temp);
 	argv[1] = NULL;
 
 	/* Keyboard Driver */
 	argv[0] = "kbd";
-	file = tar_find(boot_image, (char*) "kbd");
-	if (!file) {
-		printf("critical error: no keyboard driver found\n");
-		for(;;);
-	}
+	if (!(file = tar_find(boot_image, (char*) "kbd"))) panic("no kbd found");
 	daemon_start(&stdin, file->start, file->size, argv);
-	fadd("/kbd", stdin->server, stdin->inode);
+	fadd("/dev/", "kbd", stdin->server, stdin->inode);
 
 	/* Flux Init Shell */
 	argv[0] = "fish";
@@ -141,8 +134,6 @@ int main() {
 	pwaits(PORT_DEATH, 0);
 
 	printf("INIT PANIC: system daemon died\n");
-
 	for(;;);
-
 	return 0;
 }

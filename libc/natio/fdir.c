@@ -15,55 +15,38 @@
  */
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <natio.h>
 #include <string.h>
+#include <natio.h>
 
-int main(int argc, char **argv) {
-	char filelist[2048];
-	size_t n, i, j;
+/****************************************************************************
+ * fdir
+ *
+ * XXX - doc
+ */
+
+int fdir(const char *dir, const char *name) {
+	char list[2048];
 	int err;
 
-	if (argc == 1) {
-		err = flist(getenv("PWD"), filelist);
-		
-		if (err) {
-			printf("%s: no such directory\n", getenv("PWD"));
-			return EXIT_FAILURE;
-		}
+	list[0] = '\0';
+	
+	err = flstat(dir, "list", "%s", list);
 
-		for (i = 0, j = 1; filelist[i]; i++) {
-			if (filelist[i] == ':') {
-				filelist[i] = (j % 6) ? '\t' : '\n';
-				j++;
-			}
-		}
-
-		printf("%s\n", filelist);
+	if (err) {
+		list[0] = '\0';
 	}
 
-	else for (n = 1; n < (size_t) argc; n++) {
-
-		if (argc > 2) {
-			printf("%s:\n", argv[n]);
-		}
-
-		err = flist(argv[n], filelist);
-
-		if (err) {
-			printf("%s: no such directory\n", argv[n]);
-			continue;
-		}
-
-		for (i = 0, j = 1; filelist[i]; i++) {
-			if (filelist[i] == ':') {
-				filelist[i] = (j % 6) ? '\t' : '\n';
-				j++;
-			}
-		}
-
-		printf("%s\n", filelist);
+	if (list[0]) {
+		strlcat(list, ":", 2048);
 	}
+	strlcat(list, name, 2048);
+	
+	err = flctrl(dir, "list", list);
 
-	return 0;
+	if (err) {
+		return err;
+	}
+	else {
+		return 0;
+	}
 }

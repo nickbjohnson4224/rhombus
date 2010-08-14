@@ -14,34 +14,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <natio.h>
 
 /****************************************************************************
- * freopen
+ * flist
  *
- * Same as fopen(), but result is stored in <stream>.
+ * Finds the contents of the directory at <path> in the VFS. On success,
+ * returns zero and copies the contents into <buffer>. On failure, returns
+ * nonzero.
  */
 
-FILE *freopen(const char *path, const char *mode, FILE *stream) {
-	uint32_t server;
-	uint64_t inode;
-	FILE *file;
-
-	if (!stream) {
-		return NULL;
-	}
-
-	if (ffind(path, &server, &inode)) {
-		return NULL;
-	}
-
-	file = __fcons(server, inode, stream);
-
-	if (fstat(path, "size", "%d", &file->size)) {
-		file->size = 0;
-	}
-
-	return file;
+int flist(const char *path, char *buffer) {
+	return fstat(path, "list", "%s", buffer);
 }

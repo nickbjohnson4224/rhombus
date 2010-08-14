@@ -42,10 +42,9 @@ static uint8_t *bootstrap = (void*) ESPACE;
 static void _save(const char **argv) {
 	int argc;
 	
-	__fsave("stdin", stdin);
+	__fsave("stdin",  stdin);
 	__fsave("stdout", stdout);
 	__fsave("stderr", stderr);
-	__fsave("stdvfs", stdvfs);
 
 	if (argv) {
 		for (argc = 0; argv[argc]; argc++);
@@ -109,9 +108,7 @@ int execv(const char *path, char const **argv) {
 		return -1;
 	}
 
-	info(image, buffer, "size");
-	
-	size = atoi(buffer);
+	size = image->size;
 
 	if (!size) {
 		errno = ENOFILE;

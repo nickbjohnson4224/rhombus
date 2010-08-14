@@ -89,7 +89,6 @@ int main(int argc, char **argv) {
 	tarfs_init();
 
 	/* register handlers */
-	when(PORT_INFO, tarfs_info);
 	when(PORT_READ, tarfs_read);
 
 	/* synchronize with parent process */

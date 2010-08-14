@@ -23,13 +23,13 @@
  * _scanword
  */
 
-static int _scanword(char *buffer, const char *s, size_t length, char c) {
+static int _scanword(char *buffer, const char **s, size_t length, char c) {
 	size_t i;
 
 	for (i = 0; i < length - 1; i++) {
 		buffer[i] = c;
-		c = *s;
-		s++;
+		(*s)++;
+		c = **s;
 
 		if (isspace(c) || !c) {
 			break;
@@ -71,7 +71,7 @@ int vsscanf(const char *str, const char *format, va_list ap) {
 			format++;
 			switch (*format) {
 			case 's':
-				if (_scanword(va_arg(ap, char*), str, -1, c)) {
+				if (_scanword(va_arg(ap, char*), &str, -1, c)) {
 					return -1;
 				}
 				break;
@@ -79,7 +79,7 @@ int vsscanf(const char *str, const char *format, va_list ap) {
 			case 'i':
 				d = va_arg(ap, int*);
 				
-				if (_scanword(buffer, str, 20, c)) {
+				if (_scanword(buffer, &str, 20, c)) {
 					return -1;
 				}
 

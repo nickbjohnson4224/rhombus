@@ -15,55 +15,31 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <natio.h>
-#include <string.h>
+#include <dict.h>
 
-int main(int argc, char **argv) {
-	char filelist[2048];
-	size_t n, i, j;
+/****************************************************************************
+ * fctrl
+ *
+ * XXX - doc
+ */
+
+int fctrl(const char *path, const char *field, const char *fmt, ...) {
+	va_list ap;
+	char value[2048];
+	char *fullpath;
 	int err;
 
-	if (argc == 1) {
-		err = flist(getenv("PWD"), filelist);
-		
-		if (err) {
-			printf("%s: no such directory\n", getenv("PWD"));
-			return EXIT_FAILURE;
-		}
+	va_start(ap, fmt);
+	vsprintf(value, fmt, ap);
+	va_end(ap);
 
-		for (i = 0, j = 1; filelist[i]; i++) {
-			if (filelist[i] == ':') {
-				filelist[i] = (j % 6) ? '\t' : '\n';
-				j++;
-			}
-		}
+	fullpath = strvcat("vfs:", path, ":", field, NULL);
+	err = dwrite(value, fullpath);
+	free(fullpath);
 
-		printf("%s\n", filelist);
-	}
-
-	else for (n = 1; n < (size_t) argc; n++) {
-
-		if (argc > 2) {
-			printf("%s:\n", argv[n]);
-		}
-
-		err = flist(argv[n], filelist);
-
-		if (err) {
-			printf("%s: no such directory\n", argv[n]);
-			continue;
-		}
-
-		for (i = 0, j = 1; filelist[i]; i++) {
-			if (filelist[i] == ':') {
-				filelist[i] = (j % 6) ? '\t' : '\n';
-				j++;
-			}
-		}
-
-		printf("%s\n", filelist);
-	}
-
-	return 0;
+	return err;
 }

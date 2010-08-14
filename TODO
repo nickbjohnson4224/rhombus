@@ -3,7 +3,6 @@ Urgent:
 - finish libc stdlib functions
 - finish libc math functions
 - finish libc
-- migrate from vfsd to dictionary vfs
 
 Less Urgent:
 

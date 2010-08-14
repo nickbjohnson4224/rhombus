@@ -32,7 +32,7 @@ int main() {
 	size_t length;
 
 	setenv("PWD", "/");
-	setenv("PATH", "/initrd.tarfs");
+	setenv("PATH", "/boot");
 
 	while (1) {
 		printf("%s $ ", getenv("PWD"));
