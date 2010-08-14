@@ -66,9 +66,14 @@ int   system(const char *s);
 #define EXIT_FAILURE	1
 #define EXIT_SUCCESS	0
 
+extern struct __atexit_func {
+	struct __atexit_func *next;
+	void (*function)(void);
+} *__atexit_func_list;
+
 void exit(int status) __attribute__ ((noreturn));
 void abort(void)      __attribute__ ((noreturn));
-int  atexit(void (*function)(void));	// XXX - not implemented
+int  atexit(void (*function)(void));
 
 /* math functions **********************************************************/
 

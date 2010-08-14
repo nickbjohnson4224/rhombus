@@ -1,7 +1,9 @@
 Urgent:
 
-- migrate from vfsd to dictionary vfs
 - finish libc stdlib functions
+- finish libc math functions
+- finish libc
+- migrate from vfsd to dictionary vfs
 
 Less Urgent:
 
@@ -10,8 +12,6 @@ Less Urgent:
 - formalize kernel model
 - reduce permissions when init launches fish
 - device manager
-- finish libc math functions
-- finish libc
 - add garbage collection for dictionary
 - detect out of memory errors
 - handle out of memory gracefully

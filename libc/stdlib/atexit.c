@@ -15,24 +15,36 @@
  */
 
 #include <stdlib.h>
-#include <abi.h>
+#include <errno.h>
 
 /****************************************************************************
- * exit
+ * __atexit_func_list
  *
- * Exit the current process with status <status>. Performs all functions
- * registered with atexit.
+ * List of functions to be called at process exit.
  */
 
-void exit(int status) {
+struct __atexit_func *__atexit_func_list = NULL;
+
+/****************************************************************************
+ * atexit
+ *
+ * Register a function to be called on process exit. Functions registered
+ * will be called in FILO order. Returns 0 on success, nonzero on failure.
+ */
+
+int atexit(void (*function)(void)) {
 	struct __atexit_func *f;
-	
-	while (__atexit_func_list) {
-		f = __atexit_func_list;
-		f->function();
-		__atexit_func_list = f->next;
-		free(f);
+
+	f = malloc(sizeof(struct __atexit_func));
+
+	if (!f) {
+		errno = ENOMEM;
+		return -1;
 	}
 
-	_exit(status);
+	f->next = __atexit_func_list;
+	f->function = function;
+	__atexit_func_list = f;
+
+	return 0;
 }

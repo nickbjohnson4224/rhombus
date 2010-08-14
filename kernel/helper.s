@@ -34,7 +34,14 @@ read_tsc:
 	rdtsc
 	ret
 
-section .itext
+global get_cpuid_flags
+get_cpuid_flags:
+	push ebx
+	mov eax, 1
+	cpuid
+	mov eax, edx
+	pop ebx
+	ret
 
 global get_eflags
 get_eflags:

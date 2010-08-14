@@ -65,27 +65,34 @@ int main() {
 	char const **argv;
 	size_t length;
 
+	setenv("NAME", "unknown");
+
 	/* Boot Image */
 	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);
 
+	argv = malloc(sizeof(char*) * 3);
+	argv[1] = NULL;
+	
 	/* Terminal Driver */
+	argv[0] = "term";
 	file = tar_find(boot_image, (char*) "term");
 	if (!file) {
 		for(;;);
 	}
-	daemon_start(&stdout, file->start, file->size, NULL);
+	daemon_start(&stdout, file->start, file->size, argv);
 	stderr = stdout;
 
 //	printf(logo);
 	printf(splash);
 
 	/* VFS Daemon */
+	argv[0] = "vfsd";
 	file = tar_find(boot_image, (char*) "vfsd");
 	if (!file) {
 		printf("critical error: no VFSd image found\n");
 		for(;;);
 	}
-	daemon_start(&stdvfs, file->start, file->size, NULL);
+	daemon_start(&stdvfs, file->start, file->size, argv);
 	fadd("/vfsd", stdvfs->server, stdvfs->inode);
 	fadd("/term", stdout->server, stdout->inode);
 	
@@ -96,30 +103,29 @@ int main() {
 	fadd("/initrd", getpid(), 0);
 
 	/* Initrd over TARFS */
-	argv = malloc(sizeof(char*) * 3);
 	argv[0] = "tarfs";
 	argv[1] = "/initrd";
 	argv[2] = NULL;
-
 	file = tar_find(boot_image, (char*) "tarfs");
 	if (!file) {
 		printf("critical error: no TARFS image found\n");
 		for(;;);
 	}
 	daemon_start(NULL, file->start, file->size, argv);
-
-	free(argv);
+	argv[1] = NULL;
 
 	/* Keyboard Driver */
+	argv[0] = "kbd";
 	file = tar_find(boot_image, (char*) "kbd");
 	if (!file) {
 		printf("critical error: no keyboard driver found\n");
 		for(;;);
 	}
-	daemon_start(&stdin, file->start, file->size, NULL);
+	daemon_start(&stdin, file->start, file->size, argv);
 	fadd("/kbd", stdin->server, stdin->inode);
 
 	/* Flux Init Shell */
+	argv[0] = "fish";
 	file = tar_find(boot_image, (char*) "fish");
 	if (!file) {
 		printf("critical error: no init shell found\n");
@@ -127,9 +133,11 @@ int main() {
 	}
 
 	if (fork() < 0) {
-		execiv(file->start, file->size, NULL);
+		execiv(file->start, file->size, argv);
 	}
 
+	setenv("NAME", "init");
+	
 	pwaits(PORT_DEATH, 0);
 
 	printf("INIT PANIC: system daemon died\n");

@@ -237,7 +237,7 @@ uintptr_t thread_bind(struct thread *thread, struct process *proc) {
 		}
 	}
 
-	thread->id    = 
+	thread->id    = i;
 	thread->stack = addr;
 	thread->proc  = proc;
 

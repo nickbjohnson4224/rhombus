@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <mutex.h>
 #include <string.h>
+#include <natio.h>
 
 /****************************************************************************
  * dict_read_rec
@@ -78,7 +79,7 @@ char *dread(const char *key) {
  *
  * Read from the dictionary from a given namespace using the given string as
  * a key into the buffer <val>, which must have the size stored in <vlen>.
- * <vlen is then set to the number of bytes written into <val>. Returns -1
+ * <vlen> is then set to the number of bytes written into <val>. Returns -1
  * on failure, 0 on success. This function is thread-safe.
  */
 
@@ -93,6 +94,36 @@ char *dreadns(const char *ns, const char *key) {
 	value = dread(buffer);
 
 	free(buffer);
+
+	return value;
+}
+
+/****************************************************************************
+ * dreadr
+ *
+ * Reads from the dictionary of the file <target> from a given namespace
+ * using the given string as a key into the buffer <val>, which must have
+ * the size stored in <vlen>. <vlen> is then set to the number of bytes
+ * written into <val>. Returns -1 on failure, 0 on success. This function is
+ * thread-safe.
+ */
+
+char *dreadr(FILE *targ, const char *ns, const char *key) {
+	struct __link_req req;
+	char *value;
+	size_t size;
+	
+	strlcpy(req.key, ns,  2048);
+	strlcat(req.key, key, 2048);
+
+	size = ssend(targ, &req, &req, sizeof(struct __link_req), 0, PORT_DREAD);
+
+	if (!size) {
+		return NULL;
+	}
+
+	value = malloc(strlen(req.val) + 1);
+	strcpy(value, req.val);
 
 	return value;
 }

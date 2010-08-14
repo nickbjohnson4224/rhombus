@@ -47,14 +47,10 @@ static void reject(uint32_t caller, struct packet *packet) {
  */
 
 static void pagefault(uint32_t caller, struct packet *packet) {
-	if (getenv("NAME") && (getenv("NAME")[0] != '\0')) {
-		printf("Page Fault (%s terminated)\n", getenv("NAME"));
-	}
-	else {
-		printf("Page Fault (pid %d terminated)\n", getpid());
-	}
 
-	exit(0);
+	printf("Page Fault (pid %d: \"%s\" terminated)\n", getpid(), getenv("NAME"));
+
+	exit(EXIT_FAILURE);
 }
 
 /****************************************************************************
@@ -64,9 +60,10 @@ static void pagefault(uint32_t caller, struct packet *packet) {
  */
 
 static void fpufault(uint32_t caller, struct packet *packet) {
-	printf("Floating Point Exception\n");
 
-	exit(0);
+	printf("Floating Point Exception (pid %d: \"%s\" terminated)\n", getpid(), getenv("NAME"));
+
+	exit(EXIT_FAILURE);
 }
 
 /****************************************************************************

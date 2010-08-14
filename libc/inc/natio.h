@@ -49,9 +49,9 @@ struct vfs_query {
 	char path1[1000];
 };
 
-int find(const char *path, uint32_t *server, uint64_t *inode);
-int fadd(const char *path, uint32_t server, uint64_t inode);
-int list(const char *path, char *buffer);
+int find (const char *path, uint32_t *server, uint64_t *inode);
+int fadd (const char *path, uint32_t server, uint64_t inode);
+int list (const char *path, char *buffer);
 
 /* info system (obsolete due to dictionary) ********************************/
 
