@@ -14,18 +14,30 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <dict.h>
-#include <ipc.h>
-#include <proc.h>
+#include <stdlib.h>
 #include <string.h>
+#include <dict.h>
+#include <proc.h>
+#include <ipc.h>
 
 void _devent_read(uint32_t caller, struct packet *packet) {
 	struct __link_req *req;
 	char *value;
+	char *ipath;
+	char *key;
 
 	req = pgetbuf(packet);
 
-	value = dread(req->key);
+	ipath = dreadns("inode:", tdeflate(&packet->target_inode, sizeof(uint32_t)));
+
+	if (ipath) {
+		key = strvcat(ipath, req->key, NULL);
+		value = dread(key);
+		free(key);
+	}
+	else {
+		value = dread(req->key);
+	}
 
 	if (value) {
 		strlcpy(req->val, value, 1024);
@@ -38,12 +50,17 @@ void _devent_read(uint32_t caller, struct packet *packet) {
 }
 
 void _devent_write(uint32_t caller, struct packet *packet) {
-	
-	if (packet) {
-		pfree(packet);
-	}
+	struct __link_req *req;
 
-	psend(PORT_REPLY, caller, NULL);
+	req = pgetbuf(packet);
+	
+	if (dwrite(req->val, req->key)) {
+		pfree(packet);
+		psend(PORT_REPLY, caller, NULL);
+	}
+	else {
+		psend(PORT_REPLY, caller, packet);
+	}
 }
 
 void _devent_link(uint32_t caller, struct packet *packet) {

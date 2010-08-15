@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <natio.h>
 
 /****************************************************************************
@@ -25,23 +26,24 @@
  */
 
 FILE *freopen(const char *path, const char *mode, FILE *stream) {
-	uint32_t server;
-	uint64_t inode;
+	uint32_t server, inode;
 	FILE *file;
 
 	if (!stream) {
 		return NULL;
 	}
 
-	if (ffind(path, &server, &inode)) {
+	file = ffind(path);
+
+	if (!file) {
+		errno = ENOFILE;
 		return NULL;
 	}
 
-	file = __fcons(server, inode, stream);
+	__fsetup(file);
 
-	if (fstat(path, "size", "%d", &file->size)) {
-		file->size = 0;
-	}
+	file->ext->size = 0;
+	fstat(file, "size", "%d", &file->ext->size);
 
 	return file;
 }

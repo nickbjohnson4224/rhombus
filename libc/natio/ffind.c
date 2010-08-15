@@ -20,10 +20,17 @@
  * ffind
  *
  * Finds the server and inode of a file given its path. On success, returns
- * zero and sets *<server> to the server and *<inode> to the inode. On 
- * failure, returns nonzero.
+ * a stream pointing to the found file; returns NULL on failure.
  */
 
-int ffind(const char *path, uint32_t *server, uint64_t *inode) {
-	return fstat(path, "addr", "%d %d", server, inode);
+FILE *ffind(const char *path) {
+	uint32_t server;
+	uint32_t inode;
+
+	if (vfstat(path, "addr", "%d %d", &server, &inode)) {
+		return NULL;
+	}
+	else {
+		return __fcons(server, inode, NULL);
+	}
 }

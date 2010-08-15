@@ -26,7 +26,7 @@
  */
 
 static void _pdumpm
-	(uint8_t port, uint32_t source, uint64_t inode, uint16_t id, uint16_t frag) {
+	(uint8_t port, uint32_t source, uint32_t inode, uint16_t id, uint16_t frag) {
 	struct message *m, *tm;
 	bool match;
 
@@ -105,7 +105,7 @@ void pdumps(uint8_t port, uint32_t source) {
  * pdumpn
  */
 
-void pdumpn(uint8_t port, uint32_t source, uint64_t inode) {
+void pdumpn(uint8_t port, uint32_t source, uint32_t inode) {
 	_pdumpm(port, source, inode, 0, -1);
 }
 

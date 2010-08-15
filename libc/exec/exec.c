@@ -108,7 +108,7 @@ int execv(const char *path, char const **argv) {
 		return -1;
 	}
 
-	size = image->size;
+	size = image->ext->size;
 
 	if (!size) {
 		errno = ENOFILE;

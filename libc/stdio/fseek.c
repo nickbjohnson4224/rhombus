@@ -28,15 +28,19 @@ int fseek(FILE *stream, fpos_t offset, int whence) {
 
 	fflush(stream);
 
+	if (!stream->ext) {
+		__fsetup(stream);
+	}
+
 	switch (whence) {
 	case SEEK_CUR:
-		stream->position += offset;
+		stream->ext->position += offset;
 		break;
 	case SEEK_END:
-		stream->position = stream->size - offset;
+		stream->ext->position = stream->ext->size - offset;
 		break;
 	case SEEK_SET:
-		stream->position = offset;
+		stream->ext->position = offset;
 		break;
 	}
 

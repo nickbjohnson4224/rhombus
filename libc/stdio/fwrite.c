@@ -33,25 +33,30 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
 		return 0;
 	}
 
-	if (stream->flags & FILE_NBF) {
+	if (!stream->ext) {
+		__fsetup(stream);
+	}
 
-		ret = write(stream, (void*) ptr, size * nmemb, stream->position);
-		stream->position += ret;
+	if (stream->ext->flags & FILE_NBF) {
+
+		ret = write(stream, (void*) ptr, size * nmemb, stream->ext->position);
+		stream->ext->position += ret;
 
 		return (ret / size);
 	}
 
 	for (i = 0; i < size * nmemb; i++) {
-		stream->buffer[stream->buffpos++] = data[i];
+		stream->ext->buffer[stream->ext->buffpos++] = data[i];
 
-		if (stream->flags & FILE_LBF) {
-			if ((data[i] == '\n') || (stream->buffpos > stream->buffsize)) {
+		if (stream->ext->flags & FILE_LBF) {
+			if ((data[i] == '\n') || 
+					(stream->ext->buffpos > stream->ext->buffsize)) {
 				fflush(stream);
 			}
 		}
 
-		if (stream->flags & FILE_FBF) {
-			if (stream->buffpos >= stream->buffsize) {
+		if (stream->ext->flags & FILE_FBF) {
+			if (stream->ext->buffpos >= stream->ext->buffsize) {
 				fflush(stream);
 			}
 		}

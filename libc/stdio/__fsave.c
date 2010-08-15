@@ -31,10 +31,12 @@
 int __fsave(const char *name, FILE *fd) {
 
 	/* reject null files */
-	if (!fd) return 1;
+	if (!fd) {
+		return 1;
+	}
 
-	/* flush any buffers */
-	fflush(fd);
+	/* strip file */
+	__fstrip(fd);
 
 	/* write file to dictionary */
 	return dwritens(tdeflate(fd, sizeof(FILE)), "file:", name);

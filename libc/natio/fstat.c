@@ -28,13 +28,13 @@
  * XXX - doc
  */
 
-int fstat(const char *path, const char *field, const char *fmt, ...) {
+int fstat(FILE *stream, const char *field, const char *fmt, ...) {
 	va_list ap;
 	char *value;
 	char *fullpath;
 
-	fullpath = strvcat("vfs:", path, ":", field, NULL);
-	value = dread(fullpath);
+	fullpath = strvcat(":", field, NULL);
+	value = dreadr(stream, fullpath);
 	free(fullpath);
 
 	if (value) {

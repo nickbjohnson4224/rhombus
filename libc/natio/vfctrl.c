@@ -22,12 +22,12 @@
 #include <dict.h>
 
 /****************************************************************************
- * flctrl
+ * vfctrl
  *
  * XXX - doc
  */
 
-int flctrl(const char *path, const char *field, const char *fmt, ...) {
+int vfctrl(const char *path, const char *field, const char *fmt, ...) {
 	va_list ap;
 	char value[2048];
 	char *fullpath;
@@ -37,7 +37,7 @@ int flctrl(const char *path, const char *field, const char *fmt, ...) {
 	vsprintf(value, fmt, ap);
 	va_end(ap);
 
-	fullpath = strvcat("lvfs:", path, ":", field, NULL);
+	fullpath = strvcat("vfs:", path, ":", field, NULL);
 	err = dwrite(value, fullpath);
 	free(fullpath);
 

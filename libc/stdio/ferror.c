@@ -23,9 +23,14 @@
  */
 
 int ferror(FILE *stream) {
-	
-	if (stream->flags & FILE_ERROR) {
-		return 1;
+
+	if (stream->ext) {
+		if (stream->ext->flags & FILE_ERROR) {
+			return 1;
+		}
+		else {
+			return 0;
+		}
 	}
 	else {
 		return 0;

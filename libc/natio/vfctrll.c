@@ -16,26 +16,30 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <natio.h>
 #include <dict.h>
 
 /****************************************************************************
- * flmnt
+ * vfctrll
  *
- * Mount the locat vfs of <target> as <name> in <dir> in the local vfs. 
- * Returns 0 on success, nonzero on failure.
+ * XXX - doc
  */
 
-int flmnt(const char *dir, const char *name, FILE *target) {
-	char *buffer;
+int vfctrll(const char *path, const char *field, const char *fmt, ...) {
+	va_list ap;
+	char value[2048];
+	char *fullpath;
 	int err;
 
-	buffer = strvcat("lvfs:", dir, name, NULL);
-	err = dlink(buffer, "lvfs:", target);
-	free(buffer);
+	va_start(ap, fmt);
+	vsprintf(value, fmt, ap);
+	va_end(ap);
 
-	fdir(dir, name);
-	
+	fullpath = strvcat("lvfs:", path, ":", field, NULL);
+	err = dwrite(value, fullpath);
+	free(fullpath);
+
 	return err;
 }

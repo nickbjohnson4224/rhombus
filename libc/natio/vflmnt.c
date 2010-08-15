@@ -16,37 +16,26 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include <natio.h>
+#include <dict.h>
 
 /****************************************************************************
- * fdir
+ * vflmnt
  *
- * XXX - doc
+ * Mount the locat vfs of <target> as <name> in <dir> in the local vfs. 
+ * Returns 0 on success, nonzero on failure.
  */
 
-int fdir(const char *dir, const char *name) {
-	char list[2048];
+int vflmnt(const char *dir, const char *name, FILE *target) {
+	char *buffer;
 	int err;
 
-	list[0] = '\0';
+	buffer = strvcat("lvfs:", dir, name, NULL);
+	err = dlink(buffer, "lvfs:", target);
+	free(buffer);
+
+	vfdir(dir, name);
 	
-	err = flstat(dir, "list", "%s", list);
-
-	if (err) {
-		list[0] = '\0';
-	}
-
-	if (list[0]) {
-		strlcat(list, ":", 2048);
-	}
-	strlcat(list, name, 2048);
-	
-	err = flctrl(dir, "list", list);
-
-	if (err) {
-		return err;
-	}
-	else {
-		return 0;
-	}
+	return err;
 }

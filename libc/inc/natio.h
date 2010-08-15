@@ -28,22 +28,26 @@ size_t read (FILE *file, void *buf, size_t size, uint64_t offset);
 size_t write(FILE *file, void *buf, size_t size, uint64_t offset);
 size_t query(FILE *file, void *rbuf, void *sbuf, size_t size);
 
+/* native file operations **************************************************/
+
+FILE *ffind(const char *path);
+
+int fstat(FILE *stream, const char *field, const char *fmt, ...);
+int fctrl(FILE *stream, const char *field, const char *fmt, ...);
+
 /* VFS operations **********************************************************/
 
-int ffind(const char *path, uint32_t *server, uint64_t *inode);
-int flist(const char *path, char *buffer);
+int vflist (const char *path, char *buffer);
+int vfdir  (const char *dir, const char *name);
 
-int fstat(const char *path, const char *field, const char *fmt, ...);
-int fctrl(const char *path, const char *field, const char *fmt, ...);
+int vfstat (const char *path, const char *field, const char *fmt, ...);
+int vfctrl (const char *path, const char *field, const char *fmt, ...);
+int vfstatl(const char *path, const char *field, const char *fmt, ...);
+int vfctrll(const char *path, const char *field, const char *fmt, ...);
 
-int flstat(const char *path, const char *field, const char *fmt, ...);
-int flctrl(const char *path, const char *field, const char *fmt, ...);
-
-int fadd  (const char *dir, const char *name, uint32_t server, uint64_t inode);
-int fdir  (const char *dir, const char *name);
-int froot (FILE *target);
-
-int fmnt  (const char *dir, const char *name, FILE *target);
-int flmnt (const char *dir, const char *name, FILE *target);
+int vffile (const char *dir, const char *name, uint32_t inode);
+int vfroot (FILE *target);
+int vfmnt  (const char *dir, const char *name, FILE *target);
+int vflmnt (const char *dir, const char *name, FILE *target);
 
 #endif/*NATIO_H*/

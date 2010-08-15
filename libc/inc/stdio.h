@@ -29,10 +29,7 @@ typedef uint64_t fpos_t;
 
 /*** File Structure ***/
 
-typedef struct _file {
-	uint32_t server;		/* Server PID */
-	uint64_t inode;			/* File inode on server */
-
+struct _file_ext {
 	bool mutex;				/* Mutex for buffers/position */
 
 	fpos_t position;		/* File position */
@@ -45,6 +42,13 @@ typedef struct _file {
 	int revbuf;				/* ungetc() reverse buffer */
 
 	uint8_t flags;			/* EOF/Error/various flags */
+};
+
+typedef struct _file {
+	uint32_t server;		/* Server PID */
+	uint32_t inode;			/* File inode on server */
+	
+	struct _file_ext *ext;	/* Extensions for stream operations */
 } FILE;
 
 #define FILE_EOF	0x01	/* End Of File */
@@ -89,7 +93,9 @@ char *tmpnam (char *s);
 
 FILE *__fload(const char *name);
 int   __fsave(const char *name, FILE *fd);
-FILE *__fcons(uint32_t server, uint64_t inode, FILE *stream);
+FILE *__fcons(uint32_t server, uint32_t inode, FILE *stream);
+FILE *__fstrip(FILE *stream);
+FILE *__fsetup(FILE *stream);
 
 int   fclose (FILE *stream);
 FILE *fopen  (const char *path, const char *mode);

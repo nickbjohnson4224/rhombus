@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
 	int err;
 
 	if (argc == 1) {
-		err = flist(getenv("PWD"), filelist);
+		err = vflist(getenv("PWD"), filelist);
 		
 		if (err) {
 			printf("%s: no such directory\n", getenv("PWD"));
@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
 			printf("%s:\n", argv[n]);
 		}
 
-		err = flist(argv[n], filelist);
+		err = vflist(argv[n], filelist);
 
 		if (err) {
 			printf("%s: no such directory\n", argv[n]);

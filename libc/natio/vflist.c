@@ -14,35 +14,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-#include <stdio.h>
 #include <natio.h>
-#include <dict.h>
 
 /****************************************************************************
- * flstat
+ * vflist
  *
- * XXX - doc
+ * Finds the contents of the directory at <path> in the VFS. On success,
+ * returns zero and copies the contents into <buffer>. On failure, returns
+ * nonzero.
  */
 
-int flstat(const char *path, const char *field, const char *fmt, ...) {
-	va_list ap;
-	char *value;
-	char *fullpath;
-
-	fullpath = strvcat("lvfs:", path, ":", field, NULL);
-	value = dread(fullpath);
-	free(fullpath);
-
-	if (value) {
-		va_start(ap, fmt);
-		vsscanf(value, fmt, ap);
-		va_end(ap);
-		return 0;
-	}
-	else {
-		return -1;
-	}
+int vflist(const char *path, char *buffer) {
+	return vfstat(path, "list", "%s", buffer);
 }

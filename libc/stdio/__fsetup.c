@@ -14,20 +14,39 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
 
 /****************************************************************************
- * ftell
+ * __fsetup
  *
- * Returns the absolute position of <stream>.
+ * Set up stream extensions for a file with default values. Returns pointer
+ * to set up stream on success, NULL on failure.
  */
 
-fpos_t ftell(FILE *stream) {
+FILE *__fsetup(FILE *stream) {
+	
+	if (!stream) {
+		errno = ERANGE;
+		return NULL;
+	}
 
-	if (stream->ext) {
-		return stream->ext->position;
+	stream->ext = malloc(sizeof(struct _file_ext));
+
+	if (!stream->ext) {
+		errno = ENOMEM;
+		return NULL;
 	}
-	else {
-		return 0;
-	}
+
+	stream->ext->mutex    = false;
+	stream->ext->position = 0;
+	stream->ext->size     = -1;
+	stream->ext->buffer   = NULL;
+	stream->ext->buffsize = 0;
+	stream->ext->buffpos  = 0;
+	stream->ext->revbuf   = EOF;
+	stream->ext->flags    = FILE_NBF | FILE_READ | FILE_WRITE;
+
+	return stream;
 }

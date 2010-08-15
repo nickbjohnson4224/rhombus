@@ -77,8 +77,8 @@ int main() {
 	init = __fcons(getpid(), 0, NULL);
 
 	setenv("NAME", "unknown");
-	froot(init);
-	fdir("/", "dev");
+	vfroot(init);
+	vffile("/", "dev", 1);
 
 	/* Boot Image */
 	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);
@@ -90,7 +90,6 @@ int main() {
 	argv[0] = "term";
 	if (!(file = tar_find(boot_image, (char*) "term"))) panic("no term found");
 	daemon_start(&stdout, file->start, file->size, argv);
-	fadd("/dev/", "term", stdout->server, stdout->inode);
 
 	stderr = stdout;
 
@@ -98,7 +97,7 @@ int main() {
 
 	/* Initrd */
 	initrd_init();
-	fadd ("/dev/", "initrd", getpid(), 0);
+	vffile("/dev/", "initrd", 2);
 
 	/* Initrd over TARFS */
 	argv[0] = "tarfs";
@@ -108,14 +107,13 @@ int main() {
 	if (!(file = tar_find(boot_image, (char*) "tarfs"))) panic("no tarfs found");
 	daemon_start(&temp, file->start, file->size, argv);
 
-	flmnt("/", "boot", temp);
+	vflmnt("/", "boot", temp);
 	argv[1] = NULL;
 
 	/* Keyboard Driver */
 	argv[0] = "kbd";
 	if (!(file = tar_find(boot_image, (char*) "kbd"))) panic("no kbd found");
 	daemon_start(&stdin, file->start, file->size, argv);
-	fadd("/dev/", "kbd", stdin->server, stdin->inode);
 
 	/* Flux Init Shell */
 	argv[0] = "fish";

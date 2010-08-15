@@ -50,10 +50,5 @@ FILE *__fload(const char *name) {
 		return NULL;
 	}
 
-	/* reset position and buffers */
-	new->buffer        = NULL;
-	new->buffsize      = 0;
-	new->buffpos       = 0;
-
 	return new;
 }

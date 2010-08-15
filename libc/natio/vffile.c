@@ -17,22 +17,27 @@
 #include <stdlib.h>
 #include <string.h>
 #include <natio.h>
+#include <dict.h>
+#include <proc.h>
 
 /****************************************************************************
- * fadd
+ * vffile
  *
  * XXX - doc
  */
 
-int fadd(const char *dir, const char *name, uint32_t server, uint64_t inode) {
+int vffile(const char *dir, const char *name, uint32_t inode) {
 	char *path;
 
 	path = strvcat(dir, name, NULL);
-
-	flctrl(path, "addr", "%d %d", server, inode);
-	fdir  (dir, name);
-
+	vfctrll(path, "addr", "%d %d", getpid(), inode);
 	free(path);
+
+	path = strvcat("lvfs:", dir, name, NULL);
+	dwritens(path, "inode:", tdeflate(&inode, sizeof(uint32_t)));
+	free(path);
+
+	vfdir(dir, name);
 
 	return 0;
 }

@@ -23,5 +23,8 @@
  */
 
 void rewind(FILE *stream) {
-	stream->position = 0;
+	
+	if (stream->ext) {
+		stream->ext->position = 0;
+	}
 }

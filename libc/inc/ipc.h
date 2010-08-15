@@ -23,8 +23,8 @@
 
 /* Flux packet protocol (FPP) **********************************************/
 
-#define PACKET_MAXDATA		(PAGESZ - 58)
-#define PACKET_PROTOCOL		3	/* protocol version */
+#define PACKET_MAXDATA		(PAGESZ - 40)
+#define PACKET_PROTOCOL		4	/* protocol version */
 
 struct packet {
 
@@ -42,15 +42,14 @@ struct packet {
 
 	/* source routing information */
 	uint32_t source_pid;
-	uint64_t source_inode;
+	uint32_t source_inode;
 
 	/* target routing information */
 	uint32_t target_pid;
-	uint64_t target_inode;
+	uint32_t target_inode;
 
 	/* target file offset */
 	uint64_t offset;
-	uint64_t offset_ext;
 
 } __attribute__ ((packed));
 
@@ -105,7 +104,7 @@ int            psend (uint8_t port, uint32_t target, struct packet *packet);
 
 struct packet *precv (uint8_t port);
 struct packet *precvs(uint8_t port, uint32_t source);
-struct packet *precvn(uint8_t port, uint32_t source, uint64_t inode);
+struct packet *precvn(uint8_t port, uint32_t source, uint32_t inode);
 struct packet *precvi(uint8_t port, uint32_t source, uint16_t id);
 struct packet *precvf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag);
 
@@ -113,7 +112,7 @@ struct packet *precvf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag)
 
 struct packet *pwait (uint8_t port);
 struct packet *pwaits(uint8_t port, uint32_t source);
-struct packet *pwaitn(uint8_t port, uint32_t source, uint64_t inode);
+struct packet *pwaitn(uint8_t port, uint32_t source, uint32_t inode);
 struct packet *pwaiti(uint8_t port, uint32_t source, uint16_t id);
 struct packet *pwaitf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag);
 
@@ -121,7 +120,7 @@ struct packet *pwaitf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag)
 
 void           pdump (uint8_t port);
 void           pdumps(uint8_t port, uint32_t source);
-void           pdumpn(uint8_t port, uint32_t source, uint64_t inode);
+void           pdumpn(uint8_t port, uint32_t source, uint32_t inode);
 void           pdumpi(uint8_t port, uint32_t source, uint16_t id);
 void           pdumpf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag);
 

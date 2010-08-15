@@ -33,6 +33,10 @@ size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 		return 0;
 	}
 
+	if (!stream->ext) {
+		__fsetup(stream);
+	}
+
 	nmemb *= size;
 
 /*	if (stream->revbuf != EOF) {
@@ -42,8 +46,8 @@ size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 		nmemb--;
 	} */
 
-	ret = read(stream, ptr, nmemb, stream->position);
-	stream->position += ret;
+	ret = read(stream, ptr, nmemb, stream->ext->position);
+	stream->ext->position += ret;
 
 	return (ret / size);
 }

@@ -26,6 +26,7 @@
  */
 
 void perror(const char *s) {
+
 	if (errno) {
 		fprintf(stderr, "%s: %s\n", s, strerror(errno));
 	}

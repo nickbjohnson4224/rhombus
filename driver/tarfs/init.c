@@ -84,9 +84,9 @@ void tarfs_init() {
 		inode[n].size   = getvalue(block->filesize, sizeof(block->filesize));	
 
 		/* add file to VFS */
-		fadd("/", block->filename, getpid(), n);
+		vffile("/", block->filename, n);
 		path = strvcat("/", block->filename, NULL);
-		flctrl(path, "size", "%d", inode[n].size);
+		vfctrll(path, "size", "%d", inode[n].size);
 		free(path);
 
 		/* move to next file header */

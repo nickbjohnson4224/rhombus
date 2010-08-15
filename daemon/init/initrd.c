@@ -57,7 +57,7 @@ void initrd_init() {
 	initrd = (uint8_t*) BOOT_IMAGE;
 	initrd_size = tar_size(initrd);
 
-	flctrl("/dev/initrd", "size", "%d", initrd_size);
+	vfctrll("/dev/initrd", "size", "%d", initrd_size);
 
 	when(PORT_READ, initrd_read);
 }

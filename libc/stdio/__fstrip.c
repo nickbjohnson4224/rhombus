@@ -14,20 +14,35 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
 
 /****************************************************************************
- * ftell
+ * __fstrip
  *
- * Returns the absolute position of <stream>.
+ * Strip stream metadata from a file. Flushes all buffers. Returns pointer
+ * to stripped file on success, NULL on failure.
  */
 
-fpos_t ftell(FILE *stream) {
+FILE *__fstrip(FILE *stream) {
+	
+	if (!stream) {
+		errno = ERANGE;
+		return NULL;
+	}
 
 	if (stream->ext) {
-		return stream->ext->position;
+		fflush(stream);
+
+		if (stream->ext->buffer) {
+			free(stream->ext->buffer);
+		}
+
+		free(stream->ext);
+
+		stream->ext = NULL;
 	}
-	else {
-		return 0;
-	}
+
+	return stream;
 }

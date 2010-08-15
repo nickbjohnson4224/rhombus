@@ -17,18 +17,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <errno.h>
 #include <stdio.h>
 #include <natio.h>
 #include <dict.h>
 
 /****************************************************************************
- * fctrl
+ * vfctrl
  *
  * XXX - doc
  */
 
-int fctrl(const char *path, const char *field, const char *fmt, ...) {
-	va_list ap;
+int fctrl(FILE *stream, const char *field, const char *fmt, ...) {
+/*	va_list ap;
 	char value[2048];
 	char *fullpath;
 	int err;
@@ -38,8 +39,10 @@ int fctrl(const char *path, const char *field, const char *fmt, ...) {
 	va_end(ap);
 
 	fullpath = strvcat("vfs:", path, ":", field, NULL);
-	err = dwrite(value, fullpath);
+	err = dwriter(value, fullpath);
 	free(fullpath);
 
-	return err;
+	return err; */
+	errno = ENOSYS;
+	return -1;
 }

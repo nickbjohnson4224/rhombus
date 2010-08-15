@@ -28,7 +28,7 @@
  */
 
 static struct packet *_pwaitm
-	(uint8_t port, uint32_t source, uint64_t inode, uint16_t id, uint16_t frag) {
+	(uint8_t port, uint32_t source, uint32_t inode, uint16_t id, uint16_t frag) {
 	struct message *m;
 	struct packet *packet;
 	bool match;
@@ -104,7 +104,7 @@ struct packet *pwaits(uint8_t port, uint32_t source) {
  * waitn
  */
 
-struct packet *pwaitn(uint8_t port, uint32_t source, uint64_t inode) {
+struct packet *pwaitn(uint8_t port, uint32_t source, uint32_t inode) {
 	return _pwaitm(port, source, inode, 0, -1);
 }
 

@@ -20,26 +20,21 @@
 /****************************************************************************
  * fclose - close a stream
  *
- * The fclose() function flushes the stream pointed to by fp (writing any
- * buffered output data using fflush()).
+ * The fclose() function flushes the stream pointed to by <stream> (writing 
+ * any buffered output data using fflush()).
  *
  * Upon successful completion 0 is returned. Otherwise, EOF is returned. 
  * In either case further access (including another call to fclose()) to 
  * the stream results in undefined behavior.
  */
 
-int fclose(FILE *fp) {
+int fclose(FILE *stream) {
 
-	/* flush any buffers */
-	fflush(fp);
-
-	/* free any buffers */
-	if (fp->buffer) {
-		free(fp->buffer);
-	}
+	/* strip stream extensions */
+	__fstrip(stream);
 
 	/* free file structure */
-	free(fp);
+	free(stream);
 
 	return 0;
 }

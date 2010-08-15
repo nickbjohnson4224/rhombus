@@ -14,20 +14,19 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
+#include <natio.h>
+#include <dict.h>
 
 /****************************************************************************
- * ftell
+ * vfroot
  *
- * Returns the absolute position of <stream>.
+ * Change the vfs root to the local vfs root of <target>. Returns 0 on
+ * success, nonzero on failure.
  */
 
-fpos_t ftell(FILE *stream) {
-
-	if (stream->ext) {
-		return stream->ext->position;
-	}
-	else {
-		return 0;
-	}
+int vfroot(FILE *target) {
+	return dlink("vfs:", "lvfs:", target);
 }

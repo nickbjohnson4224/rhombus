@@ -61,7 +61,7 @@ size_t inflate(void *databuffer, size_t size, const char *archive);
 
 char *dread  (const char *key);
 char *dreadns(const char *ns, const char *key);
-char *dreadr (FILE *targ, const char *ns, const char *key);
+char *dreadr (FILE *remote, const char *key);
 
 /* write functions *********************************************************/
 

@@ -14,18 +14,37 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <natio.h>
 
 /****************************************************************************
- * ftell
+ * vfdir
  *
- * Returns the absolute position of <stream>.
+ * XXX - doc
  */
 
-fpos_t ftell(FILE *stream) {
+int vfdir(const char *dir, const char *name) {
+	char list[2048];
+	int err;
 
-	if (stream->ext) {
-		return stream->ext->position;
+	list[0] = '\0';
+	
+	err = vfstatl(dir, "list", "%s", list);
+
+	if (err) {
+		list[0] = '\0';
+	}
+
+	if (list[0]) {
+		strlcat(list, ":", 2048);
+	}
+	strlcat(list, name, 2048);
+	
+	err = vfctrll(dir, "list", list);
+
+	if (err) {
+		return err;
 	}
 	else {
 		return 0;
