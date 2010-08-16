@@ -119,8 +119,6 @@ struct thread *fault_nomath(struct thread *image) {
 		fpu_load(image->fxdata);
 	}
 
-	printk("NOMATH, CR0 %x, CPUID %x\n", get_cr0(), get_cpuid_flags());
-
 	clr_ts();
 
 	return image;

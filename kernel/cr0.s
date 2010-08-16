@@ -23,11 +23,11 @@ clr_ts:
 
 set_ts:
 	mov eax, cr0
-	or eax, 0x4
+	or eax, 0x8
 	mov cr0, eax
 	ret
 
 tst_ts:
 	mov eax, cr0
-	and eax, 0x4
+	and eax, 0x8
 	ret

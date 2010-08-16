@@ -96,11 +96,8 @@ int execv(const char *path, char const **argv) {
 	char buffer[20];
 	char *fullpath;
 
-	fullpath = malloc(strlen(path) + strlen(getenv("PATH")) + 2);
-	strcpy(fullpath, getenv("PATH"));
-	strcat(fullpath, "/");
-	strcat(fullpath, path);
-	
+	fullpath = strvcat(getenv("PATH"), "/", path, NULL);
+
 	image = fopen(fullpath, "r");
 
 	if (!image) {
@@ -108,7 +105,8 @@ int execv(const char *path, char const **argv) {
 		return -1;
 	}
 
-	size = image->ext->size;
+	fseek(image, 0, SEEK_END);
+	size = ftell(image);
 
 	if (!size) {
 		errno = ENOFILE;
@@ -116,7 +114,12 @@ int execv(const char *path, char const **argv) {
 	}
 
 	mmap(bootstrap, size, MMAP_READ | MMAP_WRITE);
-	read(image, bootstrap, size, 0);
+
+	rewind(image);
+	if (size != fread(bootstrap, sizeof(char), size, image)) {
+		errno = EEXEC;
+		return -1;
+	}
 
 	_save(argv);
 

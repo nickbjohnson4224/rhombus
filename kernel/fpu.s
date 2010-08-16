@@ -21,46 +21,21 @@ global fpu_load
 init_fpu:
 	push ebx
 
-	; check CPUID for FXSR bit
-	mov eax, 1
-	cpuid
-	test edx, 0x01000000
-	jne .nofx
-
-	; set OSFXSR bit in CR4
-	mov eax, cr4
-	or eax, 0x200
-	mov cr4, eax
-
 	mov eax, 1
 	mov [can_use_fpu], eax
 
-	; check CPUID for FPU bit
-	test edx, 0x00000001
-	jne .nofpu
-	
-	; set FPU control word
-.cw:
-	mov ax, 0x37F
-	mov [.cw], ax
-	fldcw [.cw]
+;	; check CPUID for FPU bit
+;	test edx, 0x00000001
+;	jnz .nofpu
+
+	; initialize FPU
+	finit
+	mov eax, cr0
+	and eax, 0xFFFFFFFB	; clear EM
+	or eax,  0x00000022 ; set MP, NS
+	mov cr0, eax
 
 .nofpu:
-	; check CPUID for SSE bit
-	test edx, 0x02000000
-	jne .nosse
-
-	; initialize SSE
-	mov eax, cr0
-	and eax, 0xFFFFFFFB
-	or eax, 0x2
-	mov cr0, eax
-	mov eax, cr4
-	or eax, 0x00000600
-	mov cr4, eax
-
-.nosse:
-.nofx:
 	pop ebx
 	ret
 
@@ -69,7 +44,7 @@ fpu_save:
 	cmp eax, 0
 	je .blank
 	mov ecx, [esp+4]
-	fxsave [ecx]
+	fsave [ecx]
 .blank:
 	ret
 
@@ -78,6 +53,6 @@ fpu_load:
 	cmp eax, 0
 	je .blank
 	mov ecx, [esp+4]
-	fxrstor [ecx]
+	frstor [ecx]
 .blank:
 	ret

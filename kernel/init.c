@@ -32,6 +32,7 @@ typedef void (*entry_t)();
 
 void *init(void *mboot_ptr, uint32_t mboot_magic) {
 	extern void halt(void);
+	extern uint32_t get_cr0(void);
 	uint32_t i;
 	struct thread *boot_image;
 
@@ -45,9 +46,7 @@ void *init(void *mboot_ptr, uint32_t mboot_magic) {
 
 	for (i = 0; init_list[i]; i++) {
 		init_list[i]();
-		printk("%d ", i);
 	}
-	printk("\n");
 
 	boot_image = thread_alloc();
 
