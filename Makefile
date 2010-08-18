@@ -44,14 +44,6 @@ libc:
 	@ echo " MAKE	" $@
 	@ make -s -C $@
 
-distclean: clean
-	@ echo " CLEAN	" $(shell find inc/*)
-	@ rm -r inc/*
-	@ echo " CLEAN	" run/floppy.img run/flux.iso
-	@ rm run/floppy.img run/flux.iso
-	@ echo " CLEAN	" $(shell find . -name "*.swp")
-	@ rm $(shell find . -name "*.swp")
-
 clean:
 	@ echo " CLEAN	" $(shell find . -name "*.o")
 	@ rm $(shell find . -name "*.o")
@@ -85,3 +77,4 @@ hd:
 makedirs:
 	@ mkdir -p $(BUILDDIR)/lib
 	@ mkdir -p $(BUILDDIR)/inc
+	@ mkdir -p $(BUILDDIR)/bin

@@ -18,6 +18,7 @@
 #define CTYPE_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 /* character identification ************************************************/
 
@@ -35,6 +36,8 @@ extern uint16_t _ctype_tbl[256];
 #define isspace(c) (_ctype_tbl[(size_t) (c)] & 0x200)
 #define isupper(c) (_ctype_tbl[(size_t) (c)] & 0x400)
 #define isxdigit(c)(_ctype_tbl[(size_t) (c)] & 0x800)
+
+bool __isbdigit(char c, int base);
 
 /* character case **********************************************************/
 

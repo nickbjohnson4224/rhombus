@@ -26,17 +26,58 @@
  */
 
 int32_t strtol(const char *nptr, char **endptr, int base) {
-	int i;
+	size_t i;
 	int32_t sum;
+	bool neg;
 
-	for (sum = 0, i = 0; nptr[i] && isdigit(nptr[i]); i++) {
-		sum *= 10;
+	i = 0;
+	sum = 0;
+
+	while (isspace(nptr[i])) {
+		i++;
+	}
+
+	if (nptr[i] == '+') {
+		neg = false;
+		i++;
+	}
+	else if (nptr[i] == '-') {
+		neg = true;
+		i++;
+	}
+
+	if (base == 0) {
+		if (nptr[i] == '0') {
+			i++;
+			if (nptr[i] == 'x') {
+				base = 16;
+			}
+			else if (__isbdigit(nptr[i], 8)) {
+				base = 8;
+			}
+		}
+		else if (__isbdigit(nptr[i], 10)) {
+			base = 10;
+		}
+	}
+
+	if (base == 0) {
+		if (endptr) {
+			*endptr = (char*) &nptr[i];
+		}
+
+		return 0;
+	}
+
+	while (nptr[i] && __isbdigit(nptr[i], base)) {
+		sum *= base;
 		sum += __digit(nptr[i], base);
+		i++;
 	}
 
 	if (endptr) {
 		*endptr = (char*) &nptr[i];
 	}
 
-	return sum;
+	return (neg) ? -sum : sum;
 }
