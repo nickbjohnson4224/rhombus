@@ -15,33 +15,18 @@
  */
 
 #include <stdlib.h>
-#include <ctype.h>
-#include <math.h>
 
 /****************************************************************************
- * strtod
+ * ldiv
  *
- * Convert a string to a floating point number.
+ * Returns an ldiv_t corresponding to the division of <num> by <denom>.
  */
 
-double strtod(const char *nptr, char **endptr) {
-	double sum;
-	int i, j;
+ldiv_t ldiv(long int num, long int denom) {
+	ldiv_t result;
 
-	for (sum = 0, i = 0; nptr[i] && isdigit(nptr[i]); i++) {
-		sum *= 10;
-		sum += __digit(nptr[i], 10);
-	}
+	result.quot = num / denom;
+	result.rem  = num % denom;
 
-//	if (nptr[i] == '.') {
-//		for (j = 1; nptr[i] && isdigit(nptr[i]); i++, j++) {
-//			sum += __digit(nptr[i], 10) * pow(10, -j);
-//		}
-//	}
-
-	if (endptr) {
-		*endptr = (char*) &nptr[i];
-	}
-
-	return sum;
+	return result;
 }

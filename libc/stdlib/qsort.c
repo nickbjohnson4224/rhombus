@@ -15,33 +15,19 @@
  */
 
 #include <stdlib.h>
-#include <ctype.h>
-#include <math.h>
+#include <errno.h>
 
 /****************************************************************************
- * strtod
+ * qsort
  *
- * Convert a string to a floating point number.
+ * Sorts the array <base> containing <n> elements of size <size> in
+ * ascending order based on <cmp>.
+ *
+ * XXX - dummy (does anyone actually use this function?)
  */
 
-double strtod(const char *nptr, char **endptr) {
-	double sum;
-	int i, j;
-
-	for (sum = 0, i = 0; nptr[i] && isdigit(nptr[i]); i++) {
-		sum *= 10;
-		sum += __digit(nptr[i], 10);
-	}
-
-//	if (nptr[i] == '.') {
-//		for (j = 1; nptr[i] && isdigit(nptr[i]); i++, j++) {
-//			sum += __digit(nptr[i], 10) * pow(10, -j);
-//		}
-//	}
-
-	if (endptr) {
-		*endptr = (char*) &nptr[i];
-	}
-
-	return sum;
+void qsort(void *base, size_t n, size_t size,
+		int (*cmp)(const void *keyval, const void *datum)) {
+	
+	errno = ENOSYS;
 }

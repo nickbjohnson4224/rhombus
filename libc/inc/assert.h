@@ -14,34 +14,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifndef ASSERT_H
+#define ASSERT_H
+
+#include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
-#include <math.h>
 
-/****************************************************************************
- * strtod
- *
- * Convert a string to a floating point number.
- */
+#define assert(expr) \
+do {\
+	fprintf(stderr, "assertion failed: file %s, line %s", __FILE__, __LINE__); \
+	abort();\
+} while (0);
 
-double strtod(const char *nptr, char **endptr) {
-	double sum;
-	int i, j;
-
-	for (sum = 0, i = 0; nptr[i] && isdigit(nptr[i]); i++) {
-		sum *= 10;
-		sum += __digit(nptr[i], 10);
-	}
-
-//	if (nptr[i] == '.') {
-//		for (j = 1; nptr[i] && isdigit(nptr[i]); i++, j++) {
-//			sum += __digit(nptr[i], 10) * pow(10, -j);
-//		}
-//	}
-
-	if (endptr) {
-		*endptr = (char*) &nptr[i];
-	}
-
-	return sum;
-}
+#endif/*ASSERT_H*/

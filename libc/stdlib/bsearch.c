@@ -15,33 +15,39 @@
  */
 
 #include <stdlib.h>
-#include <ctype.h>
-#include <math.h>
+#include <string.h>
 
 /****************************************************************************
- * strtod
+ * bsearch
  *
- * Convert a string to a floating point number.
+ * Finds the element in the array <base>, with <nmemb> elements of size <size>
+ * sorted in ascending order based on <cmp>, that matches <key>.
  */
 
-double strtod(const char *nptr, char **endptr) {
-	double sum;
-	int i, j;
+const void *bsearch(const void *key, const void *base, size_t nmemb, size_t size,
+		int (*cmp)(const void *keyval, const void *datum)) {
+	size_t lower, upper;
+	const uint8_t *array;
+	int result;
 
-	for (sum = 0, i = 0; nptr[i] && isdigit(nptr[i]); i++) {
-		sum *= 10;
-		sum += __digit(nptr[i], 10);
+	lower = 0;
+	upper = nmemb;
+	array = base;
+
+	while (1) {
+		result = cmp(key, &array[((lower + upper) / 2) * size]);
+
+		if (result < 0) {
+			/* guess was too low */
+			upper = (lower + upper) / 2;
+		}
+		else if (result > 0) {
+			/* guess was too high */
+			lower = 1 + (lower + upper) / 2;
+		}
+		else {
+			/* found match */
+			return &array[((lower + upper) / 2) * size];
+		}
 	}
-
-//	if (nptr[i] == '.') {
-//		for (j = 1; nptr[i] && isdigit(nptr[i]); i++, j++) {
-//			sum += __digit(nptr[i], 10) * pow(10, -j);
-//		}
-//	}
-
-	if (endptr) {
-		*endptr = (char*) &nptr[i];
-	}
-
-	return sum;
 }

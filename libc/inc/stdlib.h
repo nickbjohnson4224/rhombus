@@ -38,11 +38,8 @@ double  atof(const char *nptr);
 int32_t atol(const char *nptr);
 
 double      strtod (const char *nptr, char **endptr);
-//float       strtof (const char *nptr, char **endptr);
-//long double strtold(const char *nptr, char **endptr);
-
-#define strof(n,e)   ((float) strtod(n,e))
-#define strtold(n,e) ((long double) strtod(n,e))
+float       strtof (const char *nptr, char **endptr);
+long double strtold(const char *nptr, char **endptr);
 
 int32_t  strtol (const char *nptr, char **endptr, int base);
 uint32_t strtoul(const char *nptr, char **endptr, int base);
@@ -77,11 +74,9 @@ int  atexit(void (*function)(void));
 
 /* math functions **********************************************************/
 
-// XXX - not implemented
-
 typedef struct {
-	short int quot;
-	short int rem;
+	int quot;
+	int rem;
 } div_t;
 
 typedef struct {
@@ -89,17 +84,15 @@ typedef struct {
 	long int rem;
 } ldiv_t;
 
-short int abs(short int n);
+int      abs(int n);
 long int labs(long int n);
 
-div_t   div(short int num, short int denom);
-ldiv_t ldiv(long int num,  long int denom);
+div_t  div(int num, int denom);
+ldiv_t ldiv(long int num, long int denom);
 
 /* searching and sorting ***************************************************/
 
-// XXX - not implemented
-
-void *bsearch(const void *key, const void *base, size_t n, size_t size,
+const void *bsearch(const void *key, const void *base, size_t n, size_t size,
 	int (*cmp)(const void *keyval, const void *datum));
 
 void qsort(void *base, size_t n, size_t size, 

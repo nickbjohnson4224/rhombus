@@ -19,13 +19,13 @@
 #include <math.h>
 
 /****************************************************************************
- * strtod
+ * strtold
  *
  * Convert a string to a floating point number.
  */
 
-double strtod(const char *nptr, char **endptr) {
-	double sum;
+long double strtold(const char *nptr, char **endptr) {
+	long double sum;
 	int i, j;
 
 	for (sum = 0, i = 0; nptr[i] && isdigit(nptr[i]); i++) {
@@ -35,7 +35,7 @@ double strtod(const char *nptr, char **endptr) {
 
 //	if (nptr[i] == '.') {
 //		for (j = 1; nptr[i] && isdigit(nptr[i]); i++, j++) {
-//			sum += __digit(nptr[i], 10) * pow(10, -j);
+//			sum += __digit(nptr[i], 10) * powl(10, -j);
 //		}
 //	}
 
