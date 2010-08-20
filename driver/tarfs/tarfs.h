@@ -18,7 +18,6 @@ extern bool m_parent;
 extern FILE *parent;
 
 void tarfs_init(void);
-void tarfs_info(uint32_t source, struct packet *packet);
-void tarfs_read(uint32_t source, struct packet *packet);
+void tarfs_read(struct packet *packet, uint8_t port, uint32_t caller);
 
 #endif/*TARFS_H*/

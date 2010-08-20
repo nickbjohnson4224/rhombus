@@ -17,7 +17,7 @@
  * PORT_READ handler.
  */
 
-void tarfs_read(uint32_t source, struct packet *packet) {
+void tarfs_read(struct packet *packet, uint8_t port, uint32_t caller) {
 	uint32_t offset;
 	uint32_t i;
 	size_t size;
@@ -27,7 +27,7 @@ void tarfs_read(uint32_t source, struct packet *packet) {
 	/* reject requests to nonexistent inodes */
 	if (i > 256 || inode[i].name[0] == '\0') {
 		pfree(packet);
-		psend(PORT_REPLY, source, NULL);
+		psend(PORT_REPLY, caller, NULL);
 		return;
 	}
 
@@ -46,6 +46,6 @@ void tarfs_read(uint32_t source, struct packet *packet) {
 	fread(pgetbuf(packet), size, 1, parent);
 	mutex_free(&m_parent);
 
-	psend(PORT_REPLY, source, packet);
+	psend(PORT_REPLY, caller, packet);
 	pfree(packet);
 }

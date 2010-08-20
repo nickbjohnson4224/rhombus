@@ -14,29 +14,38 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <proc.h>
-#include <ipc.h>
-#include <abi.h>
+#include <signal.h>
+#include <mutex.h>
 
 /****************************************************************************
- * exit
+ * __sighandlerv
  *
- * Exit the current process with status <status>. Performs all functions
- * registered with atexit.
+ * Array of signal handlers. Protected by the mutex <__sigmutex>.
  */
 
-void exit(int status) {
-	struct __atexit_func *f;
-	
-	while (__atexit_func_list) {
-		f = __atexit_func_list;
-		f->function();
-		__atexit_func_list = f->next;
-		free(f);
+sighandler_t __sighandlerv[SIGMAX];
+bool __sigmutex;
+
+/****************************************************************************
+ * signal
+ *
+ * Registers a signal handler for the signal number <signum>. Returns the
+ * old signal handler on success, SIG_ERR on error.
+ */
+
+sighandler_t signal(int signum, sighandler_t handler) {
+	sighandler_t old;
+
+	if (signum < 0 || signum >= SIGMAX) {
+		return SIG_ERR;
 	}
 
-	psend(PORT_CHILD, getppid(), NULL);
+	mutex_spin(&__sigmutex);
 
-	_exit(status);
-} 
+	old = __sighandlerv[signum];
+	__sighandlerv[signum] = handler;
+
+	mutex_free(&__sigmutex);
+
+	return old;
+}

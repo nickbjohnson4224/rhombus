@@ -15,28 +15,13 @@
  */
 
 #include <stdlib.h>
-#include <proc.h>
-#include <ipc.h>
-#include <abi.h>
 
 /****************************************************************************
- * exit
+ * abort
  *
- * Exit the current process with status <status>. Performs all functions
- * registered with atexit.
+ * Exit process abnormally.
  */
 
-void exit(int status) {
-	struct __atexit_func *f;
-	
-	while (__atexit_func_list) {
-		f = __atexit_func_list;
-		f->function();
-		__atexit_func_list = f->next;
-		free(f);
-	}
-
-	psend(PORT_CHILD, getppid(), NULL);
-
-	_exit(status);
-} 
+void abort(void) {
+	exit(EXIT_FAILURE);
+}

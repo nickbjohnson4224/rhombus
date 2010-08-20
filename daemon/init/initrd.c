@@ -28,7 +28,7 @@ static uint8_t *initrd;
 static size_t   initrd_size;
 static bool   m_initrd;
 
-static void initrd_read(uint32_t source, struct packet *packet) {
+static void initrd_read(struct packet *packet, uint8_t port, uint32_t caller) {
 	uintptr_t offset;
 
 	if (!packet) {
@@ -50,7 +50,7 @@ static void initrd_read(uint32_t source, struct packet *packet) {
 	memcpy(pgetbuf(packet), &initrd[offset], packet->data_length);
 	mutex_free(&m_initrd);
 
-	psend(PORT_REPLY, source, packet);
+	psend(PORT_REPLY, caller, packet);
 }
 
 void initrd_init() {

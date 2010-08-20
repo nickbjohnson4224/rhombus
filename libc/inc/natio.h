@@ -26,7 +26,6 @@
 size_t ssend(FILE *file, void *r, void *s, size_t size, uint64_t off, uint8_t port);
 size_t read (FILE *file, void *buf, size_t size, uint64_t offset);
 size_t write(FILE *file, void *buf, size_t size, uint64_t offset);
-size_t query(FILE *file, void *rbuf, void *sbuf, size_t size);
 
 /* native file operations **************************************************/
 

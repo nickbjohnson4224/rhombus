@@ -80,9 +80,9 @@ int   _dlink_link (struct __link *l, struct __link *new, const char *key);
 
 /* dictionary event handlers ***********************************************/
 
-void _devent_read (uint32_t caller, struct packet *packet);
-void _devent_write(uint32_t caller, struct packet *packet);
-void _devent_link (uint32_t caller, struct packet *packet);
+void _devent_read (struct packet *packet, uint8_t port, uint32_t caller);
+void _devent_write(struct packet *packet, uint8_t port, uint32_t caller);
+void _devent_link (struct packet *packet, uint8_t port, uint32_t caller);
 
 /* dictionary heap - persistent ********************************************/
 

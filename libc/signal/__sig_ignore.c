@@ -14,29 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <proc.h>
-#include <ipc.h>
-#include <abi.h>
+#include <signal.h>
 
 /****************************************************************************
- * exit
+ * __sig_ignore
  *
- * Exit the current process with status <status>. Performs all functions
- * registered with atexit.
+ * Default signal handler to ignore signals.
  */
 
-void exit(int status) {
-	struct __atexit_func *f;
-	
-	while (__atexit_func_list) {
-		f = __atexit_func_list;
-		f->function();
-		__atexit_func_list = f->next;
-		free(f);
-	}
+void __sig_ignore(int signum) {
 
-	psend(PORT_CHILD, getppid(), NULL);
-
-	_exit(status);
-} 
+}

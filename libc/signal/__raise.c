@@ -14,14 +14,26 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
-#include <natio.h>
-#include <ipc.h>
+#include <signal.h>
+#include <mutex.h>
 
 /****************************************************************************
- * query (DEPRECATED)
+ * __raise
+ *
+ * Calls the registered signal handler for the given signal number <signum>.
+ * Resets the signal handler to SIG_DFL when the handler completes.
  */
 
-size_t query(FILE *fd, void *rbuf, void *sbuf, size_t size) {
-	return ssend(fd, rbuf, sbuf, size, 0, PORT_QUERY);
+int __raise(int caller, int signum) {
+	
+	if (signum < 0 || signum >= SIGMAX) {
+		return -1;
+	}
+
+	mutex_spin(&__sigmutex);
+	__sighandlerv[signum](signum);
+	__sighandlerv[signum] = SIG_DFL;
+	mutex_free(&__sigmutex);
+
+	return 0;
 }

@@ -29,10 +29,22 @@
 
 /* IPC *********************************************************************/
 
-#define PORT_FAULT	0
-#define PORT_IRQRD	1
-#define PORT_FLOAT	2
-#define PORT_DEATH	3
+#define PORT_QUIT	0
+#define PORT_TERM	1
+#define PORT_ABORT	2
+#define PORT_KILL	3
+#define PORT_STOP	4
+#define PORT_CONT	5
+#define PORT_TRAP	6
+#define PORT_INT	7
+#define PORT_IRQ	8
+#define PORT_ALARM	9
+#define PORT_CHILD	10
+#define PORT_FLOAT	11
+#define PORT_PAGE	12
+#define PORT_ILL	13
+#define PORT_USER1	14
+#define PORT_USER2	15
 
 struct packet {
 	uint32_t port;

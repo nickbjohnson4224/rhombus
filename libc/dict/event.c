@@ -20,7 +20,7 @@
 #include <proc.h>
 #include <ipc.h>
 
-void _devent_read(uint32_t caller, struct packet *packet) {
+void _devent_read(struct packet *packet, uint8_t port, uint32_t caller) {
 	struct __link_req *req;
 	char *value;
 	char *ipath;
@@ -49,7 +49,7 @@ void _devent_read(uint32_t caller, struct packet *packet) {
 	}
 }
 
-void _devent_write(uint32_t caller, struct packet *packet) {
+void _devent_write(struct packet *packet, uint8_t port, uint32_t caller) {
 	struct __link_req *req;
 
 	req = pgetbuf(packet);
@@ -63,7 +63,7 @@ void _devent_write(uint32_t caller, struct packet *packet) {
 	}
 }
 
-void _devent_link(uint32_t caller, struct packet *packet) {
+void _devent_link(struct packet *packet, uint8_t port, uint32_t caller) {
 	
 	if (packet) {
 		pfree(packet);

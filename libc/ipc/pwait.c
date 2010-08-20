@@ -32,6 +32,9 @@ static struct packet *_pwaitm
 	struct message *m;
 	struct packet *packet;
 	bool match;
+	event_t old_event;
+
+	old_event = when(port, NULL);
 
 	do {
 		mutex_spin(&m_msg_queue[port]);
@@ -80,6 +83,8 @@ static struct packet *_pwaitm
 		mutex_free(&m_msg_queue[port]);
 
 	} while (1);
+
+	when(port, old_event);
 
 	return packet;
 }

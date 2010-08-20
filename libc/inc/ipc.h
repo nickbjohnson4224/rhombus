@@ -61,26 +61,32 @@ void  pfree (struct packet *packet);
 
 /* port numbers ************************************************************/
 
-#define PORT_FAULT	0
-#define PORT_IRQ	1
-#define PORT_FLOAT	2
-#define PORT_DEATH	3
+#define PORT_QUIT	0
+#define PORT_TERM	1
+#define PORT_ABORT	2
+#define PORT_KILL	3
+#define PORT_STOP	4
+#define PORT_CONT	5
+#define PORT_TRAP	6
+#define PORT_INT	7
+#define PORT_IRQ	8
+#define PORT_ALARM	9
+#define PORT_CHILD	10
+#define PORT_FLOAT	11
+#define PORT_PAGE	12
+#define PORT_ILL	13
+#define PORT_USER1	14
+#define PORT_USER2	15
 
 #define PORT_READ	16
 #define PORT_WRITE	17
-#define PORT_DICT	18
-#define PORT_INFO	18
-#define PORT_CTRL	19
-#define PORT_QUERY	20
 
 #define PORT_DREAD	24
 #define PORT_DWRITE	25
 #define PORT_DLINK	26
 
-#define PORT_REPLY	31
-#define PORT_SYNC	32
+#define PORT_REPLY	32
 #define PORT_PING	33
-#define PORT_ERROR	34
 
 /* queueing ****************************************************************/
 
@@ -126,7 +132,7 @@ void           pdumpf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag)
 
 /* events ******************************************************************/
 
-typedef void (*event_t)(uint32_t, struct packet*);
+typedef void (*event_t)(struct packet *packet, uint8_t port, uint32_t source);
 
 event_t        when (uint8_t port, event_t handler);
 

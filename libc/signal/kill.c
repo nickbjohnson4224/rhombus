@@ -14,29 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
+#include <signal.h>
 #include <proc.h>
 #include <ipc.h>
-#include <abi.h>
 
 /****************************************************************************
- * exit
+ * kill
  *
- * Exit the current process with status <status>. Performs all functions
- * registered with atexit.
+ * Sends a signal to any process. Returns 0 on success, nonzero on error.
  */
 
-void exit(int status) {
-	struct __atexit_func *f;
+int kill(uint32_t pid, int signum) {
 	
-	while (__atexit_func_list) {
-		f = __atexit_func_list;
-		f->function();
-		__atexit_func_list = f->next;
-		free(f);
-	}
-
-	psend(PORT_CHILD, getppid(), NULL);
-
-	_exit(status);
-} 
+	return psend(signum, pid, NULL);
+}

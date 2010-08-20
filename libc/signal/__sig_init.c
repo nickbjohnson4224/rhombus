@@ -14,71 +14,42 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <arch.h>
-#include <stdlib.h>
-#include <string.h>
 #include <signal.h>
+#include <mutex.h>
 #include <proc.h>
 #include <ipc.h>
-#include <exec.h>
-#include <stdio.h>
-#include <natio.h>
-#include <mmap.h>
-#include <dict.h>
 
 /****************************************************************************
- * reject
+ * _sigwrap
  *
- * Action to be taken on the reception of an unwanted event.
+ * Wrapper for catching signals and redirecting them to __raise.
  */
 
-static void reject(struct packet *packet, uint8_t port, uint32_t caller) {
-
+static void _sigwrap(struct packet *packet, uint8_t port, uint32_t caller) {
+	
 	if (packet) {
 		pfree(packet);
 	}
 
-	psend(PORT_REPLY, caller, NULL);
+	__raise(caller, port);
 }
 
 /****************************************************************************
- * _init
+ * __sig_init
  *
- * Function called at beginning of all processes, used to initialize the C
- * library.
+ * Initializes signal subsystem: sets all signals handlers to SIG_DFL, and
+ * registers signal wrappers for all events.
  */
 
-void _init(bool is_init) {
-	extern int main(int argc, char **argv);
-	char **argv;
-	int argc;
-
-	/* setup standard streams */
-	stdin  = __fload("stdin");
-	stdout = __fload("stdout");
-	stderr = __fload("stderr");
-
-	__sig_init();
-
-	when(PORT_READ,  reject);
-	when(PORT_WRITE, reject);
-
-	when(PORT_DREAD,  _devent_read);
-	when(PORT_DWRITE, _devent_write);
-	when(PORT_DLINK,  _devent_link);
-
-	if (is_init) {
-		argc = 0;
-		argv = NULL;
-	}
-	else {
-		argc = argc_unpack();
-		argv = argv_unpack();
-
-		if (argc) {
-			setenv("NAME", argv[0]);
-		}
-	}
+void __sig_init(void) {
+	size_t i;
 	
-	exit(main(argc, argv));
+	mutex_spin(&__sigmutex);
+
+	for (i = 0; i < SIGMAX; i++) {
+		__sighandlerv[i] = SIG_DFL;
+		when(i, _sigwrap);
+	}
+
+	mutex_free(&__sigmutex);
 }

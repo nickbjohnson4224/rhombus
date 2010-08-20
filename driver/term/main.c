@@ -20,7 +20,7 @@
 #define HEIGHT 25
 #define TAB 8
 
-static void terminal_write(uint32_t caller, struct packet *packet);
+static void terminal_write(struct packet *packet, uint8_t port, uint32_t caller);
 
 static uint16_t *vbuf;
 static uint16_t c_base = 0;
@@ -46,13 +46,13 @@ int main() {
 
 	when(PORT_WRITE, terminal_write);
 
-	psend(PORT_SYNC, getppid(), NULL);
+	psend(PORT_CHILD, getppid(), NULL);
 	_done();
 
 	return 0;
 }
 
-static void terminal_write(uint32_t caller, struct packet *packet) {
+static void terminal_write(struct packet *packet, uint8_t port, uint32_t caller) {
 	size_t i;
 	char *buffer;
 

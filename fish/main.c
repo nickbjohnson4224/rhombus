@@ -63,12 +63,7 @@ int main() {
 			}
 			exit(0);
 		}
-		if (!daemon) {
-			pwaits(PORT_DEATH, pid);
-		}
-		else {
-			pwaits(PORT_SYNC, pid);
-		}
+		pwaits(PORT_CHILD, pid);
 	}
 
 	return 0;

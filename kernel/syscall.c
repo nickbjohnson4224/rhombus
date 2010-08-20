@@ -26,7 +26,7 @@ struct thread *pit_handler(struct thread *image) {
 struct thread *irq_redirect(struct thread *image) {
 
 	/* Send S_IRQ signal to the task registered with the IRQ */
-	return thread_send(NULL, irq_holder[DEIRQ(image->num)], PORT_IRQRD);
+	return thread_send(NULL, irq_holder[DEIRQ(image->num)], PORT_IRQ);
 }
 
 /***** FAULT HANDLERS *****/
@@ -34,16 +34,14 @@ struct thread *irq_redirect(struct thread *image) {
 /* Generic fault */
 struct thread *fault_generic(struct thread *image) {
 
-	#ifdef PARANOID
 	/* If in kernelspace, panic */
 	if ((image->cs & 0x3) == 0) {
 		printk("EIP:%x NUM:%d ERR:%x\n", image->eip, image->num, image->err);
 		panic("unknown exception");
 	}
-	#endif
 
 	process_freeze(image->proc);
-	return thread_send(image, image->proc->pid, PORT_FAULT);
+	return thread_send(image, image->proc->pid, PORT_ILL);
 }
 
 /* Page fault */
@@ -54,7 +52,6 @@ struct thread *fault_page(struct thread *image) {
 	/* Get faulting address from register CR2 */
 	cr2 = get_cr2();
 
-	#ifdef PARANOID
 	/* If in kernelspace, panic */
 	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */	
 
@@ -63,7 +60,6 @@ struct thread *fault_page(struct thread *image) {
 
 		panic("page fault exception");
 	}
-	#endif
 
 	if (cr2 >= image->stack && cr2 < image->stack + SEGSZ) {
 		/* allocate stack */
@@ -73,20 +69,18 @@ struct thread *fault_page(struct thread *image) {
 	else {
 		/* fault */	
 		process_freeze(image->proc);
-		return thread_send(image, image->proc->pid, PORT_FAULT);
+		return thread_send(image, image->proc->pid, PORT_PAGE);
 	}
 }
 
 /* Floating point exception */
 struct thread *fault_float(struct thread *image) {
 
-	#ifdef PARANOID
 	/* If in kernelspace, panic */
 	if ((image->cs & 0x3) == 0) {
 		printk("ip = %x\n", image->eip);
 		panic("floating point exception");
 	}
-	#endif
 
 	process_freeze(image->proc);
 	return thread_send(image, image->proc->pid, PORT_FLOAT);
@@ -112,7 +106,7 @@ struct thread *fault_nomath(struct thread *image) {
 	
 	if (!can_use_fpu) {
 		process_freeze(image->proc);
-		return thread_send(image, image->proc->pid, PORT_FLOAT);
+		return thread_send(image, image->proc->pid, PORT_ILL);
 	}
 
 	if (image->fxdata) {

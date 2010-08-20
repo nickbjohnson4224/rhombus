@@ -15,8 +15,8 @@
 
 #include "keyboard.h"
 
-void keyboard_irq (uint32_t source, struct packet *packet);
-void keyboard_read(uint32_t source, struct packet *packet);
+void keyboard_irq (struct packet *packet, uint8_t port, uint32_t caller);
+void keyboard_read(struct packet *packet, uint8_t port, uint32_t caller);
 
 int main() {
 
@@ -24,18 +24,18 @@ int main() {
 	when(PORT_READ, keyboard_read);
 	rirq(1);
 
-	psend(PORT_SYNC, getppid(), NULL);
+	psend(PORT_CHILD, getppid(), NULL);
 	_done();
 
 	return 0;
 }
 
-void keyboard_irq(uint32_t source, struct packet *packet) {
+void keyboard_irq(struct packet *packet, uint8_t port, uint32_t caller) {
 	static bool shift = false;
 	uint8_t scan;
 	char c;
 
-	if (source == 0) {
+	if (caller == 0) {
 		scan = inb(0x60);
 
 		if (scan & 0x80) {
@@ -62,7 +62,7 @@ void keyboard_irq(uint32_t source, struct packet *packet) {
 	}
 }
 
-void keyboard_read(uint32_t source, struct packet *packet) {
+void keyboard_read(struct packet *packet, uint8_t port, uint32_t caller) {
 	char *data;
 	size_t offset;
 	
@@ -77,5 +77,5 @@ void keyboard_read(uint32_t source, struct packet *packet) {
 		data[offset] = pop_char();
 	}
 
-	psend(PORT_REPLY, source, packet);
+	psend(PORT_REPLY, caller, packet);
 }

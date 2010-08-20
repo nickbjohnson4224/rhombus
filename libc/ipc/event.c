@@ -56,7 +56,7 @@ void on_event(void) {
 	mutex_spin(&m_event_handler);
 
 	if (event_handler[port]) {
-		event_handler[port](source, packet);
+		event_handler[port](packet, port, source);
 	}
 	else {
 		pstash(packet, port, source);

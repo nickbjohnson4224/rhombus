@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
 	when(PORT_READ, tarfs_read);
 
 	/* synchronize with parent process */
-	psend(PORT_SYNC, getppid(), NULL);
+	psend(PORT_CHILD, getppid(), NULL);
 
 	/* daemonize */
 	_done();
