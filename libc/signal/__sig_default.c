@@ -43,13 +43,13 @@ static void _sigpanic(const char *message) {
 void __sig_default(int signum) {
 	
 	switch (signum) {
-	case SIGQUIT:	_sigpanic("termination request");		break;
-	case SIGTERM:	_sigpanic("termination request");		break;
-	case SIGABRT:	_sigpanic("abnormal termination");		break;
-	case SIGKILL:	_sigpanic("process killed");			break;
-	case SIGINT:	_sigpanic("process interrupted");		break;
-	case SIGFPE:	_sigpanic("floating point exception");	break;
-	case SIGSEGV:	_sigpanic("segmentation fault");		break;
-	case SIGILL:	_sigpanic("illegal operation");			break;
+	case SIGQUIT:	_sigpanic("Termination request");		break;
+	case SIGTERM:	_sigpanic("Termination request");		break;
+	case SIGABRT:	_sigpanic("Abnormal termination");		break;
+	case SIGKILL:	_sigpanic("Process killed");			break;
+	case SIGINT:	_sigpanic("Process interrupted");		break;
+	case SIGFPE:	_sigpanic("Floating point exception");	break;
+	case SIGSEGV:	_sigpanic("Segmentation fault");		break;
+	case SIGILL:	_sigpanic("Illegal operation");			break;
 	}
 }
