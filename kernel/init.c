@@ -36,7 +36,7 @@ void *init(void *mboot_ptr, uint32_t mboot_magic) {
 	uint32_t i;
 	struct thread *boot_image;
 
-	cleark(); 
+	cleark();
 	printk(stamp, FLUX_VERSION_MAJOR, FLUX_VERSION_MINOR);
 
 	if (mboot_magic != 0x2BADB002) {
