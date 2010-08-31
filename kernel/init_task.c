@@ -1,8 +1,20 @@
-/* 
- * Copyright 2009, 2010 Nick Johnson
- * ISC Licensed, see LICENSE for details 
+/*
+ * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * 
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <debug.h>
 #include <util.h>
 #include <time.h>
 #include <init.h>
@@ -24,7 +36,9 @@ void init_task() {
 	boot_size  = module[1].mod_end - module[1].mod_start;
 
 	/* Check init */
-	if (elf_check(init_image)) panic("Init is not valid ELF");
+	if (elf_check(init_image)) {
+		debug_panic("Init is not valid ELF");
+	}
 
 	/* Map boot image */
 	mem_alloc(BOOT_IMAGE, boot_size, PF_PRES | PF_USER | PF_RW);

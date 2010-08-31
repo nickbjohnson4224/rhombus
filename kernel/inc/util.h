@@ -25,15 +25,6 @@ uint32_t strlen(char *str);
 int atoi(char *str, uint8_t base);
 char *itoa(uint32_t n, char *buf, uint8_t base);
 
-/***** OUTPUT FUNCTIONS *****/
-void cleark(void);
-void printk(const char *fmt, ...);
-void colork(uint8_t color);
-void cursek(int8_t x, int8_t y);
-
-/***** ERROR FUNCTIONS *****/
-void panic(const char *message); /* Panic with a message */
-
 #define ERROR	((uint32_t) -1)
 #define ENOTASK ((uint32_t) -1)
 #define ENOSIG  ((uint32_t) -2)

@@ -1,8 +1,20 @@
-/* 
- * Copyright 2009, 2010 Nick Johnson 
- * ISC Licensed, see LICENSE for details
+/*
+ * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * 
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <debug.h>
 #include <util.h>
 #include <elf.h>
 #include <time.h>
@@ -36,8 +48,8 @@ struct thread *fault_generic(struct thread *image) {
 
 	/* If in kernelspace, panic */
 	if ((image->cs & 0x3) == 0) {
-		printk("EIP:%x NUM:%d ERR:%x\n", image->eip, image->num, image->err);
-		panic("unknown exception");
+		debug_printf("EIP:%x NUM:%d ERR:%x\n", image->eip, image->num, image->err);
+		debug_panic("unknown exception");
 	}
 
 	process_freeze(image->proc);
@@ -55,10 +67,10 @@ struct thread *fault_page(struct thread *image) {
 	/* If in kernelspace, panic */
 	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */	
 
-		printk("page fault at %x, ip = %x frame %x\n", 
+		debug_printf("page fault at %x, ip = %x frame %x\n", 
 			cr2, image->eip, page_get(cr2));
 
-		panic("page fault exception");
+		debug_panic("page fault exception");
 	}
 
 	if (cr2 >= image->stack && cr2 < image->stack + SEGSZ) {
@@ -78,8 +90,8 @@ struct thread *fault_float(struct thread *image) {
 
 	/* If in kernelspace, panic */
 	if ((image->cs & 0x3) == 0) {
-		printk("ip = %x\n", image->eip);
-		panic("floating point exception");
+		debug_printf("ip = %x\n", image->eip);
+		debug_panic("floating point exception");
 	}
 
 	process_freeze(image->proc);
@@ -90,8 +102,8 @@ struct thread *fault_float(struct thread *image) {
 struct thread *fault_double(struct thread *image) {
 
 	/* Can only come from kernel problems */
-	printk("DS:%x CS:%x\n", image->ds, image->cs);
-	panic("double fault exception");
+	debug_printf("DS:%x CS:%x\n", image->ds, image->cs);
+	debug_panic("double fault exception");
 	return NULL;
 
 }
@@ -255,7 +267,7 @@ struct thread *syscall_fork(struct thread *image) {
 struct thread *syscall_exit(struct thread *image) {
 
 	if (image->proc->pid == 1) {
-		panic("init died");
+		debug_panic("init died");
 	}
 
 	process_switch(process_get(1));

@@ -14,20 +14,46 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef STDARG_H
-#define STDARG_H
+#include <debug.h>
 
-#include <stdint.h>
+/****************************************************************************
+ * __itoa
+ *
+ * Convert the unsigned integer <n> to a string in base <base> and store in
+ * <buffer>. Returns 0 on success, nonzero on error.
+ */
 
-/* argument list type ******************************************************/
+void __itoa(char *buffer, size_t n, size_t base) {
+	const char *d;
+	char temp;
+	size_t i, size;
 
-typedef __builtin_va_list va_list;
+	d = "0123456789ABCDEF";
 
-/* argument list operations ************************************************/
+	if (n == 0) {
+		buffer[0] = '0';
+		buffer[1] = '\0';
+		return;
+	}
 
-#define va_start(ap, lastarg) 	(__builtin_va_start(ap, lastarg))
-#define va_arg(ap, type) 		(__builtin_va_arg(ap, type))
-#define va_end(ap) 				(__builtin_va_end(ap))
-#define va_copy(dest, src)		(__builtin_va_copy(dest, src))
+	if (base > 16) {
+		buffer[0] = '\0';
+		return;
+	}
 
-#endif/*STDARG_H*/
+	for (i = 0; n; i++) {
+		buffer[i] = d[n % base];
+		n /= base;
+	}
+
+	buffer[i] = '\0';
+	size = i;
+
+	for (i = 0; i < (size / 2); i++) {
+		temp = buffer[size - i - 1];
+		buffer[size - i - 1] = buffer[i];
+		buffer[i] = temp;
+	}
+
+	return;
+}

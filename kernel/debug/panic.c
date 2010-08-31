@@ -3,12 +3,13 @@
  * ISC Licensed, see LICENSE for details
  */
 
+#include <debug.h>
 #include <util.h>
 
-void panic(const char *message) {
+void debug_panic(const char *message) {
 	extern void halt(void);
 
-	colork(0x7);
-	printk("Kernel panic: %s\n", message);
+	debug_color(COLOR_RED);
+	debug_printf("Kernel panic: %s\n", message);
 	halt();
 }

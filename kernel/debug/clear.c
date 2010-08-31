@@ -14,47 +14,32 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <util.h>
-#include <time.h>
-#include <space.h>
-#include <init.h>
 #include <debug.h>
+#include <stdint.h>
+#include <string.h>
 
-typedef void (*init_t)(void);
+/****************************************************************************
+ * debug_clear
+ *
+ * Clears debugging output.
+ */
 
-init_t init_list[] = {
-	mem_init,
-	thread_init,
-	process_init,
-	init_task,
-	NULL
-};
+void debug_clear(void) {
+	size_t i, j;
+	
+	#if SCREEN == VGA_FULL
+		for (i = 0; i < 25; i++) {
+			for (j = 0; j < 80; j++) {
+				__vga_video_mem[i*80+j] = (__vga_cursor_attr << 8) | ' ';
+			}
+		}
+	#endif
+	#if SCREEN == VGA_LEFT
+		for (i = 0; i < 25; i++) {
+			for (j = 40; j < 80; j++) {
+				__vga_video_mem[i*80+j] = (__vga_cursor_attr << 8) | ' ';
+			}
+		}
+	#endif
 
-struct multiboot *mboot;
-
-typedef void (*entry_t)();
-
-void *init(void *mboot_ptr, uint32_t mboot_magic) {
-	extern void halt(void);
-	extern uint32_t get_cr0(void);
-	uint32_t i;
-	struct thread *boot_image;
-
-	debug_init();
-	debug_printf("Flux Operating System Kernel v0.5a\n");
-
-	if (mboot_magic != 0x2BADB002) {
-		debug_panic("Bootloader is not multiboot compliant");
-	}
-	mboot = mboot_ptr;
-
-	for (i = 0; init_list[i]; i++) {
-		init_list[i]();
-	}
-
-	boot_image = thread_alloc();
-
-	debug_printf("dropping to usermode\n");
-
-	return &boot_image->tss_start;
 }

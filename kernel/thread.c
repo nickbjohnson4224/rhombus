@@ -127,7 +127,7 @@ void thread_init(void) {
 	init_tss();
 
 	/* set programmable interrupt controller mask */
-	pic_mask(0x0001);
+	pic_mask(0x0005);
 
 	/* register system calls */
 	register_int(0x40, syscall_send);
@@ -177,8 +177,6 @@ void thread_init(void) {
 
 	/* initialize FPU/MMX/SSE */
 	init_fpu();
-
-//	printk("init_fpu, CR0 = %x\n", get_cr0());
 }
 
 /****************************************************************************

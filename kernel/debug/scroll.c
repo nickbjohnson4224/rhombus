@@ -14,47 +14,28 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <util.h>
-#include <time.h>
-#include <space.h>
-#include <init.h>
 #include <debug.h>
 
-typedef void (*init_t)(void);
+/****************************************************************************
+ * debug_scroll
+ *
+ * Scrolls the debugging output.
+ */
 
-init_t init_list[] = {
-	mem_init,
-	thread_init,
-	process_init,
-	init_task,
-	NULL
-};
-
-struct multiboot *mboot;
-
-typedef void (*entry_t)();
-
-void *init(void *mboot_ptr, uint32_t mboot_magic) {
-	extern void halt(void);
-	extern uint32_t get_cr0(void);
-	uint32_t i;
-	struct thread *boot_image;
-
-	debug_init();
-	debug_printf("Flux Operating System Kernel v0.5a\n");
-
-	if (mboot_magic != 0x2BADB002) {
-		debug_panic("Bootloader is not multiboot compliant");
+void debug_scroll(size_t lines) {
+	size_t i, j;
+	
+	#if (SCREEN == VGA_FULL) || (SCREEN == VGA_LEFT)
+	for (i = 0; i < 25 - lines; i++) {
+		#if SCREEN == VGA_FULL
+			for (j = 0; j < 80; j++) {
+				__vga_video_mem[i*80+j] = __vga_video_mem[(i+lines)*80+j];
+			}
+		#elif SCREEN == VGA_LEFT
+			for (j = 40; j < 80; j++) {
+				__vga_video_mem[i*80+j] = __vga_video_mem[(i+lines)*80+j];
+			}
+		#endif
 	}
-	mboot = mboot_ptr;
-
-	for (i = 0; init_list[i]; i++) {
-		init_list[i]();
-	}
-
-	boot_image = thread_alloc();
-
-	debug_printf("dropping to usermode\n");
-
-	return &boot_image->tss_start;
+	#endif
 }

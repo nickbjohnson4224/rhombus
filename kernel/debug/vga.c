@@ -14,47 +14,28 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <util.h>
-#include <time.h>
-#include <space.h>
-#include <init.h>
 #include <debug.h>
+#include <stdint.h>
 
-typedef void (*init_t)(void);
+#if SCREEN == VGA_FULL || SCREEN == VGA_LEFT
 
-init_t init_list[] = {
-	mem_init,
-	thread_init,
-	process_init,
-	init_task,
-	NULL
-};
+/****************************************************************************
+ * __vga_video_mem
+ *
+ * Region of address space containing the mmaped VGA text console memory.
+ */
 
-struct multiboot *mboot;
+uint16_t *__vga_video_mem;
 
-typedef void (*entry_t)();
+/****************************************************************************
+ * __vga_cursor_*
+ *
+ * Position and attributes (current color and blink settings) of the VGA
+ * cursor.
+ */
 
-void *init(void *mboot_ptr, uint32_t mboot_magic) {
-	extern void halt(void);
-	extern uint32_t get_cr0(void);
-	uint32_t i;
-	struct thread *boot_image;
+size_t  __vga_cursor_base;
+size_t  __vga_cursor_pos;
+uint8_t __vga_cursor_attr;
 
-	debug_init();
-	debug_printf("Flux Operating System Kernel v0.5a\n");
-
-	if (mboot_magic != 0x2BADB002) {
-		debug_panic("Bootloader is not multiboot compliant");
-	}
-	mboot = mboot_ptr;
-
-	for (i = 0; init_list[i]; i++) {
-		init_list[i]();
-	}
-
-	boot_image = thread_alloc();
-
-	debug_printf("dropping to usermode\n");
-
-	return &boot_image->tss_start;
-}
+#endif
