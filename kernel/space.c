@@ -1,10 +1,21 @@
 /*
- * Copyright 2010 Nick Johnson
- * ISC Licensed, see LICENSE for details
+ * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * 
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <util.h>
 #include <space.h>
+#include <string.h>
 
 /****************************************************************************
  * space_alloc
@@ -18,7 +29,7 @@ space_t space_alloc(void) {
 
 	/* clear new space */
 	page_set(TMP_SRC, page_fmt(space, PF_PRES | PF_RW));
-	pgclr(map);
+	memclr(map, PAGESZ);
 
 	/* set recursive mapping */
 	map[PGE_MAP >> 22] = page_fmt(space, PF_PRES | PF_RW | SEG_USED);
@@ -68,7 +79,7 @@ static void segment_clone(frame_t *extbl, frame_t *exmap, uintptr_t seg) {
 	uintptr_t i;
 
 	exmap[seg / SEGSZ] = frame_new() | PF_PRES | PF_USER | PF_RW;
-	pgclr(&extbl[seg / PAGESZ]);
+	memclr(&extbl[seg / PAGESZ], PAGESZ);
 
 	for (i = seg / PAGESZ; i < (seg + SEGSZ) / PAGESZ; i++) {
 		if (ctbl[i] & PF_PRES) {

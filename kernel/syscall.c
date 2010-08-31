@@ -142,7 +142,7 @@ struct thread *syscall_send(struct thread *image) {
 	}
 
 	if (!process_get(target)) {
-		image->eax = ERROR;
+		image->eax = -1;
 		return image;
 	}
 	else {
@@ -359,7 +359,7 @@ struct thread *syscall_mmap(struct thread *image) {
 	frame = image->edx &~0xFFF;
 
 	if (addr & 0xFFF || addr + (count * PAGESZ) >= KSPACE) {
-		image->eax = ERROR;
+		image->eax = -1;
 		return image;
 	}
 
@@ -387,7 +387,7 @@ struct thread *syscall_mmap(struct thread *image) {
 			image->eax = 0;
 		}
 		else {
-			image->eax = ERROR;
+			image->eax = -1;
 		}
 
 		return image;
