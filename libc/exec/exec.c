@@ -93,7 +93,6 @@ int execi(uint8_t *image, size_t size) {
 int execv(const char *path, char const **argv) {
 	FILE *image;
 	size_t size;
-	char buffer[20];
 	char *fullpath;
 
 	fullpath = strvcat(getenv("PATH"), "/", path, NULL);

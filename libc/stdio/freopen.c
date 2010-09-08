@@ -26,7 +26,6 @@
  */
 
 FILE *freopen(const char *path, const char *mode, FILE *stream) {
-	uint32_t server, inode;
 	FILE *file;
 
 	if (!stream) {

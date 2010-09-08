@@ -26,7 +26,7 @@
 
 float strtof(const char *nptr, char **endptr) {
 	float sum;
-	int i, j;
+	int i;
 
 	for (sum = 0, i = 0; nptr[i] && isdigit(nptr[i]); i++) {
 		sum *= 10;

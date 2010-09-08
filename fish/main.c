@@ -26,10 +26,9 @@
 int main() {
 	char buffer[100];
 	size_t i, n;
-	int err, pid;
+	int pid;
 	char *argv[100];
 	bool daemon;
-	size_t length;
 
 	setenv("PWD", "/");
 	setenv("PATH", "/boot");
@@ -46,7 +45,7 @@ int main() {
 		}
 
 		argv[n = 0] = strtok(buffer, " ");
-		while (argv[++n] = strtok(NULL, " "));
+		while ((argv[++n] = strtok(NULL, " ")) != NULL);
 
 		if (argv[n-1][0] == '&') {
 			argv[n-1] = NULL;

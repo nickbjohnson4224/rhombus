@@ -10,7 +10,7 @@ PORTS    := ports/lua
 BIN_DIRS  = kernel fish
 BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS) #$(PORTS)
 
-CC := clang
+CC := clang -arch=x86 -m32
 LD := ld
 AR := ar
 AS := nasm
@@ -25,6 +25,8 @@ CFLAGS	+= -ffreestanding -I$(BUILDDIR)/inc
 LDFLAGS := -L$(BUILDDIR)/lib
 ARFLAGS := rcs
 PPFLAGS := -x assembler-with-cpp -I$(BUILDDIR)/inc
+
+PATH	:= $(BUILDDIR)/tools/bin:$(PATH)
 
 export BUILDDIR CC LD AR AS PP CFLAGS LDFLAGS ARFLAGS PPFLAGS
 

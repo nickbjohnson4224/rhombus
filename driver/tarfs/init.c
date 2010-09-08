@@ -62,7 +62,6 @@ void tarfs_init() {
 	struct tar_block *block;
 	char   *path;
 	size_t i, n;
-	uint32_t data[2];
 
 	/* allocate buffer space for header block */
 	block = malloc(512);

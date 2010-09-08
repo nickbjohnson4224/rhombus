@@ -51,7 +51,6 @@ int vsscanf(const char *str, const char *format, va_list ap) {
 	char buffer[20], *s;
 	int c;
 	int *d;
-	size_t i;
 
 	while (*format) {
 

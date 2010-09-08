@@ -49,7 +49,6 @@ static int _scanword(char *buffer, FILE *stream, size_t length, int c) {
 int vfscanf(FILE *stream, const char *format, va_list ap) {
 	char buffer[20], *s;
 	int c, *d;
-	size_t i;
 
 	while (*format) {
 

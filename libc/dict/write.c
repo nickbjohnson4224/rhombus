@@ -46,11 +46,11 @@ static int dwrite_rec(struct __dict *root, const char *value, const char *key) {
 		return 0;
 	}
 	
-	if (!root->next[key[0]]) {
-		root->next[key[0]] = dalloc(sizeof(struct __dict));
+	if (!root->next[(size_t) key[0]]) {
+		root->next[(size_t) key[0]] = dalloc(sizeof(struct __dict));
 	}
 
-	return dwrite_rec(root->next[key[0]], value, &key[1]);
+	return dwrite_rec(root->next[(size_t) key[0]], value, &key[1]);
 }
 
 /****************************************************************************

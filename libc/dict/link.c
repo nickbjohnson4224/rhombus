@@ -47,11 +47,11 @@ int dlink_rec(struct __dict *root, struct __link *link, const char *key) {
 		return 0;
 	}
 
-	if (!root->next[key[0]]) {
-		root->next[key[0]] = dalloc(sizeof(struct __dict));
+	if (!root->next[(size_t) key[0]]) {
+		root->next[(size_t) key[0]] = dalloc(sizeof(struct __dict));
 	}
 
-	return dlink_rec(root->next[key[0]], link, &key[1]);
+	return dlink_rec(root->next[(size_t) key[0]], link, &key[1]);
 }
 
 /****************************************************************************

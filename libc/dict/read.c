@@ -48,8 +48,8 @@ static char *dread_rec(struct __dict *root, const char *key) {
 		}
 	}
 
-	if (root->next[key[0]]) {
-		return dread_rec(root->next[key[0]], &key[1]);
+	if (root->next[(size_t) key[0]]) {
+		return dread_rec(root->next[(size_t) key[0]], &key[1]);
 	}
 	
 	return NULL;
@@ -85,7 +85,6 @@ char *dread(const char *key) {
 
 char *dreadns(const char *ns, const char *key) {
 	char *buffer, *value;
-	int err;
 
 	buffer = malloc(strlen(ns) + strlen(key) + 1);
 	strcpy(buffer, ns);

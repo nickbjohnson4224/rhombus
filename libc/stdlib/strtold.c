@@ -26,7 +26,7 @@
 
 long double strtold(const char *nptr, char **endptr) {
 	long double sum;
-	int i, j;
+	int i;
 
 	for (sum = 0, i = 0; nptr[i] && isdigit(nptr[i]); i++) {
 		sum *= 10;

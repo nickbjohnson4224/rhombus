@@ -68,10 +68,6 @@ int main() {
 	extern void initrd_init(void);
 	struct tar_file *boot_image, *file;
 	char const **argv;
-	char *path;
-	size_t length;
-	uint32_t server;
-	uint64_t inode;
 	FILE *temp, *init;
 
 	init = __fcons(getpid(), 0, NULL);

@@ -1,18 +1,17 @@
 Urgent:
 
 - reorganize kernel
+- detect out of memory errors
+- comment all kernel source
 - finish libc math functions
 - finish libc
 
 Less Urgent:
 
-- comment all kernel source
 - clean up abi
-- formalize kernel model
 - reduce permissions when init launches fish
 - device manager
 - add garbage collection for dictionary
-- detect out of memory errors
 - handle out of memory gracefully
 
 Would Like:
