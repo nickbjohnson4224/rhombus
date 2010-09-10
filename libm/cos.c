@@ -14,8 +14,18 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef FENV_H
-#define FENV_H
+#include <stdint.h>
+#include <float.h>
+#include <math.h>
 
+float cosf(float x) {
+	return sinf(x + M_PI_2);
+}
 
-#endif/*FENV_H*/
+double cos(double x) {
+	return sin(x + M_PI_2);
+}
+
+long double cosl(long double x) {
+	return sinl(x + M_PI_2);
+}

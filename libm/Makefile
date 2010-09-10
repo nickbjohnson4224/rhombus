@@ -1,10 +1,8 @@
 SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
-SOURCES += $(patsubst %.s,%.o,$(shell find . -mindepth 2 -name "*.s"))
-CNAUGHT := c0.o
+SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
 HEADERS := $(shell find inc -name "*.h")
-HEADERS += inc/link.ld
-SUBDIR	:= libc
-TARGET	:= libc.a
+SUBDIR	:= libm
+TARGET	:= libm.a
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
 LDFLAGS += -r
 ASFLAGS := -felf
@@ -23,7 +21,6 @@ $(TARGET): $(HEADERS) $(SOURCES) $(CNAUGHT)
 	@ echo " CP	" $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/lib
 	@ mkdir -p $(BUILDDIR)/inc
 	@ cp $(TARGET) $(BUILDDIR)/lib
-	@ cp $(CNAUGHT) $(BUILDDIR)/lib
 
 %.o: %.s
 	@ echo " AS	" $(SUBDIR)/$<

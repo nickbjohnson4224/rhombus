@@ -1,6 +1,6 @@
 BUILDDIR=$(PWD)
 
-LIB_DIRS  = 
+LIB_DIRS  = libc libm
 
 DRIVERS  := driver/term driver/kbd driver/tarfs driver/vga
 DAEMONS  := daemon/init
@@ -30,19 +30,15 @@ PATH	:= $(BUILDDIR)/tools/bin:$(PATH)
 
 export BUILDDIR CC LD AR AS PP CFLAGS LDFLAGS ARFLAGS PPFLAGS
 
-.PHONY: $(LIB_DIRS) $(BIN_DIRS) clean test cd distclean makedirs libc ports
+.PHONY: $(LIB_DIRS) $(BIN_DIRS) clean test cd distclean makedirs ports
 
 all: makedirs $(LIB_DIRS) $(BIN_DIRS) libc
 
-$(BIN_DIRS): $(LIB_DIRS) libc
+$(BIN_DIRS): $(LIB_DIRS) libc libm
 	@ echo " MAKE	" $@
 	@ make -s -C $@
 
-$(LIB_DIRS): libc
-	@ echo " MAKE	" $@
-	@ make -s -C $@
-
-libc:
+$(LIB_DIRS):
 	@ echo " MAKE	" $@
 	@ make -s -C $@
 
