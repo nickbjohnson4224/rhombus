@@ -20,6 +20,7 @@
 /* general constants *******************************************************/
 
 #define INFINITY (1.0/0.0)
+#define NAN (0.0/0.0)
 #define HUGE_VAL INFINITY
 
 /* general functions *******************************************************/

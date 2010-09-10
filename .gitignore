@@ -1,6 +1,7 @@
 *.[oa]
 *.pp
 *.swp
+*.swo
 *.iso
 /inc
 /run/cd
