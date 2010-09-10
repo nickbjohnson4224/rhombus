@@ -8,7 +8,7 @@ UTILS    := util/ls util/echo util/halt util/cat
 PORTS    := ports/lua
 
 BIN_DIRS  = kernel fish
-BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS) #$(PORTS)
+BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS) $(PORTS)
 
 CC := clang -arch=x86 -m32
 LD := ld

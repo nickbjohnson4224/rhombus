@@ -20,7 +20,6 @@
 /* general constants *******************************************************/
 
 #define INFINITY (1.0/0.0)
-
 #define HUGE_VAL INFINITY
 
 /* general functions *******************************************************/
@@ -57,9 +56,9 @@ long double fmodl (long double x, long double div);
 
 /* exponential and logarithmic functions ***********************************/
 
-float       powf  (float base, float exp);
-double      pow   (double base, double exp);
-long double powl  (long double base, long double exp);
+float       powf  (float b, float e);
+double      pow   (double b, double e);
+long double powl  (long double b, long double e);
 
 float       expf  (float x);
 double      exp   (double x);
@@ -72,6 +71,10 @@ long double logl  (long double x);
 float       log10f(float x);
 double      log10 (double x);
 long double log10l(long double x);
+
+float       log2f (float x);
+double      log2  (double x);
+long double log2l (long double x);
 
 float       sqrtf (float x);
 double      sqrt  (double x);
