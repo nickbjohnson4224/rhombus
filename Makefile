@@ -2,13 +2,13 @@ BUILDDIR=$(PWD)
 
 LIB_DIRS  = libc libm
 
-DRIVERS  := driver/term driver/kbd driver/tarfs driver/vga
+DRIVERS  := driver/term driver/kbd driver/tarfs driver/vga driver/time
 DAEMONS  := daemon/init
-UTILS    := util/ls util/echo util/halt util/cat
+UTILS    := util/ls util/echo util/halt util/cat util/date
 PORTS    := ports/lua
 
 BIN_DIRS  = kernel fish
-BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS) $(PORTS)
+BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS) #$(PORTS)
 
 CC := clang -arch=x86 -m32
 LD := ld

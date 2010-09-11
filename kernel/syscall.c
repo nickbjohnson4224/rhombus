@@ -17,7 +17,7 @@
 #include <debug.h>
 #include <util.h>
 #include <elf.h>
-#include <time.h>
+#include <ktime.h>
 #include <space.h>
 
 /***** IRQ HANDLERS *****/

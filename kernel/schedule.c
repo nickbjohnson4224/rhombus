@@ -4,7 +4,7 @@
  */
 
 #include <util.h>
-#include <time.h>
+#include <ktime.h>
 #include <space.h>
 
 /****************************************************************************

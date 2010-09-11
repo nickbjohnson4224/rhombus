@@ -14,55 +14,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <exec.h>
-#include <proc.h>
-#include <ipc.h>
-#include <dict.h>
-
+#include <time.h>
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 
-int main() {
-	char buffer[100];
-	size_t i, n;
-	int pid;
-	char *argv[100];
-	bool daemon;
+/****************************************************************************
+ * difftime
+ *
+ * Returns the number of seconds between the time of <timer2> and the time
+ * of <timer1>.
+ */
 
-	setenv("PWD", "/");
-
-	while (1) {
-		printf("%s $ ", getenv("PWD"));
-
-		fgets(buffer, 100, stdin);
-
-		for (i = 0; buffer[i]; i++) {
-			if (buffer[i] == '\n') {
-				buffer[i] = '\0';
-			}
-		}
-
-		argv[n = 0] = strtok(buffer, " ");
-		while ((argv[++n] = strtok(NULL, " ")) != NULL);
-
-		if (argv[n-1][0] == '&') {
-			argv[n-1] = NULL;
-			daemon = true;
-		}
-		else {
-			daemon = false;
-		}
-
-		pid = fork();
-		if (pid < 0) {
-			if (execv(argv[0], (char const **) argv)) {
-				perror(argv[0]);
-			}
-			exit(0);
-		}
-		pwaits(PORT_CHILD, pid);
-	}
-
-	return 0;
+double difftime(time_t timer2, time_t timer1) {
+	return (double) abs(timer2 - timer1);
 }

@@ -14,55 +14,42 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <exec.h>
-#include <proc.h>
 #include <ipc.h>
-#include <dict.h>
+#include <proc.h>
+#include <driver.h>
 
+#include <stdint.h>
+#include <stdbool.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
+#include <natio.h>
+
+#include "time.h"
+
+void time_read(struct packet *packet, uint8_t port, uint32_t caller);
 
 int main() {
-	char buffer[100];
-	size_t i, n;
-	int pid;
-	char *argv[100];
-	bool daemon;
 
-	setenv("PWD", "/");
+	when(PORT_READ, time_read);
 
-	while (1) {
-		printf("%s $ ", getenv("PWD"));
+	vffile("", "", 1);
 
-		fgets(buffer, 100, stdin);
-
-		for (i = 0; buffer[i]; i++) {
-			if (buffer[i] == '\n') {
-				buffer[i] = '\0';
-			}
-		}
-
-		argv[n = 0] = strtok(buffer, " ");
-		while ((argv[++n] = strtok(NULL, " ")) != NULL);
-
-		if (argv[n-1][0] == '&') {
-			argv[n-1] = NULL;
-			daemon = true;
-		}
-		else {
-			daemon = false;
-		}
-
-		pid = fork();
-		if (pid < 0) {
-			if (execv(argv[0], (char const **) argv)) {
-				perror(argv[0]);
-			}
-			exit(0);
-		}
-		pwaits(PORT_CHILD, pid);
-	}
+	psend(PORT_CHILD, getppid(), NULL);
+	_done();
 
 	return 0;
+}
+
+void time_read(struct packet *packet, uint8_t port, uint32_t caller) {
+	char *data;
+	
+	if (!packet) {
+		return;
+	}
+
+	data = pgetbuf(packet);
+	sprintf(data, "%d", get_time());
+	psetbuf(&packet, 21);
+
+	psend(PORT_REPLY, caller, packet);
 }

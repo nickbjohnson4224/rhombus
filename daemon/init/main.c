@@ -38,7 +38,7 @@ char logo[] = {
 
 const char *splash ="\
 Flux Operating System 0.5a\n\
-Copyright 2010 Nick Johnson\n\
+Written by Nick Johnson\n\
 \n";
 
 void panic(const char *message) {
@@ -103,13 +103,20 @@ int main() {
 	if (!(file = tar_find(boot_image, (char*) "tarfs"))) panic("no tarfs found");
 	daemon_start(&temp, file->start, file->size, argv);
 
-	vflmnt("/", "boot", temp);
+	vflmnt("/", "bin", temp);
+	setenv("PATH", "/bin/");
 	argv[1] = NULL;
 
 	/* Keyboard Driver */
 	argv[0] = "kbd";
 	if (!(file = tar_find(boot_image, (char*) "kbd"))) panic("no kbd found");
 	daemon_start(&stdin, file->start, file->size, argv);
+
+	/* Time Driver */
+	argv[0] = "time";
+	if (!(file = tar_find(boot_image, (char*) "time"))) panic("no time found");
+	daemon_start(&temp, file->start, file->size, argv);
+	vflmnt("/dev/", "time", temp);
 
 	/* Flux Init Shell */
 	argv[0] = "fish";

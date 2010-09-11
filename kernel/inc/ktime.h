@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef TIME_H
-#define TIME_H
+#ifndef KTIME_H
+#define KTIME_H
 
 #include <stdint.h>
 #include <arch.h>
@@ -209,4 +209,4 @@ struct thread *fault_float  (struct thread *image);
 struct thread *fault_double (struct thread *image);
 struct thread *fault_nomath (struct thread *image);
 
-#endif
+#endif/*KTIME_H*/

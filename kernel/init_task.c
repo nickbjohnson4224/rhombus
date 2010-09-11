@@ -17,7 +17,7 @@
 #include <string.h>
 #include <debug.h>
 #include <util.h>
-#include <time.h>
+#include <ktime.h>
 #include <init.h>
 #include <elf.h>
 

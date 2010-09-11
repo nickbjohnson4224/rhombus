@@ -17,7 +17,7 @@
 #include <string.h>
 #include <util.h>
 #include <elf.h>
-#include <time.h>
+#include <ktime.h>
 #include <space.h>
 
 void elf_load_segment(uint8_t *src, elf_ph_t *seg) {
