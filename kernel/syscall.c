@@ -79,7 +79,10 @@ struct thread *fault_page(struct thread *image) {
 		return image;
 	}
 	else {
-		/* fault */	
+		/* fault */
+		debug_printf("page fault at %x, ip = %x\n", 
+			cr2, image->eip);
+
 		process_freeze(image->proc);
 		return thread_send(image, image->proc->pid, PORT_PAGE);
 	}
@@ -110,22 +113,12 @@ struct thread *fault_double(struct thread *image) {
 
 /* Coprocessor Existence Failure */
 struct thread *fault_nomath(struct thread *image) {
-	extern void clr_ts(void);
-	extern uint32_t get_cr0(void);
-	extern uint32_t get_cpuid_flags(void);
-	extern void fpu_load(void *fxdata);
 	extern uint32_t can_use_fpu;
-	
+
 	if (!can_use_fpu) {
 		process_freeze(image->proc);
 		return thread_send(image, image->proc->pid, PORT_ILL);
 	}
-
-	if (image->fxdata) {
-		fpu_load(image->fxdata);
-	}
-
-	clr_ts();
 
 	return image;
 }

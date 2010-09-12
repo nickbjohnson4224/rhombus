@@ -9,7 +9,6 @@
 /run/boot.tar
 /run/floppy.img
 /util/dict
-/ports
 /newkernel
 /boot
 /bin

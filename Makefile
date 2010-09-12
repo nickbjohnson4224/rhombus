@@ -1,14 +1,14 @@
 BUILDDIR=$(PWD)
 
-LIB_DIRS  = libc libm
+LIB_DIRS  = libc
 
 DRIVERS  := driver/term driver/kbd driver/tarfs driver/vga driver/time
 DAEMONS  := daemon/init
-UTILS    := util/ls util/echo util/halt util/cat util/date
+UTILS    := util/ls util/echo util/halt util/cat util/date util/mathtest
 PORTS    := ports/lua
 
 BIN_DIRS  = kernel fish
-BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS) #$(PORTS)
+BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS) $(PORTS)
 
 CC := clang -arch=x86 -m32
 LD := ld
@@ -34,7 +34,7 @@ export BUILDDIR CC LD AR AS PP CFLAGS LDFLAGS ARFLAGS PPFLAGS
 
 all: makedirs $(LIB_DIRS) $(BIN_DIRS) libc
 
-$(BIN_DIRS): $(LIB_DIRS) libc libm
+$(BIN_DIRS): $(LIB_DIRS)
 	@ echo " MAKE	" $@
 	@ make -s -C $@
 

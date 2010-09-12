@@ -14,37 +14,20 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <ctype.h>
-#include <math.h>
+#include <time.h>
 
-/****************************************************************************
- * strtod
- *
- * Convert a string to a floating point number.
- */
+time_t mktime(struct tm *ptr) {
+	time_t timer;
 
-double strtod(const char *nptr, char **endptr) {
-	double sum;
-	int i;
+	timer = 0;
+	timer += ptr->tm_sec;
+	timer += ptr->tm_min * 60;
+	timer += ptr->tm_hour * 3600;
+	timer += ptr->tm_yday * 86400;
+	timer += (ptr->tm_year - 70) * 31536000;
+	timer += ((ptr->tm_year - 69) / 4) * 86400;
+	timer -= ((ptr->tm_year - 1) / 100) * 86400;
+	timer += ((ptr->tm_year + 299) / 400) * 86400;
 
-	*endptr = (char*) nptr;
-	return 0.0;
-
-	for (sum = 0, i = 0; nptr[i] && isdigit(nptr[i]); i++) {
-		sum *= 10;
-		sum += __digit(nptr[i], 10);
-	}
-
-//	if (nptr[i] == '.') {
-//		for (j = 1; nptr[i] && isdigit(nptr[i]); i++, j++) {
-//			sum += __digit(nptr[i], 10) * pow(10, -j);
-//		}
-//	}
-
-	if (endptr) {
-		*endptr = (char*) &nptr[i];
-	}
-
-	return sum;
+	return timer;
 }

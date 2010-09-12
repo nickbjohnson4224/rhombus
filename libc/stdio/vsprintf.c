@@ -26,7 +26,7 @@
 
 int vsprintf(char *str, const char *format, va_list ap) {
 	size_t i;
-	char m[2], buffer[13];
+	char m[2], buffer[100];
 
 	strcpy(str, "");
 	m[1] = '\0';
@@ -62,6 +62,14 @@ int vsprintf(char *str, const char *format, va_list ap) {
 			case 'c':
 				m[0] = va_arg(ap, int);
 				strcat(str, m);
+				break;
+			case 'f':
+				__ftoa(buffer, va_arg(ap, double), 16);
+				strcat(str, buffer);
+				break;
+			case 'e':
+				__etoa(buffer, va_arg(ap, double), 16);
+				strcat(str, buffer);
 				break;
 			case '%':
 				m[0] = '%';

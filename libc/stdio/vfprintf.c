@@ -27,7 +27,7 @@
 
 int vfprintf(FILE *stream, const char *format, va_list ap) {
 	size_t i, fbt;
-	char buffer[13];
+	char buffer[100];
 	char *fmtbuffer;
 	const char *str;
 	char c;
@@ -82,6 +82,14 @@ int vfprintf(FILE *stream, const char *format, va_list ap) {
 			case 'c':
 				c = va_arg(ap, int);
 				fwrite(&c, 1, sizeof(char), stream);
+				break;
+			case 'f':
+				__ftoa(buffer, va_arg(ap, double), 16);
+				fwrite(buffer, strlen(buffer), sizeof(char), stream);
+				break;
+			case 'e':
+				__etoa(buffer, va_arg(ap, double), 16);
+				fwrite(buffer, strlen(buffer), sizeof(char), stream);
 				break;
 			case '%':
 				c = '%';

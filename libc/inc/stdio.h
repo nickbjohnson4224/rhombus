@@ -131,6 +131,8 @@ int puts(const char *s);
 
 int __utoa(char *buffer, unsigned int n, int base, bool ucase);
 int __itoa(char *buffer, int n, int base, bool ucase);
+int __ftoa(char *buffer, double n, int precision);
+int __etoa(char *buffer, double n, int precision);
 
 int printf   (const char *format, ...);
 int vprintf  (const char *format, va_list ap);

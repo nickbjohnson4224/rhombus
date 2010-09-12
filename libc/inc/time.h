@@ -41,6 +41,7 @@ double difftime(time_t timer2, time_t timer1);
 /* calendar time ***********************************************************/
 
 struct tm {
+	int tm_offset;
 	int tm_isdst;
 
 	int tm_year;
@@ -54,6 +55,8 @@ struct tm {
 	int tm_min;
 	int tm_sec;
 };
+
+extern struct tm __tm_internal;
 
 struct tm *gmtime   (const time_t *timer);
 struct tm *gmtime_r (const time_t *timer, struct tm *result);

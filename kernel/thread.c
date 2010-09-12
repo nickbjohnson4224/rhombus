@@ -7,6 +7,7 @@
 #include <ktime.h>
 #include <space.h>
 #include <init.h>
+#include <debug.h>
 
 /****************************************************************************
  * thread_alloc
@@ -257,6 +258,7 @@ uintptr_t thread_bind(struct thread *thread, struct process *proc) {
 
 struct thread *thread_switch(struct thread *old, struct thread *new) {
 	extern void fpu_save(void *fxdata);
+	extern void fpu_load(void *fxdata);
 	extern bool tst_ts(void);
 	extern void set_ts(void);
 	extern uint32_t get_cr0(void);
@@ -267,21 +269,23 @@ struct thread *thread_switch(struct thread *old, struct thread *new) {
 	}
 
 	/* save FPU state */
-	if (old && !tst_ts()) {
+	if (old) {
 		if (!old->fxdata) {
 			old->fxdata = heap_alloc(512);
 		}
 
 		fpu_save(old->fxdata);
 	}
-
+	
 	/* switch processes */
 	if (!old || (old->proc != new->proc)) {
 		process_switch(new->proc);
 	}
 
-	/* set task switched flag */
-	set_ts();
+	/* load FPU state */
+	if (new->fxdata) {
+		fpu_load(new->fxdata);
+	}
 
 	return new;
 }

@@ -22,7 +22,7 @@ longjmp:
 	
 	mov esp, [edx+0x00]
 	mov ebp, [edx+0x04]
-	mov ecx, [eax+0x08]
+	mov ecx, [edx+0x08]
 	mov ebx, [edx+0x0C]
 	mov edi, [edx+0x10]
 	mov esi, [edx+0x14]

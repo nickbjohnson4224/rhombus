@@ -14,37 +14,21 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
 #include <math.h>
 
-/****************************************************************************
- * strtod
- *
- * Convert a string to a floating point number.
- */
+int main(int argc, char **argv) {
+	double x;
 
-double strtod(const char *nptr, char **endptr) {
-	double sum;
-	int i;
-
-	*endptr = (char*) nptr;
-	return 0.0;
-
-	for (sum = 0, i = 0; nptr[i] && isdigit(nptr[i]); i++) {
-		sum *= 10;
-		sum += __digit(nptr[i], 10);
+	if (argc > 1) {
+		x = strtod(argv[1], NULL);
+	}
+	else {
+		x = 42.42424242424242;
 	}
 
-//	if (nptr[i] == '.') {
-//		for (j = 1; nptr[i] && isdigit(nptr[i]); i++, j++) {
-//			sum += __digit(nptr[i], 10) * pow(10, -j);
-//		}
-//	}
+	printf("x = %f = %e ~= %d\n", x, x, (int) x);
 
-	if (endptr) {
-		*endptr = (char*) &nptr[i];
-	}
-
-	return sum;
+	return 0;
 }

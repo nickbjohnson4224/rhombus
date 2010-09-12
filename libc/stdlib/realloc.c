@@ -18,6 +18,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <stdio.h>
+
 /****************************************************************************
  * realloc
  *
@@ -27,10 +29,13 @@
 
 void *realloc(void *ptr, size_t size) {
 	void *new;
-	
+
 	new = malloc(size);
-	memcpy(new, ptr, msize(ptr));
-	free(ptr);
+
+	if (ptr) {
+		memcpy(new, ptr, msize(ptr));
+		free(ptr);
+	}
 
 	return new;
 }

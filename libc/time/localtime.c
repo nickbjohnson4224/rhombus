@@ -14,37 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <ctype.h>
-#include <math.h>
+#include <time.h>
 
 /****************************************************************************
- * strtod
+ * localtime
  *
- * Convert a string to a floating point number.
+ * Converts the time <timer> to a calendar structure for the local timezone,
+ * which is currently fixed at GMT. Returns a pointer to that calendar 
+ * structure, which is statically allocated and will change contents with any 
+ * call to gmtime, localtime, or ctime.
  */
 
-double strtod(const char *nptr, char **endptr) {
-	double sum;
-	int i;
-
-	*endptr = (char*) nptr;
-	return 0.0;
-
-	for (sum = 0, i = 0; nptr[i] && isdigit(nptr[i]); i++) {
-		sum *= 10;
-		sum += __digit(nptr[i], 10);
-	}
-
-//	if (nptr[i] == '.') {
-//		for (j = 1; nptr[i] && isdigit(nptr[i]); i++, j++) {
-//			sum += __digit(nptr[i], 10) * pow(10, -j);
-//		}
-//	}
-
-	if (endptr) {
-		*endptr = (char*) &nptr[i];
-	}
-
-	return sum;
+struct tm *localtime(const time_t *timer) {
+	return gmtime(timer);
 }

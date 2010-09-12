@@ -14,37 +14,31 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <ctype.h>
-#include <math.h>
+#include <string.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stddef.h>
 
-/****************************************************************************
- * strtod
- *
- * Convert a string to a floating point number.
- */
+static bool is_accepted(char c, const char *accept) {
+	size_t i;
 
-double strtod(const char *nptr, char **endptr) {
-	double sum;
-	int i;
-
-	*endptr = (char*) nptr;
-	return 0.0;
-
-	for (sum = 0, i = 0; nptr[i] && isdigit(nptr[i]); i++) {
-		sum *= 10;
-		sum += __digit(nptr[i], 10);
+	for (i = 0; accept[i]; i++) {
+		if (c == accept[i]) {
+			return true;
+		}
 	}
 
-//	if (nptr[i] == '.') {
-//		for (j = 1; nptr[i] && isdigit(nptr[i]); i++, j++) {
-//			sum += __digit(nptr[i], 10) * pow(10, -j);
-//		}
-//	}
+	return false;
+}
 
-	if (endptr) {
-		*endptr = (char*) &nptr[i];
+char *strpbrk(const char *s, const char *accept) {
+	size_t i;
+
+	for (i = 0; s[i]; i++) {
+		if (is_accepted(s[i], accept)) {
+			return (char*) &s[i];
+		}
 	}
 
-	return sum;
+	return NULL;
 }

@@ -19,7 +19,12 @@
 char *strchr(const char *s, char c) {
 	size_t i;
 
-	for (i = 0; s[i] != c; i++);
-
-	return (char*) &s[i];
+	for (i = 0; s[i] && (s[i] != c); i++);
+	
+	if (s[i] == '\0') {
+		return NULL;
+	}
+	else {
+		return (char*) &s[i];
+	}
 }

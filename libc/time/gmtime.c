@@ -14,37 +14,25 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <ctype.h>
-#include <math.h>
+#include <time.h>
 
 /****************************************************************************
- * strtod
+ * __tm_internal
  *
- * Convert a string to a floating point number.
+ * Internal, statically allocated calendar structure used by gmtime, ctime,
+ * and localtime.
  */
 
-double strtod(const char *nptr, char **endptr) {
-	double sum;
-	int i;
+struct tm __tm_internal;
 
-	*endptr = (char*) nptr;
-	return 0.0;
+/****************************************************************************
+ * gmtime
+ *
+ * Converts the time <timer> to a calendar structure for GMT. Returns a 
+ * pointer to that calendar structure, which is statically allocated and will 
+ * change contents with any call to gmtime, localtime, or ctime.
+ */
 
-	for (sum = 0, i = 0; nptr[i] && isdigit(nptr[i]); i++) {
-		sum *= 10;
-		sum += __digit(nptr[i], 10);
-	}
-
-//	if (nptr[i] == '.') {
-//		for (j = 1; nptr[i] && isdigit(nptr[i]); i++, j++) {
-//			sum += __digit(nptr[i], 10) * pow(10, -j);
-//		}
-//	}
-
-	if (endptr) {
-		*endptr = (char*) &nptr[i];
-	}
-
-	return sum;
+struct tm *gmtime(const time_t *timer) {
+	return gmtime_r(timer, &__tm_internal);
 }

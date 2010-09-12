@@ -14,37 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <ctype.h>
-#include <math.h>
+#include <time.h>
+#include <stddef.h>
+#include <string.h>
 
-/****************************************************************************
- * strtod
- *
- * Convert a string to a floating point number.
- */
-
-double strtod(const char *nptr, char **endptr) {
-	double sum;
-	int i;
-
-	*endptr = (char*) nptr;
-	return 0.0;
-
-	for (sum = 0, i = 0; nptr[i] && isdigit(nptr[i]); i++) {
-		sum *= 10;
-		sum += __digit(nptr[i], 10);
-	}
-
-//	if (nptr[i] == '.') {
-//		for (j = 1; nptr[i] && isdigit(nptr[i]); i++, j++) {
-//			sum += __digit(nptr[i], 10) * pow(10, -j);
-//		}
-//	}
-
-	if (endptr) {
-		*endptr = (char*) &nptr[i];
-	}
-
-	return sum;
+size_t strftime(char *s, size_t max, const char *fmt, const struct tm *tm) {
+	return strlcpy(s, "(stubbed)", max);
 }

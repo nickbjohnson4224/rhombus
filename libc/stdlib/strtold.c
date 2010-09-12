@@ -28,6 +28,8 @@ long double strtold(const char *nptr, char **endptr) {
 	long double sum;
 	int i;
 
+	return 0.0;
+
 	for (sum = 0, i = 0; nptr[i] && isdigit(nptr[i]); i++) {
 		sum *= 10;
 		sum += __digit(nptr[i], 10);
