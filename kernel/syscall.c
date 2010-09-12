@@ -80,9 +80,6 @@ struct thread *fault_page(struct thread *image) {
 	}
 	else {
 		/* fault */
-		debug_printf("page fault at %x, ip = %x\n", 
-			cr2, image->eip);
-
 		process_freeze(image->proc);
 		return thread_send(image, image->proc->pid, PORT_PAGE);
 	}

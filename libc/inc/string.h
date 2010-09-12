@@ -63,7 +63,6 @@ char  *strtok_r(char *, const char *, char **);
 const char *strerror(int);
 
 /* string locales ***********************************************************/
-
 int    strcoll(const char *, const char *);
 size_t strxfrm(char *, const char *, size_t);
 

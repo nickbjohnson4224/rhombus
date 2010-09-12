@@ -21,8 +21,8 @@ void *memchr(const void *s, uint8_t c, size_t n) {
 	uint8_t *src = (uint8_t*) s;
 
 	for (i = 0; i < n; i++) {
-		if (src[n] == c) return &src[n];
+		if (src[i] == c) return &src[i];
 	}
 	
-	return NULL;
+	return &src[i];
 }

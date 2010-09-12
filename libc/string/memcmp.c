@@ -19,12 +19,13 @@
 int memcmp(const void *p1, const void *p2, size_t n) {
 	uint8_t *v1 = (void*) p1;
 	uint8_t *v2 = (void*) p2;
+	size_t i;
 
-	while (n--) {
-		if (*v1++ != *v2++) {
-			return 0;
+	for (i = 0; i < n; i++) {
+		if (v1[i] != v2[i]) {
+			return 1;
 		}
 	}
 
-	return 1;
+	return 0;
 }

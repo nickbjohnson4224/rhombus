@@ -4,7 +4,7 @@ LIB_DIRS  = libc
 
 DRIVERS  := driver/term driver/kbd driver/tarfs driver/vga driver/time
 DAEMONS  := daemon/init
-UTILS    := util/ls util/echo util/halt util/cat util/date util/mathtest
+UTILS    := util/ls util/echo util/halt util/cat util/date util/test
 PORTS    := ports/lua
 
 BIN_DIRS  = kernel fish
