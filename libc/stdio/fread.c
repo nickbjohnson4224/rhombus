@@ -26,8 +26,8 @@
  */
 
 size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
-	size_t ret;
-//	char *cptr;
+	size_t ret, rev_count;
+	char *cptr;
 
 	if (!stream) {
 		return 0;
@@ -39,15 +39,27 @@ size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 
 	nmemb *= size;
 
-/*	if (stream->revbuf != EOF) {
+	if ((stream->ext->revbuf != EOF) && (nmemb != 0)) {
 		cptr = ptr;
-		cptr[0] = stream->revbuf;
-		stream->revbuf = EOF;
-		nmemb--;
-	} */
+		cptr[0] = stream->ext->revbuf;
+		ptr = &cptr[1];
+		stream->ext->revbuf = EOF;
+		rev_count = 1;
+	}
+	else {
+		rev_count = 0;
+	}
 
-	ret = read(stream, ptr, nmemb, stream->ext->position);
+	ret = read(stream, ptr, nmemb - rev_count, stream->ext->position) + rev_count;
 	stream->ext->position += ret;
+
+	if (ret != nmemb) {
+		stream->ext->flags |= FILE_EOF;
+	}
+
+	if (size == 0) {
+		size = 1;
+	}
 
 	return (ret / size);
 }

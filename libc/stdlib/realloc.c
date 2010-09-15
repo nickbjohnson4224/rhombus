@@ -32,8 +32,10 @@ void *realloc(void *ptr, size_t size) {
 
 	new = malloc(size);
 
+	size = (size > msize(ptr)) ? msize(ptr) : size;
+
 	if (ptr) {
-		memcpy(new, ptr, msize(ptr));
+		memcpy(new, ptr, size);
 		free(ptr);
 	}
 

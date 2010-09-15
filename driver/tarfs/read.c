@@ -43,7 +43,7 @@ void tarfs_read(struct packet *packet, uint8_t port, uint32_t caller) {
 
 	mutex_spin(&m_parent);
 	fseek(parent, offset, SEEK_SET);
-	fread(pgetbuf(packet), size, 1, parent);
+	fread(pgetbuf(packet), 1, size, parent);
 	mutex_free(&m_parent);
 
 	psend(PORT_REPLY, caller, packet);

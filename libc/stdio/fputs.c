@@ -26,7 +26,7 @@
 
 int fputs(const char *s, FILE *stream) {
 
-	if (fwrite(s, strlen(s), sizeof(char), stream) == 0) {
+	if (fwrite(s, sizeof(char), strlen(s), stream) == 0) {
 		return -1;
 	}
 	else {

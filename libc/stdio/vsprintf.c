@@ -15,6 +15,7 @@
  */
 
 #include <stdio.h>
+#include <ctype.h>
 #include <stdarg.h>
 #include <string.h>
 
@@ -63,7 +64,10 @@ int vsprintf(char *str, const char *format, va_list ap) {
 				m[0] = va_arg(ap, int);
 				strcat(str, m);
 				break;
-			case 'f':
+			case '.':
+				i++;
+				while(isdigit(format[i+1])) i++;
+			case 'f': case 'g':
 				__ftoa(buffer, va_arg(ap, double), 16);
 				strcat(str, buffer);
 				break;

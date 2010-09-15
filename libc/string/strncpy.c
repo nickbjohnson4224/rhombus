@@ -22,6 +22,9 @@ char *strncpy(char *d, const char *s, size_t n) {
 	for (i = 0; s[i] != '\0' && i < n; i++) {
 		d[i] = s[i];
 	}
+	for (; i < n; i++) {
+		d[i] = '\0';
+	}
 
 	return d;
 }

@@ -143,6 +143,10 @@ void free(void *ptr) {
 	struct block *block;
 	size_t size;
 
+	if (!ptr) {
+		return;
+	}
+
 	if (!((uintptr_t) ptr % PAGESZ)) {
 		return;
 	}
@@ -166,6 +170,10 @@ void free(void *ptr) {
 size_t msize(void *ptr) {
 	struct block *block;
 
+	if (!ptr) {
+		return 0;
+	}
+
 	block = (void*) ((uintptr_t) ptr - sizeof(size_t));
 
 	return (1 << block->size);
@@ -187,6 +195,10 @@ void *aalloc(size_t size, size_t align) {
 
 	addr = (uintptr_t) malloc(size);
 	addr -= addr % PAGESZ;
+
+	if (addr) {
+		*((size_t*) (addr - sizeof(size_t))) = get_bucket(size + sizeof(size_t));
+	}
 
 	return (void*) addr;
 }

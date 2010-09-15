@@ -79,6 +79,13 @@ int main(int argc, char **argv) {
 			printf("string tests failed.\n");
 			return 1;
 		}
+	}	
+	
+	if (!strcmp(testsuite, "heap") || !strcmp(testsuite, "all")) {
+		if (test_heap()) {
+			printf("heap tests failed.\n");
+			return 1;
+		}
 	}
 
 	return 0;

@@ -32,6 +32,7 @@ char *fgets(char *s, int size, FILE *stream) {
 		ch = fgetc(stream);
 		s[i] = ch;
 
+		if (ch == EOF) i--;
 		if (ch == EOF || ch == '\n') break;
 	}
 

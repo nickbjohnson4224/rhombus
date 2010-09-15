@@ -19,13 +19,13 @@
 #include <math.h>
 
 int __ftoa(char *buffer, double n, int precision) {
-	double ipart;
+//	double ipart;
 
-	strcpy(buffer, "omg42!");
+	sprintf(buffer, "%d", (int) n);
 
-	n = modf(n, &ipart);
-
-	sprintf(buffer, "%d.%d", (int) ipart, (int) (n * pow(10.0, (double) precision)));
+//	n = modf(n, &ipart);
+//
+//	sprintf(buffer, "%d.%d", (int) ipart, (int) (n * pow(10.0, (double) precision)));
 
 	return 0;
 }

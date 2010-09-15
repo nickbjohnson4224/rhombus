@@ -42,6 +42,10 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
 		ret = write(stream, (void*) ptr, size * nmemb, stream->ext->position);
 		stream->ext->position += ret;
 
+		if (size == 0) {
+			size = 1;
+		}
+
 		return (ret / size);
 	}
 

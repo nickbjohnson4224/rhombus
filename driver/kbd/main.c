@@ -86,6 +86,11 @@ void keyboard_read(struct packet *packet, uint8_t port, uint32_t caller) {
 
 	for (offset = 0; offset < packet->data_length; offset++) {
 		data[offset] = pop_char();
+
+		if (data[offset] == 'D') {
+			psetbuf(&packet, 0);
+			break;
+		}
 	}
 
 	psend(PORT_REPLY, caller, packet);

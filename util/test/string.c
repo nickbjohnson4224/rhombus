@@ -28,15 +28,15 @@ int test_string(void) {
 //		+ test_memset()
 //		+ test_memclr()
 //		+ test_strcpy()
-//		+ test_strncpy()
+		+ test_strncpy()
 //		+ test_strcat()
 //		+ test_strncat()
 //		+ test_strcmp()
 //		+ test_strncmp()
 //		+ test_strlen()
-//		+ test_strchr()
-//		+ test_strrchr()
-//		+ test_strstr()
+		+ test_strchr()
+		+ test_strrchr()
+		+ test_strstr()
 //		+ test_strpbrk()
 //		+ test_strspn()
 //		+ test_strcspn()
@@ -123,6 +123,86 @@ int test_memmove(void) {
 	else printf(".");
 
 	if (value1[9] != 7) return 1;
+	else printf(".");
+
+	printf(" passed.\n");
+
+	return 0;
+}
+
+int test_strstr(void) {
+	const char *needle = "needle";
+	const char *haystack = " needl needle needle";
+	
+	printf("\tstrstr");
+
+	if (strstr(haystack, needle) != &haystack[7]) return 1;
+	else printf(".");
+
+	if (strstr(haystack, "needlea") != NULL) return 1;
+	else printf(".");
+
+	printf(" passed.\n");
+
+	return 0;
+}
+
+int test_strncpy(void) {
+	const char *str = "string";
+	char buffer[11] = "aaaaaaaaaa";
+
+	printf("\tstrncpy");
+	
+	strncpy(buffer, str, 5);
+	if (buffer[5] != 'a') return 1;
+	else printf(".");
+
+	strncpy(buffer, str, 10);
+	if (strcmp(buffer, str)) return 1;
+	else printf(".");
+
+	if (buffer[6] != '\0') return 1;
+	else printf(".");
+
+	if (buffer[10] != '\0') return 1;
+	else printf(".");
+
+	printf(" passed.\n");
+	
+	return 0;
+}
+
+int test_strchr(void) {
+	const char *str = "hello";
+
+	printf("\tstrchr");
+
+	if (strchr(str, 'l') != &str[2]) return 1;
+	else printf(".");
+
+	if (strchr(str, 'q') != NULL) return 1;
+	else printf(".");
+
+	if (strchr(str, '\0') != NULL) return 1;
+	else printf(".");
+
+	printf(" passed.\n");
+
+	return 0;
+}
+
+int test_strrchr(void) {
+	const char *str = "hello";
+
+	printf("\tstrrchr");
+
+	if (strchr(str, 'l') != &str[2]) return 1;
+	else printf(".");
+
+	if (strchr(str, 'q') != NULL) return 1;
+	else printf(".");
+
+	if (strchr(str, '\0') != NULL) return 1;
 	else printf(".");
 
 	printf(" passed.\n");
