@@ -46,6 +46,10 @@ int main() {
 		argv[n = 0] = strtok(buffer, " ");
 		while ((argv[++n] = strtok(NULL, " ")) != NULL);
 
+		if (argv[0][0] == '\0') {
+			continue;
+		}
+
 		if (argv[n-1][0] == '&') {
 			argv[n-1] = NULL;
 			daemon = true;

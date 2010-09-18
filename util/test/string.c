@@ -29,17 +29,17 @@ int test_string(void) {
 //		+ test_memclr()
 //		+ test_strcpy()
 		+ test_strncpy()
-//		+ test_strcat()
-//		+ test_strncat()
+		+ test_strcat()
+		+ test_strncat()
 //		+ test_strcmp()
 //		+ test_strncmp()
 //		+ test_strlen()
 		+ test_strchr()
 		+ test_strrchr()
 		+ test_strstr()
-//		+ test_strpbrk()
+		+ test_strpbrk()
 //		+ test_strspn()
-//		+ test_strcspn()
+		+ test_strcspn()
 //		+ test_strtok()
 	;
 }
@@ -207,5 +207,85 @@ int test_strrchr(void) {
 
 	printf(" passed.\n");
 
+	return 0;
+}
+
+int test_strpbrk(void) {
+	const char *str = "hello, world!";
+
+	printf("\tstrpbrk");
+
+	if (strpbrk(str, "l") != &str[2]) return 1;
+	else printf(".");
+
+	if (strpbrk(str, "w!") != &str[7]) return 1;
+	else printf(".");
+
+	if (strpbrk(str, "!w") != &str[7]) return 1;
+	else printf(".");
+
+	printf(" passed.\n");
+
+	return 0;
+}
+
+int test_strcat(void) {
+	const char *str1 = "hello ";
+	const char *str2 = "world!";
+	char buffer[20];
+
+	printf("\tstrcat");
+
+	strcpy(buffer, str1);
+	strcat(buffer, str2);
+
+	if (strcmp(buffer, "hello world!")) return 1;
+	else printf(".");
+
+	printf(" passed.\n");
+
+	return 0;
+}
+
+int test_strncat(void) {
+	const char *str1 = "hello ";
+	const char *str2 = "world!";
+	char buffer[20];
+
+	printf("\tstrncat");
+
+	strcpy(buffer, str1);
+	strncat(buffer, str2, 20);
+
+	if (strcmp(buffer, "hello world!")) return 1;
+	else printf(".");
+
+	strcpy(buffer, str1);
+	strncat(buffer, str2, 4);
+
+	if (buffer[10] != '\0') return 1;
+	else printf(".");
+
+	printf(" passed.\n");
+
+	return 0;
+}
+
+int test_strcspn(void) {
+	const char *str = "aabbcc";
+	
+	printf("\tstrcspn");
+
+	if (strcspn(str, "bc") != 2) return 1;
+	else printf(".");
+
+	if (strcspn(str, "c") != 4) return 1;
+	else printf(".");
+
+	if (strcspn(str, "d") != 6) return 1;
+	else printf(".");
+
+	printf(" passed.\n");
+	
 	return 0;
 }
