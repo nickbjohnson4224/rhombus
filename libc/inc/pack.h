@@ -14,42 +14,40 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifndef PACK_H
+#define PACK_H
+
+#include <stdint.h>
 #include <stdbool.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <pack.h>
+#include <arch.h>
 
-/****************************************************************************
- * __fload
- *
- * Load a file descriptor from exec-peristent memory. Returns a pointer to
- * the loaded file descriptor on success, NULL on failure.
- */
+#define PACK_VECT_ADDR	(ESPACE + 0x10000000)
+#define PACK_HEAP_ADDR	(ESPACE + 0x10010000)
+#define PACK_END_ADDR	(ESPACE + 0x20000000)
 
-FILE *__fload(int id) {
-	FILE *new;
-	const FILE *saved;
-	size_t length;
+#define PACK_KEY_ENV	0x01000000
+#define PACK_KEY_ARG	0x02000000
+#define PACK_KEY_FILE	0x03000000
 
-	/* allocate space for new file */
-	new = malloc(sizeof(FILE));
+extern struct pack_list {
+	struct pack_list *next;
+	uint32_t key;
+	void *data;
+	size_t size;
+} *__pack_list;
 
-	/* check for allocation errors */
-	if (!new) {
-		return NULL;
-	}
+extern struct pack_vector {
+	uint32_t key;
+	void *data;
+	size_t size;
+} *__pack_vector;
 
-	/* unpack file */
-	saved = __pack_load(PACK_KEY_FILE | id, &length);
+extern bool __pack_usable;
 
-	/* existence/sanity check */
-	if (!saved || length != sizeof(FILE)) {
-		return NULL;
-	}
-	
-	/* copy file */
-	memcpy(new, saved, sizeof(FILE));
+void *__pack_alloc(size_t size);
+void  __pack_reset(void);
+void  __pack_add  (uint32_t key, const void *data, size_t size);
+void  __pack_save (void);
+void *__pack_load (uint32_t key, size_t *size);
 
-	return new;
-}
+#endif/*PACK_H*/

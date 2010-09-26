@@ -14,42 +14,20 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdbool.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <pack.h>
+#include <mmap.h>
 
-/****************************************************************************
- * __fload
- *
- * Load a file descriptor from exec-peristent memory. Returns a pointer to
- * the loaded file descriptor on success, NULL on failure.
- */
+void *__pack_load(uint32_t key, size_t *size) {
+	size_t i;
 
-FILE *__fload(int id) {
-	FILE *new;
-	const FILE *saved;
-	size_t length;
+	mmap(__pack_vector, PAGESZ, MMAP_READ | MMAP_WRITE);
 
-	/* allocate space for new file */
-	new = malloc(sizeof(FILE));
-
-	/* check for allocation errors */
-	if (!new) {
-		return NULL;
+	for (i = 0; __pack_vector[i].key; i++) {
+		if (__pack_vector[i].key == key) {
+			*size = __pack_vector[i].size;
+			return __pack_vector[i].data;
+		}
 	}
 
-	/* unpack file */
-	saved = __pack_load(PACK_KEY_FILE | id, &length);
-
-	/* existence/sanity check */
-	if (!saved || length != sizeof(FILE)) {
-		return NULL;
-	}
-	
-	/* copy file */
-	memcpy(new, saved, sizeof(FILE));
-
-	return new;
+	return NULL;
 }

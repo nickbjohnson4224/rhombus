@@ -23,6 +23,7 @@
 #include <exec.h>
 #include <mmap.h>
 #include <errno.h>
+#include <pack.h>
 
 /****************************************************************************
  * bootstrap
@@ -42,15 +43,19 @@ static uint8_t *bootstrap = (void*) ESPACE;
 static void _save(const char **argv) {
 	int argc;
 	
-	__fsave("stdin",  stdin);
-	__fsave("stdout", stdout);
-	__fsave("stderr", stderr);
+	__fsave(0,  stdin);
+	__fsave(1, stdout);
+	__fsave(2, stderr);
 
 	if (argv) {
 		for (argc = 0; argv[argc]; argc++);
 
 		argv_pack(argc, argv);
 	}
+
+	__saveenv();
+
+	__pack_save();
 }
 
 /****************************************************************************

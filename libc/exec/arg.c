@@ -14,11 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <dict.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <pack.h>
 
 /****************************************************************************
  * argv_pack
@@ -28,14 +28,12 @@
  */
 
 void argv_pack(int argc, const char **argv) {
-	int i;
-	char key[16];
+	size_t i;
 
-	dwrite(tdeflate(&argc, sizeof(int)), "arg:argc");
+	__pack_add(PACK_KEY_ARG | 0, &argc, sizeof(int));
 
-	for (i = 0; i < argc; i++) {
-		sprintf(key, "arg:%d", i);
-		dwrite(argv[i], key);
+	for (i = 0; i < (size_t) argc; i++) {
+		__pack_add(PACK_KEY_ARG | (i + 1), argv[i], strlen(argv[i]) + 1);
 	}
 }
 
@@ -46,18 +44,16 @@ void argv_pack(int argc, const char **argv) {
  */
 
 int argc_unpack(void) {
-	int argc;
-	char *value;
+	size_t length;
+	const int *value;
 
-	value = dread("arg:argc");
+	value = __pack_load(PACK_KEY_ARG, &length);
 
-	if (!value) {
+	if (!value || length != sizeof(int)) {
 		return 0;
 	}
 	else {
-		inflate(&argc, sizeof(int), value);
-		free(value);
-		return argc;
+		return (*value);
 	}
 }
 
@@ -68,16 +64,16 @@ int argc_unpack(void) {
  */
 
 char **argv_unpack(void) {
-	int argc, i;
-	char *value;
-	char **argv, key[12];
+	int argc;
+	size_t i, length;
+	const char *value;
+	char **argv;
 
 	argc = argc_unpack();
 	argv = malloc(sizeof(char*) * (argc + 1));
 
-	for (i = 0; i < argc; i++) {
-		sprintf(key, "arg:%d", i);	
-		value = dread(key);
+	for (i = 0; i < (size_t) argc; i++) {
+		value = __pack_load(PACK_KEY_ARG | (i + 1), &length);
 
 		if (!value) {
 			argv[i] = NULL;
@@ -85,7 +81,6 @@ char **argv_unpack(void) {
 		else {
 			argv[i] = malloc(strlen(value) + 1);
 			strcpy(argv[i], value);
-			free(value);
 		}
 	}
 

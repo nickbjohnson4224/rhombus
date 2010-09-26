@@ -14,42 +14,30 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdbool.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 #include <pack.h>
+#include <mmap.h>
 
-/****************************************************************************
- * __fload
- *
- * Load a file descriptor from exec-peristent memory. Returns a pointer to
- * the loaded file descriptor on success, NULL on failure.
- */
+struct pack_vector *__pack_vector = (void*) PACK_VECT_ADDR;
 
-FILE *__fload(int id) {
-	FILE *new;
-	const FILE *saved;
-	size_t length;
+void __pack_save(void) {
+	size_t i;
+	struct pack_list *list;
 
-	/* allocate space for new file */
-	new = malloc(sizeof(FILE));
+	for (list = __pack_list, i = 0; list; list = list->next, i++);
 
-	/* check for allocation errors */
-	if (!new) {
-		return NULL;
+	mmap(__pack_vector, (i + 1) * sizeof(struct pack_vector), 
+		MMAP_READ | MMAP_WRITE);
+
+	for (list = __pack_list, i = 0; list; list = list->next, i++) {
+		__pack_vector[i].key  = list->key;
+		__pack_vector[i].size = list->size;
+		__pack_vector[i].data = __pack_alloc(list->size);
+		memcpy(__pack_vector[i].data, list->data, list->size);
+		free(list->data);
 	}
 
-	/* unpack file */
-	saved = __pack_load(PACK_KEY_FILE | id, &length);
-
-	/* existence/sanity check */
-	if (!saved || length != sizeof(FILE)) {
-		return NULL;
-	}
-	
-	/* copy file */
-	memcpy(new, saved, sizeof(FILE));
-
-	return new;
+	__pack_vector[i].key = 0;
 }

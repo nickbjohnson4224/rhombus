@@ -25,6 +25,7 @@
 #include <natio.h>
 #include <mmap.h>
 #include <dict.h>
+#include <pack.h>
 
 /****************************************************************************
  * reject
@@ -53,10 +54,12 @@ void _init(bool is_init) {
 	char **argv;
 	int argc;
 
+	__loadenv();
+
 	/* setup standard streams */
-	stdin  = __fload("stdin");
-	stdout = __fload("stdout");
-	stderr = __fload("stderr");
+	stdin  = __fload(0);
+	stdout = __fload(1);
+	stderr = __fload(2);
 
 	__sig_init();
 
@@ -79,6 +82,8 @@ void _init(bool is_init) {
 			setenv("NAME", argv[0]);
 		}
 	}
-	
+
+	__pack_reset();
+
 	exit(main(argc, argv));
 }

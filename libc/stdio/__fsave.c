@@ -16,9 +16,9 @@
 
 #include <stdio.h>
 #include <stdbool.h>
-#include <dict.h>
 #include <string.h>
 #include <stdlib.h>
+#include <pack.h>
 
 /****************************************************************************
  * __fsave
@@ -28,7 +28,7 @@
  * 0 on success and nonzero on failure.
  */
 
-int __fsave(const char *name, FILE *fd) {
+int __fsave(int id, FILE *fd) {
 
 	/* reject null files */
 	if (!fd) {
@@ -38,6 +38,8 @@ int __fsave(const char *name, FILE *fd) {
 	/* strip file */
 	__fstrip(fd);
 
-	/* write file to dictionary */
-	return dwritens(tdeflate(fd, sizeof(FILE)), "file:", name);
+	/* pack file */
+	__pack_add(PACK_KEY_FILE | id, fd, sizeof(FILE));
+
+	return 0;
 }

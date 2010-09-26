@@ -91,8 +91,8 @@ char *tmpnam (char *s);
 
 /* file access *************************************************************/
 
-FILE *__fload(const char *name);
-int   __fsave(const char *name, FILE *fd);
+FILE *__fload(int id);
+int   __fsave(int id, FILE *fd);
 FILE *__fcons(uint32_t server, uint32_t inode, FILE *stream);
 FILE *__fstrip(FILE *stream);
 FILE *__fsetup(FILE *stream);

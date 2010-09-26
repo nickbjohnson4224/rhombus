@@ -31,6 +31,7 @@ int main() {
 	bool daemon;
 
 	setenv("PWD", "/");
+	setenv("PATH", "/bin/");
 
 	while (1) {
 		printf("%s $ ", getenv("PWD"));

@@ -53,8 +53,10 @@ uint32_t rand(void);
 
 /* environment variables and system ****************************************/
 
-const char *getenv(const char *name);
-int         setenv(const char *name, const char *value);
+const char *getenv (const char *name);
+int         setenv (const char *name, const char *value);
+void      __saveenv(void);
+void      __loadenv(void);
 
 int   system(const char *s);
 
@@ -68,8 +70,8 @@ extern struct __atexit_func {
 	void (*function)(void);
 } *__atexit_func_list;
 
-void exit(int status) __attribute__ ((noreturn));
-void abort(void)      __attribute__ ((noreturn));
+void exit  (int status) __attribute__ ((noreturn));
+void abort (void)       __attribute__ ((noreturn));
 int  atexit(void (*function)(void));
 
 /* math functions **********************************************************/
