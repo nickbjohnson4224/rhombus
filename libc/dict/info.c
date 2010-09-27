@@ -18,28 +18,24 @@
 #include <arch.h>
 #include <mmap.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
 /****************************************************************************
- * dict_info
+ * dict_root
  *
- * Structure at the beginning of the dictionary heap that stores basic
- * information about the dictionary state.
+ * Root of the dictionary tree.
  */
 
-struct __info *dict_info = (void*) DICTIONARY;
+struct __dict *dict_root = NULL;
+bool dict_mutex;
 
 /****************************************************************************
  * dict_init
  *
- * Initialize the dictionary. This function is only called by init, and
- * should NOT be called by any normal process (unless it wants its dictionary
- * cleared and its only connections to the rest of the system severed).
+ * Initialize the dictionary.
  */
 
 void dict_init(void) {
-	
-	mmap(dict_info, sizeof(struct __info), MMAP_READ | MMAP_WRITE);
-
-	memclr(dict_info, sizeof(struct __info));
-	dict_info->brk = (uintptr_t) dict_info + sizeof(struct __info);
+	dict_root = calloc(sizeof(struct __dict), 1);
 }

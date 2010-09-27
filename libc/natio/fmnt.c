@@ -25,15 +25,10 @@
  *
  * Mount the locat vfs of <target> as <name> in <dir>. Returns 0 on success,
  * nonzero on failure.
+ *
+ * XXX - stubbed
  */
 
 int fmnt(const char *dir, const char *name, FILE *target) {
-	char *buffer;
-	int err;
-
-	buffer = strvcat("vfs:", dir, name, NULL);
-	err = dlink(buffer, "vfs:", target);
-	free(buffer);
-	
-	return err;
+	return 1;
 }

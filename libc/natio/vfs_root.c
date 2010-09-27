@@ -14,28 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <dict.h>
-#include <stdlib.h>
-#include <string.h>
-#include <mmap.h>
+#include <natio.h>
 
-/****************************************************************************
- * dalloc
- *
- * Returns a pointer to a readable and writable region of memory of at least 
- * size <size>, which is persisted when a process executes and is garbage
- * collected based on the state of the dictionary. This function is not
- * thread safe outside of thread safe dictionary functions.
- */
-
-void *dalloc(size_t size) {
-	void *ptr;
-
-	ptr = (void*) dict_info->brk;
-	dict_info->brk += size;
-
-	mmap(ptr, size + PAGESZ, MMAP_READ | MMAP_WRITE);
-
-	memclr(ptr, size);
-	return ptr;
-}
+FILE *vfs_root = NULL;

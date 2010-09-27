@@ -16,6 +16,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <natio.h>
 #include <dict.h>
 #include <proc.h>
 #include <ipc.h>
@@ -23,12 +24,12 @@
 void _devent_read(struct packet *packet, uint8_t port, uint32_t caller) {
 	struct __link_req *req;
 	char *value;
-	char *ipath;
+	const char *ipath;
 	char *key;
 
 	req = pgetbuf(packet);
 
-	ipath = dreadns("inode:", tdeflate(&packet->target_inode, sizeof(uint32_t)));
+	ipath = lfs_get_inode(packet->target_inode);
 
 	if (ipath) {
 		key = strvcat(ipath, req->key, NULL);
@@ -51,23 +52,28 @@ void _devent_read(struct packet *packet, uint8_t port, uint32_t caller) {
 
 void _devent_write(struct packet *packet, uint8_t port, uint32_t caller) {
 	struct __link_req *req;
+	const char *ipath;
+	char *key;
+	int err;
 
 	req = pgetbuf(packet);
-	
-	if (dwrite(req->val, req->key)) {
+
+	ipath = lfs_get_inode(packet->target_inode);
+
+	if (ipath) {
+		key = strvcat(ipath, req->key, NULL);
+		err = dwrite(req->val, key);
+		free(key);
+	}
+	else {
+		err = dwrite(req->val, req->key);
+	}
+
+	if (err) {
 		pfree(packet);
 		psend(PORT_REPLY, caller, NULL);
 	}
 	else {
 		psend(PORT_REPLY, caller, packet);
 	}
-}
-
-void _devent_link(struct packet *packet, uint8_t port, uint32_t caller) {
-	
-	if (packet) {
-		pfree(packet);
-	}
-
-	psend(PORT_REPLY, caller, NULL);
 }

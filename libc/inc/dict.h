@@ -19,17 +19,10 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <alloca.h>
 #include <stdio.h>
 #include <ipc.h>
 
 /* dictionary interface ****************************************************/
-
-struct __link {
-	const char *pre;
-	uint32_t server;
-	uint64_t inode;
-};
 
 struct __link_req {
 	char key[2048];
@@ -38,54 +31,32 @@ struct __link_req {
 
 struct __dict {
 	struct __dict *next[256];
-	struct __link *link;
+	FILE *link;
 	char *value;
 };
 
-extern struct __info {
-	struct __dict root;
-	bool          mutex;
-	uintptr_t     brk;
-} *dict_info;
+extern struct __dict *dict_root;
+extern bool dict_mutex;
 
 void dict_init(void);
-
-/* data serialization ******************************************************/
-
-#define tdeflate(d, s) (deflate(d, s, alloca(((s)*2)+2)))
-
-char  *deflate(const void *data, size_t size, char *archivebuffer);
-size_t inflate(void *databuffer, size_t size, const char *archive);
 
 /* read functions **********************************************************/
 
 char *dread  (const char *key);
-char *dreadns(const char *ns, const char *key);
 char *dreadr (FILE *remote, const char *key);
 
 /* write functions *********************************************************/
 
 int dwrite   (const char *value, const char *key);
-int dwritens (const char *value, const char *ns, const char *key);
+int dwriter  (FILE *remote, const char *value, const char *key);
 
 /* link functions **********************************************************/
 
-int dlink    (const char *key, const char *pre, FILE *target);
-
-/* internal functions ******************************************************/
-
-char *_dlink_read (struct __link *l, const char *key);
-int   _dlink_write(struct __link *l, const char *val, const char *key);
-int   _dlink_link (struct __link *l, struct __link *new, const char *key);
+int dlink    (const char *key, FILE *target);
 
 /* dictionary event handlers ***********************************************/
 
 void _devent_read (struct packet *packet, uint8_t port, uint32_t caller);
 void _devent_write(struct packet *packet, uint8_t port, uint32_t caller);
-void _devent_link (struct packet *packet, uint8_t port, uint32_t caller);
-
-/* dictionary heap - persistent ********************************************/
-
-void *dalloc(size_t size);
 
 #endif/*FLUX_DICT_H*/

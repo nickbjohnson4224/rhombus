@@ -34,7 +34,26 @@ FILE *ffind(const char *path);
 int fstat(FILE *stream, const char *field, const char *fmt, ...);
 int fctrl(FILE *stream, const char *field, const char *fmt, ...);
 
-/* VFS operations **********************************************************/
+/* virtual filesystem operations *******************************************/
+
+extern FILE *vfs_root;
+
+int vfs_get(const char *path, const char *field, const char *fmt, ...);
+int vfs_set(const char *path, const char *field, const char *fmt, ...);
+int vfs_lst(const char *path, char *buffer);
+
+/* local filesystem operations (for drivers) *******************************/
+
+int lfs_get(const char *path, const char *field, const char *fmt, ...);
+int lfs_set(const char *path, const char *field, const char *fmt, ...);
+int lfs_lnk(const char *path, const char *path1);
+int lfs_add(const char *path, const char *name, uint32_t inode);
+int lfs_mnt(const char *path, const char *name, FILE *target);
+
+int         lfs_add_inode(uint32_t inode, const char *path);
+const char *lfs_get_inode(uint32_t inode);
+
+/* old VFS API *************************************************************/
 
 int vflist (const char *path, char *buffer);
 int vfdir  (const char *dir, const char *name);

@@ -31,8 +31,8 @@ int vflmnt(const char *dir, const char *name, FILE *target) {
 	char *buffer;
 	int err;
 
-	buffer = strvcat("lvfs:", dir, name, NULL);
-	err = dlink(buffer, "lvfs:", target);
+	buffer = strvcat(dir, name, NULL);
+	err = dlink(buffer, target);
 	free(buffer);
 
 	vfdir(dir, name);

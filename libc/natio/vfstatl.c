@@ -32,7 +32,7 @@ int vfstatl(const char *path, const char *field, const char *fmt, ...) {
 	char *value;
 	char *fullpath;
 
-	fullpath = strvcat("lvfs:", path, ":", field, NULL);
+	fullpath = strvcat(path, ":", field, NULL);
 	value = dread(fullpath);
 	free(fullpath);
 

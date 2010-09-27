@@ -33,8 +33,8 @@ int vfstat(const char *path, const char *field, const char *fmt, ...) {
 	char *value;
 	char *fullpath;
 
-	fullpath = strvcat("vfs:", path, ":", field, NULL);
-	value = dread(fullpath);
+	fullpath = strvcat(path, ":", field, NULL);
+	value = dreadr(vfs_root, fullpath);
 	free(fullpath);
 
 	if (value) {

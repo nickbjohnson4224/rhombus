@@ -28,5 +28,6 @@
  */
 
 int vfroot(FILE *target) {
-	return dlink("vfs:", "lvfs:", target);
+	vfs_root = target;
+	return 0;
 }

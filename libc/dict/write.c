@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <mutex.h>
 #include <string.h>
+#include <natio.h>
 
 /****************************************************************************
  * dwrite_rec
@@ -32,13 +33,12 @@
 static int dwrite_rec(struct __dict *root, const char *value, const char *key) {
 
 	if (root->link) {
-		return _dlink_write(root->link, value, key);
+		return dwriter(root->link, value, key);
 	}
 
 	if (!key[0]) {
 		if (value) {
-			root->value = dalloc(strlen(value) + 1);
-			strcpy(root->value, value);
+			root->value = strdup(value);
 		}
 		else {
 			root->value = NULL;
@@ -47,7 +47,7 @@ static int dwrite_rec(struct __dict *root, const char *value, const char *key) {
 	}
 	
 	if (!root->next[(size_t) key[0]]) {
-		root->next[(size_t) key[0]] = dalloc(sizeof(struct __dict));
+		root->next[(size_t) key[0]] = calloc(sizeof(struct __dict), 1);
 	}
 
 	return dwrite_rec(root->next[(size_t) key[0]], value, &key[1]);
@@ -63,32 +63,32 @@ static int dwrite_rec(struct __dict *root, const char *value, const char *key) {
 int dwrite(const char *value, const char *key) {
 	int err;
 
-	mutex_spin(&(dict_info->mutex));
-	err = dwrite_rec(&dict_info->root, value, key);
-	mutex_free(&(dict_info->mutex));
+	mutex_spin(&dict_mutex);
+	err = dwrite_rec(dict_root, value, key);
+	mutex_free(&dict_mutex);
 
 	return err;
 }
 
 /****************************************************************************
- * dwritens
+ * dwriter
  *
- * Read from the dictionary from a given namespace using the given string as
- * a key. Returns 0 on success, nonzero on failure. This function is 
- * thread-safe.
+ * XXX - doc
  */
 
-int dwritens(const char *value, const char *ns, const char *key) {
-	char *buffer;
-	int err;
+int dwriter(FILE *remote, const char *value, const char *key) {
+	struct __link_req req;
+	size_t size;
 
-	buffer = malloc(strlen(ns) + strlen(key) + 1);
-	strcpy(buffer, ns);
-	strcat(buffer, key);
+	strlcpy(req.key, key, 2048);
+	strlcpy(req.val, value, 2048);
 
-	err = dwrite(value, buffer);
+	size = ssend(remote, &req, &req, sizeof(struct __link_req), 0, PORT_DREAD);
 
-	free(buffer);
-
-	return err;
+	if (!size) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
 }

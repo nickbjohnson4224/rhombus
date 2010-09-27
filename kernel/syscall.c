@@ -80,8 +80,8 @@ struct thread *fault_page(struct thread *image) {
 	}
 	else {
 		/* fault */
-		debug_printf("%d: page fault at %x, ip = %x\n", image->proc->pid, cr2, image->eip);
-		debug_panic("page fault exception");
+//		debug_printf("%d: page fault at %x, ip = %x\n", image->proc->pid, cr2, image->eip);
+//		debug_panic("page fault exception");
 
 		process_freeze(image->proc);
 		return thread_send(image, image->proc->pid, PORT_PAGE);

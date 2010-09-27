@@ -57,30 +57,26 @@ void _init(bool is_init) {
 	__loadenv();
 
 	/* setup standard streams */
-	stdin  = __fload(0);
-	stdout = __fload(1);
-	stderr = __fload(2);
+	stdin    = __fload(0);
+	stdout   = __fload(1);
+	stderr   = __fload(2);
+	vfs_root = __fload(3);
 
 	__sig_init();
 
 	when(PORT_READ,  reject);
 	when(PORT_WRITE, reject);
 
+	dict_init();
+
 	when(PORT_DREAD,  _devent_read);
 	when(PORT_DWRITE, _devent_write);
-	when(PORT_DLINK,  _devent_link);
 
-	if (is_init) {
-		argc = 0;
-		argv = NULL;
-	}
-	else {
-		argc = argc_unpack();
-		argv = argv_unpack();
+	argc = argc_unpack();
+	argv = argv_unpack();
 
-		if (argc) {
-			setenv("NAME", argv[0]);
-		}
+	if (argc) {
+		setenv("NAME", argv[0]);
 	}
 
 	__pack_reset();

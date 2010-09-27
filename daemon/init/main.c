@@ -104,7 +104,7 @@ int main() {
 	daemon_start(&temp, file->start, file->size, argv);
 
 	vflmnt("/", "bin", temp);
-	setenv("PATH", "/bin/");
+	setenv("PATH", "/bin");
 	argv[1] = NULL;
 
 	/* Keyboard Driver */

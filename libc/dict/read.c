@@ -20,6 +20,7 @@
 #include <mutex.h>
 #include <string.h>
 #include <natio.h>
+#include <proc.h>
 
 /****************************************************************************
  * dict_read_rec
@@ -31,17 +32,14 @@
  */
 
 static char *dread_rec(struct __dict *root, const char *key) {
-	char *buffer;
 
 	if (root->link) {
-		return _dlink_read(root->link, key);
+		return dreadr(root->link, key);
 	}
 
 	if (!key[0]) {
 		if (root->value) {
-			buffer = malloc(strlen(root->value) + 1);
-			strcpy(buffer, root->value);
-			return buffer;
+			return strdup(root->value);
 		}
 		else {
 			return NULL;
@@ -67,32 +65,9 @@ static char *dread_rec(struct __dict *root, const char *key) {
 char *dread(const char *key) {
 	char *value;
 
-	mutex_spin(&(dict_info->mutex));
-	value = dread_rec(&dict_info->root, key);
-	mutex_free(&(dict_info->mutex));
-
-	return value;
-}
-
-/****************************************************************************
- * dreadns
- *
- * Read from the dictionary from a given namespace using the given string as
- * a key into the buffer <val>, which must have the size stored in <vlen>.
- * <vlen> is then set to the number of bytes written into <val>. Returns -1
- * on failure, 0 on success. This function is thread-safe.
- */
-
-char *dreadns(const char *ns, const char *key) {
-	char *buffer, *value;
-
-	buffer = malloc(strlen(ns) + strlen(key) + 1);
-	strcpy(buffer, ns);
-	strcat(buffer, key);
-
-	value = dread(buffer);
-
-	free(buffer);
+	mutex_spin(&dict_mutex);
+	value = dread_rec(dict_root, key);
+	mutex_free(&dict_mutex);
 
 	return value;
 }
@@ -108,9 +83,8 @@ char *dreadns(const char *ns, const char *key) {
 
 char *dreadr(FILE *targ, const char *key) {
 	struct __link_req req;
-	char *value;
 	size_t size;
-	
+
 	strlcpy(req.key, key, 2048);
 
 	size = ssend(targ, &req, &req, sizeof(struct __link_req), 0, PORT_DREAD);
@@ -119,8 +93,5 @@ char *dreadr(FILE *targ, const char *key) {
 		return NULL;
 	}
 
-	value = malloc(strlen(req.val) + 1);
-	strcpy(value, req.val);
-
-	return value;
+	return strdup(req.val);
 }

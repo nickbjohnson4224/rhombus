@@ -37,8 +37,8 @@ int vfctrl(const char *path, const char *field, const char *fmt, ...) {
 	vsprintf(value, fmt, ap);
 	va_end(ap);
 
-	fullpath = strvcat("vfs:", path, ":", field, NULL);
-	err = dwrite(value, fullpath);
+	fullpath = strvcat(path, ":", field, NULL);
+	err = dwriter(vfs_root, value, fullpath);
 	free(fullpath);
 
 	return err;

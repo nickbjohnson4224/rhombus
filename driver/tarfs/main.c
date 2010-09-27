@@ -45,10 +45,9 @@ static void getname(char *name, char *path) {
 /****************************************************************************
  * tarfs - tape archive filesystem driver
  *
- * Usage: tarfs [parent] <root>
+ * Usage: tarfs [parent]
  *
- * Constructs a filesystem using the tarfile parent as a parent driver. If no 
- * root is specified, the path /<parent>.tarfs will be assumed.
+ * Constructs a filesystem using the tarfile parent as a parent driver.
  */
 
 int main(int argc, char **argv) {

@@ -42,7 +42,7 @@ int main() {
 
 void time_read(struct packet *packet, uint8_t port, uint32_t caller) {
 	char *data;
-	
+
 	if (!packet) {
 		return;
 	}

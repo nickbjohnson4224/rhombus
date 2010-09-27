@@ -82,26 +82,30 @@ int setenv(const char *name, const char *value) {
 	for (i = 0; i < environ_size; i++) {
 		if (!strcmp(environ[i], name)) {
 			done = true;
+			break;
 		}
 	}
 
-	if (!done){
+	if (!done) {
 		if (value) {
 			i = environ_size;
 			environ_size++;
 			environ = realloc(environ, sizeof(char*) * environ_size);
-			environ[i] = NULL;
+			
+			if (!environ) {
+				errno = ENOMEM;
+				err = 1;
+			}
+			else {
+				environ[i] = NULL;
+			}
 		}
 		else {
-			return 0;
+			err = 0;
 		}
 	}
 
-	if (!environ) {
-		errno = ENOMEM;
-		err = 1;
-	}
-	else if (value) {
+	if (value) {
 		old = environ[i];
 		new = malloc(strlen(name) + 1 + strlen(value) + 1);
 		sprintf(new, "%s=%s", name, value);
@@ -155,8 +159,6 @@ void __loadenv(void) {
 		if (!value) {
 			break;
 		}
-
-		printf("unpacked: %s=%s\n", value, &value[strlen(value) + 1]);
 
 		setenv(value, &value[strlen(value) + 1]);
 	}

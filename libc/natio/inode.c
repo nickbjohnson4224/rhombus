@@ -16,30 +16,48 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
-#include <stdio.h>
 #include <natio.h>
-#include <dict.h>
 
-/****************************************************************************
- * vfctrll
- *
- * XXX - doc
- */
+static struct inode_list {
+	struct inode_list *next;
+	uint32_t inode;
+	char *path;
+} *_inode_list[0x100];
 
-int vfctrll(const char *path, const char *field, const char *fmt, ...) {
-	va_list ap;
-	char value[2048];
-	char *fullpath;
-	int err;
+int lfs_add_inode(uint32_t inode, const char *path) {
+	struct inode_list *l;
 
-	va_start(ap, fmt);
-	vsprintf(value, fmt, ap);
-	va_end(ap);
+	l = malloc(sizeof(struct inode_list));
+	
+	if (!l) {
+		return 1;
+	}
 
-	fullpath = strvcat(path, ":", field, NULL);
-	err = dwrite(value, fullpath);
-	free(fullpath);
+	l->inode = inode;
+	l->path = strdup(path);
+	
+	l->next = _inode_list[inode & 0xFF];
+	_inode_list[inode & 0xFF] = l;
 
-	return err;
+	return 0;
+}
+
+const char *lfs_get_inode(uint32_t inode) {
+	struct inode_list *l;
+
+	l = _inode_list[inode & 0xFF];
+
+	while (l) {
+		if (l->inode == inode) {
+			break;
+		}
+		l = l->next;
+	}
+
+	if (l) {
+		return l->path;
+	}
+	else {
+		return NULL;
+	}
 }

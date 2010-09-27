@@ -31,10 +31,8 @@ int vffile(const char *dir, const char *name, uint32_t inode) {
 
 	path = strvcat(dir, name, NULL);
 	vfctrll(path, "addr", "%d %d", getpid(), inode);
-	free(path);
 
-	path = strvcat("lvfs:", dir, name, NULL);
-	dwritens(path, "inode:", tdeflate(&inode, sizeof(uint32_t)));
+	lfs_add_inode(inode, path);
 	free(path);
 
 	vfdir(dir, name);
