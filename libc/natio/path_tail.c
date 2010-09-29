@@ -14,28 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <stdlib.h>
+#include <string.h>
+#include <natio.h>
 
-#include <proc.h>
+/****************************************************************************
+ * path_tail
+ *
+ * Returns a pointer to the part of the string in the path structure <path>
+ * that has yet to be parsed.
+ */
 
-/* errno *******************************************************************/
-
-extern int errnov[MAX_THREADS];
-
-#define errno (errnov[gettid()])
-
-/* error codes *************************************************************/
-
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-#define EEXIST	8
-#define EPERM	9
-#define EPATH	10
-
-#endif/*ERRNO_H*/
+const char *path_tail(struct path *path) {
+	return path->pos;
+}

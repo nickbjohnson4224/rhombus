@@ -14,28 +14,33 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <stdlib.h>
+#include <string.h>
+#include <natio.h>
 
-#include <proc.h>
+/****************************************************************************
+ * vfs_get_perm
+ *
+ * Returns the permissions given to user <user> on the file in driver <root>
+ * at path <path>.
+ */
 
-/* errno *******************************************************************/
+uint16_t vfs_get_perm(FILE *root, const char *path, uint32_t user) {
+	struct vfs_query query;
 
-extern int errnov[MAX_THREADS];
+	query.opcode = VFS_ACT | VFS_GET | VFS_PERM;
+	strlcpy(query.path0, path, MAX_PATH);
+	query.value0 = user;
 
-#define errno (errnov[gettid()])
-
-/* error codes *************************************************************/
-
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-#define EEXIST	8
-#define EPERM	9
-#define EPATH	10
-
-#endif/*ERRNO_H*/
+	if (!vfssend(root, &query)) {
+		return 0;
+	}
+	else {
+		if (query.opcode & VFS_ERR) {
+			return 0;
+		}
+		else {
+			return query.opcode;
+		}
+	}
+}

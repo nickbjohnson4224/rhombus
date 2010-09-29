@@ -14,36 +14,44 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
+#include <string.h>
 #include <natio.h>
+#include <errno.h>
 
 /****************************************************************************
- * freopen
+ * vfs_get_size
  *
- * Same as fopen(), but result is stored in <stream>.
+ * Finds the size of the file in driver <root> with path <path>. Returns the
+ * size on success, zero on failure and character devices.
  */
 
-FILE *freopen(const char *path, const char *mode, FILE *stream) {
-	FILE *file;
+uint64_t vfs_get_size(FILE *root, const char *path) {
+	struct vfs_query query;
+	uint64_t size;
 
-	if (!stream) {
-		return NULL;
+	query.opcode = VFS_ACT | VFS_GET | VFS_SIZE;
+	strlcpy(query.path0, path, MAX_PATH);
+
+	if (!vfssend(root, &query)) {
+		return 0;
 	}
-
-	file = ffind(path);
-	vfs_get_file(NULL, path);
-
-	if (!file) {
-		errno = ENOFILE;
-		return NULL;
+	else {
+		if (query.opcode & VFS_ERR) {
+			switch (query.opcode & VFS_NOUN) {
+			case VFS_FILE:
+				errno = ENOFILE;
+				break;
+			case VFS_PERM:
+				errno = EPERM;
+				break;
+			}
+			return 0;
+		}
+		else {
+			size  = query.value0;
+			size += (uint64_t) query.value1 << 32;
+			return size;
+		}
 	}
-
-	__fsetup(file);
-
-	file->ext->size = 0;
-	fstat(file, "size", "%d", &file->ext->size);
-
-	return file;
 }

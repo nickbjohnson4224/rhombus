@@ -16,4 +16,11 @@
 
 #include <natio.h>
 
+/****************************************************************************
+ * vfs_root
+ *
+ * A file descriptor pointing to the root of the virtual filesystem. This is 
+ * set when the process begins.
+ */
+
 FILE *vfs_root = NULL;

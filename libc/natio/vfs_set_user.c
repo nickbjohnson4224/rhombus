@@ -14,28 +14,33 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <stdlib.h>
+#include <string.h>
+#include <natio.h>
 
-#include <proc.h>
+/****************************************************************************
+ * vfs_set_user
+ *
+ * Sends a request to driver <root> that user <user> become the owner of the 
+ * file at path <path>. Returns zero on success, nonzero on failure.
+ */
 
-/* errno *******************************************************************/
+int vfs_set_user(FILE *root, const char *path, uint32_t user) {
+	struct vfs_query query;
 
-extern int errnov[MAX_THREADS];
+	query.opcode = VFS_ACT | VFS_SET | VFS_USER;
+	strlcpy(query.path0, path, MAX_PATH);
+	query.value0 = user;
 
-#define errno (errnov[gettid()])
-
-/* error codes *************************************************************/
-
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-#define EEXIST	8
-#define EPERM	9
-#define EPATH	10
-
-#endif/*ERRNO_H*/
+	if (!vfssend(root, &query)) {
+		return -1;
+	}
+	else {
+		if (query.opcode & VFS_ERR) {
+			return query.opcode;
+		}
+		else {
+			return 0;
+		}
+	}
+}

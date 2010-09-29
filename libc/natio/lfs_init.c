@@ -14,28 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <stdio.h>
+#include <natio.h>
+#include <ipc.h>
 
-#include <proc.h>
-
-/* errno *******************************************************************/
-
-extern int errnov[MAX_THREADS];
-
-#define errno (errnov[gettid()])
-
-/* error codes *************************************************************/
-
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-#define EEXIST	8
-#define EPERM	9
-#define EPATH	10
-
-#endif/*ERRNO_H*/
+void lfs_init(void) {
+	when(PORT_VFS, lfs_event);
+}

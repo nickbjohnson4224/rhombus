@@ -76,6 +76,10 @@ int main() {
 	vfroot(init);
 	vffile("/", "dev", 1);
 
+	lfs_init();
+
+	when(PORT_VFS, lfs_event);
+
 	/* Boot Image */
 	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);
 

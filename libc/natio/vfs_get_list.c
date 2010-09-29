@@ -14,36 +14,44 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
+#include <string.h>
 #include <natio.h>
+#include <errno.h>
 
 /****************************************************************************
- * freopen
+ * vfs_get_list
  *
- * Same as fopen(), but result is stored in <stream>.
+ * Enumerates the directory in driver <root> at path <path>. Returns a
+ * colon-separated string of directory contents on success, NULL on failure.
  */
 
-FILE *freopen(const char *path, const char *mode, FILE *stream) {
-	FILE *file;
+char *vfs_get_list(FILE *root, const char *path) {
+	struct vfs_query query;
 
-	if (!stream) {
+	query.opcode = VFS_ACT | VFS_GET | VFS_DIR;
+	strlcpy(query.path0, path, MAX_PATH);
+
+	if (!vfssend(root, &query)) {
 		return NULL;
 	}
-
-	file = ffind(path);
-	vfs_get_file(NULL, path);
-
-	if (!file) {
-		errno = ENOFILE;
-		return NULL;
+	else {
+		if (query.opcode & VFS_ERR) {
+			switch (query.opcode & VFS_NOUN) {
+			case VFS_FILE:
+				errno = ENOFILE;
+				break;
+			case VFS_TYPE:
+				errno = ENOSYS;
+				break;
+			case VFS_PERM:
+				errno = EPERM;
+				break;
+			}
+			return NULL;
+		}
+		else {
+			return strdup(query.path0);
+		}
 	}
-
-	__fsetup(file);
-
-	file->ext->size = 0;
-	fstat(file, "size", "%d", &file->ext->size);
-
-	return file;
 }

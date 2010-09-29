@@ -14,28 +14,42 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <string.h>
+#include <natio.h>
 
-#include <proc.h>
+/****************************************************************************
+ * path_next
+ *
+ * Returns a string containing the next token in the path structure, and
+ * advances the position of the path structure. This string is allocated from 
+ * the heap and should be freed. Returns NULL if there are no more tokens
+ * left.
+ */
 
-/* errno *******************************************************************/
+char *path_next(struct path *path) {
+	char *token;
 
-extern int errnov[MAX_THREADS];
+	/* check for problems */
+	if (!path->pos) {
+		return NULL;
+	}
+	
+	/* skip leading separators */
+	while (*(path->pos) == PATH_SEP) {
+		path->pos++;
+	}
 
-#define errno (errnov[gettid()])
+	/* check for end of string */
+	if (!*(path->pos)) {
+		return NULL;
+	}
+	
+	/* copy token */
+	token = strdup(path->pos);
+	*strchr(token, PATH_SEP) = '\0';
 
-/* error codes *************************************************************/
+	/* advance path structure */
+	path->pos = strchr(token, PATH_SEP);
 
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-#define EEXIST	8
-#define EPERM	9
-#define EPATH	10
-
-#endif/*ERRNO_H*/
+	return token;
+}

@@ -14,28 +14,35 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <stdlib.h>
+#include <string.h>
+#include <natio.h>
 
-#include <proc.h>
+/****************************************************************************
+ * vfs_mov_file
+ *
+ * Sends a request for a file in driver <root> to be moved from path <path0>
+ * to path <path1>. Returns zero on success, nonzero on failure. Note that
+ * a driver can only move a file within its own filesystem, and any moves
+ * across drivers must be done manually.
+ */
 
-/* errno *******************************************************************/
+int vfs_mov_file(FILE *root, const char *path0, const char *path1) {
+	struct vfs_query query;
 
-extern int errnov[MAX_THREADS];
+	query.opcode = VFS_ACT | VFS_MOV | VFS_FILE;
+	strlcpy(query.path0, path0, MAX_PATH);
+	strlcpy(query.path1, path1, MAX_PATH);
 
-#define errno (errnov[gettid()])
-
-/* error codes *************************************************************/
-
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-#define EEXIST	8
-#define EPERM	9
-#define EPATH	10
-
-#endif/*ERRNO_H*/
+	if (!vfssend(root, &query)) {
+		return -1;
+	}
+	else {
+		if (query.opcode & VFS_ERR) {
+			return query.opcode;
+		}
+		else {
+			return 0;
+		}
+	}
+}

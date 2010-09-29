@@ -14,28 +14,23 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <string.h>
+#include <stdlib.h>
+#include <natio.h>
 
-#include <proc.h>
+/****************************************************************************
+ * path_cons
+ *
+ * Creates a new path structure around the string <path>.
+ */
 
-/* errno *******************************************************************/
+struct path *path_cons(const char *path) {
+	struct path *new;
 
-extern int errnov[MAX_THREADS];
+	new = malloc(sizeof(struct path));
 
-#define errno (errnov[gettid()])
+	new->str = path;
+	new->pos = path;
 
-/* error codes *************************************************************/
-
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-#define EEXIST	8
-#define EPERM	9
-#define EPATH	10
-
-#endif/*ERRNO_H*/
+	return new;
+}

@@ -14,28 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#include <stdio.h>
+#include <natio.h>
+#include <ipc.h>
 
-#include <proc.h>
+void lfs_event(struct packet *packet, uint8_t port, uint32_t caller) {
+	struct vfs_query *query;
 
-/* errno *******************************************************************/
+	query = pgetbuf(packet);
 
-extern int errnov[MAX_THREADS];
+	query->opcode = VFS_ERR;
 
-#define errno (errnov[gettid()])
-
-/* error codes *************************************************************/
-
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
-#define EEXIST	8
-#define EPERM	9
-#define EPATH	10
-
-#endif/*ERRNO_H*/
+	psend(PORT_REPLY, caller, packet);
+	pfree(packet);
+}

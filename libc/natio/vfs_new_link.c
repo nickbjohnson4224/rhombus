@@ -14,36 +14,46 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
+#include <string.h>
 #include <natio.h>
+#include <errno.h>
 
 /****************************************************************************
- * freopen
+ * vfs_new_link
  *
- * Same as fopen(), but result is stored in <stream>.
+ * Sends a request for a new symbolic link to be created in driver <root>
+ * at path <path> to path <link>. Returns a file descriptor of the new link 
+ * on success, NULL on failure.
  */
 
-FILE *freopen(const char *path, const char *mode, FILE *stream) {
-	FILE *file;
+FILE *vfs_new_link(FILE *root, const char *path, const char *link) {
+	struct vfs_query query;
 
-	if (!stream) {
+	query.opcode = VFS_ACT | VFS_NEW | VFS_LINK;
+	strlcpy(query.path0, path, MAX_PATH);
+	strlcpy(query.path1, link, MAX_PATH);
+
+	if (!vfssend(root, &query)) {
 		return NULL;
 	}
-
-	file = ffind(path);
-	vfs_get_file(NULL, path);
-
-	if (!file) {
-		errno = ENOFILE;
-		return NULL;
+	else {
+		if (query.opcode & VFS_ERR) {
+			switch (query.opcode & 0x000F) {
+			case VFS_FILE:
+				errno = EEXIST;
+				break;
+			case VFS_PERM:
+				errno = EPERM;
+				break;
+			case VFS_LINK:
+				errno = EPATH;
+				break;
+			}
+			return NULL;
+		}
+		else {
+			return __fcons(query.file0[0], query.file0[1], NULL);
+		}
 	}
-
-	__fsetup(file);
-
-	file->ext->size = 0;
-	fstat(file, "size", "%d", &file->ext->size);
-
-	return file;
 }
