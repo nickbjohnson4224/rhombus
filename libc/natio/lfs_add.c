@@ -14,10 +14,26 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
 #include <natio.h>
-#include <ipc.h>
 
-void lfs_init(void) {
-	when(PORT_VFS, lfs_event);
+/****************************************************************************
+ * lfs_add
+ *
+ * Wrapper function to add a node to the LFS: adds the node to the LFS node
+ * table, then to the LFS tree. Returns zero on success, nonzero on failure.
+ * This function is thread-safe.
+ */
+
+uint32_t lfs_add(struct lfs_node *node, const char *path) {
+	uint32_t err;
+	
+	if ((err = lfs_add_node(node))) {
+		return err;
+	}
+
+	if ((err = lfs_add_path(NULL, path, node))) {
+		return err;
+	}
+
+	return 0;
 }

@@ -101,7 +101,7 @@ int execv(const char *path, char const **argv) {
 	size_t size;
 	char *fullpath;
 
-	fullpath = strvcat(getenv("PATH"), path, NULL);
+	fullpath = strvcat(getenv("PATH"), "/", path, NULL);
 
 	image = fopen(fullpath, "r");
 

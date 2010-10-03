@@ -15,36 +15,28 @@
  */
 
 #include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-#include <stdio.h>
 #include <natio.h>
-#include <errno.h>
-#include <dict.h>
 
 /****************************************************************************
- * fstat
+ * lfs_del
  *
- * XXX - doc
+ * Wrapper function to remove a node from the LFS: removes the node from the 
+ * LFS tree, then from the LFS node table. Frees the found node on success.
+ * Returns zero on success, nonzero on failure. This function is thread-safe.
  */
 
-int fstat(FILE *stream, const char *field, const char *fmt, ...) {
-	va_list ap;
-	char *value;
-	char *fullpath;
-
-	fullpath = strvcat(":", field, NULL);
-	value = dreadr(stream, fullpath);
-	free(fullpath);
-
-	if (value) {
-		va_start(ap, fmt);
-		vsscanf(value, fmt, ap);
-		va_end(ap);
-		return 0;
+uint32_t lfs_del(const char *path) {
+	struct lfs_node *node;
+	
+	if (!(node = lfs_del_path(NULL, path))) {
+		return VFS_ERR;
 	}
-	else {
-		errno = ENOFILE;
-		return -1;
+
+	if (!lfs_del_node(node->inode)) {
+		return VFS_ERR;
 	}
+
+	free(node);
+
+	return 0;
 }

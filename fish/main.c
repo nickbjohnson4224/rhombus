@@ -17,7 +17,6 @@
 #include <exec.h>
 #include <proc.h>
 #include <ipc.h>
-#include <dict.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -31,7 +30,6 @@ int main() {
 	bool daemon;
 
 	setenv("PWD", "/");
-	setenv("PATH", "/bin/");
 
 	while (1) {
 		printf("%s $ ", getenv("PWD"));

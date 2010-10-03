@@ -11,7 +11,7 @@ BIN_DIRS  = kernel fish
 BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS) $(PORTS)
 
 CC := clang -arch=x86 -m32
-LD := ld -m elf_i386
+LD := ld
 AR := ar
 AS := nasm
 PP := cpp

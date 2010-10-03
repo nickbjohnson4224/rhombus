@@ -18,7 +18,6 @@
 #include <proc.h>
 #include <exec.h>
 #include <mmap.h>
-#include <dict.h>
 
 #include <stdint.h>
 #include <string.h>
@@ -65,7 +64,7 @@ void daemon_start(FILE **file, void *image, size_t image_size, char const **argv
 
 int main() {
 	extern void idle(void);
-	extern void initrd_init(void);
+	extern uint64_t initrd_init(void);
 	struct tar_file *boot_image, *file;
 	char const **argv;
 	FILE *temp, *init;
@@ -73,12 +72,10 @@ int main() {
 	init = __fcons(getpid(), 0, NULL);
 
 	setenv("NAME", "unknown");
-	vfroot(init);
-	vffile("/", "dev", 1);
+	vfs_root = init;
+	lfs_add(lfs_new_dir(1), "/dev");
 
-	lfs_init();
-
-	when(PORT_VFS, lfs_event);
+	lfs_event_start();
 
 	/* Boot Image */
 	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);
@@ -96,8 +93,7 @@ int main() {
 	printf(splash);
 
 	/* Initrd */
-	initrd_init();
-	vffile("/dev/", "initrd", 2);
+	lfs_add(lfs_new_file(2, initrd_init()), "/dev/initrd");
 
 	/* Initrd over TARFS */
 	argv[0] = "tarfs";
@@ -107,7 +103,7 @@ int main() {
 	if (!(file = tar_find(boot_image, (char*) "tarfs"))) panic("no tarfs found");
 	daemon_start(&temp, file->start, file->size, argv);
 
-	vflmnt("/", "bin", temp);
+	lfs_add(lfs_new_link("", temp), "/bin");
 	setenv("PATH", "/bin");
 	argv[1] = NULL;
 
@@ -120,7 +116,7 @@ int main() {
 	argv[0] = "time";
 	if (!(file = tar_find(boot_image, (char*) "time"))) panic("no time found");
 	daemon_start(&temp, file->start, file->size, argv);
-	vflmnt("/dev/", "time", temp);
+	lfs_add(lfs_new_link("time", temp), "/dev/time");
 
 	/* Flux Init Shell */
 	argv[0] = "fish";

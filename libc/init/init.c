@@ -24,7 +24,6 @@
 #include <stdio.h>
 #include <natio.h>
 #include <mmap.h>
-#include <dict.h>
 #include <pack.h>
 
 /****************************************************************************
@@ -66,11 +65,6 @@ void _init(bool is_init) {
 
 	when(PORT_READ,  reject);
 	when(PORT_WRITE, reject);
-
-	dict_init();
-
-	when(PORT_DREAD,  _devent_read);
-	when(PORT_DWRITE, _devent_write);
 
 	argc = argc_unpack();
 	argv = argv_unpack();

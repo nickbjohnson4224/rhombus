@@ -14,28 +14,33 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <dict.h>
-#include <arch.h>
-#include <mmap.h>
 #include <string.h>
-#include <stdlib.h>
-#include <stdbool.h>
+#include <natio.h>
 
-/****************************************************************************
- * dict_root
- *
- * Root of the dictionary tree.
- */
+int path_prev(struct path *path) {
+	
+	if (!path->pos) {
+		return 1;
+	}
 
-struct __dict *dict_root = NULL;
-bool dict_mutex;
+	while (path->pos > path->str) {
+		if ((*(path->pos) != PATH_SEP) || (*(path->pos) != '\0')) {
+			break;
+		}
+		path->pos--;
+	}
 
-/****************************************************************************
- * dict_init
- *
- * Initialize the dictionary.
- */
+	while (path->pos > path->str) {
+		if (*(path->pos) == PATH_SEP) {
+			break;
+		}
+		path->pos--;
+	}
 
-void dict_init(void) {
-	dict_root = calloc(sizeof(struct __dict), 1);
+	if (*(path->pos) == PATH_SEP) {
+		return 0;
+	}
+	else {
+		return 1;
+	}
 }

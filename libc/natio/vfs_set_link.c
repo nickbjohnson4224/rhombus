@@ -23,15 +23,25 @@
  * vfs_set_link
  *
  * Sends a request to driver <root> that the link at path <path>'s value be
- * changed to <link>. Returns zero on success, nonzero on failure.
+ * changed to the symbolic link <link>, or, if <link> is NULL, its value to 
+ * be changed to the absolute link <alink>. Returns zero on success, nonzero 
+ * on failure.
  */
 
-int vfs_set_link(FILE *root, const char *path, const char *link) {
+int vfs_set_link(FILE *root, const char *path, const char *link, FILE *alink) {
 	struct vfs_query query;
 
 	query.opcode = VFS_ACT | VFS_SET | VFS_LINK;
 	strlcpy(query.path0, path, MAX_PATH);
-	strlcpy(query.path1, link, MAX_PATH);
+
+	if (link) {
+		strlcpy(query.path1, link, MAX_PATH);
+		query.file0[0] = 0;
+	}
+	else {
+		query.file0[0] = alink->server;
+		query.file1[1] = alink->inode;
+	}
 
 	if (!vfssend(root, &query)) {
 		return -1;

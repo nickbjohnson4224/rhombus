@@ -14,16 +14,28 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <string.h>
+#include <stddef.h>
 #include <natio.h>
+#include <proc.h>
 
-/****************************************************************************
- * vflist
- *
- * Finds the contents of the directory at <path> in the VFS. On success,
- * returns zero and copies the contents into <buffer>. On failure, returns
- * nonzero.
- */
+size_t lfs_list_dir(char *buffer, size_t size, struct lfs_node *dir) {
+	struct lfs_node *child;
 
-int vflist(const char *path, char *buffer) {
-	return vfstat(path, "list", "%s", buffer);
+	child = dir->daughter;
+
+	if (!child) {
+		strlcpy(buffer, "", size);
+		return 0;
+	}
+
+	strlcpy(buffer, child->name, size);
+	child = child->sister1;
+	while (child) {
+		strlcat(buffer, ":", size);
+		strlcat(buffer, child->name, size);
+		child = child->sister1;
+	}
+
+	return strlen(buffer);
 }

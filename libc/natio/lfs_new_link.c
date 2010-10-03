@@ -16,35 +16,22 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
 #include <stdio.h>
 #include <natio.h>
-#include <errno.h>
-#include <dict.h>
 
-/****************************************************************************
- * vfstat
- *
- * XXX - doc
- */
+struct lfs_node *lfs_new_link(const char *link, const FILE *alink) {
+	struct lfs_node *node;
 
-int vfstat(const char *path, const char *field, const char *fmt, ...) {
-	va_list ap;
-	char *value;
-	char *fullpath;
+	node = calloc(sizeof(struct lfs_node), 1);
 
-	fullpath = strvcat(path, ":", field, NULL);
-	value = dreadr(vfs_root, fullpath);
-	free(fullpath);
-
-	if (value) {
-		va_start(ap, fmt);
-		vsscanf(value, fmt, ap);
-		va_end(ap);
-		return 0;
+	if (!node) {
+		return NULL;
 	}
-	else {
-		errno = ENOFILE;
-		return -1;
-	}
+
+	node->inode = -1;
+	node->link  = strdup(link);
+	node->alink = __fcons(alink->server, alink->inode, NULL);
+	node->type  = VFS_LINK;
+
+	return node;
 }

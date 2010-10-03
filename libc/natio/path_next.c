@@ -27,13 +27,13 @@
  */
 
 char *path_next(struct path *path) {
-	char *token;
+	char *token, *end;
 
 	/* check for problems */
 	if (!path->pos) {
 		return NULL;
 	}
-	
+
 	/* skip leading separators */
 	while (*(path->pos) == PATH_SEP) {
 		path->pos++;
@@ -46,10 +46,16 @@ char *path_next(struct path *path) {
 	
 	/* copy token */
 	token = strdup(path->pos);
-	*strchr(token, PATH_SEP) = '\0';
+	end = strchr(token, PATH_SEP);
+	if (end) {
+		*end = '\0';
+	}
 
 	/* advance path structure */
-	path->pos = strchr(token, PATH_SEP);
+	path->pos = strchr(path->pos, PATH_SEP);
+	if (!path->pos) {
+		path->pos = &path->str[strlen(path->str)];
+	}
 
 	return token;
 }

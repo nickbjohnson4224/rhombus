@@ -53,11 +53,11 @@ static void initrd_read(struct packet *packet, uint8_t port, uint32_t caller) {
 	psend(PORT_REPLY, caller, packet);
 }
 
-void initrd_init() {
+uint64_t initrd_init() {
 	initrd = (uint8_t*) BOOT_IMAGE;
 	initrd_size = tar_size(initrd);
 
-	vfctrll("/dev/initrd", "size", "%d", initrd_size);
-
 	when(PORT_READ, initrd_read);
+
+	return initrd_size;
 }

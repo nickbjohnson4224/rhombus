@@ -32,7 +32,8 @@ int main() {
 
 	when(PORT_READ, time_read);
 
-	vffile("", "", 1);
+	lfs_add(lfs_new_file(1, 21), "/time");
+	lfs_event_start();
 
 	psend(PORT_CHILD, getppid(), NULL);
 	_done();

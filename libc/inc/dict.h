@@ -17,6 +17,8 @@
 #ifndef FLUX_DICT_H
 #define FLUX_DICT_H
 
+#error dictionary is deprecated
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>

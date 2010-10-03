@@ -27,7 +27,7 @@
  */
 
 char *path_peek(struct path *path) {
-	char *token;
+	char *token, *end;
 
 	/* check for problems */
 	if (!path->pos) {
@@ -46,7 +46,10 @@ char *path_peek(struct path *path) {
 
 	/* copy token */
 	token = strdup(path->pos);
-	*strchr(token, PATH_SEP) = '\0';
+	end = strchr(token, PATH_SEP);
+	if (end) {
+		*end = '\0';
+	}
 
 	return token;
 }

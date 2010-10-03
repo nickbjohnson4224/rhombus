@@ -9,7 +9,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <natio.h>
-#include <dict.h>
 
 #include "tarfs.h"
 
@@ -60,7 +59,6 @@ static uintptr_t getvalue(char *field, size_t size) {
 
 void tarfs_init() {
 	struct tar_block *block;
-	char   *path;
 	size_t i, n;
 
 	/* allocate buffer space for header block */
@@ -83,10 +81,7 @@ void tarfs_init() {
 		inode[n].size   = getvalue(block->filesize, sizeof(block->filesize));	
 
 		/* add file to VFS */
-		vffile("/", block->filename, n);
-		path = strvcat("/", block->filename, NULL);
-		vfctrll(path, "size", "%d", inode[n].size);
-		free(path);
+		lfs_add(lfs_new_file(n, inode[n].size), block->filename);
 
 		/* move to next file header */
 		i += ((inode[n].size / 512) + 1) * 512;

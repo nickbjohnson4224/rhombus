@@ -32,8 +32,7 @@ FILE *freopen(const char *path, const char *mode, FILE *stream) {
 		return NULL;
 	}
 
-	file = ffind(path);
-	vfs_get_file(NULL, path);
+	file = vfs_get_file(NULL, path);
 
 	if (!file) {
 		errno = ENOFILE;
@@ -42,8 +41,7 @@ FILE *freopen(const char *path, const char *mode, FILE *stream) {
 
 	__fsetup(file);
 
-	file->ext->size = 0;
-	fstat(file, "size", "%d", &file->ext->size);
+	file->ext->size = vfs_get_size(file, "");
 
 	return file;
 }

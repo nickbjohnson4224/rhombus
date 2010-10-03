@@ -20,26 +20,26 @@
 #include <string.h>
 
 int main(int argc, char **argv) {
-	char filelist[2048];
+	char *list;
 	size_t n, i, j;
-	int err;
 
 	if (argc == 1) {
-		err = vflist(getenv("PWD"), filelist);
+		list = vfs_get_list(NULL, getenv("PWD"));
 		
-		if (err) {
+		if (!list) {
 			printf("%s: no such directory\n", getenv("PWD"));
 			return EXIT_FAILURE;
 		}
 
-		for (i = 0, j = 1; filelist[i]; i++) {
-			if (filelist[i] == ':') {
-				filelist[i] = (j % 6) ? '\t' : '\n';
+		for (i = 0, j = 1; list[i]; i++) {
+			if (list[i] == ':') {
+				list[i] = (j % 6) ? '\t' : '\n';
 				j++;
 			}
 		}
 
-		printf("%s\n", filelist);
+		printf("%s\n", list);
+		free(list);
 	}
 
 	else for (n = 1; n < (size_t) argc; n++) {
@@ -48,21 +48,22 @@ int main(int argc, char **argv) {
 			printf("%s:\n", argv[n]);
 		}
 
-		err = vflist(argv[n], filelist);
+		list = vfs_get_list(NULL, argv[n]);
 
-		if (err) {
+		if (!list) {
 			printf("%s: no such directory\n", argv[n]);
 			continue;
 		}
 
-		for (i = 0, j = 1; filelist[i]; i++) {
-			if (filelist[i] == ':') {
-				filelist[i] = (j % 6) ? '\t' : '\n';
+		for (i = 0, j = 1; list[i]; i++) {
+			if (list[i] == ':') {
+				list[i] = (j % 6) ? '\t' : '\n';
 				j++;
 			}
 		}
 
-		printf("%s\n", filelist);
+		printf("%s\n", list);
+		free(list);
 	}
 
 	return 0;

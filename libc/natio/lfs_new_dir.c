@@ -15,27 +15,19 @@
  */
 
 #include <stdlib.h>
-#include <string.h>
 #include <natio.h>
-#include <dict.h>
-#include <proc.h>
 
-/****************************************************************************
- * vffile
- *
- * XXX - doc
- */
+struct lfs_node *lfs_new_dir(uint32_t inode) {
+	struct lfs_node *node;
 
-int vffile(const char *dir, const char *name, uint32_t inode) {
-	char *path;
+	node = calloc(sizeof(struct lfs_node), 1);
 
-	path = strvcat(dir, name, NULL);
-	vfctrll(path, "addr", "%d %d", getpid(), inode);
+	if (!node) {
+		return NULL;
+	}
 
-	lfs_add_inode(inode, path);
-	free(path);
+	node->inode = inode;
+	node->type  = VFS_DIR;
 
-	vfdir(dir, name);
-
-	return 0;
+	return node;
 }

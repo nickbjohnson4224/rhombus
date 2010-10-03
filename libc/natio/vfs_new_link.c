@@ -27,12 +27,20 @@
  * on success, NULL on failure.
  */
 
-FILE *vfs_new_link(FILE *root, const char *path, const char *link) {
+FILE *vfs_new_link(FILE *root, const char *path, const char *link, FILE *alink) {
 	struct vfs_query query;
 
 	query.opcode = VFS_ACT | VFS_NEW | VFS_LINK;
 	strlcpy(query.path0, path, MAX_PATH);
-	strlcpy(query.path1, link, MAX_PATH);
+
+	if (link) {
+		strlcpy(query.path1, link, MAX_PATH);
+		query.file0[0] = 0;
+	}
+	else {
+		query.file0[0] = alink->server;
+		query.file0[1] = alink->inode;
+	}
 
 	if (!vfssend(root, &query)) {
 		return NULL;

@@ -15,31 +15,20 @@
  */
 
 #include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-#include <stdio.h>
 #include <natio.h>
-#include <dict.h>
 
-/****************************************************************************
- * vfctrll
- *
- * XXX - doc
- */
+struct lfs_node *lfs_new_file(uint32_t inode, uint64_t size) {
+	struct lfs_node *node;
 
-int vfctrll(const char *path, const char *field, const char *fmt, ...) {
-	va_list ap;
-	char value[2048];
-	char *fullpath;
-	int err;
+	node = calloc(sizeof(struct lfs_node), 1);
 
-	va_start(ap, fmt);
-	vsprintf(value, fmt, ap);
-	va_end(ap);
+	if (!node) {
+		return NULL;
+	}
 
-	fullpath = strvcat(path, ":", field, NULL);
-	err = dwrite(value, fullpath);
-	free(fullpath);
+	node->inode = inode;
+	node->size  = size;
+	node->type  = VFS_FILE;
 
-	return err;
+	return node;
 }
