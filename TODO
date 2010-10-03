@@ -1,23 +1,23 @@
 Urgent:
 
+- write better heap
+- finish libc stdio functions (printf/scanf)
 - reorganize kernel
 - detect out of memory errors
 - comment all kernel source
 - finish libc math functions
-- finish libc
 
 Less Urgent:
 
 - clean up abi
 - reduce permissions when init launches fish
 - device manager
-- add garbage collection for dictionary
 - handle out of memory gracefully
+- fix up ATA driver
+- add VT100 support for term
 
 Would Like:
 
-- add VT100 support for term
-- port Lua
 - port UDI
 - interface manager
 - graphics control language
