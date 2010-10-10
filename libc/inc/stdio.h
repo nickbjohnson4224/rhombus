@@ -84,8 +84,8 @@ extern FILE *stderr;
 
 /* file operations *********************************************************/
 
-int   remove (const char *path);	// XXX - not implemented
-int   rename (const char *oldpath, const char *newpath);	// XXX - n impl
+int   remove (const char *path);
+int   rename (const char *oldpath, const char *newpath);
 FILE *tmpfile(void);
 char *tmpnam (char *s);
 

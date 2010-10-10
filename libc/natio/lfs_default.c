@@ -21,29 +21,17 @@
 
 void lfs_get_default(struct vfs_query *query, uint32_t inode, uint32_t caller) {
 	struct lfs_node *node;
-	const char *tail;
-	char *tail_copy;
 	
 	node = lfs_get_path(lfs_get_node(inode), query->path0);
 
-	if (!node || node->type == VFS_LINK) {
-		node = lfs_get_link(lfs_get_node(inode), query->path0, &tail);
-		if (!node) {
-			query->opcode = VFS_ERR | VFS_FILE;
-			return;
-		}
-		else {
-			tail_copy = (tail) ? strdup(tail) : strdup("");
-			strlcpy(query->path0, node->link, MAX_PATH);
-			strlcat(query->path0, "/", MAX_PATH);
-			strlcat(query->path0, tail_copy, MAX_PATH);
-			free(tail_copy);
+	if (!node) {
+		query->opcode = VFS_ERR | VFS_GET | VFS_FILE;
+		return;
+	}
 
-			if (node->alink) {
-				vfssend((FILE*) node->alink, query);
-				return;
-			}
-		}
+	if (!(lfs_get_perm(node, 0) & PERM_GET)) {
+		query->opcode = VFS_ERR | VFS_GET | VFS_PERM;
+		return;
 	}
 
 	switch (query->opcode & VFS_NOUN) {
@@ -70,7 +58,39 @@ void lfs_get_default(struct vfs_query *query, uint32_t inode, uint32_t caller) {
 		query->value1 = node->size >> 32;
 		break;
 	deafult:
-		query->opcode = VFS_ERR;
+		query->opcode = VFS_ERR | VFS_NOUN;
+		break;
+	}
+}
+
+void lfs_set_default(struct vfs_query *query, uint32_t inode, uint32_t caller) {
+	struct lfs_node *node;
+
+	node = lfs_get_path(lfs_get_node(inode), query->path0);
+
+	if (!node) {
+		query->opcode = VFS_ERR | VFS_GET | VFS_FILE;
+		return;
+	}
+
+	switch (query->opcode & VFS_NOUN) {
+	case VFS_LINK:
+		if (!(lfs_get_perm(node, 0) & PERM_LINK)) {
+			query->opcode = VFS_ERR | VFS_SET | VFS_PERM;
+			return;
+		}
+		node->link  = strdup(query->path0);
+		node->alink = __fcons(query->file0[0], query->file0[1], NULL);
+		break;
+	case VFS_PERM:
+		if (!(lfs_get_perm(node, 0) & PERM_PERM)) {
+			query->opcode = VFS_ERR | VFS_SET | VFS_PERM;
+			return;
+		}
+		query->opcode = lfs_set_perm(node, query->value0, query->value1);
+		break;
+	default:
+		query->opcode = VFS_ERR | VFS_NOUN;
 		break;
 	}
 }

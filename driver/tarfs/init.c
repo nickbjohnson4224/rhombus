@@ -59,6 +59,7 @@ static uintptr_t getvalue(char *field, size_t size) {
 
 void tarfs_init() {
 	struct tar_block *block;
+	struct lfs_node *file;
 	size_t i, n;
 
 	/* allocate buffer space for header block */
@@ -81,8 +82,12 @@ void tarfs_init() {
 		inode[n].size   = getvalue(block->filesize, sizeof(block->filesize));	
 
 		/* add file to VFS */
-		lfs_add(lfs_new_file(n, inode[n].size), block->filename);
-
+		file = lfs_new_file(n, inode[n].size);
+		file->user = 0;
+		file->perm_user = PERM_GET | PERM_READ;
+		file->perm_def  = PERM_GET | PERM_READ;
+		lfs_add(file, block->filename);
+		
 		/* move to next file header */
 		i += ((inode[n].size / 512) + 1) * 512;
 		if (inode[n].size % 512) i += 512;

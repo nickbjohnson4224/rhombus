@@ -14,8 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include <errno.h>
 #include <natio.h>
 
@@ -31,17 +32,27 @@ FILE *freopen(const char *path, const char *mode, FILE *stream) {
 	if (!stream) {
 		return NULL;
 	}
+	else {
+		stream = calloc(sizeof(FILE), 1);
+	}
 
 	file = vfs_get_file(NULL, path);
 
 	if (!file) {
-		errno = ENOFILE;
-		return NULL;
+		file = vfs_new_file(NULL, path);
+
+		if (!file) {
+			errno = ENOFILE;
+			return NULL;
+		}
 	}
 
 	__fsetup(file);
 
 	file->ext->size = vfs_get_size(file, "");
 
-	return file;
+	__fstrip(stream);
+	memcpy(stream, file, sizeof(FILE));
+
+	return stream;
 }

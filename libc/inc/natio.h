@@ -54,6 +54,14 @@ extern FILE *vfs_root;
 #define VFS_SIZE	0x0006	// Size of a VFS object
 #define VFS_PATH	0x0007	// Path of a VFS object (used for errors)
 
+#define PERM_NEW	0x01	// Permission to create new files in a directory
+#define PERM_DEL	0x02	// Permission to delete a file
+#define PERM_GET	0x04	// Permission to get all metadata about a file
+#define PERM_PERM	0x08	// Permission to set the permissions of a file
+#define PERM_LINK	0x10	// Permission to modify a link target
+#define PERM_READ	0x20	// Permission to read from a file
+#define PERM_WRITE	0x40	// Permission to write to a file
+
 struct vfs_query {
 	uint32_t opcode;
 	uint32_t file0[2];
@@ -79,11 +87,11 @@ FILE    *vfs_get_file(FILE *root, const char *path);
 char    *vfs_get_list(FILE *root, const char *path);
 char    *vfs_get_link(FILE *root, const char *path);
 FILE    *vfs_get_alnk(FILE *root, const char *path);
-uint16_t vfs_get_perm(FILE *root, const char *path, uint32_t user);
+uint8_t  vfs_get_perm(FILE *root, const char *path, uint32_t user);
 uint64_t vfs_get_size(FILE *root, const char *path);
 
 int vfs_set_link(FILE *root, const char *path, const char *link, FILE *alink);
-int vfs_set_perm(FILE *root, const char *path, uint32_t user, uint16_t perm);
+int vfs_set_perm(FILE *root, const char *path, uint32_t user, uint8_t perm);
 int vfs_set_user(FILE *root, const char *path, uint32_t user);
 
 /* local filesystem operations (for drivers) *******************************/
@@ -112,8 +120,8 @@ struct lfs_node {
 
 	/* permissions */
 	uint32_t user;
-	uint16_t perm_user;
-	uint16_t perm_other;
+	uint8_t perm_user;
+	uint8_t perm_def;
 };
 
 void lfs_event(struct packet *packet, uint8_t port, uint32_t caller);
@@ -128,6 +136,7 @@ void lfs_when_get(lfs_handler_t handler);
 void lfs_when_set(lfs_handler_t handler);
 
 void lfs_get_default(struct vfs_query *query, uint32_t inode, uint32_t caller);
+void lfs_set_default(struct vfs_query *query, uint32_t inode, uint32_t caller);
 
 struct lfs_node *lfs_new_file(uint32_t inode, uint64_t size);
 struct lfs_node *lfs_new_dir (uint32_t inode);
@@ -137,6 +146,9 @@ size_t lfs_list_dir(char *buffer, size_t size, struct lfs_node *dir);
 
 uint32_t lfs_add(struct lfs_node *node, const char *path);
 uint32_t lfs_del(const char *path);
+
+uint8_t lfs_get_perm(struct lfs_node *node, uint32_t user);
+int     lfs_set_perm(struct lfs_node *node, uint32_t user, uint8_t perm);
 
 uint32_t         lfs_add_path(struct lfs_node *root, const char *path, struct lfs_node *node);
 struct lfs_node *lfs_get_path(struct lfs_node *root, const char *path);

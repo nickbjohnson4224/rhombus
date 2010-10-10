@@ -29,6 +29,8 @@ struct lfs_node *lfs_new_file(uint32_t inode, uint64_t size) {
 	node->inode = inode;
 	node->size  = size;
 	node->type  = VFS_FILE;
+	node->user  = 0;
+	node->perm_user = PERM_READ | PERM_GET;
 
 	return node;
 }

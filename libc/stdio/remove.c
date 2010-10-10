@@ -15,11 +15,9 @@
  */
 
 #include <stdio.h>
+#include <natio.h>
 #include <errno.h>
 
 int remove(const char *path) {
-
-	errno = ENOSYS;
-
-	return -1;
+	return vfs_del_file(NULL, path);
 }

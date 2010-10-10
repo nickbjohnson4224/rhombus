@@ -14,9 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <natio.h>
 #include <mutex.h>
+#include <proc.h>
 #include <ipc.h>
 
 static lfs_handler_t _action[16] = {
@@ -24,7 +27,8 @@ static lfs_handler_t _action[16] = {
 	NULL,
 	NULL,
 	NULL,
-	lfs_get_default
+	lfs_get_default,
+	lfs_set_default
 };
 
 static bool _m_action;
@@ -57,22 +61,48 @@ void lfs_event_stop(void) {
  *
  * Event handler for local file system - calls the appropriate handler
  * registered with lfs_when_* when an event is caught. If there is no
- * handler registered, it returns a query with errcode VFS_ERR.
+ * handler registered, it returns a query with errcode VFS_ERR. If there is
+ * a link to be followed by the request, that link is followed and if it is
+ * external, the handler is not called at all.
  */
 
 void lfs_event(struct packet *packet, uint8_t port, uint32_t caller) {
 	struct vfs_query *query;
+	struct lfs_node *link;
+	const char *tail;
+	char *tail_copy;
 	lfs_handler_t handler;
 
 	query = pgetbuf(packet);
 
 	if (_active) {
+
+		/* follow links until they end */
+		link = lfs_get_link(lfs_get_node(packet->target_inode), query->path0, &tail);
+		while (link) {
+			tail_copy = (tail) ? strdup(tail) : strdup("");
+			strlcpy(query->path0, link->link, MAX_PATH);
+			strlcat(query->path0, "/", MAX_PATH);
+			strlcat(query->path0, tail_copy, MAX_PATH);
+			free(tail_copy);
+
+			if (link->alink) {
+				vfssend((FILE*) link->alink, query);
+				psend(PORT_REPLY, caller, packet);
+				pfree(packet);
+				return;
+			}
+			else {
+				link = lfs_get_link(lfs_get_node(packet->target_inode), query->path0, &tail);
+			}
+		}
+
 		mutex_spin(&_m_action);
 		handler = _action[(query->opcode & VFS_VERB) >> 4];
 		mutex_free(&_m_action);
 	
 		if (!handler) {
-			query->opcode = VFS_ERR;
+			query->opcode = VFS_ERR | VFS_VERB;
 		}
 		else {
 			handler(query, packet->target_inode, caller);

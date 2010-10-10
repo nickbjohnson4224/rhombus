@@ -15,11 +15,8 @@
  */
 
 #include <stdio.h>
-#include <errno.h>
+#include <natio.h>
 
 int rename(const char *oldpath, const char *newpath) {
-
-	errno = ENOSYS;
-
-	return -1;
+	return vfs_mov_file(NULL, oldpath, newpath);
 }

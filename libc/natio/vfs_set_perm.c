@@ -26,7 +26,7 @@
  * success, nonzero on failure.
  */
 
-int vfs_set_perm(FILE *root, const char *path, uint32_t user, uint16_t perm) {
+int vfs_set_perm(FILE *root, const char *path, uint32_t user, uint8_t perm) {
 	struct vfs_query query;
 
 	query.opcode = VFS_ACT | VFS_SET | VFS_PERM;

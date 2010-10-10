@@ -14,33 +14,52 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <string.h>
 #include <natio.h>
 
 /****************************************************************************
- * vfs_get_perm
+ * lfs_get_perm
  *
- * Returns the permissions given to user <user> on the file in driver <root>
- * at path <path>.
+ * Gets the permission mask of a lfs file <node> for the given user <user>.
+ * Returns the mask on success, zero on failure.
  */
 
-uint8_t vfs_get_perm(FILE *root, const char *path, uint32_t user) {
-	struct vfs_query query;
-
-	query.opcode = VFS_ACT | VFS_GET | VFS_PERM;
-	strlcpy(query.path0, path, MAX_PATH);
-	query.value0 = user;
-
-	if (!vfssend(root, &query)) {
+uint8_t lfs_get_perm(struct lfs_node *node, uint32_t user) {
+	
+	if (!node) {
 		return 0;
 	}
-	else {
-		if (query.opcode & VFS_ERR) {
-			return 0;
-		}
-		else {
-			return query.value0;
-		}
+
+	if (user == node->user) {
+		return node->perm_user;
 	}
+	else {
+		return node->perm_def;
+	}
+}
+
+/****************************************************************************
+ * lfs_set_perm
+ *
+ * Sets the permission mask on file <node> for user <user> to <perm>. If
+ * user is -1, the operation applies to the default user. Returns 0 on
+ * success, nonzero on failure.
+ */
+
+int lfs_set_perm(struct lfs_node *node, uint32_t user, uint8_t perm) {
+	
+	if (!node) {
+		return 1;
+	}
+
+	if (user == node->user) {
+		node->perm_user = perm;
+	}
+	else if (user == (uint32_t) -1) {
+		node->perm_def = perm;
+	}
+	else {
+		return 1;
+	}
+
+	return 0;
 }

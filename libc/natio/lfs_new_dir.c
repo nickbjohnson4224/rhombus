@@ -28,6 +28,8 @@ struct lfs_node *lfs_new_dir(uint32_t inode) {
 
 	node->inode = inode;
 	node->type  = VFS_DIR;
+	node->user  = 0;
+	node->perm_user = PERM_GET;
 
 	return node;
 }
