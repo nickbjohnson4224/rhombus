@@ -14,25 +14,49 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdlib.h>
+#include <stddef.h>
 #include <stdio.h>
-#include <string.h>
+#include <natio.h>
 #include <errno.h>
 
-/****************************************************************************
- * perror
- *
- * Prints a string starting with "<s>: " that contains the string given by
- * strerror(errno) on standard error. Prints nothing if errno is clear.
- */
+static char buffer[2048];
 
-void perror(const char *s) {
+int main(int argc, char **argv) {
+	FILE *src, *dest;
+	size_t size;
 
-	if (errno) {
-		if (s) {
-			fprintf(stderr, "%s: %s\n", s, strerror(errno));
-		}
-		else {
-			fprintf(stderr, "%s\n", strerror(errno));
-		}
+	if (argc < 3) {
+		printf("cp: missing destination\n");
+		return EXIT_FAILURE;
 	}
+	
+	src = fopen(argv[1], "r");
+	if (!src) {
+		printf("cp: cannot open %s: ", argv[1]);
+		perror(NULL);
+		return EXIT_FAILURE;
+	}
+
+	dest = fopen(argv[2], "w+");
+	if (!dest) {
+		printf("cp: cannot open %s: ", argv[2]);
+		perror(NULL);
+		return EXIT_FAILURE;
+	}
+
+	while (1) {
+		size = fread(buffer, sizeof(char), 2048, src);
+		if (!size) {
+			break;
+		}
+		size = fwrite(buffer, sizeof(char), size, dest);
+/*		if (!size) {
+			printf("error writing to %s: ", argv[2]);
+			perror(NULL);
+			return EXIT_FAILURE;
+		} */
+	}
+
+	return EXIT_SUCCESS;
 }

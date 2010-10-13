@@ -14,25 +14,29 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
+#include <proc.h>
+#include <ipc.h>
+#include <abi.h>
+
+#include "tmpfs.h"
 
 /****************************************************************************
- * perror
+ * tmpfs - temporary ramdisk filesystem driver
  *
- * Prints a string starting with "<s>: " that contains the string given by
- * strerror(errno) on standard error. Prints nothing if errno is clear.
+ * Usage: tmpfs
+ *
+ * Constructs an empty ramdisk filesystem. Maximum size is limited only by
+ * heap space.
  */
 
-void perror(const char *s) {
+int main(int argc, char **argv) {
 
-	if (errno) {
-		if (s) {
-			fprintf(stderr, "%s: %s\n", s, strerror(errno));
-		}
-		else {
-			fprintf(stderr, "%s\n", strerror(errno));
-		}
-	}
+	/* create tmpfs */
+	tmpfs_init();
+
+	/* daemonize */
+	psend(PORT_CHILD, getppid(), NULL);
+	_done();
+
+	return 0;
 }

@@ -107,6 +107,15 @@ int main() {
 	setenv("PATH", "/bin");
 	argv[1] = NULL;
 
+	/* Temporary filesystem */
+	argv[0] = "tmpfs";
+	argv[1] = NULL;
+	
+	if (!(file = tar_find(boot_image, (char*) "tmpfs"))) panic("no tmpfs found");
+	daemon_start(&temp, file->start, file->size, argv);
+
+	lfs_add(lfs_new_link("", temp), "/tmp");
+
 	/* Keyboard Driver */
 	argv[0] = "kbd";
 	if (!(file = tar_find(boot_image, (char*) "kbd"))) panic("no kbd found");

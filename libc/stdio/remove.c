@@ -19,5 +19,18 @@
 #include <errno.h>
 
 int remove(const char *path) {
-	return vfs_del_file(NULL, path);
+	int err;
+	
+	err = vfs_del_file(NULL, path);
+
+	if (err & VFS_ERR) {
+		if ((err & VFS_NOUN) == VFS_FILE) {
+			errno = ENOFILE;
+		}
+		else {
+			errno = EPERM;
+		}
+	}
+
+	return err;
 }

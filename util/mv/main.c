@@ -14,25 +14,24 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
+#include <natio.h>
 #include <errno.h>
 
-/****************************************************************************
- * perror
- *
- * Prints a string starting with "<s>: " that contains the string given by
- * strerror(errno) on standard error. Prints nothing if errno is clear.
- */
+int main(int argc, char **argv) {
+	int err;
 
-void perror(const char *s) {
-
-	if (errno) {
-		if (s) {
-			fprintf(stderr, "%s: %s\n", s, strerror(errno));
-		}
-		else {
-			fprintf(stderr, "%s\n", strerror(errno));
-		}
+	if (argc < 3) {
+		printf("mv: missing destination\n");
+		return EXIT_FAILURE;
 	}
+	
+	err = vfs_mov_file(NULL, argv[1], argv[2]);
+	if (err) {
+		printf("mv: cannot move %s to %s\n", argv[1], argv[2]);
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
 }

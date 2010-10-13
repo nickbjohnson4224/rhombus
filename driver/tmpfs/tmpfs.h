@@ -14,25 +14,28 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifndef TMPFS_H
+#define TMPFS_H
+
+#include <stddef.h>
+#include <natio.h>
 #include <stdio.h>
-#include <string.h>
-#include <errno.h>
+#include <mutex.h>
+#include <ipc.h>
 
-/****************************************************************************
- * perror
- *
- * Prints a string starting with "<s>: " that contains the string given by
- * strerror(errno) on standard error. Prints nothing if errno is clear.
- */
+struct tmpfs_inode {
+	uint32_t inode;
+	char  *data;
+	size_t size;
+	bool  mutex;
+};
 
-void perror(const char *s) {
+void tmpfs_new  (struct vfs_query *query, uint32_t inode, uint32_t caller);
+void tmpfs_del  (struct vfs_query *query, uint32_t inode, uint32_t caller);
+void tmpfs_mov  (struct vfs_query *query, uint32_t inode, uint32_t caller);
+void tmpfs_read (struct packet *packet, uint8_t port, uint32_t caller);
+void tmpfs_write(struct packet *packet, uint8_t port, uint32_t caller);
 
-	if (errno) {
-		if (s) {
-			fprintf(stderr, "%s: %s\n", s, strerror(errno));
-		}
-		else {
-			fprintf(stderr, "%s\n", strerror(errno));
-		}
-	}
-}
+void tmpfs_init(void);
+
+#endif/*TMPFS_H*/

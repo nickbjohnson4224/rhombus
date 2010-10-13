@@ -39,6 +39,8 @@ const char *strerror(int errnum) {
 		return "function not implemented";
 	case ENOFILE:
 		return "file not found";
+	case EPERM:
+		return "permission denied";
 	default:
 		return "unknown error";
 	}

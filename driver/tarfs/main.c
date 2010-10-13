@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
 		/* parent does not exist - fail */
 		fprintf(stderr, "%s: no parent driver %s\n", argv[0], argv[1]);
 
-		return 1;
+		return EXIT_FAILURE;
 	}
 
 	/* initialize tarfs on parent driver */
@@ -108,5 +108,5 @@ int main(int argc, char **argv) {
 	lfs_event_start();
 	_done();
 
-	return 0;
+	return EXIT_SUCCESS;
 }

@@ -2,10 +2,10 @@ BUILDDIR=$(PWD)
 
 LIB_DIRS  = libc
 
-DRIVERS  := driver/term driver/kbd driver/tarfs driver/vga driver/time
-DAEMONS  := daemon/init
-UTILS    := util/ls util/echo util/halt util/cat util/date util/test
-PORTS    := ports/lua
+DRIVERS  := driver/term driver/kbd driver/tarfs driver/vga driver/time driver/tmpfs
+DAEMONS  := $(shell find daemon -mindepth 1 -maxdepth 1)
+UTILS    := $(shell find util   -mindepth 1 -maxdepth 1)
+PORTS    := $(shell find ports  -mindepth 1 -maxdepth 1)
 
 BIN_DIRS  = kernel fish
 BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS) $(PORTS)

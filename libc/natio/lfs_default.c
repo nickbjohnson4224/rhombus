@@ -57,6 +57,14 @@ void lfs_get_default(struct vfs_query *query, uint32_t inode, uint32_t caller) {
 		query->value0 = node->size & 0xFFFFFFFF;
 		query->value1 = node->size >> 32;
 		break;
+	case VFS_PERM:
+		if (query->value0 == node->user) {
+			query->value0 = node->perm_user;
+		}
+		else {
+			query->value0 = node->perm_def;
+		}
+		break;
 	deafult:
 		query->opcode = VFS_ERR | VFS_NOUN;
 		break;
