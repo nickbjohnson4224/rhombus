@@ -100,6 +100,7 @@ struct lfs_node {
 
 	/* file information */
 	uint64_t size;
+	void *data;
 
 	/* file location */
 	uint32_t inode;
@@ -128,16 +129,6 @@ void lfs_event(struct packet *packet, uint8_t port, uint32_t caller);
 void lfs_event_start(void);
 void lfs_event_stop(void);
 
-typedef void (*lfs_handler_t)(struct vfs_query *query, uint32_t inode, uint32_t caller);
-void lfs_when_new(lfs_handler_t handler);
-void lfs_when_del(lfs_handler_t handler);
-void lfs_when_mov(lfs_handler_t handler);
-void lfs_when_get(lfs_handler_t handler);
-void lfs_when_set(lfs_handler_t handler);
-
-void lfs_get_default(struct vfs_query *query, uint32_t inode, uint32_t caller);
-void lfs_set_default(struct vfs_query *query, uint32_t inode, uint32_t caller);
-
 struct lfs_node *lfs_new_file(uint32_t inode, uint64_t size);
 struct lfs_node *lfs_new_dir (uint32_t inode);
 struct lfs_node *lfs_new_link(const char *link, const FILE *alink);
@@ -152,12 +143,34 @@ int     lfs_set_perm(struct lfs_node *node, uint32_t user, uint8_t perm);
 
 uint32_t         lfs_add_path(struct lfs_node *root, const char *path, struct lfs_node *node);
 struct lfs_node *lfs_get_path(struct lfs_node *root, const char *path);
+struct lfs_node *lfs_get_dir (struct lfs_node *root, const char *path);
 struct lfs_node *lfs_get_link(struct lfs_node *root, const char *path, const char **tail);
 struct lfs_node *lfs_del_path(struct lfs_node *root, const char *path);
 
 uint32_t         lfs_add_node(struct lfs_node *node);
 struct lfs_node *lfs_get_node(uint32_t inode);
 struct lfs_node *lfs_del_node(uint32_t inode);
+
+/* driver / local filesystem interface *************************************/
+
+typedef void (*lfs_handler_t)(struct vfs_query *query, uint32_t inode, uint32_t caller);
+void lfs_when_new(lfs_handler_t handler);
+void lfs_when_del(lfs_handler_t handler);
+void lfs_when_mov(lfs_handler_t handler);
+void lfs_when_get(lfs_handler_t handler);
+void lfs_when_set(lfs_handler_t handler);
+
+void lfs_new_default(struct vfs_query *query, uint32_t inode, uint32_t caller);
+void lfs_del_default(struct vfs_query *query, uint32_t inode, uint32_t caller);
+void lfs_get_default(struct vfs_query *query, uint32_t inode, uint32_t caller);
+void lfs_set_default(struct vfs_query *query, uint32_t inode, uint32_t caller);
+
+extern struct lfs_node *(*drv_new)(struct vfs_query *query, struct lfs_node *dir);
+extern void (*drv_del)(struct vfs_query *query, struct lfs_node *node);
+extern void (*drv_set)(struct vfs_query *query, struct lfs_node *node);
+
+extern size_t (*drv_read) (struct packet *packet);
+extern size_t (*drv_write)(struct packet *packet);
 
 /* path manipulation *******************************************************/
 

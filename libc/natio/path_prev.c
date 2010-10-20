@@ -24,7 +24,7 @@ int path_prev(struct path *path) {
 	}
 
 	while (path->pos > path->str) {
-		if ((*(path->pos) != PATH_SEP) || (*(path->pos) != '\0')) {
+		if ((*(path->pos) != PATH_SEP) && (*(path->pos) != '\0')) {
 			break;
 		}
 		path->pos--;

@@ -14,15 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef TMPFS_H
-#define TMPFS_H
-
-#include <stddef.h>
 #include <natio.h>
-#include <stdio.h>
-#include <mutex.h>
-#include <ipc.h>
 
-void tmpfs_init(void);
+struct lfs_node *(*drv_new)(struct vfs_query *query, struct lfs_node *dir);
+void (*drv_del)(struct vfs_query *query, struct lfs_node *node);
+void (*drv_set)(struct vfs_query *query, struct lfs_node *node);
 
-#endif/*TMPFS_H*/
+size_t (*drv_read) (struct packet *packet);
+size_t (*drv_write)(struct packet *packet);

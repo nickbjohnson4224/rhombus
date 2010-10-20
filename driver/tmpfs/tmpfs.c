@@ -19,83 +19,40 @@
 
 #include "tmpfs.h"
 
-struct  tmpfs_inode tmpfs_inode_table[256];
 uint8_t tmpfs_inode_top = 1;
 
-static struct tmpfs_inode *tmpfs_new_inode(void) {
-	struct tmpfs_inode *inode;
-
-	inode = &tmpfs_inode_table[tmpfs_inode_top];
-	inode->inode = tmpfs_inode_top;
-	tmpfs_inode_top++;
-
-	return inode;
-}
-
-void tmpfs_new(struct vfs_query *query, uint32_t inode, uint32_t caller) {
-	struct lfs_node *node, *root;
-	struct tmpfs_inode *tmpnode;
+struct lfs_node *tmpfs_new(struct vfs_query *query, struct lfs_node *dir) {
+	struct lfs_node *node;
 
 	switch (query->opcode & VFS_NOUN) {
 	case VFS_FILE:
-		tmpnode = tmpfs_new_inode();
-		root = lfs_get_node(inode);
-		node = lfs_new_file(tmpnode->inode, 0);
-		lfs_add_path(root, query->path0, node);
-		lfs_add_node(node);
-		lfs_set_perm(node, 0, PERM_GET | PERM_PERM | PERM_READ | PERM_WRITE);
-		break;
+		node = lfs_new_file(tmpfs_inode_top++, 0);
+		lfs_set_perm(node, 0, PERM_GET | PERM_PERM | PERM_READ | PERM_WRITE | PERM_DEL);
+		return node;
 	case VFS_DIR:
-		tmpnode = tmpfs_new_inode();
-		root = lfs_get_node(inode);
-		node = lfs_new_dir(tmpnode->inode);
-		lfs_add_path(root, query->path0, node);
-		lfs_add_node(node);
-		lfs_set_perm(node, 0, PERM_GET | PERM_PERM | PERM_NEW | PERM_DEL);
-		break;
+		node = lfs_new_dir(tmpfs_inode_top++);
+		lfs_set_perm(node, 0, PERM_GET | PERM_PERM | PERM_NEW);
+		return node;
+	case VFS_LINK:
+		node = lfs_new_link(query->path1, __fcons(query->file0[0], query->file0[1], NULL));
+		lfs_set_perm(node, 0, PERM_GET | PERM_PERM | PERM_DEL);
+		return node;
 	default:
 		query->opcode = VFS_ERR | VFS_PERM;
-		break;
+		return NULL;
 	}
 }
 
-void tmpfs_del(struct vfs_query *query, uint32_t inode, uint32_t caller) {
-	struct lfs_node *root, *node;
-
-	root = lfs_get_node(inode);
-	node = lfs_del_path(root, query->path0);
-	
-	if (!node) {
-		query->opcode = VFS_ERR | VFS_FILE;
-		return;
-	}
-
-	lfs_del_node(node->inode);
-	free(node);
-}
-	
-void tmpfs_mov(struct vfs_query *query, uint32_t inode, uint32_t caller) {
-	struct lfs_node *root, *node;
-
-	root = lfs_get_node(inode);
-	node = lfs_del_path(root, query->path0);
-
-	if (!node) {
-		query->opcode = VFS_ERR | VFS_FILE;
-		return;
-	}
-
-	if (lfs_add_path(root, query->path1, node)) {
-		lfs_add_path(root, query->path0, node);
-		query->opcode = VFS_ERR | VFS_PATH;
-		return;
+void tmpfs_del(struct vfs_query *query, struct lfs_node *node) {
+	if (node->data) {
+		free(node->data);
 	}
 }
-	
 
 void tmpfs_read(struct packet *packet, uint8_t port, uint32_t caller) {
-	struct tmpfs_inode *inode;
+	struct lfs_node *node;
 	char *buffer;
+	char *data;
 	size_t size;
 
 	if (!packet) {
@@ -103,14 +60,21 @@ void tmpfs_read(struct packet *packet, uint8_t port, uint32_t caller) {
 		return;
 	}
 
-	inode = &tmpfs_inode_table[packet->target_inode];
+	node = lfs_get_node(packet->target_inode);
+
+	if (!node) {
+		psend(PORT_REPLY, caller, NULL);
+		pfree(packet);
+		return;
+	}
 	
-	if (packet->offset < inode->size) {
+	if (packet->offset < node->size) {
 		buffer = pgetbuf(packet);
 		size = packet->data_length;
-		size = ((inode->size - packet->offset) < size) ? (inode->size - packet->offset) : size;
+		size = ((node->size - packet->offset) < size) ? (node->size - packet->offset) : size;
 		psetbuf(&packet, size);
-		memcpy(buffer, &inode->data[packet->offset], size);
+		data = node->data;
+		memcpy(buffer, &data[packet->offset], size);
 	}
 	else {
 		psetbuf(&packet, 0);
@@ -121,23 +85,31 @@ void tmpfs_read(struct packet *packet, uint8_t port, uint32_t caller) {
 }
 
 void tmpfs_write(struct packet *packet, uint8_t port, uint32_t caller) {
-	struct tmpfs_inode *inode;
-	char *buffer;
+	struct lfs_node *node;
+	char *buffer, *data;
 
 	if (!packet) {
 		psend(PORT_REPLY, caller, NULL);
 		return;
 	}
-	
-	buffer = pgetbuf(packet);
-	inode = &tmpfs_inode_table[packet->target_inode];
-	
-	if (packet->offset + packet->data_length > inode->size) {
-		inode->data = realloc(inode->data, packet->offset + packet->data_length);
-		inode->size = packet->offset + packet->data_length;
+
+	node = lfs_get_node(packet->target_inode);
+
+	if (!node) {
+		psend(PORT_REPLY, caller, NULL);
+		pfree(packet);
+		return;
 	}
 
-	memcpy(&inode->data[packet->offset], buffer, packet->data_length);
+	if (packet->offset + packet->data_length > node->size) {
+		node->data = realloc(node->data, packet->offset + packet->data_length);
+		node->size = packet->offset + packet->data_length;
+	}
+
+	buffer = pgetbuf(packet);
+	data   = node->data;
+
+	memcpy(&data[packet->offset], buffer, packet->data_length);
 	
 	psend(PORT_REPLY, caller, packet);
 	pfree(packet);
@@ -150,9 +122,8 @@ void tmpfs_init(void) {
 	when(PORT_READ, tmpfs_read);
 	when(PORT_WRITE, tmpfs_write);
 
-	lfs_when_new(tmpfs_new);
-	lfs_when_del(tmpfs_del);
-	lfs_when_mov(tmpfs_mov);
+	drv_new = tmpfs_new;
+	drv_del = tmpfs_del;
 	lfs_event_start();
 
 }

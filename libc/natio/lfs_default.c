@@ -16,8 +16,62 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <natio.h>
 #include <proc.h>
+
+void lfs_new_default(struct vfs_query *query, uint32_t inode, uint32_t caller) {
+	struct lfs_node *node, *dir;
+
+	dir = lfs_get_dir(lfs_get_node(inode), query->path0);
+	
+	if (!dir) {
+		query->opcode = VFS_ERR | VFS_DIR;
+		return;
+	}
+
+	if (!drv_new) {
+		query->opcode = VFS_ERR | VFS_PERM;
+		return;
+	}
+
+	node = drv_new(query, dir);
+
+	if (!node) {
+		return;
+	}
+
+	lfs_add_path(lfs_get_node(inode), query->path0, node);
+	lfs_add_node(node);
+
+	query->file0[0] = getpid();
+	query->file0[1] = node->inode;
+}
+
+void lfs_del_default(struct vfs_query *query, uint32_t inode, uint32_t caller) {
+	struct lfs_node *node;
+
+	node = lfs_get_path(lfs_get_node(inode), query->path0);
+	
+	if (!node) {
+		query->opcode = VFS_ERR | VFS_FILE;
+		return;
+	}
+
+	if ((lfs_get_perm(node, 0) & PERM_DEL) == 0) {
+		query->opcode = VFS_ERR | VFS_PERM;
+		return;
+	}
+
+	if (!drv_del) {
+		query->opcode = VFS_ERR | VFS_PERM;
+		return;
+	}
+
+	node = lfs_del_path(lfs_get_node(inode), query->path0);
+	lfs_del_node(node->inode);
+	drv_del(query, node);
+}
 
 void lfs_get_default(struct vfs_query *query, uint32_t inode, uint32_t caller) {
 	struct lfs_node *node;
@@ -43,7 +97,13 @@ void lfs_get_default(struct vfs_query *query, uint32_t inode, uint32_t caller) {
 		query->file0[1] = node->inode;
 		break;
 	case VFS_DIR:
-		lfs_list_dir(query->path0, MAX_PATH, node);
+		if (node->type != VFS_DIR) {
+			query->opcode = VFS_ERR | VFS_TYPE;
+		}
+		else {
+			lfs_list_dir(query->path0, MAX_PATH, node);
+		}
+
 		break;
 	case VFS_LINK:
 		if (node->type != VFS_LINK) {
@@ -100,5 +160,9 @@ void lfs_set_default(struct vfs_query *query, uint32_t inode, uint32_t caller) {
 	default:
 		query->opcode = VFS_ERR | VFS_NOUN;
 		break;
+	}
+
+	if (drv_set) {
+		drv_set(query, node);
 	}
 }

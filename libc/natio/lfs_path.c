@@ -21,6 +21,7 @@
 
 static struct lfs_node _lfs_root = {
 	0,
+	NULL,
 	0,
 	NULL,
 	NULL,

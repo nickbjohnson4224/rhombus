@@ -24,8 +24,8 @@
 
 static lfs_handler_t _action[16] = {
 	NULL,
-	NULL,
-	NULL,
+	lfs_new_default,
+	lfs_del_default,
 	NULL,
 	lfs_get_default,
 	lfs_set_default

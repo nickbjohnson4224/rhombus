@@ -14,15 +14,40 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef TMPFS_H
-#define TMPFS_H
-
-#include <stddef.h>
+#include <string.h>
+#include <stdlib.h>
 #include <natio.h>
-#include <stdio.h>
-#include <mutex.h>
-#include <ipc.h>
 
-void tmpfs_init(void);
+/****************************************************************************
+ * lfs_get_dir
+ *
+ * Returns the directory containing the LFS node at <path> from <root>.
+ * Returns null on error.
+ */
 
-#endif/*TMPFS_H*/
+struct lfs_node *lfs_get_dir(struct lfs_node *root, const char *path) {
+	struct lfs_node *node;
+	char *dir_path, *tail;
+
+	dir_path = strdup(path);
+	tail = strrchr(dir_path, PATH_SEP);
+
+	if (tail) {
+		*tail = '\0';
+	}
+	else {
+		free(dir_path);
+		dir_path = strdup("");
+	}
+
+	node = lfs_get_path(root, dir_path);
+
+	free(dir_path);
+
+	if (node && node->type == VFS_DIR) {
+		return node;
+	}
+	else {
+		return NULL;
+	}
+}

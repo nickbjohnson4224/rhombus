@@ -21,26 +21,68 @@
 
 int main(int argc, char **argv) {
 	FILE *file;
-	int total;
-	int i;
 
-	for (total = 0, i = 1; i < argc; i++) {
-		file = vfs_get_file(NULL, argv[i]);
-		if (file) {
-			printf("cons: object %s exists\n", argv[i]);
-			fclose(file);
+	if (argc < 2) {
+		fprintf(stderr, "cons: missing file operand\n");
+		return 1;
+	}
+	else {
+		
+		if (argv[1][0] == '-' && argc > 2) {
+			file = vfs_get_file(NULL, argv[2]);
+
+			if (file) {
+				printf("cons: object %s exists\n", argv[2]);
+				fclose(file);
+				return 1;
+			}
+
+			switch (argv[1][1]) {
+			case 'f': /* construct file */
+				file = vfs_new_file(NULL, argv[2]);
+				break;
+			case 'd': /* construct directory */
+				file = vfs_new_dir(NULL, argv[2]);
+				break;
+			case 'l': /* construct link */
+				if (argc < 4) {
+					printf("cons: no link operand\n");
+					return 1;
+				}
+
+				if (argc < 5) {
+					file = vfs_new_link(NULL, argv[2], argv[3], NULL);
+				}
+				else {
+					file = vfs_new_link(NULL, argv[2], argv[3], 
+						__fcons(atoi(argv[4]), atoi(argv[5]), NULL));
+				}
+
+				break;
+			default:
+				file = NULL;
+			}
 		}
 		else {
-			file = vfs_new_file(NULL, argv[i]);
-			if (!file) {
-				printf("cons: cannot construct %s\n", argv[i]);
-				total++;
-			}
-			else {
+			file = vfs_get_file(NULL, argv[1]);
+
+			if (file) {
+				printf("cons: object %s exists\n", argv[1]);
 				fclose(file);
+				return 1;
 			}
+
+			file = vfs_new_file(NULL, argv[1]);
+		}
+
+		if (!file) {
+			printf("cons: cannot construct object: \n");
+			perror(NULL);
+		}
+		else {
+			fclose(file);
 		}
 	}
-
-	return (total) ? EXIT_FAILURE : EXIT_SUCCESS;
+	
+	return 0;
 }
