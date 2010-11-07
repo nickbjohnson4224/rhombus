@@ -1,6 +1,17 @@
 /*
- * Copyright 2010 Nick Johnson
- * ISC Licensed, see LICENSE for details
+ * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * 
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 #include <util.h>
@@ -8,6 +19,7 @@
 #include <space.h>
 #include <init.h>
 #include <debug.h>
+#include <irq.h>
 
 /****************************************************************************
  * thread_alloc
@@ -127,9 +139,6 @@ void thread_init(void) {
 	/* initialize task state segment */
 	init_tss();
 
-	/* set programmable interrupt controller mask */
-	pic_mask(0x0005);
-
 	/* register system calls */
 	register_int(0x40, syscall_send);
 	register_int(0x41, syscall_done);
@@ -170,6 +179,7 @@ void thread_init(void) {
 	register_int(0x13, fault_nomath);
 
 	/* initialize programmable interrupt timer at 256Hz */
+	irq_allow(0);
 	register_int(IRQ(0), pit_handler);
 	divisor = 1193180 / 256;
 	outb(0x43, 0x36);

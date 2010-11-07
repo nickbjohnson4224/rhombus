@@ -27,6 +27,9 @@
 #define MAX_PID     1024
 #define MAX_THREADS 256
 
+typedef uint32_t pid_t;
+typedef uint32_t tid_t;
+
 /* IPC *********************************************************************/
 
 #define PORT_QUIT	0
@@ -46,10 +49,12 @@
 #define PORT_USER1	14
 #define PORT_USER2	15
 
+typedef uint8_t portid_t;
+
 struct packet {
-	uint32_t port;
+	portid_t port;
 	uint32_t frame;
-	uint32_t source;
+	pid_t    source;
 };
 
 /* processes ***************************************************************/
@@ -61,7 +66,7 @@ struct process {
 
 	/* various crap */
 	uint32_t flags;
-	uint32_t pid;
+	pid_t    pid;
 
 	struct process *next_task;
 	struct process *parent;
@@ -73,14 +78,14 @@ struct process {
 };
 
 void            process_init  (void);
-struct process *process_get   (uint32_t pid);
+struct process *process_get   (pid_t pid);
 struct process *process_alloc (void);
 struct process *process_clone (struct process *parent, struct thread *active);
 void            process_free  (struct process *proc);
 void            process_kill  (struct process *proc);
 void            process_freeze(struct process *proc);
 void            process_thaw  (struct process *proc);
-void            process_touch (uint32_t pid);
+void            process_touch (pid_t pid);
 void            process_switch(struct process *proc);
 
 /* process control space ***************************************************/
@@ -149,7 +154,7 @@ struct thread {
 	/* owning process */
 	struct process *proc;
 	uintptr_t stack;
-	uint32_t id;
+	tid_t id;
 
 	/* scheduler information */
 	struct thread *next;
@@ -177,10 +182,6 @@ void tss_set_esp(uint32_t esp);
 /* IRQs ********************************************************************/
 
 struct thread *pit_handler(struct thread *image);
-
-#define IRQ(n) (n + 32)
-#define DEIRQ(n) (n - 32)
-void pic_mask(uint16_t mask);
 
 /* system calls ************************************************************/
 

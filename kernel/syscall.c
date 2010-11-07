@@ -19,116 +19,7 @@
 #include <elf.h>
 #include <ktime.h>
 #include <space.h>
-
-/***** IRQ HANDLERS *****/
-
-uint16_t irq_holder[256];
-
-/* Handles IRQ 0, and advances a simple counter used as a clock */
-uint64_t tick = 0;
-
-struct thread *pit_handler(struct thread *image) {
-	tick++;
-
-	image = schedule_next();
-
-	return image;
-}
-
-struct thread *irq_redirect(struct thread *image) {
-
-	/* Send S_IRQ signal to the task registered with the IRQ */
-	return thread_send(NULL, irq_holder[DEIRQ(image->num)], PORT_IRQ);
-}
-
-/***** FAULT HANDLERS *****/
-
-/* Generic fault */
-struct thread *fault_generic(struct thread *image) {
-
-	/* If in kernelspace, panic */
-	if ((image->cs & 0x3) == 0) {
-		debug_printf("EIP:%x NUM:%d ERR:%x\n", image->eip, image->num, image->err);
-		debug_panic("unknown exception");
-	}
-
-	process_freeze(image->proc);
-	return thread_send(image, image->proc->pid, PORT_ILL);
-}
-
-/* Page fault */
-struct thread *fault_page(struct thread *image) {
-	extern uint32_t get_cr2(void);
-	uint32_t cr2;
-
-	/* Get faulting address from register CR2 */
-	cr2 = get_cr2();
-
-	/* If in kernelspace, panic */
-	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */	
-
-		debug_printf("page fault at %x, ip = %x frame %x\n", 
-			cr2, image->eip, page_get(cr2));
-
-		debug_panic("page fault exception");
-	}
-
-	if (cr2 >= image->stack && cr2 < image->stack + SEGSZ) {
-		/* allocate stack */
-		mem_alloc(cr2 & ~0xFFF, PAGESZ, PF_PRES | PF_RW | PF_USER);
-		return image;
-	}
-	else {
-		/* fault */
-		debug_printf("%d: page fault at %x, ip = %x\n", image->proc->pid, cr2, image->eip);
-		debug_printf("user stack dump: (ebp = %x)\n", image->ebp);
-		debug_dumpi((void*) image->useresp, 12);
-		debug_panic("page fault exception");
-
-		process_freeze(image->proc);
-		return thread_send(image, image->proc->pid, PORT_PAGE);
-	}
-}
-
-/* Floating point exception */
-struct thread *fault_float(struct thread *image) {
-
-	/* If in kernelspace, panic */
-	if ((image->cs & 0x3) == 0) {
-		debug_printf("ip = %x\n", image->eip);
-		debug_panic("floating point exception");
-	}
-
-	debug_printf("float fault at ip = %x\n", image->eip);
-	debug_panic("floating point exception");
-
-	process_freeze(image->proc);
-	return thread_send(image, image->proc->pid, PORT_FLOAT);
-}
-
-/* Double fault */
-struct thread *fault_double(struct thread *image) {
-
-	/* Can only come from kernel problems */
-	debug_printf("DS:%x CS:%x\n", image->ds, image->cs);
-	debug_panic("double fault exception");
-	return NULL;
-
-}
-
-/* Coprocessor Existence Failure */
-struct thread *fault_nomath(struct thread *image) {
-	extern uint32_t can_use_fpu;
-
-	if (!can_use_fpu) {
-		process_freeze(image->proc);
-		return thread_send(image, image->proc->pid, PORT_ILL);
-	}
-
-	return image;
-}
-
-/***** System Calls *****/
+#include <irq.h>
 
 struct thread *syscall_send(struct thread *image) {
 	uint32_t   target = image->ecx;
@@ -292,18 +183,12 @@ struct thread *syscall_pctl(struct thread *image) {
 		if (flags & CTRL_IRQRD) {
 			/* Set IRQ redirect */
 			irq = (flags >> 24) & 0xFF;
-			if (irq < 15) {
-				irq_holder[irq] = image->proc->pid;
-				register_int(IRQ(irq), irq_redirect);
-				pic_mask(1 << irq);
-			}
+			irq_set_redirect(image->proc->pid, irq);
 		}
 		else {
 			/* Unset IRQ redirect */
 			irq = (image->proc->flags >> 24) & 0xFF;
-			irq_holder[irq] = 0;
-			register_int(IRQ(irq), NULL);
-			pic_mask(1 << irq);
+			irq_set_redirect(0, irq);
 		}
 	}
 
@@ -324,8 +209,8 @@ struct thread *syscall_gpid(struct thread *image) {
 }
 
 struct thread *syscall_time(struct thread *image) {
-	image->eax = (tick >> 0);
-	image->edx = (tick >> 32);
+//	image->eax = (tick >> 0);
+//	image->edx = (tick >> 32);
 	return image;
 }
 
