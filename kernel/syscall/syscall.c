@@ -15,7 +15,6 @@
  */
 
 #include <debug.h>
-#include <util.h>
 #include <elf.h>
 #include <ktime.h>
 #include <space.h>

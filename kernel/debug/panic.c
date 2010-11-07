@@ -15,12 +15,11 @@
  */
 
 #include <debug.h>
-#include <util.h>
+#include <cpu.h>
 
 void debug_panic(const char *message) {
-	extern void halt(void);
 
 	debug_color(COLOR_RED);
 	debug_printf("Kernel panic: %s\n", message);
-	halt();
+	cpu_halt();
 }

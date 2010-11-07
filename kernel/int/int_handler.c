@@ -14,12 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <interrupt.h>
 #include <string.h>
-#include <util.h>
 #include <ktime.h>
 #include <space.h>
 #include <irq.h>
-#include <interrupt.h>
+#include <cpu.h>
 
 /*****************************************************************************
  * _is_init
@@ -99,13 +99,7 @@ struct thread *int_handler(struct thread *image) {
  * referenced in idt_flush() in "helper.s".
  */
 
-struct idt_entry {
-	uint16_t base_l;
-	uint16_t seg;
-	uint8_t  reserved;
-	uint8_t  flags;
-	uint16_t base_h;
-} __attribute__((packed)) idt[96];
+struct idt idt[96];
 
 /* Assembly interrupt handler stubs to be registered in the IDT *************/
 
@@ -187,7 +181,6 @@ static void idt_set(intid_t n, uint32_t base, uint16_t seg, uint8_t flags) {
  */
 
 static void init_int_handler(void) {
-	extern void idt_flush(void);
 	size_t i;
 
 	/* Write privileged interrupt handlers (faults, IRQs) */
@@ -201,5 +194,5 @@ static void init_int_handler(void) {
 	}
 
 	/* Write the IDT */
-	idt_flush();
+	cpu_set_idt(idt);
 }

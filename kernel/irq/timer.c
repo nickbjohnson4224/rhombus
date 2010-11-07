@@ -14,10 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <util.h>
-#include <ktime.h>
 #include <interrupt.h>
+#include <ktime.h>
 #include <timer.h>
+#include <ports.h>
 #include <irq.h>
 
 /*****************************************************************************

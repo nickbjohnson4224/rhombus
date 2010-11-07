@@ -61,7 +61,6 @@ void    space_exmap(space_t space);
 space_t space_alloc(void);
 space_t space_clone(void);
 void    space_free (space_t space);
-void    space_load (space_t space);
 
 extern frame_t *cmap;		/* Address of current page directory */
 extern frame_t *ctbl;		/* Base of current page tables */
@@ -86,8 +85,6 @@ void   mem_free (uintptr_t base, uintptr_t size);
 void    page_touch(uintptr_t page);
 void    page_set  (uintptr_t page, frame_t value);
 frame_t page_get  (uintptr_t page);
-void    page_flush(uintptr_t addr);
-void    page_flush_full(void);
 
 void	page_extouch(uintptr_t page);
 void	page_exset  (uintptr_t page, frame_t value);

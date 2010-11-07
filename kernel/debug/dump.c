@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdint.h>
 #include <debug.h>
-#include <util.h>
 
 void debug_dumpi(uintptr_t *base, int count) {
 	int i;

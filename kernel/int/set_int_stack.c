@@ -15,10 +15,10 @@
  */
 
 #include <string.h>
-#include <util.h>
 #include <ktime.h>
 #include <space.h>
 #include <irq.h>
+#include <cpu.h>
 
 /* TSS driver ***************************************************************/
 
@@ -38,15 +38,7 @@ static int _is_init;
  * using it to set the interrupt handler stack.
  */
 
-static struct tss {
-	uint32_t prev_tss;
-	uint32_t esp0;
-	uint32_t ss0;
-	uint32_t unused[15];
-	uint32_t es, cs, ss, ds, fs, gs;
-	uint32_t ldt;
-	uint16_t trap, iomap_base;
-} __attribute__ ((packed)) tss;
+static struct tss tss;
 
 /*****************************************************************************
  * gdt
@@ -71,7 +63,6 @@ extern uint8_t gdt[48];
  */
 
 static void int_stack_init() {
-	extern void tss_flush(void);
 	uint32_t base = (uint32_t) &tss;
 	uint16_t limit = (uint16_t) (base + sizeof(struct tss));
 
@@ -87,7 +78,7 @@ static void int_stack_init() {
 	gdt[44] = (uint8_t) ((base >> 16) & 0xFF);
 	gdt[47] = (uint8_t) ((base >> 24) & 0xFF);
 
-	tss_flush();
+	cpu_sync_tss();
 }
 
 /*****************************************************************************

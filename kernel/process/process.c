@@ -15,9 +15,9 @@
  */
 
 #include <string.h>
-#include <util.h>
 #include <ktime.h>
 #include <space.h>
+#include <cpu.h>
 
 /****************************************************************************
  * process_table
@@ -185,5 +185,5 @@ void process_kill(struct process *proc) {
  */
 
 void process_switch(struct process *proc) {
-	space_load(proc->space);
+	cpu_set_cr3(proc->space);
 }

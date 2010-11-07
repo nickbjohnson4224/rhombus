@@ -15,8 +15,8 @@
  */
 
 #include <string.h>
-#include <util.h>
 #include <space.h>
+#include <cpu.h>
 
 frame_t *cmap = (void*) (PGE_MAP + 0x3FF000); /* Current page directory mapping */
 frame_t *ctbl = (void*) PGE_MAP;			  /* Current base page table mapping */
@@ -83,7 +83,7 @@ void page_extouch(uintptr_t page) {
 		exmap[page >> 22] |= SEG_LINK;
 	}
 	
-	page_flush((uintptr_t) &extbl[page >> 12]);
+	cpu_flush_tlb_part((uint32_t) &extbl[page >> 12]);
 
 	memclr(&extbl[page >> 12], PAGESZ);
 }
@@ -116,7 +116,7 @@ void page_set(uintptr_t page, frame_t value) {
 	}
 
 	ctbl[page >> 12] = value;
-	page_flush(page);
+	cpu_flush_tlb_part(page);
 }
 
 /****************************************************************************
@@ -139,7 +139,8 @@ void page_touch(uintptr_t page) {
 		cmap[page >> 22] |= SEG_LINK;
 	}
 	
-	page_flush((uintptr_t) &ctbl[page >> 12]);
+	
+	cpu_flush_tlb_part((uintptr_t) &ctbl[page >> 12]);
 
 	memclr(&ctbl[page >> 12], PAGESZ);
 }

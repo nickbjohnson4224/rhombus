@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <util.h>
+#include <stdint.h>
 #include <space.h>
 
 /****************************************************************************

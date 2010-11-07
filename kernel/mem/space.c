@@ -14,8 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <space.h>
 #include <string.h>
+#include <space.h>
+#include <cpu.h>
 
 /****************************************************************************
  * space_alloc
@@ -84,7 +85,7 @@ static void segment_clone(frame_t *extbl, frame_t *exmap, uintptr_t seg) {
 	for (i = seg / PAGESZ; i < (seg + SEGSZ) / PAGESZ; i++) {
 		if (ctbl[i] & PF_PRES) {
 			extbl[i] = frame_new() | (ctbl[i] & PF_MASK);
-			page_flush_full();
+			cpu_flush_tlb_full();
 			page_set(TMP_SRC, page_fmt( ctbl[i], PF_PRES | PF_RW));
 			page_set(TMP_DST, page_fmt(extbl[i], PF_PRES | PF_RW));
 			memcpy((void*) TMP_DST, (void*) TMP_SRC, PAGESZ);
@@ -100,7 +101,7 @@ static void segment_clone(frame_t *extbl, frame_t *exmap, uintptr_t seg) {
 
 void space_exmap(space_t space) {
 	cmap[TMP_MAP >> 22] = page_fmt(space, PF_PRES | PF_RW | SEG_LINK | SEG_USED);
-	page_flush_full();
+	cpu_flush_tlb_full();
 }
 
 /****************************************************************************

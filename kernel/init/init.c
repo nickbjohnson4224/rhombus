@@ -15,12 +15,12 @@
  */
 
 #include <string.h>
-#include <util.h>
 #include <ktime.h>
 #include <space.h>
 #include <debug.h>
-#include <elf.h>
 #include <timer.h>
+#include <cpu.h>
+#include <elf.h>
 
 /* multiboot structures *****************************************************/
 
@@ -66,12 +66,6 @@ struct memory_map {
 	uint32_t length_high;
 	uint32_t type;
 } __attribute__ ((packed));
-
-/* init assembly functions **************************************************/
-
-extern uint32_t get_eflags();
-extern uint32_t get_cr3();
-extern void init_fpu(void);
 
 /*****************************************************************************
  * init
@@ -122,7 +116,7 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 
 	/* bootstrap process 0 (idle) */
 	idle = process_alloc();
-	idle->space = get_cr3();
+	idle->space = cpu_get_cr3();
 	idle->flags = CTRL_READY | CTRL_SUPER;
 
 	/* fork process 1 (init) and switch */
@@ -154,7 +148,7 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	init->thread[0]->ss      = 0x23;
 	init->thread[0]->ds      = 0x23;
 	init->thread[0]->cs      = 0x1B;
-	init->thread[0]->eflags  = get_eflags() | 0x3200; /* IF, IOPL = 3 */
+	init->thread[0]->eflags  = cpu_get_eflags() | 0x3200; /* IF, IOPL = 3 */
 
 	/* execute init */
 	if (elf_check(init_image)) {
@@ -202,7 +196,7 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	timer_set_freq(256);
 
 	/* initialize FPU/MMX/SSE */
-	init_fpu();
+	cpu_init_fpu();
 
 	/* drop to usermode, scheduling the next thread */
 	debug_printf("dropping to usermode\n");

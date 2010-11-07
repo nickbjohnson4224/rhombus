@@ -14,11 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdint.h>
 #include <string.h>
-#include <util.h>
-#include <elf.h>
 #include <ktime.h>
 #include <space.h>
+#include <elf.h>
 
 void elf_load_segment(uint8_t *src, elf_ph_t *seg) {
 	uint8_t *src_base, *dest_base;

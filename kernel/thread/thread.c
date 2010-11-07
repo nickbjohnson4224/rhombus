@@ -14,12 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <util.h>
 #include <ktime.h>
 #include <space.h>
 #include <debug.h>
 #include <irq.h>
 #include <timer.h>
+#include <cpu.h>
 
 /****************************************************************************
  * thread_alloc
@@ -200,15 +200,9 @@ uintptr_t thread_bind(struct thread *thread, struct process *proc) {
  */
 
 struct thread *thread_switch(struct thread *old, struct thread *new) {
-	extern void fpu_save(void *fxdata);
-	extern void fpu_load(void *fxdata);
-	extern bool tst_ts(void);
-	extern void set_ts(void);
-	extern uint32_t get_cr0(void);
-	extern void idle(void);
 
 	if (!new) {
-		idle();
+		cpu_idle();
 	}
 
 	/* save FPU state */

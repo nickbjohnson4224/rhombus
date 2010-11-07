@@ -15,10 +15,10 @@
  */
 
 #include <debug.h>
-#include <util.h>
 #include <elf.h>
 #include <ktime.h>
 #include <space.h>
+#include <cpu.h>
 
 /* Generic fault */
 struct thread *fault_generic(struct thread *image) {
@@ -35,11 +35,10 @@ struct thread *fault_generic(struct thread *image) {
 
 /* Page fault */
 struct thread *fault_page(struct thread *image) {
-	extern uint32_t get_cr2(void);
 	uint32_t cr2;
 
 	/* Get faulting address from register CR2 */
-	cr2 = get_cr2();
+	cr2 = cpu_get_cr2();
 
 	/* If in kernelspace, panic */
 	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */	
