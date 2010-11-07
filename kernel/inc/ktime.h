@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include <arch.h>
 #include <space.h>
+#include <interrupt.h>
 
 /* limits ******************************************************************/
 
@@ -145,7 +146,7 @@ struct thread {
 	uint32_t eflags;
 	uint32_t useresp;
 	uint32_t ss;
-	uint32_t tss_start;
+	uint32_t kernel_stack;
 	uint32_t *fxdata;
 	
 	/* virtual packet register */
@@ -172,12 +173,7 @@ struct thread *thread_thaw  (struct thread *image);
 struct thread *thread_exit  (struct thread *image);
 uintptr_t      thread_bind  (struct thread *thread, struct process *proc);
 
-/* interrupt handling ******************************************************/
 
-typedef struct thread* (*handler_t) (struct thread *);
-void register_int(uint8_t n, handler_t handler);
-struct thread *int_handler(struct thread *image);
-void tss_set_esp(uint32_t esp);
 
 /* IRQs ********************************************************************/
 

@@ -14,19 +14,25 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <debug.h>
-#include <util.h>
-#include <elf.h>
+#ifndef KERNEL_INTERRUPT_H
+#define KERNEL_INTERRUPT_H
+
+#include <stdint.h>
 #include <ktime.h>
-#include <space.h>
 
-/* Handles IRQ 0, and advances a simple counter used as a clock */
-static uint64_t tick = 0;
+/* interrupt numbering ******************************************************/
 
-struct thread *pit_handler(struct thread *image) {
-	tick++;
+typedef uint8_t intid_t;
 
-	image = schedule_next();
+/* interrupt handling *******************************************************/
 
-	return image;
-}
+void init_int_handling();
+
+typedef struct thread* (*int_handler_t) (struct thread *);
+void int_set_handler(intid_t n, int_handler_t handler);
+
+/* interrupt stack **********************************************************/
+
+void set_int_stack(void *ptr);
+
+#endif/*KERNEL_INTERRUPT_H*/

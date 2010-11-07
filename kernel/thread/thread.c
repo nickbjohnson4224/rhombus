@@ -17,9 +17,9 @@
 #include <util.h>
 #include <ktime.h>
 #include <space.h>
-#include <init.h>
 #include <debug.h>
 #include <irq.h>
+#include <timer.h>
 
 /****************************************************************************
  * thread_alloc
@@ -124,73 +124,6 @@ void thread_free(struct thread *thread) {
 }
 
 /****************************************************************************
- * thread_init
- *
- * Initializes threading subsystem.
- */
-
-void thread_init(void) {
-	uint16_t divisor;
-	extern uint32_t get_cr0(void);
-
-	/* set up interrupt descriptor table */
-	init_idt();
-
-	/* initialize task state segment */
-	init_tss();
-
-	/* register system calls */
-	register_int(0x40, syscall_send);
-	register_int(0x41, syscall_done);
-
-	register_int(0x44, syscall_gvpr);
-	register_int(0x45, syscall_svpr);
-
-	register_int(0x48, syscall_fork);
-	register_int(0x49, syscall_exit);
-	register_int(0x4A, syscall_pctl);
-	register_int(0x4B, syscall_exec);
-	register_int(0x4C, syscall_gpid);
-	register_int(0x4D, syscall_time);
-
-	register_int(0x50, syscall_mmap);
-	register_int(0x51, syscall_mctl);
-
-	/* register fault handlers */
-	register_int(0x00, fault_float);
-	register_int(0x01, fault_generic);
-	register_int(0x02, fault_generic);
-	register_int(0x03, fault_generic);
-	register_int(0x04, fault_generic);
-	register_int(0x05, fault_generic);
-	register_int(0x06, fault_generic);
-	register_int(0x07, fault_nomath);
-	register_int(0x08, fault_double);
-	register_int(0x09, fault_float);
-	register_int(0x0A, fault_generic);
-	register_int(0x0B, fault_generic);
-	register_int(0x0C, fault_generic);
-	register_int(0x0D, fault_generic);
-	register_int(0x0E, fault_page);
-	register_int(0x0F, fault_generic);
-	register_int(0x10, fault_float);
-	register_int(0x11, fault_generic);
-	register_int(0x12, fault_generic);
-	register_int(0x13, fault_nomath);
-
-	/* initialize programmable interrupt timer at 256Hz */
-	irq_allow(0);
-	register_int(IRQ(0), pit_handler);
-	divisor = 1193180 / 256;
-	outb(0x43, 0x36);
-	outb(0x40, (uint8_t) (divisor & 0xFF));
-	outb(0x40, (uint8_t) (divisor >> 8));
-
-	/* initialize FPU/MMX/SSE */
-	init_fpu();
-}
-
-/****************************************************************************
  * thread_freeze
  *
  * Prevents the given thread from running until it is later thawed. If the
@@ -290,6 +223,11 @@ struct thread *thread_switch(struct thread *old, struct thread *new) {
 	/* switch processes */
 	if (!old || (old->proc != new->proc)) {
 		process_switch(new->proc);
+	}
+
+	/* switch interrupt stacks */
+	if (new && (old != new)) {
+		set_int_stack(&new->kernel_stack);
 	}
 
 	/* load FPU state */

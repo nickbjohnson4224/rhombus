@@ -29,7 +29,7 @@
  * only.
  */
 
-static pid_t irq_holder[256];
+static pid_t irq_holder[IRQ_INT_SIZE];
 
 /*****************************************************************************
  * irq_redirect (interrupt handler)
@@ -39,7 +39,7 @@ static pid_t irq_holder[256];
  */
 
 struct thread *irq_redirect(struct thread *image) {
-	return thread_send(NULL, irq_holder[DEIRQ(image->num)], PORT_IRQ);
+	return thread_send(NULL, irq_holder[INT2IRQ(image->num)], PORT_IRQ);
 }
 
 /*****************************************************************************
@@ -50,10 +50,16 @@ struct thread *irq_redirect(struct thread *image) {
  * success, nonzero on failure.
  */
 
-int irq_set_redirect(pid_t pid, irqid_t irq) {	
+int irq_set_redirect(pid_t pid, irqid_t irq) {
+
+	if (irq > IRQ_INT_SIZE) {
+		return 1;
+	}
+
 	irq_holder[irq] = pid;
-	register_int(IRQ(irq), irq_redirect);
+	int_set_handler(IRQ2INT(irq), irq_redirect);
 	irq_allow(irq);
+
 	return 0;
 }
 
@@ -65,7 +71,12 @@ int irq_set_redirect(pid_t pid, irqid_t irq) {
  * IRQ.
  */
 
-pid_t irq_get_redirect(irqid_t irq) {	
+pid_t irq_get_redirect(irqid_t irq) {
+
+	if (irq > IRQ_INT_SIZE) {
+		return 1;
+	}
+
 	return irq_holder[irq];
 }
 
@@ -159,4 +170,29 @@ int irq_disallow(irqid_t irq) {
 	return 0;
 }
 
+/*****************************************************************************
+ * irq_reset
+ *
+ * Resets IRQs after an IRQ is handled. <irq> is the specific IRQ that was
+ * handled. Assumes that there actually was a valid IRQ generated. Returns
+ * zero on success, nonzero on failure.
+ *
+ * Note: this exists mostly to cater to the 8259 PIC's requirements. After it
+ * generates an IRQ, it has to be reset, and the way it needs to be reset
+ * depends on which IRQ was generated. This function may not need <irq> or may
+ * not be needed at all on non-PC systems or systems with an APIC.
+ */
 
+int irq_reset(irqid_t irq) {
+	
+	if (irq > IRQ_INT_SIZE) {
+		return 1;
+	}
+
+	if (irq > 8) {
+		outb(0xA0, 0x20);
+	}
+	outb(0x20, 0x20);
+
+	return 0;
+}

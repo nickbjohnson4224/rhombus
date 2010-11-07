@@ -1,0 +1,210 @@
+/*
+ * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * 
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+#include <string.h>
+#include <util.h>
+#include <ktime.h>
+#include <space.h>
+#include <debug.h>
+#include <elf.h>
+#include <timer.h>
+
+/* multiboot structures *****************************************************/
+
+struct multiboot {
+	uint32_t flags;
+	uint32_t mem_lower;
+	uint32_t mem_upper;
+	uint32_t boot_device;
+	uint32_t cmdline;
+	uint32_t mods_count;
+	uint32_t mods_addr;
+	uint32_t num;
+	uint32_t size;
+	uint32_t addr;
+	uint32_t shndx;
+	uint32_t mmap_length;
+	uint32_t mmap_addr;
+	uint32_t drives_length;
+	uint32_t drives_addr;
+	uint32_t config_table;
+	uint32_t boot_loader_name;
+	uint32_t apm_table;
+	uint32_t vbe_control_info;
+	uint32_t vbe_mode_info;
+	uint32_t vbe_mode;
+	uint32_t vbe_interface_seg;
+	uint32_t vbe_interface_off;
+	uint32_t vbe_interface_len;
+}  __attribute__((packed));
+
+struct module {
+	uint32_t mod_start;
+	uint32_t mod_end;
+	uint32_t string;
+	uint32_t reserved;
+} __attribute__ ((packed));
+
+struct memory_map {
+	uint32_t size;
+	uint32_t base_addr_low;
+	uint32_t base_addr_high;
+	uint32_t length_low;
+	uint32_t length_high;
+	uint32_t type;
+} __attribute__ ((packed));
+
+/* init assembly functions **************************************************/
+
+extern uint32_t get_eflags();
+extern uint32_t get_cr3();
+extern void init_fpu(void);
+
+/*****************************************************************************
+ * init
+ *
+ * Initializes the kernel completely. Really, what did you expect it to do?
+ * Returns the thread to "resume" (i.e. start from).
+ *
+ * This function is only called from "boot.s". It's not declared in any header
+ * files, but don't make it static.
+ */
+
+struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
+	struct process *idle, *init;
+	struct module *module;
+	struct memory_map *mem_map;
+	size_t mem_map_count, i;
+	uintptr_t boot_image_size, memsize;
+	void *boot_image, *init_image;
+
+	/* initialize debugging output */
+	debug_init();
+	debug_printf("Flux Operating System Kernel v0.5a\n");
+
+	/* check multiboot header */
+	if (mboot_magic != 0x2BADB002) {
+		debug_panic("bootloader is not multiboot compliant");
+	}
+
+	/* parse the multiboot memory map to find the size of memory */
+	mem_map       = (void*) (mboot->mmap_addr + KSPACE);
+	mem_map_count = mboot->mmap_length / sizeof(struct memory_map);
+	memsize       = 0;
+	for (i = 0; i < mem_map_count; i++) {
+		if (mem_map[i].base_addr_low == 0x100000) {
+			memsize = mem_map[i].length_low + 0x100000;
+			break;
+		}
+	}
+	if (!memsize) memsize = 0x400000;
+
+	/* initialize the frame allocator */
+	frame_init(memsize);
+
+	/* touch pages for the kernel */
+	for (i = KSPACE; i < KERNEL_HEAP_END; i += SEGSZ) {
+		page_touch(i);
+	}
+
+	/* bootstrap process 0 (idle) */
+	idle = process_alloc();
+	idle->space = get_cr3();
+	idle->flags = CTRL_READY | CTRL_SUPER;
+
+	/* fork process 1 (init) and switch */
+	init = process_clone(idle, NULL);
+	process_switch(init);
+
+	/* get multiboot module information */
+	if (mboot->mods_count < 2) {
+		if (mboot->mods_count < 1) {
+			debug_panic("no init or boot modules found");
+		}
+		else {
+			debug_panic("no boot module found");
+		}
+	}
+	module     = (void*) (mboot->mods_addr + KSPACE);
+	init_image = (void*) (module[0].mod_start + KSPACE);
+	boot_image = (void*) (module[1].mod_start + KSPACE);
+	boot_image_size = module[1].mod_end - module[1].mod_start;
+
+	/* move boot image to BOOT_IMAGE in userspace */
+	mem_alloc(BOOT_IMAGE, boot_image_size, PF_PRES | PF_USER | PF_RW);
+	memcpy((void*) BOOT_IMAGE, boot_image, boot_image_size);
+
+	/* bootstrap thread 0 in init */
+	thread_bind(init->thread[0], init);
+	init->thread[0]->useresp = init->thread[0]->stack + SEGSZ;
+	init->thread[0]->esp     = (uintptr_t) &init->thread[0]->num;
+	init->thread[0]->ss      = 0x23;
+	init->thread[0]->ds      = 0x23;
+	init->thread[0]->cs      = 0x1B;
+	init->thread[0]->eflags  = get_eflags() | 0x3200; /* IF, IOPL = 3 */
+
+	/* execute init */
+	if (elf_check(init_image)) {
+		debug_panic("init is not a valid ELF executable");
+	}
+	init->thread[0]->eip = elf_load(init_image);
+
+	/* register system calls */
+	int_set_handler(0x40, syscall_send);
+	int_set_handler(0x41, syscall_done);
+	int_set_handler(0x44, syscall_gvpr);
+	int_set_handler(0x45, syscall_svpr);
+	int_set_handler(0x48, syscall_fork);
+	int_set_handler(0x49, syscall_exit);
+	int_set_handler(0x4A, syscall_pctl);
+	int_set_handler(0x4B, syscall_exec);
+	int_set_handler(0x4C, syscall_gpid);
+	int_set_handler(0x4D, syscall_time);
+	int_set_handler(0x50, syscall_mmap);
+	int_set_handler(0x51, syscall_mctl);
+
+	/* register fault handlers */
+	int_set_handler(0x00, fault_float);
+	int_set_handler(0x01, fault_generic);
+	int_set_handler(0x02, fault_generic);
+	int_set_handler(0x03, fault_generic);
+	int_set_handler(0x04, fault_generic);
+	int_set_handler(0x05, fault_generic);
+	int_set_handler(0x06, fault_generic);
+	int_set_handler(0x07, fault_nomath);
+	int_set_handler(0x08, fault_double);
+	int_set_handler(0x09, fault_float);
+	int_set_handler(0x0A, fault_generic);
+	int_set_handler(0x0B, fault_generic);
+	int_set_handler(0x0C, fault_generic);
+	int_set_handler(0x0D, fault_generic);
+	int_set_handler(0x0E, fault_page);
+	int_set_handler(0x0F, fault_generic);
+	int_set_handler(0x10, fault_float);
+	int_set_handler(0x11, fault_generic);
+	int_set_handler(0x12, fault_generic);
+	int_set_handler(0x13, fault_nomath);
+
+	/* start timer (for preemption) */
+	timer_set_freq(256);
+
+	/* initialize FPU/MMX/SSE */
+	init_fpu();
+
+	/* drop to usermode, scheduling the next thread */
+	debug_printf("dropping to usermode\n");
+	return thread_switch(NULL, schedule_next());
+}

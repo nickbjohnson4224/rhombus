@@ -128,25 +128,6 @@ struct process *process_get(uint32_t pid) {
 }
 
 /****************************************************************************
- * process_init
- *
- * Initializes process subsystem.
- */
-
-void process_init() {
-	extern uint32_t get_cr3(void);
-	struct process *idle;
-
-	/* bootstrap process 0 (idle) */
-	idle = process_alloc();
-	idle->space = get_cr3();
-	idle->flags = CTRL_READY | CTRL_SUPER;
-
-	/* fork process 1 and switch */
-	process_switch(process_clone(idle, NULL));
-}
-
-/****************************************************************************
  * process_freeze
  *
  * Freeze all threads in a process once.

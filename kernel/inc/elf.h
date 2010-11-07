@@ -1,9 +1,26 @@
-#ifndef ELF_H
-#define ELF_H
+/*
+ * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * 
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
 
-#include <util.h>
+#ifndef KERNEL_ELF_H
+#define KERNEL_ELF_H
 
-/* ELF Header */
+#include <stdint.h>
+
+/* ELF header ***************************************************************/
+
 typedef struct {
 	uint8_t e_ident[16];
 	uint16_t e_type, e_machine;
@@ -16,7 +33,8 @@ typedef struct {
 #define ET_EXEC 2
 #define EM_386 3
 
-/* ELF Program Header */
+/* ELF program header *******************************************************/
+
 typedef struct {
 	uint32_t p_type, p_offset, p_vaddr, p_paddr;
 	uint32_t p_filesz, p_memsz, p_flags, p_align;
@@ -34,8 +52,8 @@ typedef struct {
 #define PF_W	0x2
 #define PF_X	0x4
 
-void elf_load_segment(uint8_t *src, elf_ph_t *seg);
-uint32_t elf_load(uint8_t *src); /* Returns entry point */
-int elf_check(uint8_t *src);
+int       elf_check(uint8_t *src);
+void      elf_load_segment(uint8_t *src, elf_ph_t *seg);
+uintptr_t elf_load (uint8_t *src);
 
-#endif /*ELF_H*/
+#endif/*KERNEL_ELF_H*/

@@ -14,15 +14,38 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef KERNEL_UTIL_H
-#define KERNEL_UTIL_H
+#include <util.h>
+#include <space.h>
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <arch.h>
+/****************************************************************************
+ * mem_alloc
+ *
+ * Allocates at least a range of memory with the given flags.
+ */
 
-/***** I/O, ETC. *****/
-void outb(uint16_t port, uint8_t val);
-uint8_t inb(uint16_t port);
+void mem_alloc(uintptr_t base, uintptr_t size, uint16_t flags) {
+	uintptr_t i;
 
-#endif/*KERNEL_UTIL_H*/
+	for (i = base & ~0xFFF; i < base + size; i += 0x1000) {
+		if ((page_get(i) & PF_PRES) == 0) {
+			page_set(i, page_fmt(frame_new(), (flags & PF_MASK) | PF_PRES));
+		}
+	}
+}
+
+/****************************************************************************
+ * mem_free
+ *
+ * Unmaps at most a range of memory.
+ */
+
+void mem_free(uintptr_t base, uintptr_t size) {
+	uint32_t i;
+
+	for (i = base & ~0xFFF; i < base + size; i += 0x1000) {
+		if (page_get(i) & PF_PRES) {
+			frame_free(page_ufmt(page_get(i)));
+			page_set(i, 0);
+		}
+	}
+}
