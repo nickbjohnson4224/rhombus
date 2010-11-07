@@ -14,8 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <interrupt.h>
+#include <syscall.h>
+#include <process.h>
+#include <thread.h>
 #include <string.h>
-#include <ktime.h>
+#include <fault.h>
 #include <space.h>
 #include <debug.h>
 #include <timer.h>
@@ -157,40 +161,39 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	init->thread[0]->eip = elf_load(init_image);
 
 	/* register system calls */
-	int_set_handler(0x40, syscall_send);
-	int_set_handler(0x41, syscall_done);
-	int_set_handler(0x44, syscall_gvpr);
-	int_set_handler(0x45, syscall_svpr);
-	int_set_handler(0x48, syscall_fork);
-	int_set_handler(0x49, syscall_exit);
-	int_set_handler(0x4A, syscall_pctl);
-	int_set_handler(0x4B, syscall_exec);
-	int_set_handler(0x4C, syscall_gpid);
-	int_set_handler(0x4D, syscall_time);
-	int_set_handler(0x50, syscall_mmap);
-	int_set_handler(0x51, syscall_mctl);
+	int_set_handler(SYSCALL_SEND, syscall_send);
+	int_set_handler(SYSCALL_DONE, syscall_done);
+	int_set_handler(SYSCALL_GVPR, syscall_gvpr);
+	int_set_handler(SYSCALL_SVPR, syscall_svpr);
+	int_set_handler(SYSCALL_FORK, syscall_fork);
+	int_set_handler(SYSCALL_EXIT, syscall_exit);
+	int_set_handler(SYSCALL_PCTL, syscall_pctl);
+	int_set_handler(SYSCALL_EXEC, syscall_exec);
+	int_set_handler(SYSCALL_GPID, syscall_gpid);
+	int_set_handler(SYSCALL_TIME, syscall_time);
+	int_set_handler(SYSCALL_MMAP, syscall_mmap);
+	int_set_handler(SYSCALL_MCTL, syscall_mctl);
 
 	/* register fault handlers */
-	int_set_handler(0x00, fault_float);
-	int_set_handler(0x01, fault_generic);
-	int_set_handler(0x02, fault_generic);
-	int_set_handler(0x03, fault_generic);
-	int_set_handler(0x04, fault_generic);
-	int_set_handler(0x05, fault_generic);
-	int_set_handler(0x06, fault_generic);
-	int_set_handler(0x07, fault_nomath);
-	int_set_handler(0x08, fault_double);
-	int_set_handler(0x09, fault_float);
-	int_set_handler(0x0A, fault_generic);
-	int_set_handler(0x0B, fault_generic);
-	int_set_handler(0x0C, fault_generic);
-	int_set_handler(0x0D, fault_generic);
-	int_set_handler(0x0E, fault_page);
-	int_set_handler(0x0F, fault_generic);
-	int_set_handler(0x10, fault_float);
-	int_set_handler(0x11, fault_generic);
-	int_set_handler(0x12, fault_generic);
-	int_set_handler(0x13, fault_nomath);
+	int_set_handler(FAULT_DE, fault_float);
+	int_set_handler(FAULT_DB, fault_generic);
+	int_set_handler(FAULT_NI, fault_generic);
+	int_set_handler(FAULT_BP, fault_generic);
+	int_set_handler(FAULT_OF, fault_generic);
+	int_set_handler(FAULT_BR, fault_generic);
+	int_set_handler(FAULT_UD, fault_generic);
+	int_set_handler(FAULT_NM, fault_nomath);
+	int_set_handler(FAULT_DF, fault_double);
+	int_set_handler(FAULT_CO, fault_float);
+	int_set_handler(FAULT_TS, fault_generic);
+	int_set_handler(FAULT_NP, fault_generic);
+	int_set_handler(FAULT_SS, fault_generic);
+	int_set_handler(FAULT_GP, fault_generic);
+	int_set_handler(FAULT_PF, fault_page);
+	int_set_handler(FAULT_MF, fault_float);
+	int_set_handler(FAULT_AC, fault_generic);
+	int_set_handler(FAULT_MC, fault_generic);
+	int_set_handler(FAULT_XM, fault_nomath);
 
 	/* start timer (for preemption) */
 	timer_set_freq(256);

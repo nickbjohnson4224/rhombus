@@ -2,7 +2,7 @@ SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
 SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
 SUBDIR	:= kernel
 TARGET	:= kernel
-CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
+CFLAGS  := -I$(BUILDDIR)/$(SUBDIR)/inc $(CFLAGS)
 LDFLAGS := -Tinc/link.ld
 ASFLAGS := -felf
 

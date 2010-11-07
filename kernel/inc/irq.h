@@ -17,11 +17,11 @@
 #ifndef KERNEL_IRQ_H
 #define KERNEL_IRQ_H
 
-#include <ktime.h>
+#include <interrupt.h>
+#include <process.h>
+#include <types.h>
 
 /* IRQ numbering macros *****************************************************/
-
-typedef intid_t irqid_t;
 
 #define IRQ_INT_BASE 32
 #define IRQ_INT_SIZE 16

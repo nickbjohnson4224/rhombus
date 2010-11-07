@@ -14,22 +14,35 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef KERNEL_INTERRUPT_H
-#define KERNEL_INTERRUPT_H
+#ifndef KERNEL_IPC_H
+#define KERNEL_IPC_H
 
+#include <process.h>
 #include <stdint.h>
 #include <thread.h>
 #include <types.h>
 
-/* interrupt handling *******************************************************/
+#define PORT_QUIT	0
+#define PORT_TERM	1
+#define PORT_ABORT	2
+#define PORT_KILL	3
+#define PORT_STOP	4
+#define PORT_CONT	5
+#define PORT_TRAP	6
+#define PORT_INT	7
+#define PORT_IRQ	8
+#define PORT_ALARM	9
+#define PORT_CHILD	10
+#define PORT_FLOAT	11
+#define PORT_PAGE	12
+#define PORT_ILL	13
+#define PORT_USER1	14
+#define PORT_USER2	15
 
-void init_int_handling();
+struct packet {
+	portid_t port;
+	uint32_t frame;
+	pid_t    source;
+};
 
-typedef struct thread* (*int_handler_t) (struct thread *);
-void int_set_handler(intid_t n, int_handler_t handler);
-
-/* interrupt stack **********************************************************/
-
-void set_int_stack(void *ptr);
-
-#endif/*KERNEL_INTERRUPT_H*/
+#endif/*KERNEL_IPC_H*/

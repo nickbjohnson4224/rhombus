@@ -15,10 +15,9 @@
  */
 
 #include <debug.h>
-#include <elf.h>
-#include <ktime.h>
 #include <space.h>
 #include <irq.h>
+#include <elf.h>
 
 struct thread *syscall_send(struct thread *image) {
 	uint32_t   target = image->ecx;

@@ -18,6 +18,7 @@
 #define SPACE_H
 
 #include <stdint.h>
+#include <types.h>
 #include <arch.h>
 
 /***** PAGE FLAGS *****/
@@ -47,15 +48,11 @@
 
 /***** FRAME ALLOCATOR *****/
 
-typedef uint32_t frame_t;
-
 void    frame_init(uintptr_t memsize);
 frame_t frame_new (void);
 void    frame_free(frame_t frame);
 
 /***** ADDRESS SPACES *****/
-
-typedef uint32_t space_t;
 
 void    space_exmap(space_t space);
 space_t space_alloc(void);

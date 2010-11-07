@@ -14,22 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef KERNEL_INTERRUPT_H
-#define KERNEL_INTERRUPT_H
+#ifndef KERNEL_TYPES_H
+#define KERNEL_TYPES_H
 
 #include <stdint.h>
-#include <thread.h>
-#include <types.h>
 
-/* interrupt handling *******************************************************/
+typedef uint32_t pid_t;
+typedef uint32_t tid_t;
+typedef uint8_t portid_t;
+typedef uint8_t intid_t;
+typedef uint8_t irqid_t;
+typedef uint32_t frame_t;
+typedef uint32_t space_t;
 
-void init_int_handling();
-
-typedef struct thread* (*int_handler_t) (struct thread *);
-void int_set_handler(intid_t n, int_handler_t handler);
-
-/* interrupt stack **********************************************************/
-
-void set_int_stack(void *ptr);
-
-#endif/*KERNEL_INTERRUPT_H*/
+#endif/*KERNEL_TYPES_H*/

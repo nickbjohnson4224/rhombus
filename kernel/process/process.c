@@ -14,8 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <process.h>
+#include <thread.h>
 #include <string.h>
-#include <ktime.h>
 #include <space.h>
 #include <cpu.h>
 

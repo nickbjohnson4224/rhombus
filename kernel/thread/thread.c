@@ -14,11 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <ktime.h>
+#include <process.h>
+#include <thread.h>
 #include <space.h>
 #include <debug.h>
-#include <irq.h>
 #include <timer.h>
+#include <irq.h>
 #include <cpu.h>
 
 /****************************************************************************
@@ -62,7 +63,7 @@ struct thread *thread_exit(struct thread *image) {
  * passed as image.
  */
 
-struct thread *thread_send(struct thread *image, uint16_t target, uint16_t port) {
+struct thread *thread_send(struct thread *image, pid_t target, portid_t port) {
 	extern void set_ts(void);
 	struct process *p_targ;
 	struct thread *new_image;

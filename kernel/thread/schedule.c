@@ -13,8 +13,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <ktime.h>
-#include <space.h>
+#include <thread.h>
 
 /****************************************************************************
  * schedule_queue

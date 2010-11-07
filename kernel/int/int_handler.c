@@ -16,7 +16,6 @@
 
 #include <interrupt.h>
 #include <string.h>
-#include <ktime.h>
 #include <space.h>
 #include <irq.h>
 #include <cpu.h>

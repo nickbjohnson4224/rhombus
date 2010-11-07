@@ -14,8 +14,8 @@
 * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
+#include <thread.h>
 #include <debug.h>
-#include <ktime.h>
 #include <space.h>
 #include <ports.h>
 #include <irq.h>

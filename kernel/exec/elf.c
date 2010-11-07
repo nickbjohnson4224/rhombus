@@ -16,7 +16,6 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <ktime.h>
 #include <space.h>
 #include <elf.h>
 
