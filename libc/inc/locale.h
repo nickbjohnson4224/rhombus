@@ -22,18 +22,18 @@
 /* locale conversion structure *********************************************/
 
 struct lconv {
-	char *decimal_point;
-	char *grouping;
-	char *thousands_sep;
-	char *currency_symbol;
-	char *int_curr_symbol;
+	const char *decimal_point;
+	const char *grouping;
+	const char *thousands_sep;
+	const char *currency_symbol;
+	const char *int_curr_symbol;
 
-	char *mon_decimal_point;
-	char *mon_grouping;
-	char *mon_thousands_sep;
+	const char *mon_decimal_point;
+	const char *mon_grouping;
+	const char *mon_thousands_sep;
 
-	char *negative_sign;
-	char *positive_sign;
+	const char *negative_sign;
+	const char *positive_sign;
 
 	char  frac_digits;
 	char  int_frac_digits;

@@ -19,6 +19,23 @@
 
 #include <stddef.h>
 
+/* memory management (internal) ********************************************/
+
+struct __heap_node {
+	struct __heap_node *next;
+	struct __heap_node *prev;
+
+	struct __heap_node *parent;
+	struct __heap_node *left;
+	struct __heap_node *right;
+
+	uintptr_t base;
+	uintptr_t size;
+};
+
+struct __heap_node *__new_heap_node(void);
+void                __del_heap_node(struct __heap_node *node);
+
 /* memory management *******************************************************/
 
 void   *calloc(size_t nmemb, size_t size);

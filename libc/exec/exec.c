@@ -40,9 +40,9 @@ static uint8_t *bootstrap = (void*) ESPACE;
  * to the dictionary for later retrieval.
  */
 
-static void _save(const char **argv) {
+void _save(const char **argv) {
 	int argc;
-	
+
 	__fsave(0,  stdin);
 	__fsave(1, stdout);
 	__fsave(2, stderr);
@@ -87,6 +87,7 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
  */
 
 int execi(uint8_t *image, size_t size) {
+
 	return execiv(image, size, NULL);
 }
 

@@ -31,7 +31,10 @@ struct heap_block {
  * of blocks in bucket n is 2^n pointer-sized words (4 bytes on x86).
  */
 
-struct heap_block *heap_bucket[16];
+struct heap_block *heap_bucket[16] = {
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+};
 
 /****************************************************************************
  * heap_alloc
@@ -46,7 +49,7 @@ struct heap_block *heap_bucket[16];
 void *heap_alloc(size_t size) {
 	size_t bucket;
 	uintptr_t i;
-	void *block;
+	struct heap_block *block;
 
 	/* find appropriately sized bucket */
 	bucket = 42;
@@ -70,9 +73,9 @@ void *heap_alloc(size_t size) {
 			return NULL;
 		}
 	}
-
+	
 	block = heap_bucket[bucket];
-	heap_bucket[bucket] = heap_bucket[bucket]->next;
+	heap_bucket[bucket] = block->next;
 
 	memclr(block, size);
 

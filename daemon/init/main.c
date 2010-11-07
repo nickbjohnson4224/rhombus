@@ -68,7 +68,7 @@ int main() {
 	struct tar_file *boot_image, *file;
 	char const **argv;
 	FILE *temp, *init;
-
+	
 	init = __fcons(getpid(), 0, NULL);
 
 	setenv("NAME", "unknown");

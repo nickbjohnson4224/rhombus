@@ -52,6 +52,7 @@ int test_stdlib(void);
 
 int test_heap(void);
 
+int test_helper(void);
 int test_calloc(void);
 int test_valloc(void);
 int test_malloc(void);

@@ -103,6 +103,7 @@ void __itoa(char *buffer, size_t number, size_t base);
 
 void debug_printf(const char *fmt, ...);
 void debug_panic (const char *message);
+void debug_dumpi (uintptr_t *base, int count);
 
 /* debugger - TODO *********************************************************/
 

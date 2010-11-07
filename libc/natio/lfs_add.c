@@ -26,7 +26,7 @@
 
 uint32_t lfs_add(struct lfs_node *node, const char *path) {
 	uint32_t err;
-	
+
 	if ((err = lfs_add_node(node))) {
 		return err;
 	}

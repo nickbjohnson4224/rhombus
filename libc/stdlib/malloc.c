@@ -14,191 +14,286 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <mutex.h>
-#include <arch.h>
 #include <mmap.h>
+#include <arch.h>
 
-struct block {
-	size_t size;
-	struct block *next;
-};
+static struct __heap_node *_tree;
+static struct __heap_node *_list[32];
+static bool _mutex 		= false;
 
-static void *brk = (void*) HEAP_START;
-static bool m_brk;
+static struct __heap_node *	_get_from_list	(uint8_t index);
+static void 				_del_from_list	(struct __heap_node *node);
+static void 				_add_to_list	(struct __heap_node *node);
+static struct __heap_node *	_get_by_addr	(uintptr_t addr);
+static struct __heap_node *	_find_node		(uint8_t index);
+static uint8_t				ilog2			(uintptr_t n);
 
-static struct block *bucket[sizeof(uintptr_t) << 3];
-static bool        m_bucket[sizeof(uintptr_t) << 3];
-
-/****************************************************************************
- * get_bucket
- *
- * Returns an index corresponding to the appropriate bucket for the given
- * block size. Uses a portable, unrolled version of the algorithm detailed
- * at <http://graphics.stanford.edu/~seander/bithacks.html#IntegerLog>.
- */
-
-static size_t get_bucket(size_t size) {
-	register size_t rslt = 0;
-	size_t osize = size;
-
-	if (size & 0xFFFF0000) {
-		size >>= 0x10;
-		rslt |=  0x10;
-	}
-	if (size & 0xFF00) {
-		size >>= 0x08;
-		rslt |=  0x08;
-	}
-	if (size & 0xF0) {
-		size >>= 0x04;
-		rslt |=  0x04;
-	}
-	if (size & 0xC) {
-		size >>= 0x02;
-		rslt |=  0x02;
-	}
-	if (size & 0x2) {
-		size >>= 0x01;
-		rslt |=  0x01;
-	}
-
-	return (((size_t) 1 << rslt) == osize) ? rslt : rslt + 1;
-}
-
-/****************************************************************************
+/*****************************************************************************
  * malloc
  *
- * Returns a pointer to an unused, read-write block of memory of at least the
- * specified size. This pointer can be free via heap_free. Returns null on
- * out of memory of too large error. This function is thread safe.
+ * Allocates a block of size <size> from the heap and returns a pointer to it.
+ * The block is readable and writable. Returns null on failure.
  */
 
 void *malloc(size_t size) {
-	struct block *block;
-	char  *slab;
-	size_t i;
-
-	/* convert size to bucket index */
-	size += sizeof(size_t);
-	size = (size < sizeof(struct block)) ? sizeof(struct block) : size;
-	size = get_bucket(size);
-
-	/* mutex bucket */
-	mutex_spin(&m_bucket[size]);
-
-	/* allocate more blocks if bucket empty */
-	if (!bucket[size]) {
-		mutex_spin(&m_brk);
-		if (size < 12) {
-			slab   = brk;
-			brk = (void*) ((uintptr_t) brk + PAGESZ);
-
-			mmap(slab, PAGESZ, PROT_READ | PROT_WRITE);
-
-			i = PAGESZ - (1 << size);
-			do {
-				block = (struct block*) &slab[i];
-				block->next  = bucket[size];
-				block->size  = size;
-				bucket[size] = block;
-
-				i -= (1 << size);
-			} while (i);
-		}
-		else {
-			slab = brk;
-			brk  = (void*) ((uintptr_t) brk + (1 << size));
-
-			mmap(slab, 1 << size, PROT_READ | PROT_WRITE);
-
-			block = (struct block*) slab;
-			block->next  = bucket[size];
-			block->size  = size;
-			bucket[size] = block;
-		}
-		mutex_free(&m_brk);
-	}
-
-	/* allocate from bucket */
-	block = bucket[size];
-	bucket[size] = block->next;
-
-	mutex_free(&m_bucket[size]);
-
-	return (void*) ((uintptr_t) block + sizeof(size_t));
+	return aalloc(size, 0);
 }
 
-/***************************************************************************
- * free
- *
- * Frees a given block back into the heap. This algorithm DOES NOT detect
- * double frees of out of bounds pointers - be careful. The function is
- * thread safe.
- */
-
-void free(void *ptr) {
-	struct block *block;
-	size_t size;
-
-	if (!ptr) {
-		return;
-	}
-
-	if (!((uintptr_t) ptr % PAGESZ)) {
-		return;
-	}
-
-	block = (void*) ((uintptr_t) ptr - sizeof(size_t));
-	size  = block->size;
-
-	mutex_spin(&m_bucket[size]);
-	block->next  = bucket[size];
-	bucket[size] = block;
-	mutex_spin(&m_bucket[size]);
-}
-
-/****************************************************************************
- * msize
- *
- * Returns the allocated size of a given heap block. This size may or may not
- * be the size given to malloc, but is larger than or equal to it.
- */
-
-size_t msize(void *ptr) {
-	struct block *block;
-
-	if (!ptr) {
-		return 0;
-	}
-
-	block = (void*) ((uintptr_t) ptr - sizeof(size_t));
-
-	return (1 << block->size);
-}
-
-/****************************************************************************
+/*****************************************************************************
  * aalloc
  *
- * Returns an allocated block of memory that is <align> aligned. All other
- * behavior is identical to that of malloc.
+ * Allocates a block of size <size> and alignment a multiple of <align> from
+ * the heap and returns a pointer to it. If the alignment is not a power of
+ * two, the request will be rejected. If the alignment is zero, the alignment
+ * will be decided by the allocator. Returns null on failure.
  */
 
 void *aalloc(size_t size, size_t align) {
-	uintptr_t addr;
+	struct __heap_node *node;
+	uint8_t index;
 
-	if (size < PAGESZ) {
-		size = PAGESZ;
+	if (align) {
+		if (align != ((size_t) 1 << ilog2(align))) {
+			return NULL;
+		}
+
+		if (ilog2(size) > ilog2(align)) {
+			index = ilog2(size);
+		}
+		else {
+			index = ilog2(align);
+		}
+	}
+	else {
+		index = ilog2(size);
 	}
 
-	addr = (uintptr_t) malloc(size);
-	addr -= addr % PAGESZ;
+	mutex_spin(&_mutex); {
+		node = _find_node(index);
+	} mutex_free(&_mutex);
 
-	if (addr) {
-		*((size_t*) (addr - sizeof(size_t))) = get_bucket(size + sizeof(size_t));
+	if (!node) {
+		return NULL;
+	}
+	else {
+		mmap((void*) node->base, 1 << node->size, PROT_READ | PROT_WRITE);
+		return (void*) node->base;
+	}
+}
+
+size_t msize(void *ptr) {
+	struct __heap_node *node;
+	uintptr_t base = (uintptr_t) ptr;
+
+	mutex_spin(&_mutex); {
+		node = _get_by_addr(base);
+	} mutex_free(&_mutex);
+
+	if (node) {
+		return (1 << node->size);
+	}
+	else {
+		return 0;
+	}
+}
+
+void free(void *ptr) {
+	struct __heap_node *node;
+	uintptr_t base = (uintptr_t) ptr;
+
+	return;
+
+	mutex_spin(&_mutex); {
+		node = _get_by_addr(base);
+
+		if (node) {
+			_add_to_list(node);
+		}
+	} mutex_free(&_mutex);
+}
+
+/****************************************************************************
+ * ilog2
+ *
+ * Returns the ceiling of the base 2 logarithm of the given integer. Uses a 
+ * unrolled version of the algorithm detailed at 
+ * <http://graphics.stanford.edu/~seander/bithacks.html#IntegerLog>.
+ */
+
+static uint8_t ilog2(uintptr_t n) {
+	register uint8_t r = 0;
+	uintptr_t orig_n = n;
+
+	if (n &   0xFFFF0000) {
+		n >>= 0x10;
+		r |=  0x10;
+	}
+	if (n &   0xFF00) {
+		n >>= 0x08;
+		r |=  0x08;
+	}
+	if (n &   0xF0) {
+		n >>= 0x04;
+		r |=  0x04;
+	}
+	if (n &   0xC) {
+		n >>= 0x02;
+		r |=  0x02;
+	}
+	if (n &   0x2) {
+		n >>= 0x01;
+		r |=  0x01;
 	}
 
-	return (void*) addr;
+	if (((uintptr_t) 1 << r) == orig_n) {
+		return r;
+	}
+	else {
+		return r + 1;
+	}
+}
+
+/*****************************************************************************
+ * _find_node
+ *
+ * Returns a block of the size index <index>, allocated from the heap. If 
+ * there is no adequate block in the free list, a larger block is split in
+ * two: the lower half is returned and the higher half added to the free list.
+ * Returns null on out of memory error.
+ */
+
+static struct __heap_node *_find_node(uint8_t index) {
+	struct __heap_node *node;
+
+	if (index >= 32) {
+		return NULL;
+	}
+
+	if (!_tree) {
+		_tree = __new_heap_node();
+		_tree->base   = HEAP_START;
+		_tree->size   = ilog2(HEAP_MXBRK - HEAP_START);
+
+		_add_to_list(_tree);
+	}
+
+	node = _get_from_list(index);
+	if (node) {
+		_del_from_list(node);
+		return node;
+	}
+	else {
+		node = _find_node(index + 1);
+		if (!node) {
+			return NULL;
+		}
+		else {
+			node->left = __new_heap_node();
+			node->left->parent = node;
+			node->left->base   = node->base;
+			node->left->size   = index;
+
+			node->right = __new_heap_node();
+			node->right->parent = node;
+			node->right->base   = node->base + (1 << index);
+			node->right->size   = index;
+			
+			_add_to_list(node->right);
+
+//			return _get_by_addr(node->left->base);
+			return node->left;
+		}
+	}
+}
+
+/*****************************************************************************
+ * _get_from_list
+ *
+ * Returns the first block in the free list with index <index>. Returns null
+ * on failure. This function is not thread-safe.
+ */
+
+static struct __heap_node *_get_from_list(uint8_t index) {
+	struct __heap_node *node;
+
+	node = _list[index];
+
+	if (!node) {
+		return NULL;
+	}
+	else {
+		_del_from_list(node);
+		return node;
+	}
+}
+
+/*****************************************************************************
+ * _del_from_list
+ *
+ * Deletes the block <node> from whatever free list it is in, from any
+ * position in that list. This function is not thread-safe.
+ */
+
+static void _del_from_list(struct __heap_node *node) {
+	uint8_t index = node->size;
+
+	if (!node->prev) {
+		_list[index] = node->next;
+	}
+	else {
+		node->prev->next = node->next;
+	}
+
+	if (node->next) {
+		node->next->prev = node->prev;
+	}
+}
+
+/*****************************************************************************
+ * _add_to_list
+ *
+ * Adds the block <node> to the proper free list. This function is not
+ * thread-safe.
+ */
+
+static void _add_to_list(struct __heap_node *node) {
+	uint8_t index = node->size;
+
+	node->prev = NULL;
+	node->next = _list[index];
+	
+	if (node->next) {
+		node->next->prev = node;
+	}
+
+	_list[index] = node;
+}
+
+/*****************************************************************************
+ * _get_by_addr
+ *
+ * Searches the heap for an allocated block with base address <addr>. Returns
+ * the found block on success, null on failure. This function is not 
+ * thread-safe.
+ */
+
+static struct __heap_node *_get_by_addr(uintptr_t addr) {
+	struct __heap_node *root;
+
+	root = _tree;
+
+	while (root) {
+		if (root->left && root->right) {
+			root = (addr < root->right->base) ? root->left : root->right;
+		}
+		else {
+			return (addr == root->base) ? root : NULL;
+		}
+	}
+
+	return NULL;
 }
