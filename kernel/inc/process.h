@@ -37,6 +37,7 @@ struct process {
 
 	/* various crap */
 	uint32_t flags;
+	uint64_t tick;
 	pid_t    pid;
 
 	struct process *next_task;
@@ -60,9 +61,7 @@ void            process_thaw  (struct process *proc);
 void            process_touch (pid_t pid);
 void            process_switch(struct process *proc);
 
-/* process control space ***************************************************/
-
-#define CTRL_PSPACE	0
+/* process flags ***********************************************************/
 
 #define CTRL_CMASK	0xFF8000FF
 #define CTRL_SMASK 	0x00773047

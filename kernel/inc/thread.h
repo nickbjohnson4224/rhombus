@@ -59,6 +59,7 @@ struct thread {
 	tid_t id;
 
 	/* scheduler information */
+	uint64_t tick;
 	struct thread *next;
 	uint32_t frozen;
 

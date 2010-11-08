@@ -36,7 +36,7 @@ int32_t		_mmap(uintptr_t addr, uint32_t flags, uint32_t frame);
 int32_t		_fork(void);
 void		_exit(uint32_t value) __attribute__ ((noreturn));
 uint32_t	_pctl(uint32_t flags, uint32_t mask);
-int         _exec(uintptr_t addr);
+int         _exec(void);
 uint32_t    _gpid(uint32_t selector);
 
 #define GPID_SELF	0

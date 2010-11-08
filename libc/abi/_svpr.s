@@ -17,9 +17,7 @@
 global _svpr
 
 _svpr:
-
-	mov eax, [esp+4]
+	mov edx, [esp+4]
 	mov ecx, [esp+8]
 	int 0x45
-
 	ret

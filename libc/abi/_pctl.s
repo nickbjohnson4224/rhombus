@@ -17,10 +17,7 @@
 global _pctl
 
 _pctl:
-
-	mov eax, [esp+4]
+	mov ecx, [esp+4]
 	mov edx, [esp+8]
-
-	int 0x4A
-
+	int 0x4a
 	ret

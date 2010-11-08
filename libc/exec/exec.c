@@ -72,7 +72,7 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 
 	_save(argv);
 
-	if (_exec((uintptr_t) bootstrap)) {
+	if (_exec()) {
 		errno = EEXEC;
 		return -1;
 	}
@@ -129,7 +129,7 @@ int execv(const char *path, char const **argv) {
 
 	_save(argv);
 
-	if (_exec((uintptr_t) bootstrap)) {
+	if (_exec()) {
 		errno = EEXEC;
 		return -1;
 	}

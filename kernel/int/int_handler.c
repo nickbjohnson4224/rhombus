@@ -39,7 +39,7 @@ static void init_int_handler(void);
  * int_set_handler(), and accessed exclusively by int_handler().
  */
 
-static int_handler_t _int_handler[96];
+static int_handler_t _int_handler[256];
 
 /*****************************************************************************
  * int_set_handler
@@ -94,11 +94,10 @@ struct thread *int_handler(struct thread *image) {
  * The "Interrupt Descriptor Table" also known as the IDT. This is the part
  * of the x86 architecture that redirects interrupts to interrupt handlers.
  * These are the low-level assembly handlers (NOT the C handlers registered by
- * int_set_handler()). This structure is declared non-static because it is
- * referenced in idt_flush() in "helper.s".
+ * int_set_handler()).
  */
 
-struct idt idt[96];
+static struct idt idt[256];
 
 /* Assembly interrupt handler stubs to be registered in the IDT *************/
 
@@ -118,7 +117,7 @@ extern void
 	int68(void), int69(void),
 	
 	int72(void), int73(void), int74(void), int75(void), 
-	int76(void),
+	int76(void), int77(void),
 
 	int80(void), int81(void);
 
@@ -148,7 +147,7 @@ static int_raw_handler_t idt_raw[] = {
 
 	/* system calls */
 	int64, 	int65, 	int66, 	NULL, 	int68, 	int69, 	NULL, 	NULL, 
-	int72, 	int73, 	int74, 	int75, 	int76, 	NULL, 	NULL, 	NULL, 
+	int72, 	int73, 	int74, 	int75, 	int76, 	int77, 	NULL, 	NULL, 
 	int80, 	int81, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
 	NULL, 	NULL, 	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
 };
@@ -183,13 +182,17 @@ static void init_int_handler(void) {
 	size_t i;
 
 	/* Write privileged interrupt handlers (faults, IRQs) */
-	for (i = 0; i < 48; i++) {
-		if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0x8E);
+	for (i = 0; i < 64; i++) {
+		if (idt_raw[i]) {
+			idt_set(i, (uint32_t) idt_raw[i], 0x08, 0x8E);
+		}
 	}
 
 	/* Write usermode interrupt handlers (syscalls) */
-	for (i = 64; i < 96; i++) {
-		if (idt_raw[i]) idt_set(i, (uint32_t) idt_raw[i], 0x08, 0xEE);
+	for (i = 64; i < 256; i++) {
+		if (idt_raw[i]) {
+			idt_set(i, (uint32_t) idt_raw[i], 0x08, 0xEE);
+		}
 	}
 
 	/* Write the IDT */

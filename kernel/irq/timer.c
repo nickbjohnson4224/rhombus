@@ -60,6 +60,8 @@ uint64_t timer_get_tick(void) {
 static struct thread *timer_handler(struct thread *image) {
 
 	tick++;
+	image->tick++;
+	image->proc->tick++;
 
 	return schedule_next();
 }

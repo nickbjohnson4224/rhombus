@@ -18,5 +18,4 @@ global _fork
 
 _fork:
 	int 0x48
-
 	ret

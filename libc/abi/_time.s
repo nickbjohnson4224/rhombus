@@ -14,8 +14,9 @@
 
 [bits 32]
 
-global _exec
+global _time
 
-_exec:
-	int 0x4B
+_time:
+	mov ecx, [esp+4]
+	int 0x4D
 	ret

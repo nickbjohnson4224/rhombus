@@ -17,9 +17,7 @@
 global _gvpr
 
 _gvpr:
-	
-	mov eax, [esp+4]
+	mov edx, [esp+4]
 	mov ecx, [esp+8]
 	int 0x44
-
 	ret
