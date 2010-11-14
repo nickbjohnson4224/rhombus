@@ -126,7 +126,7 @@ int test_valloc(void) {
 }
 
 int test_realloc(void) {
-	char *value = "hello, world!";
+	const char *value = "hello, world!";
 	char *block;
 
 	printf("\trealloc");

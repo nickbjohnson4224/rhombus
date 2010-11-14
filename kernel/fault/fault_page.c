@@ -19,20 +19,19 @@
 #include <space.h>
 #include <cpu.h>
 
-/* Generic fault */
-struct thread *fault_generic(struct thread *image) {
+/*****************************************************************************
+ * fault_page
+ *
+ * Page fault handler. If the fault is from userspace, and from a TLS block,
+ * memory is allocated to fix the issue; if not from a TLS block, the
+ * process is frozen and sent a message on port PORT_PAGE. If the fault is
+ * from kernel space, it panics.
+ *
+ * Note: lines that cause a panic with a stack dump on userspace faults are
+ * commented out, but can be very useful for tracking userspace bugs, until I
+ * write a proper debugger.
+ */
 
-	/* If in kernelspace, panic */
-	if ((image->cs & 0x3) == 0) {
-		debug_printf("EIP:%x NUM:%d ERR:%x\n", image->eip, image->num, image->err);
-		debug_panic("unknown exception");
-	}
-
-	process_freeze(image->proc);
-	return thread_send(image, image->proc->pid, PORT_ILL);
-}
-
-/* Page fault */
 struct thread *fault_page(struct thread *image) {
 	uint32_t cr2;
 
@@ -55,50 +54,12 @@ struct thread *fault_page(struct thread *image) {
 	}
 	else {
 		/* fault */
-		debug_printf("%d: page fault at %x, ip = %x\n", image->proc->pid, cr2, image->eip);
-		debug_printf("user stack dump: (ebp = %x)\n", image->ebp);
-		debug_dumpi((void*) image->useresp, 12);
-		debug_panic("page fault exception");
+//		debug_printf("%d: page fault at %x, ip = %x\n", image->proc->pid, cr2, image->eip);
+//		debug_printf("user stack dump: (ebp = %x)\n", image->ebp);
+//		debug_dumpi((void*) image->useresp, 12);
+//		debug_panic("page fault exception");
 
 		process_freeze(image->proc);
 		return thread_send(image, image->proc->pid, PORT_PAGE);
 	}
-}
-
-/* Floating point exception */
-struct thread *fault_float(struct thread *image) {
-
-	/* If in kernelspace, panic */
-	if ((image->cs & 0x3) == 0) {
-		debug_printf("ip = %x\n", image->eip);
-		debug_panic("floating point exception");
-	}
-
-	debug_printf("float fault at ip = %x\n", image->eip);
-	debug_panic("floating point exception");
-
-	process_freeze(image->proc);
-	return thread_send(image, image->proc->pid, PORT_FLOAT);
-}
-
-/* Double fault */
-struct thread *fault_double(struct thread *image) {
-
-	/* Can only come from kernel problems */
-	debug_printf("DS:%x CS:%x\n", image->ds, image->cs);
-	debug_panic("double fault exception");
-	return NULL;
-
-}
-
-/* Coprocessor Existence Failure */
-struct thread *fault_nomath(struct thread *image) {
-	extern uint32_t can_use_fpu;
-
-	if (!can_use_fpu) {
-		process_freeze(image->proc);
-		return thread_send(image, image->proc->pid, PORT_ILL);
-	}
-
-	return image;
 }

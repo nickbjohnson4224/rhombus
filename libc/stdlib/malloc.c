@@ -25,12 +25,12 @@ static struct __heap_node *_tree;
 static struct __heap_node *_list[32];
 static bool _mutex 		= false;
 
-static struct __heap_node *	_get_from_list	(uint8_t index);
-static void 				_del_from_list	(struct __heap_node *node);
-static void 				_add_to_list	(struct __heap_node *node);
-static struct __heap_node *	_get_by_addr	(uintptr_t addr);
-static struct __heap_node *	_find_node		(uint8_t index);
-static uint8_t				ilog2			(uintptr_t n);
+static struct __heap_node *_get_from_list(uint8_t index);
+static void                _del_from_list(struct __heap_node *node);
+static void                _add_to_list  (struct __heap_node *node);
+static struct __heap_node *_get_by_addr  (uintptr_t addr);
+static struct __heap_node *_find_node    (uint8_t index);
+static uint8_t             ilog2         (uintptr_t n);
 
 /*****************************************************************************
  * malloc
@@ -204,7 +204,6 @@ static struct __heap_node *_find_node(uint8_t index) {
 			
 			_add_to_list(node->right);
 
-//			return _get_by_addr(node->left->base);
 			return node->left;
 		}
 	}

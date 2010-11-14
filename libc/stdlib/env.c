@@ -114,7 +114,7 @@ int setenv(const char *name, const char *value) {
 	}
 	else {
 		free(environ[i]);
-		environ[i] = "\0";
+		environ[i] = strdup("\0");
 	}
 
 	mutex_free(&m_environ);

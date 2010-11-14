@@ -10,7 +10,7 @@ PORTS    := $(shell find ports  -mindepth 1 -maxdepth 1)
 BIN_DIRS  = kernel fish
 BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS) $(PORTS)
 
-CC := clang -arch=x86 -m32
+CC := clang -m32
 LD := ld
 AR := ar
 AS := nasm

@@ -2,6 +2,7 @@
 
 # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
 
+CFLAGS  += -Wno-cast-align
 RANLIB  := ranlib
 RM      := rm -f
 LIBS    := $(BUILDDIR)/lib/c0.o -lc
