@@ -14,17 +14,35 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef TMPFS_H
-#define TMPFS_H
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+#include <fs.h>
 
-#include <stddef.h>
-#include <natio.h>
-#include <stdio.h>
-#include <mutex.h>
-#include <ipc.h>
+/*****************************************************************************
+ * fs_find
+ *
+ * Finds the filesystem object with the given path <path> from <root> if it 
+ * exists. If it does not exist, this function returns NULL.
+ */
 
-void tmpfs_init(void);
+FILE *fs_find(FILE *root, const char *path) {
+	struct fs_cmd command;
+	FILE *file;
 
-extern struct driver *tmpfs_driver;
+	command.op = FS_FIND;
+	command.v0 = 0;
+	command.v1 = 0;
+	strlcpy(command.s0, path, 4000);
+	
+	if (!fs_send(root, &command)) {
+		return NULL;
+	}
 
-#endif/*TMPFS_H*/
+	file = malloc(sizeof(FILE));
+	file->server = ((command.v0 >> 32) & 0xFFFFFFFF);
+	file->inode  = (command.v0 & 0xFFFFFFFF);
+	file->ext    = NULL;
+
+	return file;
+}

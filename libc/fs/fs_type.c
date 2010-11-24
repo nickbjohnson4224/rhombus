@@ -14,17 +14,25 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef TMPFS_H
-#define TMPFS_H
+#include <stdint.h>
+#include <fs.h>
 
-#include <stddef.h>
-#include <natio.h>
-#include <stdio.h>
-#include <mutex.h>
-#include <ipc.h>
+/*****************************************************************************
+ * fs_size
+ *
+ * Returns the file type of <file> on success, zero on error.
+ */
 
-void tmpfs_init(void);
+int fs_type(FILE *file) {
+	struct fs_cmd command;
 
-extern struct driver *tmpfs_driver;
+	command.op = FS_TYPE;
+	command.v0 = 0;
+	command.v1 = 0;
+	
+	if (!fs_send(file, &command)) {
+		return 0;
+	}
 
-#endif/*TMPFS_H*/
+	return command.v0;
+}

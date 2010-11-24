@@ -14,17 +14,26 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef TMPFS_H
-#define TMPFS_H
+#include <stdint.h>
+#include <fs.h>
 
-#include <stddef.h>
-#include <natio.h>
-#include <stdio.h>
-#include <mutex.h>
-#include <ipc.h>
+/*****************************************************************************
+ * fs_remove
+ *
+ * Attempts to remove the fileystem object <fobj>. Returns zero on success,
+ * nonzero on failure.
+ */
 
-void tmpfs_init(void);
+int fs_remove(FILE *fobj) {
+	struct fs_cmd command;
 
-extern struct driver *tmpfs_driver;
+	command.op = FS_REMV;
+	command.v0 = 0;
+	command.v1 = 0;
+	
+	if (!fs_send(fobj, &command)) {
+		return 1;
+	}
 
-#endif/*TMPFS_H*/
+	return 0;
+}

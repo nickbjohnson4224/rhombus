@@ -14,17 +14,27 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef TMPFS_H
-#define TMPFS_H
+#include <stdint.h>
+#include <fs.h>
 
-#include <stddef.h>
-#include <natio.h>
-#include <stdio.h>
-#include <mutex.h>
-#include <ipc.h>
+/*****************************************************************************
+ * fs_size
+ *
+ * Returns the file size of <file>. If this value is zero, the file may not
+ * exist, be the wrong type, or be a character device. fs_type can be used to 
+ * differentiate between these cases.
+ */
 
-void tmpfs_init(void);
+uint64_t fs_size(FILE *file) {
+	struct fs_cmd command;
 
-extern struct driver *tmpfs_driver;
+	command.op = FS_SIZE;
+	command.v0 = 0;
+	command.v1 = 0;
+	
+	if (!fs_send(file, &command)) {
+		return 0;
+	}
 
-#endif/*TMPFS_H*/
+	return command.v0;
+}

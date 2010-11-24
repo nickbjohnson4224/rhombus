@@ -14,17 +14,31 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef TMPFS_H
-#define TMPFS_H
+#include <stdint.h>
+#include <fs.h>
 
-#include <stddef.h>
-#include <natio.h>
-#include <stdio.h>
-#include <mutex.h>
-#include <ipc.h>
+/*****************************************************************************
+ * fs_link
+ *
+ * Sets the link at <link> to point to the filesystem object <fobj>. Returns 
+ * zero on success, nonzero on failure.
+ */
 
-void tmpfs_init(void);
+int fs_link(FILE *link, FILE *fobj) {
+	struct fs_cmd command;
+	uint64_t fobj_id;
 
-extern struct driver *tmpfs_driver;
+	fobj_id   = fobj->server;
+	fobj_id <<= 32;
+	fobj_id  |= fobj->inode;
 
-#endif/*TMPFS_H*/
+	command.op = FS_LINK;
+	command.v0 = fobj_id;
+	command.v1 = 0;
+	
+	if (!fs_send(link, &command)) {
+		return 1;
+	}
+
+	return 0;
+}

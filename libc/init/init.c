@@ -25,6 +25,7 @@
 #include <natio.h>
 #include <mmap.h>
 #include <pack.h>
+#include <fs.h>
 
 /****************************************************************************
  * reject
@@ -60,6 +61,7 @@ void _init(bool is_init) {
 	stdout   = __fload(1);
 	stderr   = __fload(2);
 	vfs_root = __fload(3);
+	fs_chroot(__fload(3));
 
 	__sig_init();
 

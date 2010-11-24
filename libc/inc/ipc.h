@@ -80,6 +80,9 @@ void  pfree (struct packet *packet);
 
 #define PORT_READ	16
 #define PORT_WRITE	17
+#define PORT_SYNC	18
+#define PORT_RESET	19
+#define PORT_FS		20
 
 #define PORT_VFS	27
 

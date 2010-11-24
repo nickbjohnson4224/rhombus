@@ -14,17 +14,28 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef TMPFS_H
-#define TMPFS_H
+#include <stdint.h>
+#include <string.h>
+#include <fs.h>
 
-#include <stddef.h>
-#include <natio.h>
-#include <stdio.h>
-#include <mutex.h>
-#include <ipc.h>
+/*****************************************************************************
+ * fs_list
+ *
+ * Gives the name of the entry of number <entry> in the directory <dir>.
+ * Returns a copy of that string on success, NULL on failure.
+ */
 
-void tmpfs_init(void);
+char *fs_list(FILE *dir, int entry) {
+	struct fs_cmd command;
 
-extern struct driver *tmpfs_driver;
+	command.op = FS_LIST;
+	command.v0 = entry;
+	command.v1 = 0;
+	
+	if (!fs_send(dir, &command)) {
+		return NULL;
+	}
 
-#endif/*TMPFS_H*/
+	command.null0 = '\0';
+	return strdup(command.s0);
+}

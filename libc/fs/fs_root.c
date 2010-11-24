@@ -14,17 +14,25 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef TMPFS_H
-#define TMPFS_H
+#include <stdint.h>
+#include <fs.h>
 
-#include <stddef.h>
-#include <natio.h>
-#include <stdio.h>
-#include <mutex.h>
-#include <ipc.h>
+/*****************************************************************************
+ * fs_root
+ *
+ * Default root directory of the filesystem. Persisted across process 
+ * execution.
+ */
 
-void tmpfs_init(void);
+FILE *fs_root = NULL;
 
-extern struct driver *tmpfs_driver;
+/*****************************************************************************
+ * fs_chroot
+ *
+ * Change the default root directory of the filesystem to <root>.
+ */
 
-#endif/*TMPFS_H*/
+void fs_chroot(FILE *root) {
+
+	fs_root = root;
+}

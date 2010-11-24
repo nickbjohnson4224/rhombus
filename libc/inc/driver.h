@@ -18,8 +18,70 @@
 #define DRIVER_H
 
 #include <stdint.h>
+#include <natio.h>
+#include <ipc.h>
+#include <fs.h>
 
-/* port access ********************************************************/
+/* local filesystem interface ***********************************************/
+
+struct fs_obj {
+	int type;
+	bool mutex;
+
+	/* file information */
+	uint64_t size;
+	void *data;
+
+	/* inode lookup table */
+	uint32_t inode;
+	struct fs_obj *next;
+	struct fs_obj *prev;
+
+	/* directory structure */
+	char *name;
+	struct fs_obj *mother;
+	struct fs_obj *sister0;
+	struct fs_obj *sister1;
+	struct fs_obj *daughter;
+
+	/* link information */
+	FILE *link;
+};
+
+struct fs_obj *lfs_lookup(uint32_t inode);
+
+void  lfs_root(struct fs_obj *root);
+FILE *lfs_find(uint32_t inode, const char *path);
+
+int lfs_list(struct fs_obj *dir, int entry, char *buffer, size_t size);
+int lfs_push(struct fs_obj *dir, struct fs_obj *obj, const char *name);
+int lfs_pull(struct fs_obj *obj);
+
+/* driver interface structure ***********************************************/
+
+extern struct driver {
+
+	/* initialization */
+	void (*init)(int argc, char **argv);
+
+	/* filesystem operations */
+	struct fs_obj *(*cons)(int type);
+	int            (*push)(struct fs_obj *obj);
+	int            (*pull)(struct fs_obj *obj);
+	int            (*free)(struct fs_obj *obj);
+
+	/* file operations */
+	uint64_t (*size) (struct fs_obj *file);
+	size_t   (*read) (struct fs_obj *file, void *buffer, size_t size, uint64_t offset);
+	size_t   (*write)(struct fs_obj *file, void *buffer, size_t size, uint64_t offset);
+	int      (*reset)(struct fs_obj *file);
+	int      (*sync) (struct fs_obj *file);
+	
+} *active_driver;
+
+void driver_init(struct driver *driver, int argc, char **argv);
+
+/* port access **************************************************************/
 
 uint8_t  inb(uint16_t port);
 uint16_t inw(uint16_t port);
@@ -31,7 +93,7 @@ void outd(uint16_t port, uint32_t value);
 
 void iodelay(uint32_t usec);
 
-/* IRQ redirection ****************************************************/
+/* IRQ redirection **********************************************************/
 
 void rirq(uint8_t irq);
 

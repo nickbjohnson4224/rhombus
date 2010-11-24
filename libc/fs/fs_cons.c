@@ -14,17 +14,35 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef TMPFS_H
-#define TMPFS_H
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+#include <fs.h>
 
-#include <stddef.h>
-#include <natio.h>
-#include <stdio.h>
-#include <mutex.h>
-#include <ipc.h>
+/*****************************************************************************
+ * fs_find
+ *
+ * Attempts to create a new filesystem object of type <type> and name <name> 
+ * in directory <dir>. Returns the new object on success, NULL on failure.
+ */
 
-void tmpfs_init(void);
+FILE *fs_cons(FILE *dir, const char *name, int type) {
+	struct fs_cmd command;
+	FILE *file;
 
-extern struct driver *tmpfs_driver;
+	command.op = FS_CONS;
+	command.v0 = type;
+	command.v1 = 0;
+	strlcpy(command.s0, name, 4000);
+	
+	if (!fs_send(dir, &command)) {
+		return NULL;
+	}
 
-#endif/*TMPFS_H*/
+	file = malloc(sizeof(FILE));
+	file->server = ((command.v0 >> 32) & 0xFFFFFFFF);
+	file->inode  = (command.v0 & 0xFFFFFFFF);
+	file->ext    = NULL;
+
+	return file;
+}
