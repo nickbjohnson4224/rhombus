@@ -39,27 +39,7 @@ void initrd_init(int argc, char **argv) {
 	lfs_root(root);
 }
 
-struct fs_obj *initrd_cons(int type) {
-	return NULL;
-}
-
-int initrd_push(struct fs_obj *obj) {
-	return 0;
-}
-
-int initrd_pull(struct fs_obj *obj) {
-	return 0;
-}
-
-int initrd_free(struct fs_obj *obj) {
-	return 1;
-}
-
-uint64_t initrd_size(struct fs_obj *file) {	
-	return file->size;
-}
-
-size_t initrd_read(struct fs_obj *file, void *buffer, size_t size, uint64_t offset) {
+size_t initrd_read(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 
 	if (!file->data) {
 		return 0;
@@ -78,29 +58,19 @@ size_t initrd_read(struct fs_obj *file, void *buffer, size_t size, uint64_t offs
 	return size;
 }
 
-size_t initrd_write(struct fs_obj *file, void *buffer, size_t size, uint64_t offset) {
-	return 0;
-}
-
-int initrd_reset(struct fs_obj *file) {
-	return 1;
-}
-
-int initrd_sync(struct fs_obj *file) {
-	return 0;
-}
-
 struct driver initrd_driver = {
 	initrd_init, 
 
-	initrd_cons,
-	initrd_push,
-	initrd_pull,
-	initrd_free,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
 
-	initrd_size,
+	NULL,
 	initrd_read,
-	initrd_write,
-	initrd_reset,
-	initrd_sync,
+	NULL,
+	NULL,
+	NULL,
+
+	NULL,
 };

@@ -1,42 +1,50 @@
-/* 
- * Copyright 2009, 2010 Nick Johnson 
- * ISC Licensed, see LICENSE for details
+/*
+ * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * 
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdlib.h>
+#include <string.h>
 #include <driver.h>
 #include <mutex.h>
-#include <ipc.h>
 #include <proc.h>
 #include <mmap.h>
 
-#include <ctype.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
-
-#define VMEM 0xB8000
 #define WIDTH 80
 #define HEIGHT 25
 #define TAB 8
 
-static void terminal_write(struct packet *packet, uint8_t port, uint32_t caller);
-
-static uint16_t *vbuf;
 static uint16_t c_base = 0;
 static uint16_t cursor = 0;
 static uint16_t buffer = 0;
+static uint16_t *vbuf  = NULL;
+static bool m_vbuf     = false;
 static void char_write(char c);
 
-static bool m_vbuf = 0;
-
-int main() {
+void term_init(int argc, char **argv) {
+	struct fs_obj *root;
 	size_t i;
+
+	root = calloc(sizeof(struct fs_obj), 1);
+	root->type = FOBJ_FILE;
+	root->size = 0;
+	root->inode = 0;
 
 	mutex_spin(&m_vbuf);
 
-	vbuf = valloc(80 * 25 * 2);
-	emap(vbuf, VMEM, PROT_READ | PROT_WRITE);
+	vbuf = valloc(WIDTH * HEIGHT * 2);
+	emap(vbuf, 0xB8000, PROT_READ | PROT_WRITE);
 
 	for (i = 0; i < WIDTH * HEIGHT; i++) {
 		vbuf[i] = 0x0F00 | ' ';
@@ -44,27 +52,15 @@ int main() {
 
 	mutex_free(&m_vbuf);
 
-	when(PORT_WRITE, terminal_write);
-
-	psend(PORT_CHILD, getppid(), NULL);
-	_done();
-
-	return 0;
+	lfs_root(root);
 }
 
-static void terminal_write(struct packet *packet, uint8_t port, uint32_t caller) {
+size_t term_write(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	size_t i;
-	char *buffer;
+	
+	mutex_spin(&file->mutex);
 
-	if (!packet) {
-		return;
-	}
-
-	buffer = pgetbuf(packet);
-
-	mutex_spin(&m_vbuf);
-
-	for (i = 0; i < packet->data_length; i++) {
+	for (i = 0; i < size; i++) {
 		char_write(buffer[i]);
 	}
 
@@ -73,10 +69,36 @@ static void terminal_write(struct packet *packet, uint8_t port, uint32_t caller)
 	outb(0x3D4, 15);
 	outb(0x3D5, cursor & 0xFF);
 
-	mutex_free(&m_vbuf);
+	mutex_free(&file->mutex);
+	
+	return size;
+}
 
-	psend(PORT_REPLY, caller, packet);
-	pfree(packet);
+struct driver term_driver = {
+	term_init, 
+
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+
+	NULL,
+	NULL,
+	term_write,
+	NULL,
+	NULL,
+
+	NULL,
+};
+
+int main(int argc, char **argv) {
+
+	driver_init(&term_driver, argc, argv);
+
+	psend(PORT_CHILD, getppid(), NULL);
+	_done();
+
+	return 0;
 }
 
 static void char_write(char c) {

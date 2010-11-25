@@ -217,7 +217,12 @@ int lfs_push(struct fs_obj *dir, struct fs_obj *obj, const char *name) {
 
 	mutex_free(&dir->mutex);
 
-	return active_driver->push(obj);
+	if (active_driver->push) {
+		return active_driver->push(obj);
+	}
+	else {
+		return 0;
+	}
 }
 
 /*****************************************************************************
@@ -230,7 +235,7 @@ int lfs_push(struct fs_obj *dir, struct fs_obj *obj, const char *name) {
  */
 
 int lfs_pull(struct fs_obj *obj) {
-	
+
 	if (!obj) {
 		return 1;
 	}
@@ -266,8 +271,13 @@ int lfs_pull(struct fs_obj *obj) {
 		}
 		mutex_free(&m_inode_lookup);
 	}
-
-	return active_driver->pull(obj);
+	
+	if (active_driver->pull) {
+		return active_driver->pull(obj);
+	}
+	else {
+		return 0;
+	}
 }
 
 /*****************************************************************************

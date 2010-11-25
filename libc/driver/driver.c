@@ -65,6 +65,11 @@ void lfs_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 		}
 		break;
 	case FS_CONS:
+		if (!active_driver->cons) {
+			cmd->op = FS_ERR;
+			break;
+		}
+
 		fobj = lfs_lookup(packet->target_inode);
 
 		if (fobj) {
@@ -94,11 +99,21 @@ void lfs_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 				cmd->op = FS_ERR;
 			}
 			else {
-				active_driver->free(fobj);
+				if (active_driver->free) {
+					active_driver->free(fobj);
+				}
+				else {
+					free(fobj);
+				}
 			}
 		}
 		else {
-			active_driver->free(fobj);
+			if (active_driver->free) {
+				active_driver->free(fobj);
+			}
+			else {
+				free(fobj);
+			}
 		}
 		break;
 	case FS_LINK:
@@ -127,7 +142,12 @@ void lfs_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 		fobj = lfs_lookup(packet->target_inode);
 
 		if (fobj) {
-			cmd->v0 = active_driver->size(fobj);
+			if (active_driver->size) {
+				cmd->v0 = active_driver->size(fobj);
+			}
+			else {
+				cmd->v0 = fobj->size;
+			}
 		}
 		else {
 			cmd->op = FS_ERR;
@@ -160,7 +180,7 @@ void lfs_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 void read_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 	struct fs_obj *file;
 	
-	if (!packet) {
+	if (!packet || !active_driver->read) {
 		psend(PORT_REPLY, caller, NULL);
 		return;
 	}
@@ -189,7 +209,7 @@ void read_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 void write_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 	struct fs_obj *file;
 
-	if (!packet) {
+	if (!packet || !active_driver->write) {
 		psend(PORT_REPLY, caller, NULL);
 		return;
 	}
@@ -218,7 +238,7 @@ void write_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 void sync_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 	struct fs_obj *file;
 
-	if (!packet) {
+	if (!packet || !active_driver->sync) {
 		psend(PORT_REPLY, caller, NULL);
 		return;
 	}
@@ -246,7 +266,7 @@ void sync_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 void reset_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 	struct fs_obj *file;
 
-	if (!packet) {
+	if (!packet || !active_driver->reset) {
 		psend(PORT_REPLY, caller, NULL);
 		return;
 	}
@@ -266,6 +286,30 @@ void reset_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 }
 
 /*****************************************************************************
+ * irq_wrapper
+ *
+ * Handles and redirects irqs to the current active driver.
+ */
+
+void irq_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
+	
+	if (caller != 0) {
+		psend(PORT_REPLY, caller, NULL);
+		return;
+	}
+
+	if (!active_driver->irq) {
+		return;
+	}
+
+	active_driver->irq();
+
+	if (packet) {
+		pfree(packet);
+	}
+}
+
+/*****************************************************************************
  * driver_init
  *
  * Initializes the driver <driver> on the current process, allowing read/write
@@ -273,13 +317,25 @@ void reset_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
  */
 
 void driver_init(struct driver *driver, int argc, char **argv) {
+	struct fs_obj *root;
 	
 	active_driver = driver;
-	active_driver->init(argc, argv);
 
+	when(PORT_IRQ,   irq_wrapper);
 	when(PORT_FS,    lfs_wrapper);
 	when(PORT_READ,  read_wrapper);
 	when(PORT_WRITE, write_wrapper);
 	when(PORT_SYNC,  sync_wrapper);
 	when(PORT_RESET, reset_wrapper);
+
+	if (active_driver->init) {
+		active_driver->init(argc, argv);
+	}
+	else {
+		root = calloc(sizeof(struct fs_obj), 1);
+		root->type = FOBJ_FILE;
+		root->size = 0;
+		root->inode = 0;
+		lfs_root(root);
+	}
 }

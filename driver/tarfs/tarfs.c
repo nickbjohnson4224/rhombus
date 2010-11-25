@@ -125,27 +125,7 @@ void tarfs_init(int argc, char **argv) {
 	free(block);
 }
 
-struct fs_obj *tarfs_cons(int type) {
-	return NULL;
-}
-
-int tarfs_push(struct fs_obj *obj) {
-	return 0;
-}
-
-int tarfs_pull(struct fs_obj *obj) {
-	return 0;
-}
-
-int tarfs_free(struct fs_obj *obj) {
-	return 1;
-}
-
-uint64_t tarfs_size(struct fs_obj *file) {	
-	return file->size;
-}
-
-size_t tarfs_read(struct fs_obj *file, void *buffer, size_t size, uint64_t offset) {
+size_t tarfs_read(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	
 	if (!file->data) {
 		return 0;
@@ -169,29 +149,19 @@ size_t tarfs_read(struct fs_obj *file, void *buffer, size_t size, uint64_t offse
 	return size;
 }
 
-size_t tarfs_write(struct fs_obj *file, void *buffer, size_t size, uint64_t offset) {
-	return 0;
-}
-
-int tarfs_reset(struct fs_obj *file) {
-	return 1;
-}
-
-int tarfs_sync(struct fs_obj *file) {
-	return 1;
-}
-
 struct driver tarfs_driver = {
 	tarfs_init, 
 
-	tarfs_cons,
-	tarfs_push,
-	tarfs_pull,
-	tarfs_free,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
 
-	tarfs_size,
+	NULL,
 	tarfs_read,
-	tarfs_write,
-	tarfs_reset,
-	tarfs_sync,
+	NULL,
+	NULL,
+	NULL,
+
+	NULL,
 };

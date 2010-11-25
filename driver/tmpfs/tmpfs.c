@@ -58,14 +58,6 @@ struct fs_obj *tmpfs_cons(int type) {
 	return fobj;
 }
 
-int tmpfs_push(struct fs_obj *obj) {
-	return 0;
-}
-
-int tmpfs_pull(struct fs_obj *obj) {
-	return 0;
-}
-
 int tmpfs_free(struct fs_obj *obj) {
 
 	if (obj->data) {
@@ -77,11 +69,7 @@ int tmpfs_free(struct fs_obj *obj) {
 	return 0;
 }
 
-uint64_t tmpfs_size(struct fs_obj *file) {	
-	return file->size;
-}
-
-size_t tmpfs_read(struct fs_obj *file, void *buffer, size_t size, uint64_t offset) {
+size_t tmpfs_read(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	
 	if (!file->data) {
 		return 0;
@@ -100,7 +88,7 @@ size_t tmpfs_read(struct fs_obj *file, void *buffer, size_t size, uint64_t offse
 	return size;
 }
 
-size_t tmpfs_write(struct fs_obj *file, void *buffer, size_t size, uint64_t offset) {
+size_t tmpfs_write(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	
 	if (offset + size >= file->size) {
 		file->data = realloc(file->data, offset + size);
@@ -123,21 +111,19 @@ int tmpfs_reset(struct fs_obj *file) {
 	return 0;
 }
 
-int tmpfs_sync(struct fs_obj *file) {
-	return 0;
-}
-
 struct driver tmpfs_driver = {
 	tmpfs_init, 
 
 	tmpfs_cons,
-	tmpfs_push,
-	tmpfs_pull,
+	NULL,
+	NULL,
 	tmpfs_free,
 
-	tmpfs_size,
+	NULL,
 	tmpfs_read,
 	tmpfs_write,
 	tmpfs_reset,
-	tmpfs_sync,
+	NULL,
+
+	NULL,
 };

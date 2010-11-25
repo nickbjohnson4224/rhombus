@@ -73,10 +73,13 @@ extern struct driver {
 
 	/* file operations */
 	uint64_t (*size) (struct fs_obj *file);
-	size_t   (*read) (struct fs_obj *file, void *buffer, size_t size, uint64_t offset);
-	size_t   (*write)(struct fs_obj *file, void *buffer, size_t size, uint64_t offset);
+	size_t   (*read) (struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset);
+	size_t   (*write)(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset);
 	int      (*reset)(struct fs_obj *file);
 	int      (*sync) (struct fs_obj *file);
+
+	/* irq handler */
+	void (*irq)(void);
 	
 } *active_driver;
 

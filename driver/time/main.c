@@ -14,43 +14,58 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <ipc.h>
-#include <proc.h>
-#include <driver.h>
-
 #include <stdint.h>
-#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <driver.h>
+#include <mutex.h>
 #include <natio.h>
+#include <proc.h>
 
 #include "time.h"
 
-void time_read(struct packet *packet, uint8_t port, uint32_t caller);
+static bool m_time = false;
 
-int main() {
+size_t time_read(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+	char *data;
 
-	when(PORT_READ, time_read);
+	if (size > 20) {
+		size = 20;
+	}
 
-	lfs_add(lfs_new_file(1, 21), "/time");
-	lfs_event_start();
+	data = malloc(21);
+	mutex_spin(&m_time);
+	sprintf(data, "%d", get_time());
+	mutex_free(&m_time);
+	memcpy(buffer, data, size);
+	free(data);
+
+	return size;
+}
+
+struct driver time_driver = {
+	NULL,
+
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+
+	NULL,
+	time_read,
+	NULL,
+	NULL,
+	NULL,
+
+	NULL,
+};
+
+int main(int argc, char **argv) {
+
+	driver_init(&time_driver, argc, argv);
 
 	psend(PORT_CHILD, getppid(), NULL);
 	_done();
 
 	return 0;
-}
-
-void time_read(struct packet *packet, uint8_t port, uint32_t caller) {
-	char *data;
-
-	if (!packet) {
-		return;
-	}
-
-	data = pgetbuf(packet);
-	sprintf(data, "%d", get_time());
-	psetbuf(&packet, 21);
-
-	psend(PORT_REPLY, caller, packet);
 }

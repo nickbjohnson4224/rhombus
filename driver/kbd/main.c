@@ -14,84 +14,75 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <ipc.h>
-#include <proc.h>
-#include <driver.h>
-
-#include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <driver.h>
 #include <stdio.h>
+#include <proc.h>
 
 #include "keyboard.h"
 
-void keyboard_irq (struct packet *packet, uint8_t port, uint32_t caller);
-void keyboard_read(struct packet *packet, uint8_t port, uint32_t caller);
+size_t kbd_read(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+	size_t i;
 
-int main() {
+	for (i = 0; i < size; i++) {
+		buffer[i] = pop_char();
 
-	when(PORT_IRQ,  keyboard_irq);
-	when(PORT_READ, keyboard_read);
+		if (buffer[i] == 'D') {
+			break;
+		}
+	}
+
+	return i;
+}
+
+void kbd_irq(void) {
+	static bool shift = false;
+	uint8_t scan;
+	char c;
+
+	scan = inb(0x60);
+
+	if (scan & 0x80) {
+		if (keymap[scan & 0x7F] == '\0') {
+			shift = false;
+		}
+	}
+	else if (keymap[scan & 0x7f] == '\0') {
+		shift = true;
+	}
+	else {
+		c = (shift) ? keymap[scan + 58] : keymap[scan];
+		fwrite(&c, sizeof(char), 1, stdout);
+		push_char(c);
+	}
+}
+
+struct driver kbd_driver = {
+	NULL,
+
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+
+	NULL,
+	kbd_read,
+	NULL,
+	NULL,
+	NULL,
+
+	kbd_irq,
+};
+
+int main(int argc, char **argv) {
+
+	driver_init(&kbd_driver, argc, argv);
 	rirq(1);
 
 	psend(PORT_CHILD, getppid(), NULL);
 	_done();
 
 	return 0;
-}
-
-void keyboard_irq(struct packet *packet, uint8_t port, uint32_t caller) {
-	static bool shift = false;
-	uint8_t scan;
-	char c;
-
-	if (caller == 0) {
-		scan = inb(0x60);
-
-		if (scan & 0x80) {
-			if (keymap[scan & 0x7F] == '\0') {
-				shift = false;
-			}
-		}
-
-		else if (keymap[scan & 0x7F] == '\0') {
-			shift = true;
-		}
-
-		else {
-			if (shift) {
-				c = keymap[scan + 58];
-			}
-			else {
-				c = keymap[scan];
-			}
-
-			fwrite(&c, sizeof(char), 1, stdout);
-			push_char(c);
-		}
-	}
-}
-
-void keyboard_read(struct packet *packet, uint8_t port, uint32_t caller) {
-	char *data;
-	size_t offset;
-	
-	if (!packet) {
-		return;
-	}
-
-	data = pgetbuf(packet);
-	offset = 0;
-
-	for (offset = 0; offset < packet->data_length; offset++) {
-		data[offset] = pop_char();
-
-		if (data[offset] == 'D') {
-			psetbuf(&packet, 0);
-			break;
-		}
-	}
-
-	psend(PORT_REPLY, caller, packet);
 }
