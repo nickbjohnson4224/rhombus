@@ -14,42 +14,32 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
-#include <pack.h>
+#include <natio.h>
 
-/****************************************************************************
- * __fload
+/*****************************************************************************
+ * fs_move
  *
- * Load a file descriptor from exec-peristent memory. Returns a pointer to
- * the loaded file descriptor on success, NULL on failure.
+ * Attempts to move the file <file> into directory <dir> with name <name>. If 
+ * <file> and <dir> are not in the same driver, this will likely fail, and the 
+ * file will have to be manually copied. Returns a pointer to the new 
+ * filsystem object (which may be the same as the old filesystem object) on 
+ * success, NULL on failure.
  */
 
-FILE *__fload(int id) {
-	FILE *new;
-	const FILE *saved;
-	size_t length;
+uint64_t fs_move(uint64_t dir, const char *name, uint64_t fobj) {
+	struct fs_cmd command;
 
-	/* allocate space for new file */
-	new = malloc(sizeof(FILE));
-
-	/* check for allocation errors */
-	if (!new) {
-		return NULL;
-	}
-
-	/* unpack file */
-	saved = __pack_load(PACK_KEY_FILE | id, &length);
-
-	/* existence/sanity check */
-	if (!saved || length != sizeof(FILE)) {
-		return NULL;
-	}
+	command.op = FS_MOVE;
+	command.v0 = fobj;
+	command.v1 = 0;
+	strlcpy(command.s0, name, 4000);
 	
-	/* copy file */
-	memcpy(new, saved, sizeof(FILE));
+	if (!fs_send(dir, &command)) {
+		return 0;
+	}
 
-	return new;
+	return command.v0;
 }

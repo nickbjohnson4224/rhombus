@@ -14,28 +14,26 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <string.h>
-#include <stddef.h>
+#include <stdint.h>
 #include <natio.h>
-#include <proc.h>
 
-size_t lfs_list_dir(char *buffer, size_t size, struct lfs_node *dir) {
-	struct lfs_node *child;
+/*****************************************************************************
+ * fs_link
+ *
+ * Sets the link at <link> to point to the filesystem object <fobj>. Returns 
+ * zero on success, nonzero on failure.
+ */
 
-	child = dir->daughter;
+int fs_link(uint64_t link, uint64_t fobj) {
+	struct fs_cmd command;
 
-	if (!child) {
-		strlcpy(buffer, "", size);
-		return 0;
+	command.op = FS_LINK;
+	command.v0 = fobj;
+	command.v1 = 0;
+	
+	if (!fs_send(link, &command)) {
+		return 1;
 	}
 
-	strlcpy(buffer, child->name, size);
-	child = child->sister1;
-	while (child) {
-		strlcat(buffer, ":", size);
-		strlcat(buffer, child->name, size);
-		child = child->sister1;
-	}
-
-	return strlen(buffer);
+	return 0;
 }

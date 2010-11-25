@@ -21,44 +21,86 @@
 #include <stdio.h>
 #include <natio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <driver.h>
 
+#include "initrd.h"
 #include "inc/tar.h"
 
-static uint8_t *initrd;
-static size_t   initrd_size;
-static bool   m_initrd;
+void initrd_init(int argc, char **argv) {
+	struct fs_obj *root;
 
-static void initrd_read(struct packet *packet, uint8_t port, uint32_t caller) {
-	uintptr_t offset;
+	root = calloc(sizeof(struct fs_obj), 1);
+	root->type = FOBJ_FILE;
+	root->data = (void*) BOOT_IMAGE;
+	root->size = tar_size(root->data);
+	root->inode = 0;
 
-	if (!packet) {
-		return;
-	}
-
-	offset = (uintptr_t) packet->offset;
-
-	if (offset + packet->data_length > initrd_size) {
-		if (offset > initrd_size) {
-			packet->data_length = 0;
-		}
-		else {
-			packet->data_length = initrd_size - offset;
-		}
-	}
-
-	mutex_spin(&m_initrd);
-	memcpy(pgetbuf(packet), &initrd[offset], packet->data_length);
-	mutex_free(&m_initrd);
-
-	psend(PORT_REPLY, caller, packet);
+	lfs_root(root);
 }
 
-uint64_t initrd_init() {
+struct fs_obj *initrd_cons(int type) {
+	return NULL;
+}
 
-	initrd = (uint8_t*) BOOT_IMAGE;
-	initrd_size = tar_size(initrd);
+int initrd_push(struct fs_obj *obj) {
+	return 0;
+}
 
-	when(PORT_READ, initrd_read);
+int initrd_pull(struct fs_obj *obj) {
+	return 0;
+}
+
+int initrd_free(struct fs_obj *obj) {
+	return 1;
+}
+
+uint64_t initrd_size(struct fs_obj *file) {	
+	return file->size;
+}
+
+size_t initrd_read(struct fs_obj *file, void *buffer, size_t size, uint64_t offset) {
+
+	if (!file->data) {
+		return 0;
+	}
+
+	if (offset >= file->size) {
+		return 0;
+	}
+
+	if (offset + size >= file->size) {
+		size = file->size - offset;
+	}
+
+	memcpy(buffer, &file->data[offset], size);
 	
-	return initrd_size;
+	return size;
 }
+
+size_t initrd_write(struct fs_obj *file, void *buffer, size_t size, uint64_t offset) {
+	return 0;
+}
+
+int initrd_reset(struct fs_obj *file) {
+	return 1;
+}
+
+int initrd_sync(struct fs_obj *file) {
+	return 0;
+}
+
+struct driver initrd_driver = {
+	initrd_init, 
+
+	initrd_cons,
+	initrd_push,
+	initrd_pull,
+	initrd_free,
+
+	initrd_size,
+	initrd_read,
+	initrd_write,
+	initrd_reset,
+	initrd_sync,
+};

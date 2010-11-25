@@ -27,12 +27,7 @@
 int fsetpos(FILE *stream, fpos_t *pos) {
 
 	if (stream && pos) {
-
-		if (!stream->ext) {
-			__fsetup(stream);
-		}
-
-		stream->ext->position = *pos;
+		stream->position = *pos;
 		return 0;
 	}
 	else {

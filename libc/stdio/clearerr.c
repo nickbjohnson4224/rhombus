@@ -23,8 +23,5 @@
  */
 
 void clearerr(FILE *stream) {
-	
-	if (stream->ext) {
-		stream->ext->flags &= ~(FILE_EOF | FILE_ERROR);
-	}
+	stream->flags &= ~(FILE_EOF | FILE_ERROR);
 }

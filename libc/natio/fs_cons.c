@@ -15,24 +15,28 @@
  */
 
 #include <stdint.h>
-#include <fs.h>
+#include <string.h>
+#include <stdlib.h>
+#include <natio.h>
 
 /*****************************************************************************
- * fs_root
+ * fs_find
  *
- * Default root directory of the filesystem. Persisted across process 
- * execution.
+ * Attempts to create a new filesystem object of type <type> and name <name> 
+ * in directory <dir>. Returns the new object on success, NULL on failure.
  */
 
-FILE *fs_root = NULL;
+uint64_t fs_cons(uint64_t dir, const char *name, int type) {
+	struct fs_cmd command;
 
-/*****************************************************************************
- * fs_chroot
- *
- * Change the default root directory of the filesystem to <root>.
- */
+	command.op = FS_CONS;
+	command.v0 = type;
+	command.v1 = 0;
+	strlcpy(command.s0, name, 4000);
+	
+	if (!fs_send(dir, &command)) {
+		return 0;
+	}
 
-void fs_chroot(FILE *root) {
-
-	fs_root = root;
+	return command.v0;
 }

@@ -23,8 +23,6 @@
 #include <mutex.h>
 #include <ipc.h>
 
-void tmpfs_init(void);
-
-extern struct driver *tmpfs_driver;
+extern struct driver tmpfs_driver;
 
 #endif/*TMPFS_H*/

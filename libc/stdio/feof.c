@@ -24,15 +24,10 @@
 
 int feof(FILE *stream) {
 
-	if (stream->ext) {
-		if (stream->ext->flags & FILE_EOF) {
-			return 1;
-		}
-		else {	
-			return 0;
-		}
+	if (stream->flags & FILE_EOF) {
+		return 1;
 	}
-	else {
+	else {	
 		return 0;
 	}
 }

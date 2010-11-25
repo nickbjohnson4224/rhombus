@@ -14,27 +14,25 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
-#include <fs.h>
+#include <natio.h>
+#include <pack.h>
 
 /*****************************************************************************
- * fs_size
+ * fdload
  *
- * Returns the file size of <file>. If this value is zero, the file may not
- * exist, be the wrong type, or be a character device. fs_type can be used to 
- * differentiate between these cases.
+ * Load the file descriptor with key <id> from exec-persistent space. Returns
+ * the loaded file descriptor on success, zero on failure.
  */
 
-uint64_t fs_size(FILE *file) {
-	struct fs_cmd command;
+uint64_t fdload(int id) {
+	uint64_t *saved;
+	size_t size;
 
-	command.op = FS_SIZE;
-	command.v0 = 0;
-	command.v1 = 0;
-	
-	if (!fs_send(file, &command)) {
+	saved = __pack_load(PACK_KEY_FILE | id, &size);
+
+	if ((!saved) || (size != sizeof(uint64_t))) {
 		return 0;
 	}
 
-	return command.v0;
+	return *saved;
 }

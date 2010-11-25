@@ -25,7 +25,6 @@
 #include <natio.h>
 #include <mmap.h>
 #include <pack.h>
-#include <fs.h>
 
 /****************************************************************************
  * reject
@@ -57,14 +56,16 @@ void _init(bool is_init) {
 	__loadenv();
 
 	/* setup standard streams */
-	stdin    = __fload(0);
-	stdout   = __fload(1);
-	stderr   = __fload(2);
-	vfs_root = __fload(3);
-	fs_chroot(__fload(3));
+	stdin   = fdopen(fdload(0), "r");
+	stdout  = fdopen(fdload(1), "w");
+	stderr  = fdopen(fdload(2), "w");
+	fs_root = fdload(3);
 
 	__sig_init();
 
+	when(PORT_FS,	 reject);
+	when(PORT_SYNC,	 reject);
+	when(PORT_RESET, reject);
 	when(PORT_READ,  reject);
 	when(PORT_WRITE, reject);
 

@@ -24,7 +24,5 @@
 
 void rewind(FILE *stream) {
 	
-	if (stream->ext) {
-		stream->ext->position = 0;
-	}
+	stream->position = 0;
 }

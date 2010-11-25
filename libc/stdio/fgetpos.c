@@ -27,14 +27,7 @@
 int fgetpos(FILE *stream, fpos_t *pos) {
 
 	if (pos && stream) {
-
-		if (!stream->ext) {
-			*pos = 0;
-		}
-		else {
-			*pos = stream->ext->position;
-		}
-
+		*pos = stream->position;
 		return 0;
 	}
 	else {

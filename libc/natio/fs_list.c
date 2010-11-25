@@ -16,33 +16,26 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <stdlib.h>
-#include <fs.h>
+#include <natio.h>
 
 /*****************************************************************************
- * fs_find
+ * fs_list
  *
- * Attempts to create a new filesystem object of type <type> and name <name> 
- * in directory <dir>. Returns the new object on success, NULL on failure.
+ * Gives the name of the entry of number <entry> in the directory <dir>.
+ * Returns a copy of that string on success, NULL on failure.
  */
 
-FILE *fs_cons(FILE *dir, const char *name, int type) {
+char *fs_list(uint64_t dir, int entry) {
 	struct fs_cmd command;
-	FILE *file;
 
-	command.op = FS_CONS;
-	command.v0 = type;
+	command.op = FS_LIST;
+	command.v0 = entry;
 	command.v1 = 0;
-	strlcpy(command.s0, name, 4000);
 	
 	if (!fs_send(dir, &command)) {
 		return NULL;
 	}
 
-	file = malloc(sizeof(FILE));
-	file->server = ((command.v0 >> 32) & 0xFFFFFFFF);
-	file->inode  = (command.v0 & 0xFFFFFFFF);
-	file->ext    = NULL;
-
-	return file;
+	command.null0 = '\0';
+	return strdup(command.s0);
 }

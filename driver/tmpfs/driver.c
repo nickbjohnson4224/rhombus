@@ -14,25 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
-#include <fs.h>
-
-/*****************************************************************************
- * fs_size
- *
- * Returns the file type of <file> on success, zero on error.
- */
-
-int fs_type(FILE *file) {
-	struct fs_cmd command;
-
-	command.op = FS_TYPE;
-	command.v0 = 0;
-	command.v1 = 0;
-	
-	if (!fs_send(file, &command)) {
-		return 0;
-	}
-
-	return command.v0;
-}
+#include <driver.h>
+#include <string.h>
+#include <stdlib.h>

@@ -14,41 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <natio.h>
-#include <errno.h>
+#ifndef INIT_INITRD_H
+#define INIT_INITRD_H
 
-/****************************************************************************
- * vfs_get_file
- *
- * Finds the file descriptor of the file in driver <root> with path <path>.
- * Returns the file descriptor on success, NULL on failure.
- */
+#include <driver.h>
 
-FILE *vfs_get_file(FILE *root, const char *path) {
-	struct vfs_query query;
+extern struct driver initrd_driver;
 
-	query.opcode = VFS_ACT | VFS_GET | VFS_FILE;
-	strlcpy(query.path0, path, MAX_PATH);
-
-	if (!vfssend(root, &query)) {
-		return NULL;
-	}
-	else {
-		if (query.opcode & VFS_ERR) {
-			switch (query.opcode & VFS_NOUN) {
-			case VFS_FILE:
-				errno = ENOFILE;
-				break;
-			case VFS_PERM:
-				errno = EPERM;
-				break;
-			}
-			return NULL;
-		}
-		else {
-			return __fcons(query.file0[0], query.file0[1], NULL);
-		}
-	}
-}
+#endif/*INIT_INITRD_H*/

@@ -27,47 +27,43 @@ int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
 	
 	fflush(stream);
 
-	if (!stream->ext) {
-		__fsetup(stream);
-	}
-
 	switch (mode) {
 	case _IONBF:
-		if (stream->ext->buffer) {
-			free(stream->ext->buffer);
-			stream->ext->buffer = NULL;
+		if (stream->buffer) {
+			free(stream->buffer);
+			stream->buffer = NULL;
 		}
-		stream->ext->buffsize = 0;
+		stream->buffsize = 0;
 		break;
 	case _IOLBF:
 	case _IOFBF:
-		if (stream->ext->buffer) {
-			free(stream->ext->buffer);
+		if (stream->buffer) {
+			free(stream->buffer);
 		}
 		if (buf) {
-			stream->ext->buffer = (uint8_t*) buf;
+			stream->buffer = (uint8_t*) buf;
 		}
 		else {
-			stream->ext->buffer = malloc(size);
+			stream->buffer = malloc(size);
 		}
-		stream->ext->buffsize = size;
-		stream->ext->buffpos = 0;
+		stream->buffsize = size;
+		stream->buffpos = 0;
 		break;
 	default:
 		return -1;
 	}
 
-	stream->ext->flags &= ~(FILE_FBF | FILE_LBF | FILE_NBF);
+	stream->flags &= ~(FILE_FBF | FILE_LBF | FILE_NBF);
 
 	switch (mode) {
 	case _IONBF:
-		stream->ext->flags |= FILE_NBF;
+		stream->flags |= FILE_NBF;
 		break;
 	case _IOLBF:
-		stream->ext->flags |= FILE_LBF;
+		stream->flags |= FILE_LBF;
 		break;
 	case _IOFBF:
-		stream->ext->flags |= FILE_FBF;
+		stream->flags |= FILE_FBF;
 		break;
 	}
 

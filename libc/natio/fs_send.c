@@ -14,35 +14,31 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
+#include <stdint.h>
+#include <natio.h>
 
-/****************************************************************************
- * __fcons
+/*****************************************************************************
+ * fs_send
  *
- * Constructs a stream pointing to the file at server PID <server> and inode
- * number <inode>. Returns the newly opened stream on success, and NULL on
- * failure.
+ * Send the filesystem command <cmd> to the root directory <root>. The 
+ * response is saved back to <cmd> and returned. Returns NULL on error.
  */
 
-FILE *__fcons(uint32_t server, uint32_t inode, FILE *stream) {
+struct fs_cmd *fs_send(uint64_t root, struct fs_cmd *cmd) {
+	size_t length;
 
-	if (!stream) {
-		stream = malloc(sizeof(FILE));
+	if (!root) {
+		root = fs_root;
+	}
 
-		if (!stream) {
-			errno = ENOMEM;
-			return NULL;
-		}
+	cmd->null0 = '\0';
+	length = sizeof(struct fs_cmd);
+	length = ssend(root, cmd, cmd, length, 0, PORT_FS);
+	
+	if (length != sizeof(struct fs_cmd) || cmd->op == FS_ERR) {
+		return NULL;
 	}
 	else {
-		__fstrip(stream);
+		return cmd;
 	}
-
-	stream->server = server;
-	stream->inode  = inode;
-	stream->ext    = NULL;
-
-	return stream;
 }

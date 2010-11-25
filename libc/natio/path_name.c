@@ -14,32 +14,26 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
 #include <stdlib.h>
-#include <pack.h>
+#include <string.h>
+#include <natio.h>
 
 /****************************************************************************
- * __fsave
+ * path_name
  *
- * Save a file descriptor to the dictionary. Saves the file descriptor <fd>
- * to the dictionary under the name <name> in the namespace "file:". Returns
- * 0 on success and nonzero on failure.
+ * Returns a string that evaluates to the name of the filesystem object
+ * described by <path>.
  */
 
-int __fsave(int id, FILE *fd) {
+char *path_name(const char *path) {
+	const char *tail;
 
-	/* reject null files */
-	if (!fd) {
-		return 1;
+	tail = strrchr(path, PATH_SEP);
+
+	if (!tail) {
+		return strdup(path);
 	}
 
-	/* strip file */
-	__fstrip(fd);
-
-	/* pack file */
-	__pack_add(PACK_KEY_FILE | id, fd, sizeof(FILE));
-
-	return 0;
+	tail++;
+	return strdup(tail);
 }

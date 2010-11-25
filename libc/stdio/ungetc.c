@@ -26,15 +26,11 @@
 
 int ungetc(int c, FILE *stream) {
 
-	if (!stream->ext) {
-		__fsetup(stream);
-	}
-
-	if (stream->ext->revbuf != EOF) {
+	if (stream->revbuf != EOF) {
 		c = EOF;
 	}
 	else {
-		stream->ext->revbuf = c;
+		stream->revbuf = c;
 	}
 
 	return c;

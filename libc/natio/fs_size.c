@@ -14,23 +14,27 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
+#include <stdint.h>
 #include <natio.h>
 
-struct lfs_node *lfs_new_file(uint32_t inode, uint64_t size) {
-	struct lfs_node *node;
+/*****************************************************************************
+ * fs_size
+ *
+ * Returns the file size of <file>. If this value is zero, the file may not
+ * exist, be the wrong type, or be a character device. fs_type can be used to 
+ * differentiate between these cases.
+ */
 
-	node = calloc(sizeof(struct lfs_node), 1);
+uint64_t fs_size(uint64_t file) {
+	struct fs_cmd command;
 
-	if (!node) {
-		return NULL;
+	command.op = FS_SIZE;
+	command.v0 = 0;
+	command.v1 = 0;
+	
+	if (!fs_send(file, &command)) {
+		return 0;
 	}
 
-	node->inode = inode;
-	node->size  = size;
-	node->type  = VFS_FILE;
-	node->user  = 0;
-	node->perm_user = PERM_READ | PERM_GET;
-
-	return node;
+	return command.v0;
 }

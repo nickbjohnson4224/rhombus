@@ -84,7 +84,7 @@ void lfs_root(struct fs_obj *root) {
  * may not be in the current driver, on success, and NULL on failure.
  */
 
-FILE *lfs_find(uint32_t inode, const char *path_str) {
+uint64_t lfs_find(uint32_t inode, const char *path_str) {
 	struct path   *path;
 	struct fs_obj *fobj;
 	struct fs_obj *sub;
@@ -97,22 +97,28 @@ FILE *lfs_find(uint32_t inode, const char *path_str) {
 		name = path_next(path);
 
 		if (!name) {
-			return __fcons(getpid(), fobj->inode, NULL);
+			if (fobj->type == FOBJ_LINK && fobj->link) {
+				return fobj->link;
+			}
+			else {
+				return (((uint64_t) getpid() << 32) | fobj->inode);
+			}
 		}
 
 		if (fobj->type == FOBJ_LINK) {
 			free(name);
 			if (fobj->link) {
+				path_prev(path);
 				return fs_find(fobj->link, path_tail(path));
 			}
 			else {
-				return NULL;
+				return 0;
 			}
 		}
 
 		if (fobj->type != FOBJ_DIR) {
 			free(name);
-			return NULL;
+			return 0;
 		}
 		else {
 			sub = fobj->daughter;
@@ -131,12 +137,12 @@ FILE *lfs_find(uint32_t inode, const char *path_str) {
 				fobj = sub;
 			}
 			else {
-				return NULL;
+				return 0;
 			}
 		}
 	}
 
-	return NULL;
+	return 0;
 }
 
 /*****************************************************************************
@@ -160,7 +166,7 @@ int lfs_list(struct fs_obj *dir, int entry, char *buffer, size_t size) {
 			break;
 		}
 		else {
-			daughter = daughter->sister0;
+			daughter = daughter->sister1;
 			entry--;
 		}
 	}
@@ -262,4 +268,34 @@ int lfs_pull(struct fs_obj *obj) {
 	}
 
 	return active_driver->pull(obj);
+}
+
+/*****************************************************************************
+ * lfs_add
+ *
+ * Adds the filesystem object <obj> to the local filesystem at path <path>.
+ * This function is intended for internal use by drivers, esp. during init.
+ */
+
+void lfs_add(struct fs_obj *obj, const char *path) {
+	char *path1;
+	uint64_t dirfd;
+	struct fs_obj *dir;
+	
+	if (!obj) {
+		return;
+	}
+
+	path1 = path_parent(path);
+	dirfd = lfs_find(0, path1);
+	dir = lfs_lookup(dirfd & 0xFFFFFFFF);
+	free(path1);
+
+	if (!dir) {
+		return;
+	}
+
+	path1 = path_name(path);
+	lfs_push(dir, obj, path1);
+	free(path1);
 }

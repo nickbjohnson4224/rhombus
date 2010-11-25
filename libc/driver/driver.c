@@ -28,8 +28,6 @@
 
 struct driver *active_driver = NULL;
 
-
-
 /*****************************************************************************
  * lfs_wrapper
  *
@@ -39,7 +37,7 @@ struct driver *active_driver = NULL;
 void lfs_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 	struct fs_cmd *cmd;
 	struct fs_obj *fobj, *new_fobj;
-	FILE *file;
+	uint64_t file;
 
 	if (!packet) {
 		psend(PORT_REPLY, caller, NULL);
@@ -60,9 +58,7 @@ void lfs_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 		file = lfs_find(packet->target_inode, cmd->s0);
 		
 		if (file) {
-			cmd->v0   = file->server;
-			cmd->v0 <<= 32;
-			cmd->v0  |= file->inode;
+			cmd->v0 = file;
 		}
 		else {
 			cmd->op = FS_ERR;
@@ -98,11 +94,21 @@ void lfs_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 				cmd->op = FS_ERR;
 			}
 			else {
-				free(fobj);
+				active_driver->free(fobj);
 			}
 		}
 		else {
-			free(fobj);
+			active_driver->free(fobj);
+		}
+		break;
+	case FS_LINK:
+		fobj = lfs_lookup(packet->target_inode);
+
+		if (fobj) {
+			fobj->link = cmd->v0;
+		}
+		else {
+			cmd->op = FS_ERR;
 		}
 		break;
 	case FS_LIST:

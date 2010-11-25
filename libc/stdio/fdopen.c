@@ -14,52 +14,41 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdlib.h>
+#include <stdio.h>
 #include <natio.h>
+#include <errno.h>
 
 /****************************************************************************
- * lfs_get_perm
+ * fdopen
  *
- * Gets the permission mask of a lfs file <node> for the given user <user>.
- * Returns the mask on success, zero on failure.
+ * Create a stream from the file descriptor <fd> with mode <mode>. Returns
+ * a pointer to the new stream on success, NULL on failure.
  */
 
-uint8_t lfs_get_perm(struct lfs_node *node, uint32_t user) {
+FILE *fdopen(uint64_t fd, const char *mode) {
+	FILE *stream;
 	
-	if (!node) {
-		return 0;
+	if (!fd) {
+		return NULL;
+	}
+		
+	stream = calloc(sizeof(FILE), 1);
+
+	if (!stream) {
+		errno = ENOMEM;
+		return NULL;
 	}
 
-	if (user == node->user) {
-		return node->perm_user;
-	}
-	else {
-		return node->perm_def;
-	}
-}
+	stream->fd       = fd;
+	stream->mutex    = false;
+	stream->position = 0;
+	stream->size     = fs_size(fd);
+	stream->buffer   = NULL;
+	stream->buffsize = 0;
+	stream->buffpos  = 0;
+	stream->revbuf   = EOF;
+	stream->flags    = FILE_NBF | FILE_READ | FILE_WRITE;
 
-/****************************************************************************
- * lfs_set_perm
- *
- * Sets the permission mask on file <node> for user <user> to <perm>. If
- * user is -1, the operation applies to the default user. Returns 0 on
- * success, nonzero on failure.
- */
-
-int lfs_set_perm(struct lfs_node *node, uint32_t user, uint8_t perm) {
-	
-	if (!node) {
-		return 1;
-	}
-
-	if (user == node->user) {
-		node->perm_user = perm;
-	}
-	else if (user == (uint32_t) -1) {
-		node->perm_def = perm;
-	}
-	else {
-		return 1;
-	}
-
-	return 0;
+	return stream;
 }

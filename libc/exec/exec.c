@@ -43,10 +43,10 @@ static uint8_t *bootstrap = (void*) ESPACE;
 void _save(const char **argv) {
 	int argc;
 
-	__fsave(0,  stdin);
-	__fsave(1, stdout);
-	__fsave(2, stderr);
-	__fsave(3, vfs_root);
+	if (stdin)  fdsave(0,  stdin->fd);
+	if (stdout) fdsave(1, stdout->fd);
+	if (stderr) fdsave(2, stderr->fd);
+	fdsave(3, fs_root);
 
 	if (argv) {
 		for (argc = 0; argv[argc]; argc++);

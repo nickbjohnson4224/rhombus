@@ -30,10 +30,12 @@
 
 int fclose(FILE *stream) {
 
-	/* strip stream extensions */
-	__fstrip(stream);
-
-	/* free file structure */
+	fflush(stream);
+	
+	if (stream->buffer) {
+		free(stream->buffer);
+	}
+	
 	free(stream);
 
 	return 0;

@@ -26,11 +26,10 @@
 
 int fflush(FILE *stream) {
 
-	if (stream->ext && stream->ext->buffer && stream->ext->buffpos) {
-		write(stream, stream->ext->buffer, 
-			stream->ext->buffpos, stream->ext->position);
-		stream->ext->position += stream->ext->buffpos;
-		stream->ext->buffpos = 0;
+	if (stream->buffer && stream->buffpos) {
+		write(stream->fd, stream->buffer, stream->buffpos, stream->position);
+		stream->position += stream->buffpos;
+		stream->buffpos = 0;
 	}
 
 	return 0;

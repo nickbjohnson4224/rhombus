@@ -27,7 +27,8 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 	
-	err = vfs_mov_file(NULL, argv[1], argv[2]);
+	err = rename(argv[1], argv[2]);
+	
 	if (err) {
 		printf("mv: cannot move %s to %s\n", argv[1], argv[2]);
 		return EXIT_FAILURE;

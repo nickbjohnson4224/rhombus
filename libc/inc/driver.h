@@ -20,7 +20,6 @@
 #include <stdint.h>
 #include <natio.h>
 #include <ipc.h>
-#include <fs.h>
 
 /* local filesystem interface ***********************************************/
 
@@ -30,7 +29,7 @@ struct fs_obj {
 
 	/* file information */
 	uint64_t size;
-	void *data;
+	uint8_t *data;
 
 	/* inode lookup table */
 	uint32_t inode;
@@ -45,17 +44,19 @@ struct fs_obj {
 	struct fs_obj *daughter;
 
 	/* link information */
-	FILE *link;
+	uint64_t link;
 };
 
 struct fs_obj *lfs_lookup(uint32_t inode);
 
-void  lfs_root(struct fs_obj *root);
-FILE *lfs_find(uint32_t inode, const char *path);
+void     lfs_root(struct fs_obj *root);
+uint64_t lfs_find(uint32_t inode, const char *path);
 
 int lfs_list(struct fs_obj *dir, int entry, char *buffer, size_t size);
 int lfs_push(struct fs_obj *dir, struct fs_obj *obj, const char *name);
 int lfs_pull(struct fs_obj *obj);
+
+void lfs_add(struct fs_obj *obj, const char *path);
 
 /* driver interface structure ***********************************************/
 

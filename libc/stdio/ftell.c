@@ -23,11 +23,5 @@
  */
 
 fpos_t ftell(FILE *stream) {
-
-	if (stream->ext) {
-		return stream->ext->position;
-	}
-	else {
-		return 0;
-	}
+	return stream->position;
 }

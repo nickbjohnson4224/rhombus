@@ -16,114 +16,128 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <driver.h>
 
 #include "tmpfs.h"
 
 uint8_t tmpfs_inode_top = 1;
 
-struct lfs_node *tmpfs_new(struct vfs_query *query, struct lfs_node *dir) {
-	struct lfs_node *node;
+void tmpfs_init(int argc, char **argv) {
+	struct fs_obj *root;
 
-	switch (query->opcode & VFS_NOUN) {
-	case VFS_FILE:
-		node = lfs_new_file(tmpfs_inode_top++, 0);
-		lfs_set_perm(node, 0, PERM_GET | PERM_PERM | PERM_READ | PERM_WRITE | PERM_DEL);
-		return node;
-	case VFS_DIR:
-		node = lfs_new_dir(tmpfs_inode_top++);
-		lfs_set_perm(node, 0, PERM_GET | PERM_PERM | PERM_NEW);
-		return node;
-	case VFS_LINK:
-		node = lfs_new_link(query->path1, __fcons(query->file0[0], query->file0[1], NULL));
-		lfs_set_perm(node, 0, PERM_GET | PERM_PERM | PERM_DEL);
-		return node;
-	default:
-		query->opcode = VFS_ERR | VFS_PERM;
-		return NULL;
-	}
+	root = calloc(sizeof(struct fs_obj), 1);
+	root->type = FOBJ_DIR;
+	root->inode = 0;
+
+	lfs_root(root);
 }
 
-void tmpfs_del(struct vfs_query *query, struct lfs_node *node) {
-	if (node->data) {
-		free(node->data);
-	}
-}
-
-void tmpfs_read(struct packet *packet, uint8_t port, uint32_t caller) {
-	struct lfs_node *node;
-	char *buffer;
-	char *data;
-	size_t size;
-
-	if (!packet) {
-		psend(PORT_REPLY, caller, NULL);
-		return;
-	}
-
-	node = lfs_get_node(packet->target_inode);
-
-	if (!node) {
-		psend(PORT_REPLY, caller, NULL);
-		pfree(packet);
-		return;
-	}
+struct fs_obj *tmpfs_cons(int type) {
+	struct fs_obj *fobj = NULL;
 	
-	if (packet->offset < node->size) {
-		buffer = pgetbuf(packet);
-		size = packet->data_length;
-		size = ((node->size - packet->offset) < size) ? (node->size - packet->offset) : size;
-		psetbuf(&packet, size);
-		data = node->data;
-		memcpy(buffer, &data[packet->offset], size);
+	switch (type) {
+	case FOBJ_FILE:
+		fobj = calloc(sizeof(struct fs_obj), 1);
+		fobj->type = FOBJ_FILE;
+		fobj->size = 0;
+		fobj->data = NULL;
+		fobj->inode = tmpfs_inode_top++;
+		break;
+	case FOBJ_DIR:
+		fobj = calloc(sizeof(struct fs_obj), 1);
+		fobj->type = FOBJ_DIR;
+		fobj->inode = tmpfs_inode_top++;
+		break;
+	case FOBJ_LINK:
+		fobj = calloc(sizeof(struct fs_obj), 1);
+		fobj->type = FOBJ_LINK;
+		fobj->inode = tmpfs_inode_top++;
+		break;
 	}
-	else {
-		psetbuf(&packet, 0);
+
+	return fobj;
+}
+
+int tmpfs_push(struct fs_obj *obj) {
+	return 0;
+}
+
+int tmpfs_pull(struct fs_obj *obj) {
+	return 0;
+}
+
+int tmpfs_free(struct fs_obj *obj) {
+
+	if (obj->data) {
+		free(obj->data);
 	}
+
+	free(obj);
+
+	return 0;
+}
+
+uint64_t tmpfs_size(struct fs_obj *file) {	
+	return file->size;
+}
+
+size_t tmpfs_read(struct fs_obj *file, void *buffer, size_t size, uint64_t offset) {
 	
-	psend(PORT_REPLY, caller, packet);
-	pfree(packet);
-}
-
-void tmpfs_write(struct packet *packet, uint8_t port, uint32_t caller) {
-	struct lfs_node *node;
-	char *buffer, *data;
-
-	if (!packet) {
-		psend(PORT_REPLY, caller, NULL);
-		return;
+	if (!file->data) {
+		return 0;
 	}
 
-	node = lfs_get_node(packet->target_inode);
-
-	if (!node) {
-		psend(PORT_REPLY, caller, NULL);
-		pfree(packet);
-		return;
+	if (offset >= file->size) {
+		return 0;
 	}
 
-	if (packet->offset + packet->data_length > node->size) {
-		node->data = realloc(node->data, packet->offset + packet->data_length);
-		node->size = packet->offset + packet->data_length;
+	if (offset + size >= file->size) {
+		size = file->size - offset;
 	}
 
-	buffer = pgetbuf(packet);
-	data   = node->data;
-
-	memcpy(&data[packet->offset], buffer, packet->data_length);
+	memcpy(buffer, &file->data[offset], size);
 	
-	psend(PORT_REPLY, caller, packet);
-	pfree(packet);
+	return size;
 }
 
-void tmpfs_init(void) {
+size_t tmpfs_write(struct fs_obj *file, void *buffer, size_t size, uint64_t offset) {
+	
+	if (offset + size >= file->size) {
+		file->data = realloc(file->data, offset + size);
+		file->size = offset + size;
+	}
 
-	lfs_set_perm(lfs_get_node(0), 0, PERM_GET | PERM_PERM | PERM_NEW | PERM_DEL);
+	memcpy(&file->data[offset], buffer, size);
 
-	when(PORT_READ, tmpfs_read);
-	when(PORT_WRITE, tmpfs_write);
-
-	drv_new = tmpfs_new;
-	drv_del = tmpfs_del;
-	lfs_event_start();
-
+	return size;
 }
+
+int tmpfs_reset(struct fs_obj *file) {
+	
+	if (file->data) {
+		free(file->data);
+		file->size = 0;
+		file->data = NULL;
+	}
+
+	return 0;
+}
+
+int tmpfs_sync(struct fs_obj *file) {
+	return 0;
+}
+
+struct driver tmpfs_driver = {
+	tmpfs_init, 
+
+	tmpfs_cons,
+	tmpfs_push,
+	tmpfs_pull,
+	tmpfs_free,
+
+	tmpfs_size,
+	tmpfs_read,
+	tmpfs_write,
+	tmpfs_reset,
+	tmpfs_sync,
+};

@@ -26,6 +26,6 @@
  * Returns the number of bytes written.
  */
 
-size_t write(FILE *file, void *buf, size_t size, uint64_t offset) {
+size_t write(uint64_t file, void *buf, size_t size, uint64_t offset) {
 	return ssend(file, NULL, buf, size, offset, PORT_WRITE);
 }

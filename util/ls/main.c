@@ -20,50 +20,33 @@
 #include <string.h>
 
 int main(int argc, char **argv) {
-	char *list;
-	size_t n, i, j;
+	char *name;
+	size_t i;
+	uint64_t dir;
 
 	if (argc == 1) {
-		list = vfs_get_list(NULL, getenv("PWD"));
-		
-		if (!list) {
-			printf("%s: no such directory\n", getenv("PWD"));
-			return EXIT_FAILURE;
-		}
-
-		for (i = 0, j = 1; list[i]; i++) {
-			if (list[i] == ':') {
-				list[i] = (j % 6) ? '\t' : '\n';
-				j++;
-			}
-		}
-
-		printf("%s\n", list);
-		free(list);
+		dir = fs_find(0, getenv("PWD"));
+	}
+	else {
+		dir = fs_find(0, argv[1]);
+	}
+	
+	if (!dir) {
+		printf("%s: no such directory\n", getenv("PWD"));
+		return EXIT_FAILURE;
 	}
 
-	else for (n = 1; n < (size_t) argc; n++) {
+	for (i = 0;; i++) {
+		name = fs_list(dir, i);
 
-		if (argc > 2) {
-			printf("%s:\n", argv[n]);
+		if (name) {
+			printf("%s%s", name, ((i + 1) % 6) ? "\t" : "\n");
+			free(name);
 		}
-
-		list = vfs_get_list(NULL, argv[n]);
-
-		if (!list) {
-			printf("%s: no such directory\n", argv[n]);
-			continue;
+		else {
+			printf("\n");
+			return EXIT_SUCCESS;
 		}
-
-		for (i = 0, j = 1; list[i]; i++) {
-			if (list[i] == ':') {
-				list[i] = (j % 6) ? '\t' : '\n';
-				j++;
-			}
-		}
-
-		printf("%s\n", list);
-		free(list);
 	}
 
 	return 0;

@@ -26,6 +26,6 @@
  * Returns the number of bytes read.
  */
 
-size_t read(FILE *file, void *buf, size_t size, uint64_t offset) {
+size_t read(uint64_t file, void *buf, size_t size, uint64_t offset) {
 	return ssend(file, buf, NULL, size, offset, PORT_READ);
 }

@@ -14,11 +14,24 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdint.h>
 #include <natio.h>
 
-struct lfs_node *(*drv_new)(struct vfs_query *query, struct lfs_node *dir);
-void (*drv_del)(struct vfs_query *query, struct lfs_node *node);
-void (*drv_set)(struct vfs_query *query, struct lfs_node *node);
+/*****************************************************************************
+ * fs_root
+ *
+ * Default root directory of the filesystem. Persisted across process 
+ * execution.
+ */
 
-size_t (*drv_read) (struct packet *packet);
-size_t (*drv_write)(struct packet *packet);
+uint64_t fs_root = 0;
+
+/*****************************************************************************
+ * fs_chroot
+ *
+ * Change the default root directory of the filesystem to <root>.
+ */
+
+void fs_chroot(FILE *root) {
+	fs_root = root->fd;
+}

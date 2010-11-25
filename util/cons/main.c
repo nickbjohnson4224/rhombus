@@ -20,69 +20,46 @@
 #include <errno.h>
 
 int main(int argc, char **argv) {
-	FILE *file;
+	uint64_t fobj;
+	char *path;
+	char type;
 
 	if (argc < 2) {
 		fprintf(stderr, "cons: missing file operand\n");
 		return 1;
 	}
-	else {
 		
-		if (argv[1][0] == '-' && argc > 2) {
-			file = vfs_get_file(NULL, argv[2]);
-
-			if (file) {
-				printf("cons: object %s exists\n", argv[2]);
-				fclose(file);
-				return 1;
-			}
-
-			switch (argv[1][1]) {
-			case 'f': /* construct file */
-				file = vfs_new_file(NULL, argv[2]);
-				break;
-			case 'd': /* construct directory */
-				file = vfs_new_dir(NULL, argv[2]);
-				break;
-			case 'l': /* construct link */
-				if (argc < 4) {
-					printf("cons: no link operand\n");
-					return 1;
-				}
-
-				if (argc < 5) {
-					file = vfs_new_link(NULL, argv[2], argv[3], NULL);
-				}
-				else {
-					file = vfs_new_link(NULL, argv[2], argv[3], 
-						__fcons(atoi(argv[4]), atoi(argv[5]), NULL));
-				}
-
-				break;
-			default:
-				file = NULL;
-			}
-		}
-		else {
-			file = vfs_get_file(NULL, argv[1]);
-
-			if (file) {
-				printf("cons: object %s exists\n", argv[1]);
-				fclose(file);
-				return 1;
-			}
-
-			file = vfs_new_file(NULL, argv[1]);
-		}
-
-		if (!file) {
-			printf("cons: cannot construct object: \n");
-			perror(NULL);
-		}
-		else {
-			fclose(file);
-		}
+	if (argv[1][0] == '-' && argc > 2) {
+		type = argv[1][1];
+		path = argv[2];
 	}
-	
+	else {
+		type = 'f';
+		path = argv[1];
+	}
+		
+	fobj = fs_find(0, path);
+
+	if (fobj) {
+		printf("cons: object %s exists\n", path);
+		return 1;
+	}
+
+	switch (type) {
+	case 'f': /* construct file */
+		fobj = fs_cons(fs_find(0, path_parent(path)), path_name(path), FOBJ_FILE);
+		break;
+	case 'd': /* construct directory */
+		fobj = fs_cons(fs_find(0, path_parent(path)), path_name(path), FOBJ_DIR);
+		break;
+	default:
+		fobj = 0;
+	}
+
+	if (!fobj) {
+		printf("cons: cannot construct object: \n");
+		perror(NULL);
+	}
+
 	return 0;
 }

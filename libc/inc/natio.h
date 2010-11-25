@@ -24,155 +24,52 @@
 
 /* native I/O routines *****************************************************/
 
-size_t ssend(FILE *file, void *r, void *s, size_t size, uint64_t off, uint8_t port);
-size_t read (FILE *file, void *buf, size_t size, uint64_t offset);
-size_t write(FILE *file, void *buf, size_t size, uint64_t offset);
-int    sync (FILE *file);
-int    reset(FILE *file);
+size_t ssend(uint64_t fd, void *r, void *s, size_t size, uint64_t off, uint8_t port);
 
-/* virtual filesystem operations *******************************************/
+size_t read (uint64_t fd, void *buf, size_t size, uint64_t offset);
+size_t write(uint64_t fd, void *buf, size_t size, uint64_t offset);
+int    sync (uint64_t fd);
+int    reset(uint64_t fd);
 
-#define MAX_PATH	1000
+/* filesystem operations ***************************************************/
 
-extern FILE *vfs_root;
+extern uint64_t fs_root;
 
-#define VFS_VERB	0x00F0
-#define VFS_NEW 	0x0010	// Create a new VFS object
-#define VFS_DEL 	0x0020	// Delete a VFS object
-#define VFS_MOV 	0x0030	// Move a VFS object around
-#define VFS_GET 	0x0040	// Get a VFS object field
-#define VFS_SET 	0x0050	// Set a VFS object field
+#define FS_ERR  0x00
+#define FS_FIND 0x01
+#define FS_CONS 0x02
+#define FS_MOVE 0x03
+#define FS_REMV 0x04
+#define FS_LINK 0x05
+#define FS_LIST 0x06
+#define FS_SIZE 0x07
+#define FS_TYPE 0x08
 
-#define VFS_ACT		0x0000	// Perform a VFS action
-#define VFS_ERR		0x1000	// Error from a VFS action
-
-#define VFS_NOUN	0x000F
-#define VFS_TYPE	0x0000	// Type of VFS object
-#define VFS_FILE	0x0001	// File location of VFS object
-#define VFS_DIR 	0x0002	// Directory VFS object / Directory contents
-#define VFS_LINK	0x0003	// Link VFS object / Link location
-#define VFS_PERM	0x0004	// Permission of VFS object
-#define VFS_USER	0x0005	// Owner of VFS object
-#define VFS_SIZE	0x0006	// Size of a VFS object
-#define VFS_PATH	0x0007	// Path of a VFS object (used for errors)
-
-#define PERM_NEW	0x01	// Permission to create new files in a directory
-#define PERM_DEL	0x02	// Permission to delete a file
-#define PERM_GET	0x04	// Permission to get all metadata about a file
-#define PERM_PERM	0x08	// Permission to set the permissions of a file
-#define PERM_LINK	0x10	// Permission to modify a link target
-#define PERM_READ	0x20	// Permission to read from a file
-#define PERM_WRITE	0x40	// Permission to write to a file
-
-struct vfs_query {
-	uint32_t opcode;
-	uint32_t file0[2];
-	uint32_t file1[2];
-	uint32_t value0;
-	uint32_t value1;
-	char path0[MAX_PATH];
-	char path1[MAX_PATH];
-} __attribute__ ((packed));
-
-struct vfs_query *vfssend(FILE *root, struct vfs_query *query);
-
-FILE *vfs_new_file(FILE *root, const char *path);
-FILE *vfs_new_dir (FILE *root, const char *path);
-FILE *vfs_new_link(FILE *root, const char *path, const char *link, FILE *alink);
-
-int vfs_del_file(FILE *root, const char *path);
-
-int vfs_mov_file(FILE *root, const char *path0, const char *path1);
-
-uint16_t vfs_get_type(FILE *root, const char *path);
-FILE    *vfs_get_file(FILE *root, const char *path);
-char    *vfs_get_list(FILE *root, const char *path);
-char    *vfs_get_link(FILE *root, const char *path);
-FILE    *vfs_get_alnk(FILE *root, const char *path);
-uint8_t  vfs_get_perm(FILE *root, const char *path, uint32_t user);
-uint64_t vfs_get_size(FILE *root, const char *path);
-
-int vfs_set_link(FILE *root, const char *path, const char *link, FILE *alink);
-int vfs_set_perm(FILE *root, const char *path, uint32_t user, uint8_t perm);
-int vfs_set_user(FILE *root, const char *path, uint32_t user);
-
-/* local filesystem operations (for drivers) *******************************/
-
-struct lfs_node {
-
-	/* file information */
-	uint64_t size;
-	void *data;
-
-	/* file location */
-	uint32_t inode;
-	struct lfs_node *next;
-	struct lfs_node *prev;
-
-	/* directory structure */
-	uint16_t type;
-	const char *name;
-	struct lfs_node *mother;
-	struct lfs_node *sister0;
-	struct lfs_node *sister1;
-	struct lfs_node *daughter;
-
-	/* link location */
-	const char *link;
-	const FILE *alink;
-
-	/* permissions */
-	uint32_t user;
-	uint8_t perm_user;
-	uint8_t perm_def;
+struct fs_cmd {
+	uint64_t v0;
+	uint64_t v1;
+	uint8_t  op;
+	char     s0[4000];
+	char     null0;
 };
 
-void lfs_event(struct packet *packet, uint8_t port, uint32_t caller);
-void lfs_event_start(void);
-void lfs_event_stop(void);
+struct fs_cmd *fs_send(uint64_t root, struct fs_cmd *cmd);
 
-struct lfs_node *lfs_new_file(uint32_t inode, uint64_t size);
-struct lfs_node *lfs_new_dir (uint32_t inode);
-struct lfs_node *lfs_new_link(const char *link, const FILE *alink);
+uint64_t fs_find  (uint64_t root, const char *path);
+uint64_t fs_cons  (uint64_t dir, const char *name, int type);
+uint64_t fs_move  (uint64_t dir, const char *name, uint64_t file);
+char    *fs_list  (uint64_t dir, int entry);
+int      fs_remove(uint64_t fobj);
+int      fs_link  (uint64_t link, uint64_t fobj);
+uint64_t fs_size  (uint64_t file);
+int      fs_type  (uint64_t fobj);
 
-size_t lfs_list_dir(char *buffer, size_t size, struct lfs_node *dir);
+void     fs_chroot(FILE *root);
 
-uint32_t lfs_add(struct lfs_node *node, const char *path);
-uint32_t lfs_del(const char *path);
-
-uint8_t lfs_get_perm(struct lfs_node *node, uint32_t user);
-int     lfs_set_perm(struct lfs_node *node, uint32_t user, uint8_t perm);
-
-uint32_t         lfs_add_path(struct lfs_node *root, const char *path, struct lfs_node *node);
-struct lfs_node *lfs_get_path(struct lfs_node *root, const char *path);
-struct lfs_node *lfs_get_dir (struct lfs_node *root, const char *path);
-struct lfs_node *lfs_get_link(struct lfs_node *root, const char *path, const char **tail);
-struct lfs_node *lfs_del_path(struct lfs_node *root, const char *path);
-
-uint32_t         lfs_add_node(struct lfs_node *node);
-struct lfs_node *lfs_get_node(uint32_t inode);
-struct lfs_node *lfs_del_node(uint32_t inode);
-
-/* driver / local filesystem interface *************************************/
-
-typedef void (*lfs_handler_t)(struct vfs_query *query, uint32_t inode, uint32_t caller);
-void lfs_when_new(lfs_handler_t handler);
-void lfs_when_del(lfs_handler_t handler);
-void lfs_when_mov(lfs_handler_t handler);
-void lfs_when_get(lfs_handler_t handler);
-void lfs_when_set(lfs_handler_t handler);
-
-void lfs_new_default(struct vfs_query *query, uint32_t inode, uint32_t caller);
-void lfs_del_default(struct vfs_query *query, uint32_t inode, uint32_t caller);
-void lfs_get_default(struct vfs_query *query, uint32_t inode, uint32_t caller);
-void lfs_set_default(struct vfs_query *query, uint32_t inode, uint32_t caller);
-
-extern struct lfs_node *(*drv_new)(struct vfs_query *query, struct lfs_node *dir);
-extern void (*drv_del)(struct vfs_query *query, struct lfs_node *node);
-extern void (*drv_set)(struct vfs_query *query, struct lfs_node *node);
-
-extern size_t (*drv_read) (struct packet *packet);
-extern size_t (*drv_write)(struct packet *packet);
+#define FOBJ_NULL	0x00
+#define FOBJ_FILE	0x01
+#define FOBJ_DIR	0x02
+#define FOBJ_LINK	0x03
 
 /* path manipulation *******************************************************/
 
@@ -190,5 +87,13 @@ char *path_peek(struct path *path);
 int   path_prev(struct path *path);
 
 const char *path_tail(struct path *path);
+
+char *path_parent(const char *path);
+char *path_name  (const char *path);
+
+/* file descriptor persisence ***********************************************/
+
+uint64_t fdload(int id);
+int      fdsave(int id, uint64_t fd);
 
 #endif/*NATIO_H*/

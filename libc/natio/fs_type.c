@@ -15,42 +15,24 @@
  */
 
 #include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
-#include <fs.h>
+#include <natio.h>
 
 /*****************************************************************************
- * fs_move
+ * fs_size
  *
- * Attempts to move the file <file> into directory <dir> with name <name>. If 
- * <file> and <dir> are not in the same driver, this will likely fail, and the 
- * file will have to be manually copied. Returns a pointer to the new 
- * filsystem object (which may be the same as the old filesystem object) on 
- * success, NULL on failure.
+ * Returns the file type of <file> on success, zero on error.
  */
 
-FILE *fs_move(FILE *dir, const char *name, FILE *fobj) {
+int fs_type(uint64_t fobj) {
 	struct fs_cmd command;
-	FILE *new_fobj;	
-	uint64_t fobj_id;
 
-	fobj_id   = fobj->server;
-	fobj_id <<= 32;
-	fobj_id  |= fobj->inode;
-
-	command.op = FS_MOVE;
-	command.v0 = fobj_id;
+	command.op = FS_TYPE;
+	command.v0 = 0;
 	command.v1 = 0;
-	strlcpy(command.s0, name, 4000);
 	
-	if (!fs_send(dir, &command)) {
-		return NULL;
+	if (!fs_send(fobj, &command)) {
+		return 0;
 	}
 
-	new_fobj = malloc(sizeof(FILE));
-	new_fobj->server = ((command.v0 >> 32) & 0xFFFFFFFF);
-	new_fobj->inode  = (command.v0 & 0xFFFFFFFF);
-	new_fobj->ext    = NULL;
-
-	return new_fobj;
+	return command.v0;
 }

@@ -14,40 +14,19 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <string.h>
-#include <stdlib.h>
 #include <natio.h>
+#include <pack.h>
 
-/****************************************************************************
- * lfs_get_dir
+/*****************************************************************************
+ * fdsave
  *
- * Returns the directory containing the LFS node at <path> from <root>.
- * Returns null on error.
+ * Save the given file descriptor with key <id> in exec-persistent space.
+ * Returns zero on success, nonzero on failure.
  */
 
-struct lfs_node *lfs_get_dir(struct lfs_node *root, const char *path) {
-	struct lfs_node *node;
-	char *dir_path, *tail;
-
-	dir_path = strdup(path);
-	tail = strrchr(dir_path, PATH_SEP);
-
-	if (tail) {
-		*tail = '\0';
-	}
-	else {
-		free(dir_path);
-		dir_path = strdup("");
-	}
-
-	node = lfs_get_path(root, dir_path);
-
-	free(dir_path);
-
-	if (node && node->type == VFS_DIR) {
-		return node;
-	}
-	else {
-		return NULL;
-	}
+int fdsave(int id, uint64_t fd) {
+	
+	__pack_add(PACK_KEY_FILE | id, &fd, sizeof(uint64_t));
+	
+	return 0;
 }

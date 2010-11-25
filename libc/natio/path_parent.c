@@ -19,28 +19,26 @@
 #include <natio.h>
 
 /****************************************************************************
- * vfs_set_user
+ * path_parent
  *
- * Sends a request to driver <root> that user <user> become the owner of the 
- * file at path <path>. Returns zero on success, nonzero on failure.
+ * Returns a string that evaluates to the parent of the filesystem object
+ * described by <path>.
  */
 
-int vfs_set_user(FILE *root, const char *path, uint32_t user) {
-	struct vfs_query query;
+char *path_parent(const char *path) {
+	const char *tail;
+	char *parent;
+	size_t size;
 
-	query.opcode = VFS_ACT | VFS_SET | VFS_USER;
-	strlcpy(query.path0, path, MAX_PATH);
-	query.value0 = user;
+	tail = strrchr(path, PATH_SEP);
 
-	if (!vfssend(root, &query)) {
-		return -1;
+	if (!tail) {
+		return strdup("");
 	}
-	else {
-		if (query.opcode & VFS_ERR) {
-			return query.opcode;
-		}
-		else {
-			return 0;
-		}
-	}
+	
+	size = (uintptr_t) tail - (uintptr_t) path;
+	parent = malloc(size + 1);
+	strlcpy(parent, path, size + 1);
+
+	return parent;
 }

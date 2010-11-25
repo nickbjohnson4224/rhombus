@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <driver.h>
 #include <proc.h>
 #include <ipc.h>
 #include <abi.h>
@@ -32,7 +33,7 @@
 int main(int argc, char **argv) {
 
 	/* create tmpfs */
-	tmpfs_init();
+	driver_init(&tmpfs_driver, argc, argv);
 
 	/* daemonize */
 	psend(PORT_CHILD, getppid(), NULL);

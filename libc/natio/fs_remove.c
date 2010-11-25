@@ -14,33 +14,26 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <string.h>
+#include <stdint.h>
 #include <natio.h>
 
-/****************************************************************************
- * vfs_get_perm
+/*****************************************************************************
+ * fs_remove
  *
- * Returns the permissions given to user <user> on the file in driver <root>
- * at path <path>.
+ * Attempts to remove the fileystem object <fobj>. Returns zero on success,
+ * nonzero on failure.
  */
 
-uint8_t vfs_get_perm(FILE *root, const char *path, uint32_t user) {
-	struct vfs_query query;
+int fs_remove(uint64_t fobj) {
+	struct fs_cmd command;
 
-	query.opcode = VFS_ACT | VFS_GET | VFS_PERM;
-	strlcpy(query.path0, path, MAX_PATH);
-	query.value0 = user;
+	command.op = FS_REMV;
+	command.v0 = 0;
+	command.v1 = 0;
+	
+	if (!fs_send(fobj, &command)) {
+		return 1;
+	}
 
-	if (!vfssend(root, &query)) {
-		return 0;
-	}
-	else {
-		if (query.opcode & VFS_ERR) {
-			return 0;
-		}
-		else {
-			return query.value0;
-		}
-	}
+	return 0;
 }

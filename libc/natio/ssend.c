@@ -33,7 +33,7 @@
  * Returns the number of bytes sent.
  */
 
-size_t ssend(FILE *fd, void *re, void *se, size_t size, uint64_t off, uint8_t port) {
+size_t ssend(uint64_t fd, void *re, void *se, size_t size, uint64_t off, uint8_t port) {
 	struct packet *p_out;
 	struct packet *p_in;
 	uint8_t *r, *s;
@@ -61,8 +61,8 @@ size_t ssend(FILE *fd, void *re, void *se, size_t size, uint64_t off, uint8_t po
 
 		p_out->fragment_index = frag;
 		p_out->fragment_count = ((size - 1) / PACKET_MAXDATA + 1);
-		p_out->target_pid     = fd->server;
-		p_out->target_inode   = fd->inode;
+		p_out->target_pid     = fd >> 32;
+		p_out->target_inode   = fd & 0xFFFFFFFF;
 		p_out->offset         = off;
 
 		if (s) {
@@ -70,8 +70,8 @@ size_t ssend(FILE *fd, void *re, void *se, size_t size, uint64_t off, uint8_t po
 			spos += datasize;
 		}
 
-		psend(port, fd->server, p_out);
-		p_in = pwaits(PORT_REPLY, fd->server);
+		psend(port, fd >> 32, p_out);
+		p_in = pwaits(PORT_REPLY, fd >> 32);
 
 		if (!p_in || p_in->data_length == 0) {
 			if (p_in) pfree(p_in);
