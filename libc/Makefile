@@ -1,8 +1,8 @@
 SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
 SOURCES += $(patsubst %.s,%.o,$(shell find . -mindepth 2 -name "*.s"))
 CNAUGHT := c0.o
-HEADERS := $(shell find inc -name "*.h")
-HEADERS += inc/link.ld
+HEADERS := $(shell find . -name "*.h")
+HEADERS += native/inc/link.ld
 SUBDIR	:= libc
 TARGET	:= libc.a
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
