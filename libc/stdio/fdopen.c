@@ -26,13 +26,21 @@
  * a pointer to the new stream on success, NULL on failure.
  */
 
+#define MODE_WRTE 0x01
+#define MODE_RSET 0x02
+#define MODE_CONS 0x04
+
 FILE *fdopen(uint64_t fd, const char *mode) {
 	FILE *stream;
 	
 	if (!fd) {
 		return NULL;
 	}
-		
+
+	if (!mode) {
+		return NULL;
+	}
+
 	stream = calloc(sizeof(FILE), 1);
 
 	if (!stream) {

@@ -14,36 +14,33 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <errno.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include <natio.h>
+#include <ipc.h>
 
 /****************************************************************************
- * freopen
+ * reset
  *
- * Same as fopen(), but result is stored in <stream>.
+ * Deletes the contents of the file <file>.
  */
 
-FILE *freopen(const char *path, const char *mode, FILE *stream) {
-	uint64_t fd;
+int reset(uint64_t file) {
+	struct packet *packet;
 
-	if (stream) {
-		free(stream);
+	packet = palloc(0);
+	packet->target_inode = file & 0xFFFFFFFF;
+
+	psend(PORT_RESET, file >> 32, packet);
+	pfree(packet);
+
+	packet = pwaits(PORT_REPLY, file >> 32);
+
+	if (packet) {
+		pfree(packet);
+		return 0;
 	}
-
-	fd = fs_find(0, path);
-
-	if (!fd) {
-		if (mode[0] == 'w' || mode[0] == 'a') {
-			fd = fs_cons(fs_find(0, path_parent(path)), path_name(path), FOBJ_FILE);
-			if (!fd) return NULL;
-		}
-		if (mode[0] == 'w') {
-			reset(fd);
-		}
+	else {
+		return 1;
 	}
-
-	return fdopen(fs_find(0, path), mode);
 }
