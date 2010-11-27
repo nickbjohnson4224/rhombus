@@ -35,16 +35,6 @@ uintptr_t   _svpr(uintptr_t address, uint32_t field);
 
 int32_t		_mmap(uintptr_t addr, uint32_t flags, uint32_t frame);
 
-int32_t		_fork(void);
-void		_exit(uint32_t value) __attribute__ ((noreturn));
-int         _exec(void);
-uint32_t    _gpid(uint32_t selector);
-
-#define GPID_SELF	0
-#define GPID_PARENT	1
-#define GPID_THREAD	2
-#define GPID_TLS	3
-
 #define MMAP_READ	0x001
 #define MMAP_WRITE	0x002
 #define MMAP_EXEC 	0x004
@@ -52,5 +42,17 @@ uint32_t    _gpid(uint32_t selector);
 #define MMAP_FRAME	0x010
 #define MMAP_PHYS	0x020
 #define MMAP_MOVE	0x040
+
+int32_t		_fork(void);
+void		_exit(uint32_t value) __attribute__ ((noreturn));
+int         _exec(void);
+uint32_t    _gpid(uint32_t selector);
+uint32_t    _user(uint32_t pid);
+int         _auth(uint32_t pid, uint32_t user);
+
+#define GPID_SELF	0
+#define GPID_PARENT	1
+#define GPID_THREAD	2
+#define GPID_TLS	3
 
 #endif/*ABI_H*/
