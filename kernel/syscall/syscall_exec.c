@@ -41,6 +41,7 @@ struct thread *syscall_exec(struct thread *image) {
 
 	image->eip = elf_load((void*) ESPACE);
 	image->useresp = image->stack + SEGSZ;
+	image->entry = 0xC000;
 
 	return image;
 }

@@ -76,11 +76,18 @@ struct thread *thread_send(struct thread *image, pid_t target, portid_t port) {
 	new_image->ds      = 0x23;
 	new_image->cs      = 0x1B;
 	new_image->ss      = 0x23;
-	new_image->eflags  = p_targ->thread[0]->eflags | 0x3000;
+	new_image->eflags  = 0;
 	new_image->useresp = new_image->stack + SEGSZ;
 	new_image->proc    = p_targ;
 	new_image->eip     = p_targ->entry;
 	new_image->fxdata  = NULL;
+
+	if (image) {
+		new_image->user = (p_targ->user) ? p_targ->user : image->user;
+	}
+	else {
+		new_image->user = p_targ->user;
+	}
 
 	if (image) {
 		new_image->packet         = image->packet;

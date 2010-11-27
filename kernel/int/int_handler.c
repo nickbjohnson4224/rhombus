@@ -82,6 +82,14 @@ struct thread *int_handler(struct thread *image) {
 		}
 	}
 
+	/* set IOPL=3 if root, IOPL=0 if other user */
+	if (image->user == 0) {
+		image->eflags |= 0x3000;
+	}
+	else {
+		image->eflags &= ~0x3000;
+	}
+
 	image->eflags |= 0x200;
 	return image;
 }

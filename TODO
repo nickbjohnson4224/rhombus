@@ -1,20 +1,17 @@
 Urgent:
 
-- write better heap
-- finish libc stdio functions (printf/scanf)
-- reorganize kernel
-- detect out of memory errors
-- comment all kernel source
-- finish libc math functions
+- permission system for VFS
+- password manager
+- 
 
 Less Urgent:
 
-- clean up abi
-- reduce permissions when init launches fish
 - device manager
-- handle out of memory gracefully
 - fix up ATA driver
-- add VT100 support for term
+- write proper vga/tty drivers
+- finish libc math functions
+- detect out of memory errors
+- finish libc stdio functions (printf/scanf)
 
 Would Like:
 
@@ -22,4 +19,3 @@ Would Like:
 - interface manager
 - graphics control language
 - kernel SMP
-- kernel HAL

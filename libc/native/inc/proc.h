@@ -34,9 +34,18 @@ void sleep(void);
 
 /* PIDs ********************************************************************/
 
-uint32_t  getpid(void);
+uint32_t  getpid (void);
 uint32_t  getppid(void);
-uint32_t  gettid(void);
-uintptr_t gettls(void);
+uint32_t  gettid (void);
+uintptr_t gettls (void);
+
+/* users and authorization *************************************************/
+
+uint32_t getuser (uint32_t pid);
+uint32_t getcuser(void);
+uint32_t gettuser(void);
+int      setuser (uint32_t pid, uint32_t user);
+int      setcuser(uint32_t user);
+int      settuser(uint32_t user);
 
 #endif/*PROC_H*/

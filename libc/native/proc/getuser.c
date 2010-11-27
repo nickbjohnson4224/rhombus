@@ -14,43 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <natio.h>
-#include <string.h>
+#include <proc.h>
+#include <abi.h>
 
-int main(int argc, char **argv) {
-	char *name, list[1000];
-	size_t i;
-	uint64_t dir;
+uint32_t getuser(uint32_t pid) {
+	return _user(pid);
+}
 
-	if (argc == 1) {
-		dir = fs_find(0, getenv("PWD"));
-	}
-	else {
-		dir = fs_find(0, argv[1]);
-	}
-	
-	if (!dir) {
-		printf("%s: no such directory\n", getenv("PWD"));
-		return EXIT_FAILURE;
-	}
+uint32_t getcuser(void) {
+	return _user(getpid());
+}
 
-	list[0] = '\0';
-
-	for (i = 0;; i++) {
-		name = fs_list(dir, i);
-
-		if (name) {
-			strlcat(list, name, 1000);
-			strlcat(list, ((i + 1) % 6) ? "\t" : "\n", 1000);
-			free(name);
-		}
-		else {
-			printf("%s\n", list);
-			return EXIT_SUCCESS;
-		}
-	}
-
-	return 0;
+uint32_t gettuser(void) {
+	return _user(0);
 }

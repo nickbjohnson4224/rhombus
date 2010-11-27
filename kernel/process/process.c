@@ -75,7 +75,6 @@ struct process *process_clone(struct process *parent, struct thread *active) {
 	child->space  = space_clone();
 	child->parent = parent;
 	child->pid    = pid;
-	child->entry  = 0xC000;
 	child->rirq   = IRQ_NULL;
 
 	memclr(child->thread, sizeof(struct thread*) * 256);
