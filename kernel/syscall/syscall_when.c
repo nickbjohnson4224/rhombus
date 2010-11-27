@@ -16,31 +16,19 @@
 
 #include <interrupt.h>
 #include <process.h>
+#include <thread.h>
 
-/*****************************************************************************
- * syscall_gpid (int 0x4d)
+/****************************************************************************
+ * syscall_when (int 0x42)
  *
- * ECX: selector
+ * ECX: entry
  *
- * Returns information about the current thread and process, depending on the
- * value of <selector>.
- *
- * If <selector> is 0, the current process' pid is returned.
- * If <selector> is 1, the current process' parent's pid is returned.
- * If <selector> is 2, the current thread's tid is returned.
- * If <selector> is 3, the current thread's TLS/stack base is returned.
- * If <selector> is 4, the current thread's uid is returned.
+ * Sets the message handler entry point for the current process to <entry>.
  */
 
-struct thread *syscall_gpid(struct thread *image) {
-	
-	switch (image->ecx) {
-	case 0: image->eax = image->proc->pid; break;
-	case 1: image->eax = image->proc->parent->pid; break;
-	case 2: image->eax = image->id; break;
-	case 3: image->eax = image->stack; break;
-	case 4: image->eax = image->user; break;
-	}
+struct thread *syscall_when(struct thread *image) {
+
+	image->proc->entry = image->ecx;
 
 	return image;
 }

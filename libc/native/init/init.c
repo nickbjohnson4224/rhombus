@@ -53,6 +53,8 @@ void _init(bool is_init) {
 	char **argv;
 	int argc;
 
+	_when((uintptr_t) _on_event);
+
 	__loadenv();
 
 	/* setup standard streams */

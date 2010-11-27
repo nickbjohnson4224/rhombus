@@ -30,6 +30,8 @@
 #define INT2IRQ(n) ((n) - IRQ_INT_BASE)
 #define ISIRQ(n) ((n) >= IRQ_INT_BASE && (n) < (IRQ_INT_BASE + IRQ_INT_SIZE))
 
+#define IRQ_NULL 0xFF
+
 /* IRQ redirection **********************************************************/
 
 int   irq_set_redirect(pid_t pid, irqid_t irq);

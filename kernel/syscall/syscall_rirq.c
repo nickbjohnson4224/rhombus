@@ -16,31 +16,34 @@
 
 #include <interrupt.h>
 #include <process.h>
+#include <thread.h>
+#include <irq.h>
 
-/*****************************************************************************
- * syscall_gpid (int 0x4d)
+/****************************************************************************
+ * syscall_rirq (int 0x43)
  *
- * ECX: selector
+ * ECX: irq
  *
- * Returns information about the current thread and process, depending on the
- * value of <selector>.
- *
- * If <selector> is 0, the current process' pid is returned.
- * If <selector> is 1, the current process' parent's pid is returned.
- * If <selector> is 2, the current thread's tid is returned.
- * If <selector> is 3, the current thread's TLS/stack base is returned.
- * If <selector> is 4, the current thread's uid is returned.
+ * Sets the IRQ with number <irq> to be redirected to the current process
+ * as a message on PORT_IRQ. If another IRQ number is set to be redirected,
+ * that other IRQ number is disabled. This system call is privileged, and
+ * returns nonzero on permission denied error.
  */
 
-struct thread *syscall_gpid(struct thread *image) {
-	
-	switch (image->ecx) {
-	case 0: image->eax = image->proc->pid; break;
-	case 1: image->eax = image->proc->parent->pid; break;
-	case 2: image->eax = image->id; break;
-	case 3: image->eax = image->stack; break;
-	case 4: image->eax = image->user; break;
+struct thread *syscall_rirq(struct thread *image) {
+
+	if (image->proc->user != 0) {
+		image->eax = 1;
+		return image;
 	}
 
+	if (image->proc->rirq != IRQ_NULL) {
+		irq_set_redirect(0, image->proc->rirq);
+	}
+
+	image->proc->rirq = image->ecx;
+	irq_set_redirect(image->proc->pid, image->proc->rirq);	
+
+	image->eax = 0;
 	return image;
 }

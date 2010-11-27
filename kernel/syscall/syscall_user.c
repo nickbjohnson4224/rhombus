@@ -16,45 +16,29 @@
 
 #include <interrupt.h>
 #include <process.h>
-#include <irq.h>
 
 /*****************************************************************************
- * syscall_pctl (int 0x4a)
+ * syscall_user (int 0x4d)
  *
- * ECX: flags
- * EDX: mask
+ * ECX: pid
  *
- * Sets the process control flags in <mask> to the values in <flags> in the
- * current process. Returns the resultant flags.
+ * Returns the user id of the process with pid <pid> on success, -1 on
+ * failure.
+ *
+ * Note: this is a good way of determining the existence of a process.
  */
 
-struct thread *syscall_pctl(struct thread *image) {
-	uint32_t flags = image->ecx;
-	uint32_t mask  = image->edx;
-	uint8_t irq;
-
-	/* Stop the modification of protected flags if not super */
-	if ((image->proc->flags & CTRL_SUPER) == 0) {
-		mask &= CTRL_SMASK;
+struct thread *syscall_user(struct thread *image) {
+	struct process *proc;
+	
+	proc = process_get(image->ecx);
+	
+	if (proc) {
+		image->eax = proc->user;
+	}
+	else {
+		image->eax = -1;
 	}
 
-	/* Set flags */
-	image->proc->flags = (image->proc->flags & ~mask) | (flags & mask);
-
-	/* Update IRQ redirect if CTRL_IRQRD is changed */
-	if (mask & CTRL_IRQRD) {
-		if (flags & CTRL_IRQRD) {
-			/* Set IRQ redirect */
-			irq = (flags >> 24) & 0xFF;
-			irq_set_redirect(image->proc->pid, irq);
-		}
-		else {
-			/* Unset IRQ redirect */
-			irq = (image->proc->flags >> 24) & 0xFF;
-			irq_set_redirect(0, irq);
-		}
-	}
-
-	image->eax = image->proc->flags;
 	return image;
 }

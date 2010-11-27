@@ -35,14 +35,14 @@ struct process {
 	/* address space */
 	space_t space;
 
-	/* various crap */
-	uint32_t flags;
 	uint64_t tick;
 	pid_t    pid;
+	uid_t    user;
+	intid_t  rirq;
 
-	struct process *next_task;
 	struct process *parent;
 
+	/* message handler */
 	uintptr_t entry;
 	
 	/* threads */
@@ -60,18 +60,5 @@ void            process_freeze(struct process *proc);
 void            process_thaw  (struct process *proc);
 void            process_touch (pid_t pid);
 void            process_switch(struct process *proc);
-
-/* process flags ***********************************************************/
-
-#define CTRL_CMASK	0xFF8000FF
-#define CTRL_SMASK 	0x00773047
-#define CTRL_RMASK	0x00000003
-
-#define CTRL_READY 	0x00000000
-#define CTRL_BLOCK 	0x00000001
-#define CTRL_CLEAR 	0x00000002
-#define CTRL_SUPER 	0x00000008
-#define CTRL_PORTS 	0x00000010
-#define CTRL_IRQRD 	0x00000020
 
 #endif/*KERNEL_PROCESS_H*/

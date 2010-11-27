@@ -21,9 +21,10 @@
 
 typedef uint32_t pid_t;
 typedef uint32_t tid_t;
-typedef uint8_t portid_t;
-typedef uint8_t intid_t;
-typedef uint8_t irqid_t;
+typedef uint32_t uid_t;
+typedef uint8_t  portid_t;
+typedef uint8_t  intid_t;
+typedef uint8_t  irqid_t;
 typedef uint32_t frame_t;
 typedef uint32_t space_t;
 

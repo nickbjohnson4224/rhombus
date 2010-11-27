@@ -12,15 +12,11 @@
 ; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-global _recv
+[bits 32]
 
-_recv:
-	push edi
+global _rirq
 
-	mov ecx, [esp+8]
-	mov edx, [esp+12]
-	mov edi, [esp+16]
+_rirq:
+	mov ecx, [esp+4]
 	int 0x43
-
-	pop edi
 	ret

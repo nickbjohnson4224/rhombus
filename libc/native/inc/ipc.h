@@ -89,6 +89,8 @@ void  pfree (struct packet *packet);
 #define PORT_REPLY	32
 #define PORT_PING	33
 
+void _on_event(void);
+
 /* queueing ****************************************************************/
 
 struct message {

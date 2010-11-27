@@ -121,7 +121,7 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	/* bootstrap process 0 (idle) */
 	idle = process_alloc();
 	idle->space = cpu_get_cr3();
-	idle->flags = CTRL_READY | CTRL_SUPER;
+	idle->user  = 0;
 
 	/* fork process 1 (init) and switch */
 	init = process_clone(idle, NULL);
@@ -163,11 +163,12 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	/* register system calls */
 	int_set_handler(SYSCALL_SEND, syscall_send);
 	int_set_handler(SYSCALL_DONE, syscall_done);
+	int_set_handler(SYSCALL_WHEN, syscall_when);
+	int_set_handler(SYSCALL_RIRQ, syscall_rirq);
 	int_set_handler(SYSCALL_GVPR, syscall_gvpr);
 	int_set_handler(SYSCALL_SVPR, syscall_svpr);
 	int_set_handler(SYSCALL_FORK, syscall_fork);
 	int_set_handler(SYSCALL_EXIT, syscall_exit);
-	int_set_handler(SYSCALL_PCTL, syscall_pctl);
 	int_set_handler(SYSCALL_EXEC, syscall_exec);
 	int_set_handler(SYSCALL_GPID, syscall_gpid);
 	int_set_handler(SYSCALL_TIME, syscall_time);

@@ -74,8 +74,8 @@ INTN	47
 ; System calls
 INTN	64	; send
 INTN	65	; drop
-INTN	66	; evnt
-
+INTN	66	; when
+INTN	67	; rirq
 INTN	68	; gvpr
 INTN	69	; svpr
 
@@ -85,6 +85,8 @@ INTN	74	; pctl
 INTN	75	; exec
 INTN	76	; gpid
 INTN	77	; time
+INTN	78	; user
+INTN	79	; auth
 
 INTN	80	; mmap
 INTN	81	; mctl

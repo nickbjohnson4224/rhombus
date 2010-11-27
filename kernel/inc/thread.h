@@ -53,6 +53,9 @@ struct thread {
 	/* virtual packet register */
 	struct packet *packet;
 
+	/* effective user id */
+	uid_t user;
+
 	/* owning process */
 	struct process *proc;
 	uintptr_t stack;

@@ -79,7 +79,7 @@ struct thread *thread_send(struct thread *image, pid_t target, portid_t port) {
 	new_image->eflags  = p_targ->thread[0]->eflags | 0x3000;
 	new_image->useresp = new_image->stack + SEGSZ;
 	new_image->proc    = p_targ;
-	new_image->eip     = 0xC000;
+	new_image->eip     = p_targ->entry;
 	new_image->fxdata  = NULL;
 
 	if (image) {

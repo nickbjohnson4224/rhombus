@@ -62,7 +62,7 @@ struct thread *syscall_mmap(struct thread *image) {
 
 	if (flags & MMAP_FRAME) {
 		
-		if ((image->proc->flags & CTRL_SUPER)) {
+		if (image->proc->user == 0) { 
 			if (page_get(addr) & PF_PRES) {
 				frame_free(page_ufmt(page_get(addr)));
 			}

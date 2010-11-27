@@ -113,12 +113,11 @@ extern void
 	int40(void), int41(void), int42(void), int43(void), 
 	int44(void), int45(void), int46(void), int47(void),
 	
-	int64(void), int65(void), int66(void), 
+	int64(void), int65(void), int66(void), int67(void), 
 	int68(void), int69(void),
 	
 	int72(void), int73(void), int74(void), int75(void), 
-	int76(void), int77(void),
-
+	int76(void), int77(void), int78(void), int79(void),
 	int80(void), int81(void);
 
 /*****************************************************************************
@@ -146,8 +145,8 @@ static int_raw_handler_t idt_raw[] = {
 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
 
 	/* system calls */
-	int64, 	int65, 	int66, 	NULL, 	int68, 	int69, 	NULL, 	NULL, 
-	int72, 	int73, 	int74, 	int75, 	int76, 	int77, 	NULL, 	NULL, 
+	int64, 	int65, 	int66, 	int67, 	int68, 	int69, 	NULL, 	NULL, 
+	int72, 	int73, 	int74, 	int75, 	int76, 	int77, 	int78, 	int79, 
 	int80, 	int81, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
 	NULL, 	NULL, 	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
 };

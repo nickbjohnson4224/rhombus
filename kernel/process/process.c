@@ -19,6 +19,7 @@
 #include <string.h>
 #include <space.h>
 #include <cpu.h>
+#include <irq.h>
 
 /****************************************************************************
  * process_table
@@ -74,6 +75,8 @@ struct process *process_clone(struct process *parent, struct thread *active) {
 	child->space  = space_clone();
 	child->parent = parent;
 	child->pid    = pid;
+	child->entry  = 0xC000;
+	child->rirq   = IRQ_NULL;
 
 	memclr(child->thread, sizeof(struct thread*) * 256);
 
@@ -168,6 +171,10 @@ void process_thaw(struct process *proc) {
 
 void process_kill(struct process *proc) {
 	size_t i;
+
+	if (proc->rirq != IRQ_NULL) {
+		irq_set_redirect(0, proc->rirq);
+	}
 
 	for (i = 0; i < 256; i++) {
 		if (proc->thread[i]) {

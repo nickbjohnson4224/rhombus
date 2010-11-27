@@ -58,6 +58,12 @@ int lfs_pull(struct fs_obj *obj);
 
 void lfs_add(struct fs_obj *obj, const char *path);
 
+void lfs_wrapper  (struct packet *packet, uint8_t port, uint32_t caller);
+void read_wrapper (struct packet *packet, uint8_t port, uint32_t caller);
+void write_wrapper(struct packet *packet, uint8_t port, uint32_t caller);
+void sync_wrapper (struct packet *packet, uint8_t port, uint32_t caller);
+void reset_wrapper(struct packet *packet, uint8_t port, uint32_t caller);
+
 /* driver interface structure ***********************************************/
 
 extern struct driver {
@@ -100,5 +106,6 @@ void iodelay(uint32_t usec);
 /* IRQ redirection **********************************************************/
 
 void rirq(uint8_t irq);
+void irq_wrapper(struct packet *packet, uint8_t port, uint32_t caller);
 
 #endif/*DRIVER_H*/
