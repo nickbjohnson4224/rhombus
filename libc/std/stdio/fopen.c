@@ -64,6 +64,7 @@ FILE *fopen(const char *path, const char *mode) {
 				}
 			}
 
+			/* create file in parent directory */
 			path1 = path_name(path);
 			fd = fs_cons(fd, path1, FOBJ_FILE);
 			free(path1);

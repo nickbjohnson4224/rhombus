@@ -156,6 +156,7 @@ uint64_t lfs_find(uint32_t inode, const char *path_str, bool nolink) {
  */
 
 int lfs_push(struct fs_obj *dir, struct fs_obj *obj, const char *name) {
+	struct fs_obj *sister;
 
 	if (!(dir && obj && name)) {
 		return 1;
@@ -166,10 +167,43 @@ int lfs_push(struct fs_obj *dir, struct fs_obj *obj, const char *name) {
 	obj->name     = strdup(name);
 	obj->mutex    = 0;
 	obj->mother   = dir;
-	obj->sister0  = NULL;
-	obj->sister1  = dir->daughter;
 	obj->daughter = NULL;
-	dir->daughter = obj;
+	
+	sister = dir->daughter;
+
+	if (!sister) {
+		/* only in the list, insert at top */
+		dir->daughter = obj;
+		obj->sister0 = NULL;
+		obj->sister1 = NULL;
+	}
+	else {
+		while (sister->sister1) {
+			if (strcmp(sister->name, name) > 0) {
+				break;
+			}
+			sister = sister->sister1;
+		}
+
+		/* insert */
+		if (strcmp(sister->name, name) > 0) {
+			if (sister->sister0) {
+				sister->sister0->sister1 = obj;
+			}
+			else {
+				dir->daughter = obj;
+			}
+
+			obj->sister0 = sister->sister0;
+			obj->sister1 = sister;
+			sister->sister0 = obj;
+		}
+		else {
+			sister->sister1 = obj;
+			obj->sister0 = sister;
+			obj->sister1 = NULL;
+		}
+	}
 
 	if (!obj->next) {
 		obj->prev = NULL;
