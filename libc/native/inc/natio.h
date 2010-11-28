@@ -102,6 +102,8 @@ const char *path_tail(struct path *path);
 char *path_parent(const char *path);
 char *path_name  (const char *path);
 
+char *path_simplify(const char *path);
+
 /* file descriptor persisence ***********************************************/
 
 uint64_t fdload(int id);

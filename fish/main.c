@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <natio.h>
 #include <errno.h>
 #include <exec.h>
 #include <proc.h>
@@ -27,6 +28,7 @@ int main() {
 	size_t i, n;
 	int pid;
 	char *argv[100];
+	char *path;
 	bool daemon;
 
 	setenv("PWD", "/");
@@ -46,6 +48,18 @@ int main() {
 		while ((argv[++n] = strtok(NULL, " ")) != NULL);
 
 		if (argv[0][0] == '\0') {
+			continue;
+		}
+
+		if (!strcmp(argv[0], "cd")) {
+			path = path_simplify(argv[1]);
+
+			if (path && fs_type(fs_find(0, path)) == FOBJ_DIR) {
+				setenv("PWD", path);
+			}
+			else {
+				fprintf(stderr, "%s: %s: no such directory\n", getenv("NAME"), argv[1]);
+			}
 			continue;
 		}
 

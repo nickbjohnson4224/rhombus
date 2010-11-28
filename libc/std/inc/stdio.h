@@ -23,11 +23,11 @@
 #include <stdarg.h>
 #include <arch.h>
 
-/*** Type Definitions ***/
+/* type definitions *********************************************************/
 
 typedef uint64_t fpos_t;
 
-/*** File Structure ***/
+/* file structure ***********************************************************/
 
 typedef struct _file {
 	uint64_t fd;			/* File descriptor */

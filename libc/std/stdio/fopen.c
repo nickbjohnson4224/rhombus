@@ -31,7 +31,7 @@
 FILE *fopen(const char *path, const char *mode) {
 	uint64_t fd;
 	uint8_t perm;
-	char *path1;
+	char *path1, *path_simp;
 	FILE *stream;
 
 	/* check mode */
@@ -41,11 +41,16 @@ FILE *fopen(const char *path, const char *mode) {
 	}
 
 	/* attempt to find the file */
-	fd = fs_find(0, path);
+	path_simp = path_simplify(path);
+	if (!path_simp) {
+		return NULL;
+	}
+	fd = fs_find(0, path_simp);
 
 	/* check if the object is a directory or null */
 	if (fd && fs_type(fd) == FOBJ_DIR) {
 		errno = EISDIR;
+		free(path_simp);
 		return NULL;
 	}
 
@@ -55,9 +60,10 @@ FILE *fopen(const char *path, const char *mode) {
 		if (mode[0] == 'w' || mode[0] == 'a') {
 
 			/* find requested parent directory */
-			path1 = path_parent(path);
+			path1 = path_parent(path_simp);
 			if (!path1) {
 				errno = ENOMEM;
+				free(path_simp);
 				return NULL;
 			}
 			fd = fs_find(0, path1);
@@ -65,24 +71,28 @@ FILE *fopen(const char *path, const char *mode) {
 
 			if (!fd) {
 				errno = ENOENT;
+				free(path_simp);
 				return NULL;
 			}
 			else {
 				/* check permissions of directory */
 				if ((fs_perm(fd, gettuser()) & ACL_WRITE) == 0) {
 					errno = EACCES;
+					free(path_simp);
 					return NULL;
 				}
 			}
 
 			/* create file in parent directory */
-			path1 = path_name(path);
+			path1 = path_name(path_simp);
 			if (!path1) {
 				errno = ENOMEM;
+				free(path_simp);
 				return NULL;
 			}
 			fd = fs_cons(fd, path1, FOBJ_FILE);
 			free(path1);
+			free(path_simp);
 
 			if (!fd) {
 				errno = EACCES;
@@ -90,10 +100,13 @@ FILE *fopen(const char *path, const char *mode) {
 			}
 		}
 		else {
+			free(path_simp);
 			errno = ENOENT;
 			return NULL;
 		}
 	}
+
+	free(path_simp);
 
 	perm = fs_perm(fd, gettuser());
 
