@@ -28,6 +28,7 @@ void tmpfs_init(int argc, char **argv) {
 	root = calloc(sizeof(struct fs_obj), 1);
 	root->type = FOBJ_DIR;
 	root->inode = 0;
+	root->acl = acl_set_default(root->acl, ACL_READ | ACL_WRITE);
 
 	lfs_root(root);
 }
@@ -37,21 +38,24 @@ struct fs_obj *tmpfs_cons(int type) {
 	
 	switch (type) {
 	case FOBJ_FILE:
-		fobj = calloc(sizeof(struct fs_obj), 1);
-		fobj->type = FOBJ_FILE;
-		fobj->size = 0;
-		fobj->data = NULL;
+		fobj        = calloc(sizeof(struct fs_obj), 1);
+		fobj->type  = FOBJ_FILE;
+		fobj->size  = 0;
+		fobj->data  = NULL;
 		fobj->inode = tmpfs_inode_top++;
+		fobj->acl   = acl_set_default(fobj->acl, ACL_READ | ACL_WRITE);
 		break;
 	case FOBJ_DIR:
-		fobj = calloc(sizeof(struct fs_obj), 1);
-		fobj->type = FOBJ_DIR;
+		fobj        = calloc(sizeof(struct fs_obj), 1);
+		fobj->type  = FOBJ_DIR;
 		fobj->inode = tmpfs_inode_top++;
+		fobj->acl   = acl_set_default(fobj->acl, ACL_READ | ACL_WRITE);
 		break;
 	case FOBJ_LINK:
-		fobj = calloc(sizeof(struct fs_obj), 1);
-		fobj->type = FOBJ_LINK;
+		fobj        = calloc(sizeof(struct fs_obj), 1);
+		fobj->type  = FOBJ_LINK;
 		fobj->inode = tmpfs_inode_top++;
+		fobj->acl   = acl_set_default(fobj->acl, ACL_READ | ACL_WRITE);
 		break;
 	}
 
@@ -59,6 +63,8 @@ struct fs_obj *tmpfs_cons(int type) {
 }
 
 int tmpfs_free(struct fs_obj *obj) {
+
+	acl_free(obj->acl);
 
 	if (obj->data) {
 		free(obj->data);

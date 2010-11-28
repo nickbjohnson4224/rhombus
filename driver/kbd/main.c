@@ -23,6 +23,19 @@
 
 #include "keyboard.h"
 
+void kbd_init(int argc, char **argv) {
+	struct fs_obj *root;
+
+	root        = calloc(sizeof(struct fs_obj), 1);
+	root->type  = FOBJ_FILE;
+	root->size  = 0;
+	root->inode = 0;
+	root->acl   = acl_set_default(root->acl, ACL_READ);
+	lfs_root(root);
+
+	rirq(1);
+}
+
 size_t kbd_read(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	size_t i;
 
@@ -60,7 +73,7 @@ void kbd_irq(void) {
 }
 
 struct driver kbd_driver = {
-	NULL,
+	kbd_init,
 
 	NULL,
 	NULL,
@@ -79,7 +92,6 @@ struct driver kbd_driver = {
 int main(int argc, char **argv) {
 
 	driver_init(&kbd_driver, argc, argv);
-	rirq(1);
 
 	psend(PORT_CHILD, getppid(), NULL);
 	_done();

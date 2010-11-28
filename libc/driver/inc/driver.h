@@ -21,6 +21,27 @@
 #include <natio.h>
 #include <ipc.h>
 
+/* access control lists *****************************************************/
+
+#define ACL_READ	0x01
+#define ACL_WRITE	0x02
+#define ACL_ALTER	0x04
+
+struct fs_acl {
+	struct fs_acl *next;
+
+	uint32_t user;
+	uint8_t permit;
+};
+
+uint8_t        acl_get(struct fs_acl *acl, uint32_t user);
+struct fs_acl *acl_set(struct fs_acl *acl, uint32_t user, uint8_t permit);
+
+uint8_t        acl_get_default(struct fs_acl *acl);
+struct fs_acl *acl_set_default(struct fs_acl *acl, uint8_t permit);
+
+void acl_free(struct fs_acl *acl);
+
 /* local filesystem interface ***********************************************/
 
 struct fs_obj {
@@ -43,6 +64,9 @@ struct fs_obj {
 	struct fs_obj *sister1;
 	struct fs_obj *daughter;
 
+	/* permissions */
+	struct fs_acl *acl;
+
 	/* link information */
 	uint64_t link;
 };
@@ -50,7 +74,7 @@ struct fs_obj {
 struct fs_obj *lfs_lookup(uint32_t inode);
 
 void     lfs_root(struct fs_obj *root);
-uint64_t lfs_find(uint32_t inode, const char *path);
+uint64_t lfs_find(uint32_t inode, const char *path, bool nolink);
 
 int lfs_list(struct fs_obj *dir, int entry, char *buffer, size_t size);
 int lfs_push(struct fs_obj *dir, struct fs_obj *obj, const char *name);

@@ -44,6 +44,7 @@ extern uint64_t fs_root;
 #define FS_LIST 0x06
 #define FS_SIZE 0x07
 #define FS_TYPE 0x08
+#define FS_LFND	0x09
 
 struct fs_cmd {
 	uint64_t v0;
@@ -63,6 +64,7 @@ int      fs_remove(uint64_t fobj);
 int      fs_link  (uint64_t link, uint64_t fobj);
 uint64_t fs_size  (uint64_t file);
 int      fs_type  (uint64_t fobj);
+uint64_t fs_lfind (uint64_t root, const char *path);
 
 void     fs_chroot(FILE *root);
 

@@ -44,10 +44,21 @@ void lfs_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 	cmd = pgetbuf(packet);
 	cmd->null0 = '\0';
 
+	/* perform action */
 	switch (cmd->op) {
 	case FS_FIND:
-		file = lfs_find(packet->target_inode, cmd->s0);
+		file = lfs_find(packet->target_inode, cmd->s0, false);
 		
+		if (file) {
+			cmd->v0 = file;
+		}
+		else {
+			cmd->op = FS_ERR;
+		}
+		break;
+	case FS_LFND:
+		file = lfs_find(packet->target_inode, cmd->s0, true);
+
 		if (file) {
 			cmd->v0 = file;
 		}
@@ -64,6 +75,11 @@ void lfs_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 		fobj = lfs_lookup(packet->target_inode);
 
 		if (fobj) {
+			if ((acl_get(fobj->acl, gettuser()) & ACL_WRITE) == 0) {
+				cmd->op = FS_ERR;
+				break;
+			}
+
 			new_fobj = active_driver->cons(cmd->v0);
 			if (new_fobj) {
 				lfs_push(fobj, new_fobj, cmd->s0);
@@ -93,6 +109,12 @@ void lfs_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 			break;
 		}
 
+		if (((acl_get(fobj->acl, gettuser()) & ACL_WRITE) == 0) || 
+			((acl_get(new_fobj->mother->acl, gettuser()) & ACL_WRITE) == 0)) {
+			cmd->op = FS_ERR;
+			break;
+		}
+
 		lfs_pull(new_fobj);
 		lfs_push(fobj, new_fobj, cmd->s0);
 		cmd->v0   = getpid();
@@ -104,7 +126,10 @@ void lfs_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 		fobj = lfs_lookup(packet->target_inode);
 
 		if (fobj) {
-			if (lfs_pull(fobj)) {
+			if ((acl_get(fobj->acl, gettuser()) & ACL_WRITE) == 0) {
+				cmd->op = FS_ERR;
+			}
+			else if (lfs_pull(fobj)) {
 				cmd->op = FS_ERR;
 			}
 			else {
@@ -112,24 +137,25 @@ void lfs_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 					active_driver->free(fobj);
 				}
 				else {
+					acl_free(fobj->acl);
 					free(fobj);
 				}
 			}
 		}
 		else {
-			if (active_driver->free) {
-				active_driver->free(fobj);
-			}
-			else {
-				free(fobj);
-			}
+			cmd->op = FS_ERR;
 		}
 		break;
 	case FS_LINK:
 		fobj = lfs_lookup(packet->target_inode);
 
 		if (fobj) {
-			fobj->link = cmd->v0;
+			if ((acl_get(fobj->acl, gettuser() & ACL_WRITE) == 0)) {
+				cmd->op = FS_ERR;
+			}
+			else {
+				fobj->link = cmd->v0;
+			}
 		}
 		else {
 			cmd->op = FS_ERR;
@@ -139,7 +165,10 @@ void lfs_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 		fobj = lfs_lookup(packet->target_inode);
 
 		if (fobj) {
-			if (lfs_list(fobj, cmd->v0, cmd->s0, 4000)) {
+			if ((acl_get(fobj->acl, gettuser()) & ACL_READ) == 0) {
+				cmd->op = FS_ERR;
+			}
+			else if (lfs_list(fobj, cmd->v0, cmd->s0, 4000)) {
 				cmd->op = FS_ERR;
 			}
 		}
@@ -201,6 +230,12 @@ void read_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 		psend(PORT_REPLY, caller, NULL);
 		return;
 	}
+
+	if (!(acl_get(file->acl, gettuser()) & ACL_READ)) {
+		pfree(packet);
+		psend(PORT_REPLY, caller, NULL);
+		return;
+	}
 	
 	packet->data_length = active_driver->read
 		(file, pgetbuf(packet), packet->data_length, packet->offset);
@@ -231,6 +266,12 @@ void write_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 		return;
 	}
 
+	if (!(acl_get(file->acl, gettuser()) & ACL_WRITE)) {
+		pfree(packet);
+		psend(PORT_REPLY, caller, NULL);
+		return;
+	}
+	
 	packet->data_length = active_driver->write
 		(file, pgetbuf(packet), packet->data_length, packet->offset);
 	
@@ -260,6 +301,12 @@ void sync_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 		return;
 	}
 
+	if (!(acl_get(file->acl, gettuser()) & ACL_WRITE)) {
+		pfree(packet);
+		psend(PORT_REPLY, caller, NULL);
+		return;
+	}
+
 	active_driver->sync(file);
 	
 	psend(PORT_REPLY, caller, packet);
@@ -283,6 +330,12 @@ void reset_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 	file = lfs_lookup(packet->target_inode);
 	
 	if (!file || (file->type != FOBJ_FILE)) {
+		pfree(packet);
+		psend(PORT_REPLY, caller, NULL);
+		return;
+	}
+
+	if (!(acl_get(file->acl, gettuser()) & ACL_WRITE)) {
 		pfree(packet);
 		psend(PORT_REPLY, caller, NULL);
 		return;

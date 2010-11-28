@@ -16,6 +16,7 @@
 
 #include <interrupt.h>
 #include <process.h>
+#include <debug.h>
 
 /*****************************************************************************
  * syscall_auth (int 0x4e)
@@ -41,6 +42,7 @@ struct thread *syscall_auth(struct thread *image) {
 	
 		if (proc) {
 			proc->user = image->edx;
+			image->user = image->edx;
 			image->eax = 0;
 		}
 		else {

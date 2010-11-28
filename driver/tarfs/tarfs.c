@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <driver.h>
 #include <mutex.h>
+#include <proc.h>
 
 #include "tarfs.h"
 
@@ -93,6 +94,7 @@ void tarfs_init(int argc, char **argv) {
 	file = calloc(sizeof(struct fs_obj), 1);
 	file->type = FOBJ_DIR;
 	file->inode = 0;
+	file->acl = acl_set_default(file->acl, ACL_READ);
 	lfs_root(file);
 
 	/* allocate buffer space for header block */
@@ -110,11 +112,12 @@ void tarfs_init(int argc, char **argv) {
 		}
 
 		/* add file to VFS */
-		file = calloc(sizeof(struct fs_obj), 1);
+		file        = calloc(sizeof(struct fs_obj), 1);
 		file->type  = FOBJ_FILE;
 		file->inode = n;
 		file->data  = (uint8_t*) (i + 512);
 		file->size  = getvalue(block->filesize, 12);
+		file->acl   = acl_set_default(file->acl, ACL_READ);
 		lfs_add(file, block->filename);
 
 		/* move to next file header */
@@ -126,6 +129,7 @@ void tarfs_init(int argc, char **argv) {
 }
 
 size_t tarfs_read(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+	uint32_t user;
 	
 	if (!file->data) {
 		return 0;
@@ -139,12 +143,17 @@ size_t tarfs_read(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t of
 		size = file->size - offset;
 	}
 
+	user = gettuser();
+	settuser(0);
+	
 	mutex_spin(&m_parent);
 
 	fseek(parent, (size_t) file->data + offset, SEEK_SET);
 	fread(buffer, 1, size, parent);
 
 	mutex_free(&m_parent);
+
+	settuser(user);
 	
 	return size;
 }

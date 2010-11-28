@@ -14,34 +14,30 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <interrupt.h>
-#include <space.h>
-#include <elf.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+#include <natio.h>
 
 /*****************************************************************************
- * syscall_exec (int 0x4b)
+ * fs_lfind
  * 
- * (no arguments)
- *
- * Executes the executable image at ESPACE. This image must be an ELF file.
- * This system call is going to be removed once userspace executable loading
- * is finished, so for now it is not secure and can be used to crash the
- * kernel. Returns zero and jumps to the loaded executable on success, returns
- * nonzero on failure.
+ * Finds the filesystem object with the given path <path> from <root> if it 
+ * exists, without following terminal links. If it does not exist, this 
+ * function returns NULL.
  */
 
-struct thread *syscall_exec(struct thread *image) {
+uint64_t fs_lfind(uint64_t root, const char *path) {
+	struct fs_cmd command;
 
-	if (elf_check((void*) ESPACE)) {
-		image->eax = -1;
-		return image;
+	command.op = FS_LFND;
+	command.v0 = 0;
+	command.v1 = 0;
+	strlcpy(command.s0, path, 4000);
+	
+	if (!fs_send(root, &command)) {
+		return 0;
 	}
 
-	mem_free(0, SSPACE);
-
-	image->eip = elf_load((void*) ESPACE);
-	image->useresp = image->stack + SEGSZ;
-	image->proc->entry = 0xC000;
-
-	return image;
+	return command.v0;
 }

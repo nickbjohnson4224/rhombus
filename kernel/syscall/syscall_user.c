@@ -23,7 +23,8 @@
  * ECX: pid
  *
  * Returns the user id of the process with pid <pid> on success, -1 on
- * failure.
+ * failure. If <pid> is 0, returns the effective user id of the current
+ * thread.
  *
  * Note: this is a good way of determining the existence of a process.
  */
@@ -31,13 +32,18 @@
 struct thread *syscall_user(struct thread *image) {
 	struct process *proc;
 	
-	proc = process_get(image->ecx);
+	if (image->ecx) {
+		proc = process_get(image->ecx);
 	
-	if (proc) {
-		image->eax = proc->user;
+		if (proc) {
+			image->eax = proc->user;
+		}
+		else {
+			image->eax = -1;
+		}
 	}
 	else {
-		image->eax = -1;
+		image->eax = image->user;
 	}
 
 	return image;

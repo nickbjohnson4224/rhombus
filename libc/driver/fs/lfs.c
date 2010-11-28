@@ -81,10 +81,12 @@ void lfs_root(struct fs_obj *root) {
  *
  * Finds a file, starting at the filesystem object with inode <inode> in the
  * current driver. Returns a file structure referring to the found file, which
- * may not be in the current driver, on success, and NULL on failure.
+ * may not be in the current driver, on success, and NULL on failure. If 
+ * <nolink> is true, terminal links are not followed, so link objects can be
+ * found.
  */
 
-uint64_t lfs_find(uint32_t inode, const char *path_str) {
+uint64_t lfs_find(uint32_t inode, const char *path_str, bool nolink) {
 	struct path   *path;
 	struct fs_obj *fobj;
 	struct fs_obj *sub;
@@ -97,7 +99,7 @@ uint64_t lfs_find(uint32_t inode, const char *path_str) {
 		name = path_next(path);
 
 		if (!name) {
-			if (fobj->type == FOBJ_LINK && fobj->link) {
+			if (fobj->type == FOBJ_LINK && fobj->link && !nolink) {
 				return fobj->link;
 			}
 			else {
@@ -121,6 +123,10 @@ uint64_t lfs_find(uint32_t inode, const char *path_str) {
 			return 0;
 		}
 		else {
+			if ((acl_get(fobj->acl, gettuser()) & ACL_READ) == 0) {
+				return 0;
+			}
+
 			sub = fobj->daughter;
 
 			while (sub) {
@@ -297,7 +303,7 @@ void lfs_add(struct fs_obj *obj, const char *path) {
 	}
 
 	path1 = path_parent(path);
-	dirfd = lfs_find(0, path1);
+	dirfd = lfs_find(0, path1, false);
 	dir = lfs_lookup(dirfd & 0xFFFFFFFF);
 	free(path1);
 

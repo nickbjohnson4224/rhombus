@@ -1,8 +1,7 @@
 Urgent:
 
-- permission system for VFS
 - password manager
-- 
+- split mmap
 
 Less Urgent:
 
@@ -15,6 +14,9 @@ Less Urgent:
 
 Would Like:
 
+- userspace exec
+- shared memory
+- shared libraries
 - port UDI
 - interface manager
 - graphics control language
