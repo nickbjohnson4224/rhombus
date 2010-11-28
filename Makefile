@@ -55,7 +55,10 @@ clean:
 image:	all
 
 	@ - mkdir boot
-	@ cp bin/* boot
+	@ - mkdir boot/bin
+	@ - mkdir boot/dev
+	@ - mkdir boot/tmp
+	@ cp bin/* boot/bin
 
 	@ export BUILDDIR
 	@ sudo run/image.sh

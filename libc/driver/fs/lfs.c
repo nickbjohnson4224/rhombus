@@ -99,22 +99,11 @@ uint64_t lfs_find(uint32_t inode, const char *path_str, bool nolink) {
 		name = path_next(path);
 
 		if (!name) {
-			if (fobj->type == FOBJ_LINK && fobj->link && !nolink) {
+			if (fobj->link && !nolink) {
 				return fobj->link;
 			}
 			else {
 				return (((uint64_t) getpid() << 32) | fobj->inode);
-			}
-		}
-
-		if (fobj->type == FOBJ_LINK) {
-			free(name);
-			if (fobj->link) {
-				path_prev(path);
-				return fs_find(fobj->link, path_tail(path));
-			}
-			else {
-				return 0;
 			}
 		}
 
@@ -123,6 +112,12 @@ uint64_t lfs_find(uint32_t inode, const char *path_str, bool nolink) {
 			return 0;
 		}
 		else {
+			if (fobj->link) {
+				free(name);
+				path_prev(path);
+				return fs_find(fobj->link, path_tail(path));
+			}
+
 			if ((acl_get(fobj->acl, gettuser()) & ACL_READ) == 0) {
 				return 0;
 			}

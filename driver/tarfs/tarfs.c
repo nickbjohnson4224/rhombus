@@ -77,17 +77,19 @@ void tarfs_init(int argc, char **argv) {
 
 	/* reject if no parent is speicified */
 	if (argc < 2) {
-		fprintf(stderr, "%s: no parent driver specified", argv[0]);
+		fprintf(stderr, "%s: no parent driver specified\n", argv[0]);
 		abort();
 	}
+	else {
 
-	/* get parent driver stream */
-	parent = fopen(argv[1], "r");
+		/* get parent driver stream */
+		parent = fopen(argv[1], "r");
 
-	if (!parent) {
-		/* parent does not exist - fail */
-		fprintf(stderr, "%s: no parent driver %s\n", argv[0], argv[1]);
-		abort();
+		if (!parent) {
+			/* parent does not exist - fail */
+			fprintf(stderr, "%s: no parent driver %s\n", argv[0], argv[1]);
+			abort();
+		}
 	}
 
 	/* create root directory */
@@ -104,21 +106,36 @@ void tarfs_init(int argc, char **argv) {
 
 		/* read in file header block */
 		fseek(parent, i, SEEK_SET);
-		if (!fread(block, 1, 512, parent)) printf("!!!\n");
+		fread(block, 1, 512, parent);
 
 		/* break if it's a terminating block */
 		if (block->filename[0] == '\0' || block->filename[0] == ' ') {
 			break;
 		}
 
-		/* add file to VFS */
-		file        = calloc(sizeof(struct fs_obj), 1);
-		file->type  = FOBJ_FILE;
-		file->inode = n;
-		file->data  = (uint8_t*) (i + 512);
-		file->size  = getvalue(block->filesize, 12);
-		file->acl   = acl_set_default(file->acl, ACL_READ);
-		lfs_add(file, block->filename);
+		if (block->filename[strlen(block->filename) - 1] == '/') {
+
+			/* add directory to VFS */
+			block->filename[strlen(block->filename) - 1] = 0;
+			file        = calloc(sizeof(struct fs_obj), 1);
+			file->type  = FOBJ_DIR;
+			file->inode = n;
+			file->acl   = acl_set_default(file->acl, ACL_READ);
+			lfs_add(file, block->filename);
+
+		}
+		else {
+
+			/* add file to VFS */
+			file        = calloc(sizeof(struct fs_obj), 1);
+			file->type  = FOBJ_FILE;
+			file->inode = n;
+			file->data  = (uint8_t*) (i + 512);
+			file->size  = getvalue(block->filesize, 12);
+			file->acl   = acl_set_default(file->acl, ACL_READ);
+			lfs_add(file, block->filename);
+
+		}
 
 		/* move to next file header */
 		i += ((file->size / 512) + 1) * 512;

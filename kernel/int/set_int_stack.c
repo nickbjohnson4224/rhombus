@@ -63,11 +63,12 @@ extern uint8_t gdt[48];
 
 static void int_stack_init() {
 	uint32_t base = (uint32_t) &tss;
-	uint16_t limit = (uint16_t) (base + sizeof(struct tss));
+	uint16_t limit = (uint16_t) (base + sizeof(struct tss) - 1);
 
 	memclr(&tss, sizeof(struct tss));
-	tss.cs = 0x0B;
+	tss.cs = 0x08;
 	tss.ss0 = tss.es = tss.ds = tss.fs = tss.gs = 0x10;
+	tss.iomap_base = 104;
 
 	/* Change the 6th GDT entry to be the TSS */
 	gdt[40] = (uint8_t) ((limit) & 0xFF);

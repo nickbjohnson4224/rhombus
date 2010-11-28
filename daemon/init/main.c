@@ -28,6 +28,12 @@
 #include "inc/tar.h"
 #include "initrd.h"
 
+const char *splash_art = "\n\
+    \xb2\xb2\xb2\xb2\n\
+  \xb2\xb2\xb2\xb2     Flux OS 0.6 Alpha\n\
+    \xb2\xb2\n\
+\n";
+
 const char *splash ="\
 Flux Operating System 0.5a\n\
 Written by Nick Johnson\n\
@@ -56,69 +62,71 @@ uint64_t daemon_start(void *image, size_t image_size, char const **argv) {
 int main() {
 	struct tar_file *boot_image, *file;
 	char const **argv;
-	uint64_t temp;
+	uint64_t temp, temp1;
 
 	argv = malloc(sizeof(char*) * 3);
 
 	/* Boot Image */
 	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);
 
-	/* Root Filesystem / Device Filesystem (tmpfs) */
+	/* Initial Root Filesystem / Device Filesystem (tmpfs) */
 	argv[0] = "tmpfs";
 	argv[1] = NULL;
-	if (!(file = tar_find(boot_image, (char*) "tmpfs"))) panic("no tmpfs found");
+	if (!(file = tar_find(boot_image, (char*) "bin/tmpfs"))) panic("no tmpfs found");
 	fs_root = daemon_start(file->start, file->size, argv);
 	fs_cons(fs_find(0, "/"), "dev", FOBJ_DIR);
 
 	/* Terminal Driver */
 	argv[0] = "term";
 	argv[1] = NULL;
-	if (!(file = tar_find(boot_image, (char*) "term"))) panic("no term found");
+	if (!(file = tar_find(boot_image, (char*) "bin/term"))) panic("no term found");
 	temp = daemon_start(file->start, file->size, argv); 
 	stderr = stdout = fdopen(temp, "w");
 	printf(splash);
-	fs_link(fs_cons(fs_find(0, "/dev"), "term", FOBJ_LINK), temp);
+	fs_link(fs_cons(fs_find(0, "/dev"), "term", FOBJ_DIR), temp);
 
 	/* Initrd */
 	driver_init(&initrd_driver, 0, NULL);
 	setenv("NAME", "unknown");
 	temp = ((uint64_t) getpid() << 32) + 0;
-	fs_link(fs_cons(fs_find(0, "/dev"), "initrd", FOBJ_LINK), temp);
+	fs_link(fs_cons(fs_find(0, "/dev"), "initrd", FOBJ_DIR), temp);
 
-	/* /bin (tarfs) */
+	/* Root filesystem (tarfs) */
 	argv[0] = "tarfs";
 	argv[1] = "/dev/initrd";
 	argv[2] = NULL;
-	if (!(file = tar_find(boot_image, (char*) "tarfs"))) panic("no tarfs found");
-	temp = daemon_start(file->start, file->size, argv);;
-	fs_link(fs_cons(fs_find(0, "/"), "bin", FOBJ_LINK), temp);
-
-	/* Path */
-	setenv("PATH", "/bin");
+	if (!(file = tar_find(boot_image, (char*) "bin/tarfs"))) panic("no tarfs found");
+	temp = daemon_start(file->start, file->size, argv);
+	temp1 = fs_find(0, "/dev");
+	fs_root = temp;
+	fs_link(fs_find(0, "/dev"), temp1);
 
 	/* Temporary filesystem */
 	argv[0] = "tmpfs";
 	argv[1] = NULL;	
-	if (!(file = tar_find(boot_image, (char*) "tmpfs"))) panic("no tmpfs found");
+	if (!(file = tar_find(boot_image, (char*) "bin/tmpfs"))) panic("no tmpfs found");
 	temp = daemon_start(file->start, file->size, argv);
-	fs_link(fs_cons(fs_find(0, "/"), "tmp", FOBJ_LINK), temp);
+	fs_link(fs_find(0, "/tmp"), temp);
 
 	/* Keyboard Driver */
 	argv[0] = "kbd";
-	if (!(file = tar_find(boot_image, (char*) "kbd"))) panic("no kbd found");
+	if (!(file = tar_find(boot_image, (char*) "bin/kbd"))) panic("no kbd found");
 	temp = daemon_start(file->start, file->size, argv);
-	fs_link(fs_cons(fs_find(0, "/dev"), "kbd", FOBJ_LINK), temp);
+	fs_link(fs_cons(fs_find(0, "/dev"), "kbd", FOBJ_DIR), temp);
 	stdin = fdopen(temp, "r");
 
 	/* Time Driver */
 	argv[0] = "time";
-	if (!(file = tar_find(boot_image, (char*) "time"))) panic("no time found");
+	if (!(file = tar_find(boot_image, (char*) "bin/time"))) panic("no time found");
 	temp = daemon_start(file->start, file->size, argv);
-	fs_link(fs_cons(fs_find(0, "/dev"), "time", FOBJ_LINK), temp);
+	fs_link(fs_cons(fs_find(0, "/dev"), "time", FOBJ_DIR), temp);
+
+	/* Path */
+	setenv("PATH", "/bin");
 
 	/* Flux Init Shell */
 	argv[0] = "fish";
-	file = tar_find(boot_image, (char*) "fish");
+	file = tar_find(boot_image, (char*) "bin/fish");
 	if (!file) {
 		printf("critical error: no init shell found\n");
 		for(;;);

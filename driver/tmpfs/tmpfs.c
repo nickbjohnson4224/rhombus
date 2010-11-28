@@ -50,12 +50,7 @@ struct fs_obj *tmpfs_cons(int type) {
 		fobj->type  = FOBJ_DIR;
 		fobj->inode = tmpfs_inode_top++;
 		fobj->acl   = acl_set_default(fobj->acl, ACL_READ | ACL_WRITE);
-		break;
-	case FOBJ_LINK:
-		fobj        = calloc(sizeof(struct fs_obj), 1);
-		fobj->type  = FOBJ_LINK;
-		fobj->inode = tmpfs_inode_top++;
-		fobj->acl   = acl_set_default(fobj->acl, ACL_READ | ACL_WRITE);
+		fobj->link  = 0;
 		break;
 	}
 

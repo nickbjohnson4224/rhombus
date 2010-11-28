@@ -71,7 +71,6 @@ void     fs_chroot(FILE *root);
 #define FOBJ_NULL	0x00
 #define FOBJ_FILE	0x01
 #define FOBJ_DIR	0x02
-#define FOBJ_LINK	0x03
 
 /* path manipulation *******************************************************/
 
