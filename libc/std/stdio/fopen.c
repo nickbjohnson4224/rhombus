@@ -14,9 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdlib.h>
+#include <driver.h>
 #include <stdio.h>
 #include <natio.h>
-#include <stdlib.h>
+#include <errno.h>
 
 /****************************************************************************
  * fopen
@@ -27,6 +29,76 @@
  */
 
 FILE *fopen(const char *path, const char *mode) {
+	uint64_t fd;
+	uint8_t perm;
+	char *path1;
 
-	return freopen(path, mode, malloc(sizeof(FILE)));
+	/* attempt to find the file */
+	fd = fs_find(0, path);
+
+	/* check if the object is a directory or null */
+	if (fd && fs_type(fd) == FOBJ_DIR) {
+		errno = EISDIR;
+		return NULL;
+	}
+
+	if (!fd) {
+
+		/* create the file */
+		if (mode[0] == 'w' || mode[0] == 'a') {
+
+			/* find requested parent directory */
+			path1 = path_parent(path);
+			fd = fs_find(0, path1);
+			free(path1);
+
+			if (!fd) {
+				errno = ENOENT;
+				return NULL;
+			}
+			else {
+				/* check permissions of directory */
+				if ((fs_perm(fd, gettuser()) & ACL_WRITE) == 0) {
+					errno = EACCES;
+					return NULL;
+				}
+			}
+
+			path1 = path_name(path);
+			fd = fs_cons(fd, path1, FOBJ_FILE);
+			free(path1);
+
+			if (!fd) {
+				errno = EACCES;
+				return NULL;
+			}
+		}
+		else {
+			errno = ENOENT;
+			return NULL;
+		}
+	}
+
+	perm = fs_perm(fd, gettuser());
+
+	/* check read permissions */
+	if ((perm & ACL_READ) == 0) {
+		errno = EACCES;
+		return NULL;
+	}
+
+	/* check write permissions */
+	if (mode[0] == 'w' || mode[0] == 'a' || mode[1] == '+') {
+		if ((perm & ACL_WRITE) == 0) {
+			errno = EACCES;
+			return NULL;
+		}
+	}
+
+	/* reset the file contents */
+	if (mode[0] == 'w') {
+		reset(fd);
+	}
+
+	return fdopen(fd, mode);
 }

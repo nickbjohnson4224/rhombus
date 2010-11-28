@@ -16,6 +16,7 @@
 
 #include <stdint.h>
 #include <natio.h>
+#include <errno.h>
 
 /*****************************************************************************
  * fs_size
@@ -31,6 +32,20 @@ int fs_type(uint64_t fobj) {
 	command.v1 = 0;
 	
 	if (!fs_send(fobj, &command)) {
+		errno = EBADMSG;
+		return 0;
+	}
+
+	/* check for errors */
+	if (command.op == FS_ERR) {
+		switch (command.v0) {
+		case ERR_NULL: errno = EUNK; break;
+		case ERR_FILE: errno = ENOENT; break;
+		case ERR_DENY: errno = EACCES; break;
+		case ERR_FUNC: errno = ENOSYS; break;
+		case ERR_TYPE: errno = EUNK; break;
+		}
+
 		return 0;
 	}
 

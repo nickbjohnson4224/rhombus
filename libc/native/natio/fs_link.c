@@ -16,6 +16,7 @@
 
 #include <stdint.h>
 #include <natio.h>
+#include <errno.h>
 
 /*****************************************************************************
  * fs_link
@@ -32,6 +33,20 @@ int fs_link(uint64_t link, uint64_t fobj) {
 	command.v1 = 0;
 	
 	if (!fs_send(link, &command)) {
+		errno = EBADMSG;
+		return 1;
+	}
+	
+	/* check for errors */
+	if (command.op == FS_ERR) {
+		switch (command.v0) {
+		case ERR_NULL: errno = EUNK; break;
+		case ERR_FILE: errno = ENOENT; break;
+		case ERR_DENY: errno = EACCES; break;
+		case ERR_FUNC: errno = ENOSYS; break;
+		case ERR_TYPE: errno = ENOTDIR; break;
+		}
+
 		return 1;
 	}
 

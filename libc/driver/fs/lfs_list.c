@@ -14,43 +14,42 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
+#include <driver.h>
 #include <string.h>
-#include <stdlib.h>
-#include <natio.h>
-#include <errno.h>
 
 /*****************************************************************************
- * fs_find
+ * lfs_list
  *
- * Attempts to create a new filesystem object of type <type> and name <name> 
- * in directory <dir>. Returns the new object on success, NULL on failure.
+ * Copy the name of the <entry>th entry in the directory <dir> into <buffer>.
+ * Returns zero on success, nonzero on error.
  */
 
-uint64_t fs_cons(uint64_t dir, const char *name, int type) {
-	struct fs_cmd command;
+int lfs_list(struct fs_obj *dir, int entry, char *buffer, size_t size) {
+	struct fs_obj *daughter;
 
-	command.op = FS_CONS;
-	command.v0 = type;
-	command.v1 = 0;
-	strlcpy(command.s0, name, 4000);
-	
-	if (!fs_send(dir, &command)) {
-		return 0;
+	if (!dir) {
+		return 1;
 	}
 
-	/* check for errors */
-	if (command.op == FS_ERR) {
-		switch (command.v0) {
-		case ERR_NULL: errno = EUNK; break;
-		case ERR_FILE: errno = ENOENT; break;
-		case ERR_DENY: errno = EACCES; break;
-		case ERR_FUNC: errno = ENOSYS; break;
-		case ERR_TYPE: errno = ENOTDIR; break;
+	daughter = dir->daughter;
+
+	/* select the <entry>th daughter node */
+	while (daughter) {
+		if (entry <= 0) {
+			break;
 		}
-
-		return 0;
+		else {
+			daughter = daughter->sister1;
+			entry--;
+		}
 	}
 
-	return command.v0;
+	if (daughter) {
+		/* return name of selected daughter */
+		strlcpy(buffer, daughter->name, size);
+		return 0;
+	}
+	else {
+		return 1;
+	}
 }

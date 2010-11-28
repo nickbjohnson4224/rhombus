@@ -21,21 +21,21 @@
 #include <errno.h>
 
 /*****************************************************************************
- * fs_find
+ * fs_perm
  *
- * Attempts to create a new filesystem object of type <type> and name <name> 
- * in directory <dir>. Returns the new object on success, NULL on failure.
+ * Returns the filesystem permissions of the filesystem object <fobj> that
+ * apply to the user <user>. Returns zero on error.
  */
 
-uint64_t fs_cons(uint64_t dir, const char *name, int type) {
+uint8_t fs_perm(uint64_t fobj, uint32_t user) {
 	struct fs_cmd command;
 
-	command.op = FS_CONS;
-	command.v0 = type;
+	command.op = FS_PERM;
+	command.v0 = user;
 	command.v1 = 0;
-	strlcpy(command.s0, name, 4000);
 	
-	if (!fs_send(dir, &command)) {
+	if (!fs_send(fobj, &command)) {
+		errno = EBADMSG;
 		return 0;
 	}
 
@@ -46,11 +46,12 @@ uint64_t fs_cons(uint64_t dir, const char *name, int type) {
 		case ERR_FILE: errno = ENOENT; break;
 		case ERR_DENY: errno = EACCES; break;
 		case ERR_FUNC: errno = ENOSYS; break;
-		case ERR_TYPE: errno = ENOTDIR; break;
+		case ERR_TYPE: errno = EUNK; break;
 		}
 
 		return 0;
 	}
 
+	errno = 0;
 	return command.v0;
 }

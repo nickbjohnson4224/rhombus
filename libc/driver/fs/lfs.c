@@ -147,41 +147,6 @@ uint64_t lfs_find(uint32_t inode, const char *path_str, bool nolink) {
 }
 
 /*****************************************************************************
- * lfs_list
- *
- * Copy the name of the <entry>th entry in the directory <dir> into <buffer>.
- * Returns zero on success, nonzero on error.
- */
-
-int lfs_list(struct fs_obj *dir, int entry, char *buffer, size_t size) {
-	struct fs_obj *daughter;
-
-	if (!dir) {
-		return 1;
-	}
-
-	daughter = dir->daughter;
-
-	while (daughter) {
-		if (entry <= 0) {
-			break;
-		}
-		else {
-			daughter = daughter->sister1;
-			entry--;
-		}
-	}
-
-	if (daughter) {
-		strlcpy(buffer, daughter->name, size);
-		return 0;
-	}
-	else {
-		return 1;
-	}
-}
-
-/*****************************************************************************
  * lfs_push
  *
  * Add the filesystem object <obj> to the directory <dir>, giving it the
@@ -279,34 +244,4 @@ int lfs_pull(struct fs_obj *obj) {
 	else {
 		return 0;
 	}
-}
-
-/*****************************************************************************
- * lfs_add
- *
- * Adds the filesystem object <obj> to the local filesystem at path <path>.
- * This function is intended for internal use by drivers, esp. during init.
- */
-
-void lfs_add(struct fs_obj *obj, const char *path) {
-	char *path1;
-	uint64_t dirfd;
-	struct fs_obj *dir;
-	
-	if (!obj) {
-		return;
-	}
-
-	path1 = path_parent(path);
-	dirfd = lfs_find(0, path1, false);
-	dir = lfs_lookup(dirfd & 0xFFFFFFFF);
-	free(path1);
-
-	if (!dir) {
-		return;
-	}
-
-	path1 = path_name(path);
-	lfs_push(dir, obj, path1);
-	free(path1);
 }

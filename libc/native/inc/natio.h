@@ -45,6 +45,14 @@ extern uint64_t fs_root;
 #define FS_SIZE 0x07
 #define FS_TYPE 0x08
 #define FS_LFND	0x09
+#define FS_PERM 0x0A
+#define FS_AUTH 0x0B
+
+#define ERR_NULL 0x00
+#define ERR_FILE 0x01
+#define ERR_DENY 0x02
+#define ERR_FUNC 0x03
+#define ERR_TYPE 0x04
 
 struct fs_cmd {
 	uint64_t v0;
@@ -65,6 +73,8 @@ int      fs_link  (uint64_t link, uint64_t fobj);
 uint64_t fs_size  (uint64_t file);
 int      fs_type  (uint64_t fobj);
 uint64_t fs_lfind (uint64_t root, const char *path);
+uint8_t  fs_perm  (uint64_t fobj, uint32_t user);
+int      fs_auth  (uint64_t fobj, uint32_t user, uint8_t perm);
 
 void     fs_chroot(FILE *root);
 

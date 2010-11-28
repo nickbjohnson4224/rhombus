@@ -82,11 +82,25 @@ int lfs_pull(struct fs_obj *obj);
 
 void lfs_add(struct fs_obj *obj, const char *path);
 
+/* wrapper function prototypes **********************************************/
+
 void lfs_wrapper  (struct packet *packet, uint8_t port, uint32_t caller);
 void read_wrapper (struct packet *packet, uint8_t port, uint32_t caller);
 void write_wrapper(struct packet *packet, uint8_t port, uint32_t caller);
 void sync_wrapper (struct packet *packet, uint8_t port, uint32_t caller);
 void reset_wrapper(struct packet *packet, uint8_t port, uint32_t caller);
+
+void find_wrapper(struct fs_cmd *cmd, uint32_t inode);
+void lfnd_wrapper(struct fs_cmd *cmd, uint32_t inode);
+void cons_wrapper(struct fs_cmd *cmd, uint32_t inode);
+void move_wrapper(struct fs_cmd *cmd, uint32_t inode);
+void remv_wrapper(struct fs_cmd *cmd, uint32_t inode);
+void link_wrapper(struct fs_cmd *cmd, uint32_t inode);
+void list_wrapper(struct fs_cmd *cmd, uint32_t inode);
+void size_wrapper(struct fs_cmd *cmd, uint32_t inode);
+void type_wrapper(struct fs_cmd *cmd, uint32_t inode);
+void perm_wrapper(struct fs_cmd *cmd, uint32_t inode);
+void auth_wrapper(struct fs_cmd *cmd, uint32_t inode);
 
 /* driver interface structure ***********************************************/
 

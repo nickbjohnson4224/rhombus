@@ -14,43 +14,35 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <driver.h>
 #include <stdlib.h>
-#include <natio.h>
-#include <errno.h>
+#include <mutex.h>
+#include <proc.h>
 
 /*****************************************************************************
- * fs_find
+ * perm_wrapper
  *
- * Attempts to create a new filesystem object of type <type> and name <name> 
- * in directory <dir>. Returns the new object on success, NULL on failure.
+ * Performs the requested actions of a FS_PERM command.
  */
 
-uint64_t fs_cons(uint64_t dir, const char *name, int type) {
-	struct fs_cmd command;
-
-	command.op = FS_CONS;
-	command.v0 = type;
-	command.v1 = 0;
-	strlcpy(command.s0, name, 4000);
+void perm_wrapper(struct fs_cmd *cmd, uint32_t inode) {
+	struct fs_obj *fobj;
 	
-	if (!fs_send(dir, &command)) {
-		return 0;
+	/* look up the requested object */
+	fobj = lfs_lookup(inode);
+
+	if (fobj) {
+		mutex_spin(&fobj->mutex);
+
+		/* return the permissions of the object for user <cmd->v0> */	
+		cmd->v0 = acl_get(fobj->acl, cmd->v0);
+
+		mutex_free(&fobj->mutex);
 	}
-
-	/* check for errors */
-	if (command.op == FS_ERR) {
-		switch (command.v0) {
-		case ERR_NULL: errno = EUNK; break;
-		case ERR_FILE: errno = ENOENT; break;
-		case ERR_DENY: errno = EACCES; break;
-		case ERR_FUNC: errno = ENOSYS; break;
-		case ERR_TYPE: errno = ENOTDIR; break;
-		}
-
-		return 0;
+	else {
+		/* return ERR_FILE on failure to find object */
+		cmd->op = FS_ERR;
+		cmd->v0 = ERR_FILE;
 	}
-
-	return command.v0;
 }
+

@@ -27,15 +27,27 @@ extern int errnov[MAX_THREADS];
 
 /* error codes *************************************************************/
 
-#define EDOM	1
-#define ERANGE	2
-#define EILSEQ	3
-#define ENOMEM	4
-#define EEXEC	5
-#define ENOSYS	6
-#define ENOFILE	7
+#define E2BIG	1
+#define EACCES	2
+#define EAGAIN	3
+#define EBADMSG	4
+#define EBUSY	5
+#define ECHILD	6
+#define EDOM	7
 #define EEXIST	8
-#define EPERM	9
-#define EPATH	10
+#define EILSEQ	9
+#define EINVAL	10
+#define EIO		11
+#define EISDIR	12
+#define EPATH	13
+#define ENOENT	14
+#define ENOEXEC	15
+#define ENOMEM	16
+#define ENOSPC	17
+#define ENOSYS	18
+#define ENOTDIR	19
+#define EPERM	20
+#define ERANGE	21
+#define EUNK	22
 
 #endif/*ERRNO_H*/

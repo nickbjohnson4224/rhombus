@@ -18,6 +18,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <natio.h>
+#include <errno.h>
 
 /*****************************************************************************
  * fs_move
@@ -38,8 +39,22 @@ uint64_t fs_move(uint64_t dir, const char *name, uint64_t fobj) {
 	strlcpy(command.s0, name, 4000);
 	
 	if (!fs_send(dir, &command)) {
+		errno = EBADMSG;
 		return 0;
 	}
 
+	/* check for errors */
+	if (command.op == FS_ERR) {
+		switch (command.v0) {
+		case ERR_NULL: errno = EUNK; break;
+		case ERR_FILE: errno = ENOENT; break;
+		case ERR_DENY: errno = EACCES; break;
+		case ERR_FUNC: errno = ENOSYS; break;
+		case ERR_TYPE: errno = ENOTDIR; break;
+		}
+
+		return 0;
+	}
+	
 	return command.v0;
 }

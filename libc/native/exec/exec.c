@@ -73,7 +73,7 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 	_save(argv);
 
 	if (_exec()) {
-		errno = EEXEC;
+		errno = ENOEXEC;
 		return -1;
 	}
 
@@ -107,7 +107,6 @@ int execv(const char *path, char const **argv) {
 	image = fopen(fullpath, "r");
 
 	if (!image) {
-		errno = ENOFILE;
 		return -1;
 	}
 
@@ -115,7 +114,7 @@ int execv(const char *path, char const **argv) {
 	size = ftell(image);
 
 	if (!size) {
-		errno = ENOFILE;
+		errno = ENOEXEC;
 		return -1;
 	}
 
@@ -123,14 +122,14 @@ int execv(const char *path, char const **argv) {
 
 	rewind(image);
 	if (size != fread(bootstrap, sizeof(char), size, image)) {
-		errno = EEXEC;
+		errno = ENOEXEC;
 		return -1;
 	}
 
 	_save(argv);
 
 	if (_exec()) {
-		errno = EEXEC;
+		errno = ENOEXEC;
 		return -1;
 	}
 

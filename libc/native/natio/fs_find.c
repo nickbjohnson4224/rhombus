@@ -18,12 +18,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <natio.h>
+#include <errno.h>
 
 /*****************************************************************************
  * fs_find
  *
  * Finds the filesystem object with the given path <path> from <root> if it 
- * exists. If it does not exist, this function returns NULL.
+ * exists. If it does not exist, this function returns 0.
  */
 
 uint64_t fs_find(uint64_t root, const char *path) {
@@ -35,6 +36,20 @@ uint64_t fs_find(uint64_t root, const char *path) {
 	strlcpy(command.s0, path, 4000);
 	
 	if (!fs_send(root, &command)) {
+		errno = EBADMSG;
+		return 0;
+	}
+
+	/* check for errors */
+	if (command.op == FS_ERR) {
+		switch (command.v0) {
+		case ERR_NULL: errno = EUNK; break;
+		case ERR_FILE: errno = ENOENT; break;
+		case ERR_DENY: errno = EACCES; break;
+		case ERR_FUNC: errno = ENOSYS; break;
+		case ERR_TYPE: errno = EUNK; break;
+		}
+
 		return 0;
 	}
 

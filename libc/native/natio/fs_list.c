@@ -17,6 +17,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <natio.h>
+#include <errno.h>
 
 /*****************************************************************************
  * fs_list
@@ -33,9 +34,23 @@ char *fs_list(uint64_t dir, int entry) {
 	command.v1 = 0;
 	
 	if (!fs_send(dir, &command)) {
+		errno = EBADMSG;
 		return NULL;
 	}
 
+	/* check for errors */
+	if (command.op == FS_ERR) {
+		switch (command.v0) {
+		case ERR_NULL: errno = 0; break;
+		case ERR_FILE: errno = ENOENT; break;
+		case ERR_DENY: errno = EACCES; break;
+		case ERR_FUNC: errno = ENOSYS; break;
+		case ERR_TYPE: errno = ENOTDIR; break;
+		}
+
+		return NULL;
+	}
+	
 	command.null0 = '\0';
 	return strdup(command.s0);
 }

@@ -25,21 +25,28 @@
 
 const char *strerror(int errnum) {
 	switch (errnum) {
-	case EDOM:
-		return "argument out of range";
-	case ERANGE:
-		return "argument out of range";
-	case EILSEQ:
-		return "illegal character sequence";
-	case ENOMEM:
-		return "out of memory";
-	case EEXEC:
-		return "execution failed";
-	case ENOSYS:
-		return "function not implemented";
-	case ENOFILE:
-		return "file not found";
-	default:
-		return "unknown error";
+	case E2BIG:		return "argument list too long";
+	case EACCES:	return "access denied";
+	case EAGAIN:	return "resource unavailable";
+	case EBADMSG:	return "bad message";
+	case EBUSY:		return "resource busy";
+	case ECHILD:	return "no child processes";
+	case EDOM: 		return "argument out of domain";
+	case EEXIST:	return "file exists";
+	case EILSEQ:	return "illegal byte sequence";
+	case EINVAL:	return "invalid argument";
+	case EIO:		return "I/O error";
+	case EISDIR:	return "is a directory";
+	case EPATH:		return "invalid path";
+	case ENOENT:	return "no such file or directory";
+	case ENOEXEC:	return "invalid executable";
+	case ENOMEM:	return "out of memory";
+	case ENOSPC:	return "no space left on device";
+	case ENOSYS:	return "function not supported";
+	case ENOTDIR:	return "is not a directory";
+	case EPERM:		return "operation not permitted";
+	case ERANGE:	return "result out of range";
+	case EUNK:		
+	default:		return "unknown error";
 	}
 }

@@ -27,23 +27,15 @@
  */
 
 FILE *freopen(const char *path, const char *mode, FILE *stream) {
-	uint64_t fd;
+	FILE *new_stream;
 
-	if (stream) {
-		free(stream);
+	if (!stream) {
+		return fopen(path, mode);
 	}
-
-	fd = fs_find(0, path);
-
-	if (!fd) {
-		if (mode[0] == 'w' || mode[0] == 'a') {
-			fd = fs_cons(fs_find(0, path_parent(path)), path_name(path), FOBJ_FILE);
-			if (!fd) return NULL;
-		}
-		if (mode[0] == 'w') {
-			reset(fd);
-		}
+	else {
+		new_stream = fopen(path, mode);
+		memcpy(stream, new_stream, sizeof(FILE));
+		free(new_stream);
+		return stream;
 	}
-
-	return fdopen(fs_find(0, path), mode);
 }

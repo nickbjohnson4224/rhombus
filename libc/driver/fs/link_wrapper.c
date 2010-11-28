@@ -14,43 +14,48 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <driver.h>
 #include <stdlib.h>
-#include <natio.h>
-#include <errno.h>
+#include <mutex.h>
+#include <proc.h>
 
 /*****************************************************************************
- * fs_find
+ * link_wrapper
  *
- * Attempts to create a new filesystem object of type <type> and name <name> 
- * in directory <dir>. Returns the new object on success, NULL on failure.
+ * Performs the requested actions of a FS_LINK command.
  */
 
-uint64_t fs_cons(uint64_t dir, const char *name, int type) {
-	struct fs_cmd command;
-
-	command.op = FS_CONS;
-	command.v0 = type;
-	command.v1 = 0;
-	strlcpy(command.s0, name, 4000);
+void link_wrapper(struct fs_cmd *cmd, uint32_t inode) {
+	struct fs_obj *dir;
 	
-	if (!fs_send(dir, &command)) {
-		return 0;
-	}
+	/* get the requested directory */
+	dir = lfs_lookup(inode);
 
-	/* check for errors */
-	if (command.op == FS_ERR) {
-		switch (command.v0) {
-		case ERR_NULL: errno = EUNK; break;
-		case ERR_FILE: errno = ENOENT; break;
-		case ERR_DENY: errno = EACCES; break;
-		case ERR_FUNC: errno = ENOSYS; break;
-		case ERR_TYPE: errno = ENOTDIR; break;
+	if (dir) {
+		mutex_spin(&dir->mutex);
+
+		/* check type of object */
+		if (dir->type != FOBJ_DIR) {
+			cmd->op = FS_ERR;
+			cmd->v0 = ERR_TYPE;
+			return;
 		}
 
-		return 0;
-	}
+		/* check all permissions */
+		if ((acl_get(dir->acl, gettuser() & ACL_WRITE) == 0)) {
+			cmd->op = FS_ERR;
+			cmd->v0 = ERR_DENY;
+			return;
+		}
+	
+		/* set link location */
+		dir->link = cmd->v0;
 
-	return command.v0;
+		mutex_free(&dir->mutex);
+	}
+	else {
+		/* return ERR_FILE on failure to find directory */
+		cmd->op = FS_ERR;
+		cmd->v0 = ERR_FILE;
+	}
 }

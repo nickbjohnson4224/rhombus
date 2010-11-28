@@ -14,43 +14,52 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <driver.h>
 #include <stdlib.h>
-#include <natio.h>
-#include <errno.h>
+#include <mutex.h>
+#include <proc.h>
 
 /*****************************************************************************
- * fs_find
+ * remv_wrapper
  *
- * Attempts to create a new filesystem object of type <type> and name <name> 
- * in directory <dir>. Returns the new object on success, NULL on failure.
+ * Performs the requested actions of a FS_REMV command.
  */
 
-uint64_t fs_cons(uint64_t dir, const char *name, int type) {
-	struct fs_cmd command;
-
-	command.op = FS_CONS;
-	command.v0 = type;
-	command.v1 = 0;
-	strlcpy(command.s0, name, 4000);
+void remv_wrapper(struct fs_cmd *cmd, uint32_t inode) {
+	struct fs_obj *fobj;
 	
-	if (!fs_send(dir, &command)) {
-		return 0;
-	}
+	/* get the requested object */
+	fobj = lfs_lookup(inode);
 
-	/* check for errors */
-	if (command.op == FS_ERR) {
-		switch (command.v0) {
-		case ERR_NULL: errno = EUNK; break;
-		case ERR_FILE: errno = ENOENT; break;
-		case ERR_DENY: errno = EACCES; break;
-		case ERR_FUNC: errno = ENOSYS; break;
-		case ERR_TYPE: errno = ENOTDIR; break;
+	if (fobj) {
+		mutex_spin(&fobj->mutex);
+
+		/* check all permissions */
+		if ((acl_get(fobj->acl, gettuser()) & ACL_WRITE) == 0 ||
+			(acl_get(fobj->mother->acl, gettuser() & ACL_WRITE) == 0)) {
+			cmd->op = FS_ERR;
+			cmd->v0 = ERR_DENY;
+			return;
 		}
 
-		return 0;
-	}
+		/* remove the object from its directory */
+		lfs_pull(fobj);
 
-	return command.v0;
+		if (active_driver->free) {
+			/* allow the driver to free the object */
+			active_driver->free(fobj);
+		}
+		else {
+			/* free the object, assuming data is not allocated */
+			acl_free(fobj->acl);
+			free(fobj);
+		}
+
+		mutex_free(&fobj->mutex);
+	}
+	else {
+		/* return ERR_FILE on failure to find object */
+		cmd->op = FS_ERR;
+		cmd->v0 = ERR_FILE;
+	}
 }

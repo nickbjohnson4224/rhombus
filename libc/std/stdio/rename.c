@@ -20,18 +20,21 @@
 int rename(const char *oldpath, const char *newpath) {
 	uint64_t old, newdir, new;
 
+	/* attempt to find old file */
 	old = fs_find(0, oldpath);
 
 	if (!old) {
 		return 1;
 	}
 
+	/* attempt to find new directory */
 	newdir = fs_find(0, path_parent(newpath));
 
 	if (!newdir) {
 		return 1;
 	}
 
+	/* attempt to move the file */
 	new = fs_move(newdir, path_name(newpath), old);
 
 	if (new) {

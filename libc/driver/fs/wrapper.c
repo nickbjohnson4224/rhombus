@@ -16,8 +16,26 @@
 
 #include <driver.h>
 #include <stdlib.h>
+#include <mutex.h>
 #include <proc.h>
 #include <ipc.h>
+
+typedef void (*lfs_wrapper_t)(struct fs_cmd *cmd, uint32_t inode);
+
+static lfs_wrapper_t lfs_wrapper_v[12] = {
+	NULL,
+	find_wrapper,
+	cons_wrapper,
+	move_wrapper,
+	remv_wrapper,
+	link_wrapper,
+	list_wrapper,
+	size_wrapper,
+	type_wrapper,
+	lfnd_wrapper,
+	perm_wrapper,
+	auth_wrapper
+};	
 
 /*****************************************************************************
  * lfs_wrapper
@@ -27,14 +45,14 @@
 
 void lfs_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 	struct fs_cmd *cmd;
-	struct fs_obj *fobj, *new_fobj;
-	uint64_t file;
 
+	/* reject null packets */
 	if (!packet) {
 		psend(PORT_REPLY, caller, NULL);
 		return;
 	}
 
+	/* reject invalid packets */
 	if (packet->data_length != sizeof(struct fs_cmd)) {
 		pfree(packet);
 		psend(PORT_REPLY, caller, NULL);
@@ -45,164 +63,12 @@ void lfs_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
 	cmd->null0 = '\0';
 
 	/* perform action */
-	switch (cmd->op) {
-	case FS_FIND:
-		file = lfs_find(packet->target_inode, cmd->s0, false);
-		
-		if (file) {
-			cmd->v0 = file;
-		}
-		else {
-			cmd->op = FS_ERR;
-		}
-		break;
-	case FS_LFND:
-		file = lfs_find(packet->target_inode, cmd->s0, true);
-
-		if (file) {
-			cmd->v0 = file;
-		}
-		else {
-			cmd->op = FS_ERR;
-		}
-		break;
-	case FS_CONS:
-		if (!active_driver->cons) {
-			cmd->op = FS_ERR;
-			break;
-		}
-
-		fobj = lfs_lookup(packet->target_inode);
-
-		if (fobj) {
-			if ((acl_get(fobj->acl, gettuser()) & ACL_WRITE) == 0) {
-				cmd->op = FS_ERR;
-				break;
-			}
-
-			new_fobj = active_driver->cons(cmd->v0);
-			if (new_fobj) {
-				lfs_push(fobj, new_fobj, cmd->s0);
-				cmd->v0   = getpid();
-				cmd->v0 <<= 32;
-				cmd->v0  |= new_fobj->inode;
-			}
-			else {
-				cmd->op = FS_ERR;
-			}
-		}
-		else {
-			cmd->op = FS_ERR;
-		}
-		break;	
-	case FS_MOVE:
-		if (cmd->v0 >> 32 != getpid()) {
-			cmd->op = FS_ERR;
-			break;
-		}
-
-		fobj = lfs_lookup(packet->target_inode);
-		new_fobj = lfs_lookup(cmd->v0 & 0xFFFFFFFF);
-
-		if (!fobj || !new_fobj) {
-			cmd->op = FS_ERR;
-			break;
-		}
-
-		if (((acl_get(fobj->acl, gettuser()) & ACL_WRITE) == 0) || 
-			((acl_get(new_fobj->mother->acl, gettuser()) & ACL_WRITE) == 0)) {
-			cmd->op = FS_ERR;
-			break;
-		}
-
-		lfs_pull(new_fobj);
-		lfs_push(fobj, new_fobj, cmd->s0);
-		cmd->v0   = getpid();
-		cmd->v0 <<= 32;
-		cmd->v0  |= new_fobj->inode;
-
-		break;
-	case FS_REMV:
-		fobj = lfs_lookup(packet->target_inode);
-
-		if (fobj) {
-			if ((acl_get(fobj->acl, gettuser()) & ACL_WRITE) == 0) {
-				cmd->op = FS_ERR;
-			}
-			else if (lfs_pull(fobj)) {
-				cmd->op = FS_ERR;
-			}
-			else {
-				if (active_driver->free) {
-					active_driver->free(fobj);
-				}
-				else {
-					acl_free(fobj->acl);
-					free(fobj);
-				}
-			}
-		}
-		else {
-			cmd->op = FS_ERR;
-		}
-		break;
-	case FS_LINK:
-		fobj = lfs_lookup(packet->target_inode);
-
-		if (fobj) {
-			if ((acl_get(fobj->acl, gettuser() & ACL_WRITE) == 0)) {
-				cmd->op = FS_ERR;
-			}
-			else {
-				fobj->link = cmd->v0;
-			}
-		}
-		else {
-			cmd->op = FS_ERR;
-		}
-		break;
-	case FS_LIST:
-		fobj = lfs_lookup(packet->target_inode);
-
-		if (fobj) {
-			if ((acl_get(fobj->acl, gettuser()) & ACL_READ) == 0) {
-				cmd->op = FS_ERR;
-			}
-			else if (lfs_list(fobj, cmd->v0, cmd->s0, 4000)) {
-				cmd->op = FS_ERR;
-			}
-		}
-		else {
-			cmd->op = FS_ERR;
-		}
-		break;
-	case FS_SIZE:
-		fobj = lfs_lookup(packet->target_inode);
-
-		if (fobj) {
-			if (active_driver->size) {
-				cmd->v0 = active_driver->size(fobj);
-			}
-			else {
-				cmd->v0 = fobj->size;
-			}
-		}
-		else {
-			cmd->op = FS_ERR;
-		}
-		break;
-	case FS_TYPE:
-		fobj = lfs_lookup(packet->target_inode);
-
-		if (fobj) {
-			cmd->v0 = fobj->type;
-		}
-		else {
-			cmd->op = FS_ERR;
-		}
-		break;
-	default:
+	if ((cmd->op < 12) && lfs_wrapper_v[cmd->op]) {
+		lfs_wrapper_v[cmd->op](cmd, packet->target_inode);
+	}
+	else {
 		cmd->op = FS_ERR;
+		cmd->v0 = ERR_FUNC;
 	}
 
 	psend(PORT_REPLY, caller, packet);

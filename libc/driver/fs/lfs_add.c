@@ -14,43 +14,38 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <driver.h>
 #include <stdlib.h>
-#include <natio.h>
-#include <errno.h>
+#include <string.h>
 
 /*****************************************************************************
- * fs_find
+ * lfs_add
  *
- * Attempts to create a new filesystem object of type <type> and name <name> 
- * in directory <dir>. Returns the new object on success, NULL on failure.
+ * Adds the filesystem object <obj> to the local filesystem at path <path>.
+ * This function is intended for internal use by drivers, esp. during init.
  */
 
-uint64_t fs_cons(uint64_t dir, const char *name, int type) {
-	struct fs_cmd command;
-
-	command.op = FS_CONS;
-	command.v0 = type;
-	command.v1 = 0;
-	strlcpy(command.s0, name, 4000);
+void lfs_add(struct fs_obj *obj, const char *path) {
+	char *path1;
+	uint64_t dirfd;
+	struct fs_obj *dir;
 	
-	if (!fs_send(dir, &command)) {
-		return 0;
+	if (!obj) {
+		return;
 	}
 
-	/* check for errors */
-	if (command.op == FS_ERR) {
-		switch (command.v0) {
-		case ERR_NULL: errno = EUNK; break;
-		case ERR_FILE: errno = ENOENT; break;
-		case ERR_DENY: errno = EACCES; break;
-		case ERR_FUNC: errno = ENOSYS; break;
-		case ERR_TYPE: errno = ENOTDIR; break;
-		}
+	/* find parent directory */
+	path1 = path_parent(path);
+	dirfd = lfs_find(0, path1, false);
+	dir = lfs_lookup(dirfd & 0xFFFFFFFF);
+	free(path1);
 
-		return 0;
+	if (!dir) {
+		return;
 	}
 
-	return command.v0;
+	/* push object into parent directory */
+	path1 = path_name(path);
+	lfs_push(dir, obj, path1);
+	free(path1);
 }

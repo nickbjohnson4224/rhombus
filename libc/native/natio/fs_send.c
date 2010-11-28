@@ -35,7 +35,7 @@ struct fs_cmd *fs_send(uint64_t root, struct fs_cmd *cmd) {
 	length = sizeof(struct fs_cmd);
 	length = ssend(root, cmd, cmd, length, 0, PORT_FS);
 	
-	if (length != sizeof(struct fs_cmd) || cmd->op == FS_ERR) {
+	if (length != sizeof(struct fs_cmd)) {
 		return NULL;
 	}
 	else {

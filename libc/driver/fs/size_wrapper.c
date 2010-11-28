@@ -14,43 +14,52 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <driver.h>
 #include <stdlib.h>
-#include <natio.h>
-#include <errno.h>
+#include <mutex.h>
+#include <proc.h>
 
 /*****************************************************************************
- * fs_find
+ * size_wrapper
  *
- * Attempts to create a new filesystem object of type <type> and name <name> 
- * in directory <dir>. Returns the new object on success, NULL on failure.
+ * Performs the requested actions of a FS_SIZE command.
  */
 
-uint64_t fs_cons(uint64_t dir, const char *name, int type) {
-	struct fs_cmd command;
-
-	command.op = FS_CONS;
-	command.v0 = type;
-	command.v1 = 0;
-	strlcpy(command.s0, name, 4000);
+void size_wrapper(struct fs_cmd *cmd, uint32_t inode) {
+	struct fs_obj *file;
 	
-	if (!fs_send(dir, &command)) {
-		return 0;
-	}
+	/* get requested file */
+	file = lfs_lookup(inode);
 
-	/* check for errors */
-	if (command.op == FS_ERR) {
-		switch (command.v0) {
-		case ERR_NULL: errno = EUNK; break;
-		case ERR_FILE: errno = ENOENT; break;
-		case ERR_DENY: errno = EACCES; break;
-		case ERR_FUNC: errno = ENOSYS; break;
-		case ERR_TYPE: errno = ENOTDIR; break;
+	if (file) {
+		mutex_spin(&file->mutex);
+
+		/* check to make sure <file> is a file */
+		if (file->type != FOBJ_FILE) {
+			cmd->op = FS_ERR;
+			cmd->v0 = ERR_TYPE;
 		}
 
-		return 0;
-	}
+		/* check all permissions */
+		else if ((acl_get(file->acl, gettuser()) & ACL_READ) == 0) {
+			cmd->op = FS_ERR;
+			cmd->v0 = ERR_DENY;
+		}
 
-	return command.v0;
+		else if (active_driver->size) {
+			/* allow driver to figure out the file's size */
+			cmd->v0 = active_driver->size(file);
+		}
+		else {
+			/* default to <file->size> for size */
+			cmd->v0 = file->size;
+		}
+
+		mutex_free(&file->mutex);
+	}
+	else {
+		/* return ERR_FILE on failure to find file */
+		cmd->op = FS_ERR;
+		cmd->v0 = ERR_FILE;
+	}
 }
