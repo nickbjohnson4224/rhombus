@@ -98,7 +98,7 @@ may build and test on other Linux platforms, and will probably build on
 any UNIX-like system.
 
 To reliably build the system, you should use a cross-compiler. The official 
-set of tools for this is CLang 2.7 and GNU Binutils 2.20 for the "i586-elf" 
+set of tools for this is CLang 2.8 and GNU Binutils 2.20 for the "i586-elf" 
 target. At least binutils should be installed in <build_directory>/tools/, 
 with at least "ar", "ld", and "ranlib" in <build_directory>/tools/bin/. 
 CLang and NASM from the host system should both work without modification, 
@@ -111,8 +111,8 @@ To make each piece of the operating system, simply type "make
 and at least basic drivers must be built for the system to boot correctly. 
 "make -C <subproject> clean" will remove all object files from the 
 subprojects' directories, and "make clean" will remove all object files. 
-"make cd" will make a CD image called flux.iso in the run directory - this 
-requires cdrtools.
+"make image" will make a CD image called flux.iso in the run directory - 
+this requires cdrtools.
 
 Test Instructions:
 
