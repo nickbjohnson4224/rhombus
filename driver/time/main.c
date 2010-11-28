@@ -26,6 +26,17 @@
 
 static bool m_time = false;
 
+void time_init(int argc, char **argv) {
+	struct fs_obj *root;
+
+	root        = calloc(sizeof(struct fs_obj), 1);
+	root->type  = FOBJ_FILE;
+	root->size  = 0;
+	root->inode = 0;
+	root->acl   = acl_set_default(root->acl, ACL_READ);
+	lfs_root(root);
+}
+
 size_t time_read(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	char *data;
 
@@ -44,7 +55,7 @@ size_t time_read(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t off
 }
 
 struct driver time_driver = {
-	NULL,
+	time_init,
 
 	NULL,
 	NULL,
