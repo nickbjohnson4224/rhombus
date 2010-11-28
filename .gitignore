@@ -5,11 +5,8 @@
 *.iso
 /inc
 /run/cd
-/run/hd
 /run/boot.tar
-/run/floppy.img
-/util/dict
-/newkernel
 /boot
 /bin
+/drv
 /tools/*

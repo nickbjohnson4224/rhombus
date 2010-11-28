@@ -72,14 +72,14 @@ int main() {
 	/* Initial Root Filesystem / Device Filesystem (tmpfs) */
 	argv[0] = "tmpfs";
 	argv[1] = NULL;
-	if (!(file = tar_find(boot_image, (char*) "bin/tmpfs"))) panic("no tmpfs found");
+	if (!(file = tar_find(boot_image, (char*) "drv/tmpfs"))) panic("no tmpfs found");
 	fs_root = daemon_start(file->start, file->size, argv);
 	fs_cons(fs_find(0, "/"), "dev", FOBJ_DIR);
 
 	/* Terminal Driver */
 	argv[0] = "term";
 	argv[1] = NULL;
-	if (!(file = tar_find(boot_image, (char*) "bin/term"))) panic("no term found");
+	if (!(file = tar_find(boot_image, (char*) "drv/term"))) panic("no term found");
 	temp = daemon_start(file->start, file->size, argv); 
 	stderr = stdout = fdopen(temp, "w");
 	printf(splash);
@@ -95,7 +95,7 @@ int main() {
 	argv[0] = "tarfs";
 	argv[1] = "/dev/initrd";
 	argv[2] = NULL;
-	if (!(file = tar_find(boot_image, (char*) "bin/tarfs"))) panic("no tarfs found");
+	if (!(file = tar_find(boot_image, (char*) "drv/tarfs"))) panic("no tarfs found");
 	temp = daemon_start(file->start, file->size, argv);
 	temp1 = fs_find(0, "/dev");
 	fs_root = temp;
@@ -104,20 +104,20 @@ int main() {
 	/* Temporary filesystem */
 	argv[0] = "tmpfs";
 	argv[1] = NULL;	
-	if (!(file = tar_find(boot_image, (char*) "bin/tmpfs"))) panic("no tmpfs found");
+	if (!(file = tar_find(boot_image, (char*) "drv/tmpfs"))) panic("no tmpfs found");
 	temp = daemon_start(file->start, file->size, argv);
 	fs_link(fs_find(0, "/tmp"), temp);
 
 	/* Keyboard Driver */
 	argv[0] = "kbd";
-	if (!(file = tar_find(boot_image, (char*) "bin/kbd"))) panic("no kbd found");
+	if (!(file = tar_find(boot_image, (char*) "drv/kbd"))) panic("no kbd found");
 	temp = daemon_start(file->start, file->size, argv);
 	fs_link(fs_cons(fs_find(0, "/dev"), "kbd", FOBJ_DIR), temp);
 	stdin = fdopen(temp, "r");
 
 	/* Time Driver */
 	argv[0] = "time";
-	if (!(file = tar_find(boot_image, (char*) "bin/time"))) panic("no time found");
+	if (!(file = tar_find(boot_image, (char*) "drv/time"))) panic("no time found");
 	temp = daemon_start(file->start, file->size, argv);
 	fs_link(fs_cons(fs_find(0, "/dev"), "time", FOBJ_DIR), temp);
 

@@ -58,24 +58,21 @@ image:	all
 	@ - mkdir boot/bin
 	@ - mkdir boot/dev
 	@ - mkdir boot/tmp
+	@ - mkdir boot/lib
+	@ - mkdir boot/drv
 	@ cp bin/* boot/bin
+	@ cp lib/* boot/lib
+	@ cp drv/* boot/drv
 
 	@ export BUILDDIR
-	@ sudo run/image.sh
+	@ sudo run/make_image.sh
 
-test:	all cd
+test:	all image
 	@ export BUILDDIR
 	@ run/run.sh
-
-cd:	all image
-	@ export BUILDDIR
-	@ run/makecd.sh
-
-hd:
-	@ export BUILDDIR
-	@ run/makehd.sh
 
 makedirs:
 	@ mkdir -p $(BUILDDIR)/lib
 	@ mkdir -p $(BUILDDIR)/inc
 	@ mkdir -p $(BUILDDIR)/bin
+	@ mkdir -p $(BUILDDIR)/drv

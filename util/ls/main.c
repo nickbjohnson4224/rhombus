@@ -21,7 +21,7 @@
 
 int main(int argc, char **argv) {
 	char *name, list[1000];
-	size_t i;
+	size_t i, l = 0;
 	uint64_t dir;
 
 	if (argc == 1) {
@@ -43,11 +43,19 @@ int main(int argc, char **argv) {
 
 		if (name) {
 			strlcat(list, name, 1000);
-			strlcat(list, ((i + 1) % 6) ? "\t" : "\n", 1000);
+			l += 8 * ((strlen(name) / 8) + 1);
+			if (l > 48) {
+				strlcat(list, "\n", 1000);
+				l = 0;
+			}
+			else {
+				strlcat(list, "\t", 1000);
+			}
 			free(name);
 		}
 		else {
-			printf("%s\n", list);
+			printf("%s", list);
+			if (l) printf("\n");
 			return EXIT_SUCCESS;
 		}
 	}

@@ -1,0 +1,8 @@
+default 0
+timeout 0
+
+title 	Flux 0.6a
+root 	(cd)
+kernel	/kernel
+module	/init
+module	/boot.tar
