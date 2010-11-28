@@ -15,6 +15,7 @@
  */
 
 #include <stdio.h>
+#include <mutex.h>
 
 /****************************************************************************
  * feof
@@ -23,11 +24,11 @@
  */
 
 int feof(FILE *stream) {
+	int ret;
 
-	if (stream->flags & FILE_EOF) {
-		return 1;
-	}
-	else {	
-		return 0;
-	}
+	mutex_spin(&stream->mutex);
+	ret = (stream->flags & FILE_EOF) ? 1 : 0;
+	mutex_free(&stream->mutex);
+
+	return ret;
 }

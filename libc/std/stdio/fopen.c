@@ -32,6 +32,13 @@ FILE *fopen(const char *path, const char *mode) {
 	uint64_t fd;
 	uint8_t perm;
 	char *path1;
+	FILE *stream;
+
+	/* check mode */
+	if (mode[0] != 'a' && mode[0] != 'w' && mode[0] != 'r') {
+		errno = EINVAL;
+		return NULL;
+	}
 
 	/* attempt to find the file */
 	fd = fs_find(0, path);
@@ -49,6 +56,10 @@ FILE *fopen(const char *path, const char *mode) {
 
 			/* find requested parent directory */
 			path1 = path_parent(path);
+			if (!path1) {
+				errno = ENOMEM;
+				return NULL;
+			}
 			fd = fs_find(0, path1);
 			free(path1);
 
@@ -66,6 +77,10 @@ FILE *fopen(const char *path, const char *mode) {
 
 			/* create file in parent directory */
 			path1 = path_name(path);
+			if (!path1) {
+				errno = ENOMEM;
+				return NULL;
+			}
 			fd = fs_cons(fd, path1, FOBJ_FILE);
 			free(path1);
 
@@ -101,5 +116,35 @@ FILE *fopen(const char *path, const char *mode) {
 		reset(fd);
 	}
 
-	return fdopen(fd, mode);
+	/* open a stream on the file */
+	stream = malloc(sizeof(FILE));
+
+	if (!stream) {
+		errno = ENOMEM;
+		return NULL;
+	}
+
+	stream->fd       = fd;
+	stream->mutex    = false;
+	stream->position = 0;
+	stream->size     = fs_size(fd);
+	stream->buffer   = NULL;
+	stream->buffsize = 0;
+	stream->buffpos  = 0;
+	stream->revbuf   = EOF;
+	stream->flags    = FILE_NBF | FILE_READ;
+
+	if (mode[0] == 'w' || mode[0] == 'a' || mode[1] == '+') {
+		stream->flags |= FILE_WRITE;
+	}
+
+	/* position the stream properly */
+	if (mode[0] == 'a' && mode[1] != '+') {
+		fseek(stream, 0, SEEK_END);
+	}
+	else {
+		fseek(stream, 0, SEEK_SET);
+	}
+
+	return stream;
 }

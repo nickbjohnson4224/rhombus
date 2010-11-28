@@ -37,10 +37,6 @@ FILE *fdopen(uint64_t fd, const char *mode) {
 		return NULL;
 	}
 
-	if (!mode) {
-		return NULL;
-	}
-
 	stream = calloc(sizeof(FILE), 1);
 
 	if (!stream) {

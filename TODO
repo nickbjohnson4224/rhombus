@@ -5,8 +5,9 @@ Urgent:
 
 Less Urgent:
 
+- new send()/event interface
+- unlimited size messages
 - device manager
-- fix up ATA driver
 - write proper vga/tty drivers
 - finish libc math functions
 - detect out of memory errors
@@ -14,6 +15,7 @@ Less Urgent:
 
 Would Like:
 
+- fix up ATA driver
 - userspace exec
 - shared memory
 - shared libraries

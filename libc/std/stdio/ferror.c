@@ -15,6 +15,7 @@
  */
 
 #include <stdio.h>
+#include <mutex.h>
 
 /****************************************************************************
  * ferror
@@ -23,11 +24,11 @@
  */
 
 int ferror(FILE *stream) {
+	int ret;
 
-	if (stream->flags & FILE_ERROR) {
-		return 1;
-	}
-	else {
-		return 0;
-	}
+	mutex_spin(&stream->mutex);
+	ret = (stream->flags & FILE_ERROR) ? 1 : 0;
+	mutex_free(&stream->mutex);
+
+	return ret;
 }

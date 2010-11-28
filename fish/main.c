@@ -14,13 +14,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <errno.h>
 #include <exec.h>
 #include <proc.h>
 #include <ipc.h>
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 
 int main() {
 	char buffer[100];
@@ -60,9 +60,15 @@ int main() {
 		pid = fork();
 		if (pid < 0) {
 			if (execv(argv[0], (char const **) argv)) {
-				perror(argv[0]);
+				if (errno == ENOENT) {
+					fprintf(stderr, "%s: %s: command not found\n", getenv("NAME"), argv[0]);
+				}
+				else {
+					perror(argv[0]);
+				}
+
+				abort();
 			}
-			exit(0);
 		}
 		pwaits(PORT_CHILD, pid);
 	}

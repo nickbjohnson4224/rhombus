@@ -14,8 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <mutex.h>
+#include <errno.h>
 
 /****************************************************************************
  * setvbuf
@@ -26,6 +28,8 @@
 int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
 	
 	fflush(stream);
+
+	mutex_spin(&stream->mutex);
 
 	switch (mode) {
 	case _IONBF:
@@ -50,6 +54,8 @@ int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
 		stream->buffpos = 0;
 		break;
 	default:
+		errno = EINVAL;
+		mutex_free(&stream->mutex);
 		return -1;
 	}
 
@@ -66,6 +72,8 @@ int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
 		stream->flags |= FILE_FBF;
 		break;
 	}
+
+	mutex_free(&stream->mutex);
 
 	return 0;
 }

@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 #include <natio.h>
+#include <mutex.h>
 
 /****************************************************************************
  * fflush
@@ -26,11 +27,15 @@
 
 int fflush(FILE *stream) {
 
+	mutex_spin(&stream->mutex);
+
 	if (stream->buffer && stream->buffpos) {
 		write(stream->fd, stream->buffer, stream->buffpos, stream->position);
 		stream->position += stream->buffpos;
 		stream->buffpos = 0;
 	}
+
+	mutex_free(&stream->mutex);
 
 	return 0;
 }

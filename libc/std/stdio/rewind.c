@@ -15,6 +15,7 @@
  */
 
 #include <stdio.h>
+#include <mutex.h>
 
 /****************************************************************************
  * rewind
@@ -23,6 +24,10 @@
  */
 
 void rewind(FILE *stream) {
-	
+
+	fflush(stream);
+
+	mutex_spin(&stream->mutex);
 	stream->position = 0;
+	mutex_free(&stream->mutex);
 }

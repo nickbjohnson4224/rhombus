@@ -26,12 +26,16 @@
 
 int ungetc(int c, FILE *stream) {
 
+	mutex_spin(&stream->mutex);
+
 	if (stream->revbuf != EOF) {
 		c = EOF;
 	}
 	else {
 		stream->revbuf = c;
 	}
+
+	mutex_free(&stream->mutex);
 
 	return c;
 }

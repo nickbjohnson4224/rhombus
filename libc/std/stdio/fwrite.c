@@ -16,6 +16,8 @@
 
 #include <stdio.h>
 #include <natio.h>
+#include <errno.h>
+#include <mutex.h>
 
 /****************************************************************************
  * fwrite
@@ -33,6 +35,8 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
 		return 0;
 	}
 
+	mutex_spin(&stream->mutex);
+
 	if (stream->flags & FILE_NBF) {
 
 		ret = write(stream->fd, (void*) ptr, size * nmemb, stream->position);
@@ -42,6 +46,8 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
 			size = 1;
 		}
 
+		mutex_free(&stream->mutex);
+
 		return (ret / size);
 	}
 
@@ -50,12 +56,13 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
 
 		if (stream->flags & FILE_LBF) {
 			if ((data[i] == '\n') || (stream->buffpos > stream->buffsize)) {
+				mutex_free(&stream->mutex);
 				fflush(stream);
 			}
 		}
-
-		if (stream->flags & FILE_FBF) {
+		else {
 			if (stream->buffpos >= stream->buffsize) {
+				mutex_free(&stream->mutex);
 				fflush(stream);
 			}
 		}

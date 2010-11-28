@@ -15,6 +15,7 @@
  */
 
 #include <stdio.h>
+#include <mutex.h>
 
 /****************************************************************************
  * ftell
@@ -23,5 +24,14 @@
  */
 
 fpos_t ftell(FILE *stream) {
-	return stream->position;
+	fpos_t pos;
+
+	mutex_spin(&stream->mutex);
+
+	pos = stream->position;
+	pos += stream->buffpos;
+
+	mutex_free(&stream->mutex);
+
+	return pos;
 }

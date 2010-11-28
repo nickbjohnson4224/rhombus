@@ -28,6 +28,8 @@ int fseek(FILE *stream, fpos_t offset, int whence) {
 
 	fflush(stream);
 
+	mutex_spin(&stream->mutex);
+
 	switch (whence) {
 	case SEEK_CUR:
 		stream->position += offset;
@@ -39,6 +41,8 @@ int fseek(FILE *stream, fpos_t offset, int whence) {
 		stream->position = offset;
 		break;
 	}
+
+	mutex_free(&stream->mutex);
 
 	return 0;
 }

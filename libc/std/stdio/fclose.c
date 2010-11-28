@@ -14,8 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <mutex.h>
 
 /****************************************************************************
  * fclose - close a stream
@@ -32,9 +33,13 @@ int fclose(FILE *stream) {
 
 	fflush(stream);
 	
+	mutex_spin(&stream->mutex);
+
 	if (stream->buffer) {
 		free(stream->buffer);
 	}
+
+	mutex_free(&stream->mutex);
 	
 	free(stream);
 

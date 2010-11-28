@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 #include <errno.h>
+#include <mutex.h>
 
 /****************************************************************************
  * fsetpos
@@ -25,13 +26,22 @@
  */
 
 int fsetpos(FILE *stream, fpos_t *pos) {
+	int ret;
+
+	fflush(stream);
+
+	mutex_spin(&stream->mutex);
 
 	if (stream && pos) {
 		stream->position = *pos;
-		return 0;
+		ret = 0;
 	}
 	else {
-		errno = ERANGE;
-		return -1;
+		errno = EINVAL;
+		ret = -1;
 	}
+
+	mutex_free(&stream->mutex);
+
+	return ret;
 }

@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 #include <natio.h>
+#include <mutex.h>
 
 /****************************************************************************
  * fread
@@ -34,6 +35,8 @@ size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 	}
 
 	nmemb *= size;
+
+	mutex_spin(&stream->mutex);
 
 	if ((stream->revbuf != EOF) && (nmemb != 0)) {
 		cptr = ptr;
@@ -56,6 +59,8 @@ size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 	if (size == 0) {
 		size = 1;
 	}
+
+	mutex_spin(&stream->mutex);
 
 	return (ret / size);
 }
