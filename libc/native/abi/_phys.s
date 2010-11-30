@@ -14,15 +14,9 @@
 
 [bits 32]
 
-global _mmap
+global _phys
 
-_mmap:
-	push ebx
-
-	mov ebx, [esp+8]
-	mov ecx, [esp+12]
-	mov edx, [esp+16]
-	int 0x50
-
-	pop ebx
+_phys:
+	mov ecx, [esp+4]
+	int 0x47
 	ret

@@ -78,7 +78,8 @@ INTN	66	; when
 INTN	67	; rirq
 INTN	68	; gvpr
 INTN	69	; svpr
-
+INTN	70  ; page
+INTN	71	; phys
 INTN	72	; fork
 INTN	73	; exit
 INTN	74	; pctl
@@ -87,9 +88,6 @@ INTN	76	; gpid
 INTN	77	; time
 INTN	78	; user
 INTN	79	; auth
-
-INTN	80	; mmap
-INTN	81	; mctl
 
 extern int_handler
 extern fpu_save

@@ -15,12 +15,12 @@
  */
 
 #include <pack.h>
-#include <mmap.h>
+#include <page.h>
 
 void *__pack_load(uint32_t key, size_t *size) {
 	size_t i;
 
-	mmap(__pack_vector, PAGESZ, MMAP_READ | MMAP_WRITE);
+	page_anon(__pack_vector, PAGESZ, PROT_READ | PROT_WRITE);
 
 	for (i = 0; __pack_vector[i].key; i++) {
 		if (__pack_vector[i].key == key) {

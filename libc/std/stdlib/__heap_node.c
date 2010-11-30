@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <mutex.h>
-#include <mmap.h>
+#include <page.h>
 #include <arch.h>
 
 static uintptr_t _brk 				= HEAP2_START;
@@ -36,7 +36,7 @@ struct __heap_node *__new_heap_node(void) {
 			node = (void*) _brk;
 			_brk += sizeof(struct __heap_node);
 
-			mmap(node, sizeof(struct __heap_node), PROT_READ | PROT_WRITE);
+			page_anon(node, sizeof(struct __heap_node), PROT_READ | PROT_WRITE);
 		}
 	} mutex_free(&_mutex);
 

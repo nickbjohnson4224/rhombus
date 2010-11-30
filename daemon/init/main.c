@@ -14,16 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <ipc.h>
-#include <proc.h>
-#include <exec.h>
-#include <mmap.h>
-
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <natio.h>
+#include <proc.h>
+#include <exec.h>
+#include <ipc.h>
 
 #include "inc/tar.h"
 #include "initrd.h"

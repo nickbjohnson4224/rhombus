@@ -14,30 +14,38 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <pack.h>
 #include <page.h>
+#include <abi.h>
 
-struct pack_vector *__pack_vector = (void*) PACK_VECT_ADDR;
+int page(void *addr, size_t length, int prot, int source, uintptr_t off) {
 
-void __pack_save(void) {
-	size_t i;
-	struct pack_list *list;
-
-	for (list = __pack_list, i = 0; list; list = list->next, i++);
-
-	page_anon(__pack_vector, (i + 1) * sizeof(struct pack_vector), 
-		PROT_READ | PROT_WRITE);
-
-	for (list = __pack_list, i = 0; list; list = list->next, i++) {
-		__pack_vector[i].key  = list->key;
-		__pack_vector[i].size = list->size;
-		__pack_vector[i].data = __pack_alloc(list->size);
-		memcpy(__pack_vector[i].data, list->data, list->size);
-		free(list->data);
+	if ((uintptr_t) addr & 0xFFF) {
+		length += (uintptr_t) addr & 0xFFF;
+		addr    = (void*) ((uintptr_t) addr - ((uintptr_t) addr & 0xFFF));
 	}
 
-	__pack_vector[i].key = 0;
+	if (length & 0xFFF) {
+		length = (length / PAGESZ) + 1;
+	}
+	else {
+		length = length / PAGESZ;
+	}
+
+	return _page((uintptr_t) addr, length, prot, source, off);
+}
+
+int page_free(void *addr, size_t length) {
+	return page(addr, length, 0, PAGE_NULL, 0);
+}
+
+int page_anon(void *addr, size_t length, int prot) {
+	return page(addr, length, prot, PAGE_ANON, 0);
+}
+
+int page_pack(void *addr, size_t length, int prot) {
+	return page(addr, length, prot, PAGE_PACK, 0);
+}
+
+int page_phys(void *addr, size_t length, int prot, uintptr_t base) {
+	return page(addr, length, prot, PAGE_PHYS, base);
 }

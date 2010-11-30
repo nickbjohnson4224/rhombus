@@ -14,22 +14,31 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef MMAP_H
-#define MMAP_H
+#ifndef PAGE_H
+#define PAGE_H
 
 #include <arch.h>
 #include <abi.h>
 
-#define MMAP_PAGESIZE PAGESZ
+#define PROT_NONE 	0
+#define PROT_READ 	1
+#define PROT_WRITE 	2
+#define PROT_EXEC 	4
 
-#define PROT_NONE 0
-#define PROT_READ MMAP_READ
-#define PROT_WRITE MMAP_WRITE
-#define PROT_EXEC MMAP_EXEC
+#define PAGE_NULL	0
+#define PAGE_ANON	1
+#define PAGE_PACK	2
+#define PAGE_PHYS	3
+#define PAGE_SELF	4
 
-int mmap(void *addr, size_t length, int prot);
-int umap(void *addr, size_t length);
-int emap(void *addr, uint32_t frame, int prot);
+int page(void *addr, size_t length, int prot, int source, uintptr_t off);
+
+int page_free(void *addr, size_t length);
+int page_anon(void *addr, size_t length, int prot);
+int page_pack(void *addr, size_t length, int prot);
+int page_phys(void *addr, size_t length, int prot, uintptr_t base);
+int page_self(void *addr0, void *addr1, size_t length, int prot);
+
 uintptr_t phys(void *addr);
 
-#endif/*MMAP_H*/
+#endif/*PAGE_H*/

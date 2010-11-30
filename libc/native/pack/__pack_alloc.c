@@ -16,7 +16,7 @@
 
 #include <mutex.h>
 #include <pack.h>
-#include <mmap.h>
+#include <page.h>
 
 static uintptr_t _brk = PACK_HEAP_ADDR;
 static bool _m_brk;
@@ -35,7 +35,7 @@ void *__pack_alloc(size_t size) {
 
 	mutex_free(&_m_brk);
 
-	mmap((void*) block, size, MMAP_READ | MMAP_WRITE);
+	page_anon((void*) block, size, PROT_READ | PROT_WRITE);
 
 	return (void*) block;
 }

@@ -167,6 +167,8 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	int_set_handler(SYSCALL_RIRQ, syscall_rirq);
 	int_set_handler(SYSCALL_GVPR, syscall_gvpr);
 	int_set_handler(SYSCALL_SVPR, syscall_svpr);
+	int_set_handler(SYSCALL_PAGE, syscall_page);
+	int_set_handler(SYSCALL_PHYS, syscall_phys);
 	int_set_handler(SYSCALL_FORK, syscall_fork);
 	int_set_handler(SYSCALL_EXIT, syscall_exit);
 	int_set_handler(SYSCALL_EXEC, syscall_exec);
@@ -174,8 +176,6 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	int_set_handler(SYSCALL_TIME, syscall_time);
 	int_set_handler(SYSCALL_USER, syscall_user);
 	int_set_handler(SYSCALL_AUTH, syscall_auth);
-	int_set_handler(SYSCALL_MMAP, syscall_mmap);
-	int_set_handler(SYSCALL_MCTL, syscall_mctl);
 
 	/* register fault handlers */
 	int_set_handler(FAULT_DE, fault_float);

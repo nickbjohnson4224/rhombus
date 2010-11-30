@@ -18,8 +18,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <mmap.h>
-
 #include "test.h"
 
 int test_heap(void) {

@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <mutex.h>
-#include <mmap.h>
+#include <page.h>
 #include <arch.h>
 
 static struct __heap_node *_tree;
@@ -80,7 +80,7 @@ void *aalloc(size_t size, size_t align) {
 		return NULL;
 	}
 	else {
-		mmap((void*) node->base, 1 << node->size, PROT_READ | PROT_WRITE);
+		page_anon((void*) node->base, 1 << node->size, PROT_READ | PROT_WRITE);
 		return (void*) node->base;
 	}
 }

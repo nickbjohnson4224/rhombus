@@ -14,15 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <interrupt.h>
-#include <space.h>
+#include <page.h>
+#include <abi.h>
 
-/*****************************************************************************
- * syscall_mctl (int 0x51)
- *
- * This system call currently does nothing.
- */
-
-struct thread *syscall_mctl(struct thread *image) {
-	return image;
+uintptr_t phys(void *addr) {
+	return _phys((uintptr_t) addr);
 }

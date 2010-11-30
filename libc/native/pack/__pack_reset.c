@@ -14,15 +14,15 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <pack.h>
 #include <stdbool.h>
-#include <mmap.h>
+#include <pack.h>
+#include <page.h>
 
 bool __pack_usable = false;
 
 void __pack_reset(void) {
 
-	umap((void*) PACK_VECT_ADDR, PACK_END_ADDR - PACK_VECT_ADDR);
+	page_free((void*) PACK_VECT_ADDR, PACK_END_ADDR - PACK_VECT_ADDR);
 
 	__pack_usable = true;
 }

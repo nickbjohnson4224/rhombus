@@ -33,16 +33,8 @@ uintptr_t   _svpr(uintptr_t address, uint32_t field);
 #define VPR_LENGTH	2
 #define VPR_PORT	3
 
-int32_t		_mmap(uintptr_t addr, uint32_t flags, uint32_t frame);
-
-#define MMAP_READ	0x001
-#define MMAP_WRITE	0x002
-#define MMAP_EXEC 	0x004
-#define MMAP_FREE	0x008
-#define MMAP_FRAME	0x010
-#define MMAP_PHYS	0x020
-#define MMAP_MOVE	0x040
-
+int         _page(uintptr_t address, size_t count, uint32_t perm, int source, uintptr_t offset); 
+uintptr_t   _phys(uintptr_t address);
 int32_t		_fork(void);
 void		_exit(uint32_t value) __attribute__ ((noreturn));
 int         _exec(void);

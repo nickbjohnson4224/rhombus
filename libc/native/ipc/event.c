@@ -16,6 +16,7 @@
 
 #include <stdlib.h>
 #include <mutex.h>
+#include <page.h>
 #include <abi.h>
 #include <ipc.h>
 
@@ -44,7 +45,7 @@ void on_event(void) {
 
 	if (length) {
 		packet = palloc(length);
-		_gvpr((uintptr_t) packet, VPR_FRAME);
+		page_pack(packet, length, PROT_READ | PROT_WRITE);
 	}
 	else {
 		packet = NULL;

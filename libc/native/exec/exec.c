@@ -19,10 +19,10 @@
 #include <string.h>
 #include <stdio.h>
 #include <natio.h>
+#include <errno.h>
 #include <arch.h>
 #include <exec.h>
-#include <mmap.h>
-#include <errno.h>
+#include <page.h>
 #include <pack.h>
 
 /****************************************************************************
@@ -67,7 +67,7 @@ void _save(const char **argv) {
 
 int execiv(uint8_t *image, size_t size, char const **argv) {
 
-	mmap(bootstrap, size, MMAP_READ | MMAP_WRITE);
+	page_anon(bootstrap, size, PROT_READ | PROT_WRITE);
 	memcpy(bootstrap, image, size);
 
 	_save(argv);
@@ -118,7 +118,7 @@ int execv(const char *path, char const **argv) {
 		return -1;
 	}
 
-	mmap(bootstrap, size, MMAP_READ | MMAP_WRITE);
+	page_anon(bootstrap, size, PROT_READ | PROT_WRITE);
 
 	rewind(image);
 	if (size != fread(bootstrap, sizeof(char), size, image)) {

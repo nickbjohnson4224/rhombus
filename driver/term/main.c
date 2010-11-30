@@ -19,7 +19,7 @@
 #include <driver.h>
 #include <mutex.h>
 #include <proc.h>
-#include <mmap.h>
+#include <page.h>
 
 #define WIDTH 80
 #define HEIGHT 25
@@ -45,7 +45,7 @@ void term_init(int argc, char **argv) {
 	mutex_spin(&m_vbuf);
 
 	vbuf = valloc(WIDTH * HEIGHT * 2);
-	emap(vbuf, 0xB8000, PROT_READ | PROT_WRITE);
+	page_phys(vbuf, WIDTH * HEIGHT * 2, PROT_READ | PROT_WRITE, 0xB8000);
 
 	for (i = 0; i < WIDTH * HEIGHT; i++) {
 		vbuf[i] = 0x0F00 | ' ';
