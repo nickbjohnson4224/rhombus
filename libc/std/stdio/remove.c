@@ -14,15 +14,33 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <natio.h>
 #include <errno.h>
 
+/*****************************************************************************
+ * remove
+ *
+ * Removes the file or directory at <path> from the filesystem. Returns zero
+ * on success, nonzero on error.
+ */
+
 int remove(const char *path) {
 	uint64_t file;
 	int err;
+	char *path1;
 
-	file = fs_find(0, path);
+	path1 = path_simplify(path);
+
+	if (!path1) {
+		errno = ENOMEM;
+		return 1;
+	}
+
+	file = fs_find(0, path1);
+
+	free(path1);
 
 	if (file) {
 		err = fs_remove(file);

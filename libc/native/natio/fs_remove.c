@@ -45,6 +45,7 @@ int fs_remove(uint64_t fobj) {
 		case ERR_DENY: errno = EACCES; break;
 		case ERR_FUNC: errno = ENOSYS; break;
 		case ERR_TYPE: errno = EUNK; break;
+		case ERR_FULL: errno = ENOTEMPTY; break;
 		}
 
 		return 1;

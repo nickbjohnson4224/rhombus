@@ -46,6 +46,7 @@ uint64_t fs_size(uint64_t file) {
 		case ERR_DENY: errno = EACCES; break;
 		case ERR_FUNC: errno = ENOSYS; break;
 		case ERR_TYPE: errno = EISDIR; break;
+		case ERR_FULL: errno = EUNK; break;
 		}
 
 		return 0;

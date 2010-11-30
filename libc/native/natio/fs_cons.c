@@ -45,8 +45,9 @@ uint64_t fs_cons(uint64_t dir, const char *name, int type) {
 		case ERR_NULL: errno = EUNK; break;
 		case ERR_FILE: errno = ENOENT; break;
 		case ERR_DENY: errno = EACCES; break;
-		case ERR_FUNC: errno = ENOSYS; break;
+		case ERR_FUNC: errno = EACCES; break;
 		case ERR_TYPE: errno = ENOTDIR; break;
+		case ERR_FULL: errno = ENOSPC; break;
 		}
 
 		return 0;

@@ -48,6 +48,7 @@ uint64_t fs_find(uint64_t root, const char *path) {
 		case ERR_DENY: errno = EACCES; break;
 		case ERR_FUNC: errno = ENOSYS; break;
 		case ERR_TYPE: errno = EUNK; break;
+		case ERR_FULL: errno = EUNK; break;
 		}
 
 		return 0;

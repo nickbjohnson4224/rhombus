@@ -53,6 +53,7 @@ extern uint64_t fs_root;
 #define ERR_DENY 0x02
 #define ERR_FUNC 0x03
 #define ERR_TYPE 0x04
+#define ERR_FULL 0x05
 
 struct fs_cmd {
 	uint64_t v0;

@@ -46,6 +46,7 @@ char *fs_list(uint64_t dir, int entry) {
 		case ERR_DENY: errno = EACCES; break;
 		case ERR_FUNC: errno = ENOSYS; break;
 		case ERR_TYPE: errno = ENOTDIR; break;
+		case ERR_FULL: errno = EUNK; break;
 		}
 
 		return NULL;

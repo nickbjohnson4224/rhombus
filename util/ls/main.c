@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
 		dir = fs_find(0, getenv("PWD"));
 	}
 	else {
-		dir = fs_find(0, argv[1]);
+		dir = fs_find(0, path_simplify(argv[1]));
 	}
 	
 	if (!dir) {

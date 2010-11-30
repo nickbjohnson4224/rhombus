@@ -42,6 +42,13 @@ void remv_wrapper(struct fs_cmd *cmd, uint32_t inode) {
 			return;
 		}
 
+		/* check if directory is empty */
+		if (fobj->type == FOBJ_DIR && fobj->daughter) {
+			cmd->op = FS_ERR;
+			cmd->v0 = ERR_FULL;
+			return;
+		}
+
 		/* remove the object from its directory */
 		lfs_pull(fobj);
 

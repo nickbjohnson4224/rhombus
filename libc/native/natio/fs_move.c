@@ -51,6 +51,7 @@ uint64_t fs_move(uint64_t dir, const char *name, uint64_t fobj) {
 		case ERR_DENY: errno = EACCES; break;
 		case ERR_FUNC: errno = ENOSYS; break;
 		case ERR_TYPE: errno = ENOTDIR; break;
+		case ERR_FULL: errno = ENOSPC; break;
 		}
 
 		return 0;

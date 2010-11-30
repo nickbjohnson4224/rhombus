@@ -16,6 +16,7 @@
 
 #include <driver.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <mutex.h>
 #include <proc.h>
 
@@ -27,11 +28,11 @@
 
 void cons_wrapper(struct fs_cmd *cmd, uint32_t inode) {
 	struct fs_obj *dir, *new_fobj;
-	
+
 	/* make sure the active driver can construct new objects */
 	if (!active_driver->cons) {
 		cmd->op = FS_ERR;
-		cmd->op = ERR_FUNC;
+		cmd->v0 = ERR_FUNC;
 		return;
 	}
 

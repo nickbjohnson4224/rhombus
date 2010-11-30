@@ -46,6 +46,7 @@ const char *strerror(int errnum) {
 	case ENOTDIR:	return "is not a directory";
 	case EPERM:		return "operation not permitted";
 	case ERANGE:	return "result out of range";
+	case ENOTEMPTY:	return "directory not empty";
 	case EUNK:		
 	default:		return "unknown error";
 	}

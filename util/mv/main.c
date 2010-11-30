@@ -30,7 +30,8 @@ int main(int argc, char **argv) {
 	err = rename(argv[1], argv[2]);
 	
 	if (err) {
-		printf("mv: cannot move %s to %s\n", argv[1], argv[2]);
+		printf("mv: cannot move %s to %s: ", argv[1], argv[2]);
+		perror(NULL);
 		return EXIT_FAILURE;
 	}
 

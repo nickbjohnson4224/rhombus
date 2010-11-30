@@ -47,6 +47,7 @@ int fs_auth(uint64_t fobj, uint32_t user, uint8_t perm) {
 		case ERR_DENY: errno = EACCES; break;
 		case ERR_FUNC: errno = ENOSYS; break;
 		case ERR_TYPE: errno = EUNK; break;
+		case ERR_FULL: errno = ENOSPC; break;
 		}
 
 		return 1;

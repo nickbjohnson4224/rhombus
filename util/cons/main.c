@@ -20,44 +20,61 @@
 #include <errno.h>
 
 int main(int argc, char **argv) {
-	uint64_t fobj;
+	uint64_t fobj, dir;
 	char *path;
 	char type;
 
 	if (argc < 2) {
-		fprintf(stderr, "cons: missing file operand\n");
+		fprintf(stderr, "%s: missing file operand\n", argv[0]);
 		return 1;
 	}
 		
 	if (argv[1][0] == '-' && argc > 2) {
 		type = argv[1][1];
-		path = argv[2];
+		path = path_simplify(argv[2]);
 	}
 	else {
 		type = 'f';
-		path = argv[1];
+		path = path_simplify(argv[1]);
 	}
-		
+
 	fobj = fs_find(0, path);
 
 	if (fobj) {
-		printf("cons: object %s exists\n", path);
+		errno = EEXIST;
+		printf("%s: %s: ", argv[0], path);
+		perror(NULL);
 		return 1;
 	}
 
+	dir = fs_find(0, path_parent(path));
+
+	if (!dir) {
+		fprintf(stderr, "%s: %s: ", argv[0], path_parent(path));
+		perror(NULL);
+		return 1;
+	}
+
+	if (fs_type(dir) != FOBJ_DIR) {
+		errno = ENOTDIR;
+		fprintf(stderr, "%s: %s: ", argv[0], path_parent(path));
+		perror(NULL);
+		return 1;
+	}
+	
 	switch (type) {
 	case 'f': /* construct file */
-		fobj = fs_cons(fs_find(0, path_parent(path)), path_name(path), FOBJ_FILE);
+		fobj = fs_cons(dir, path_name(path), FOBJ_FILE);
 		break;
 	case 'd': /* construct directory */
-		fobj = fs_cons(fs_find(0, path_parent(path)), path_name(path), FOBJ_DIR);
+		fobj = fs_cons(dir, path_name(path), FOBJ_DIR);
 		break;
 	default:
 		fobj = 0;
 	}
 
 	if (!fobj) {
-		printf("cons: cannot construct object: \n");
+		fprintf(stderr, "%s: cannot construct %s: ", argv[0], path);
 		perror(NULL);
 	}
 
