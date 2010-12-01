@@ -14,6 +14,7 @@
  */
 
 #include <thread.h>
+#include <debug.h>
 
 /****************************************************************************
  * schedule_queue
@@ -35,6 +36,11 @@ struct schedule_queue {
 
 void schedule_insert(struct thread *thread) {
 
+	if (!schedule_queue.out && schedule_queue.in) {
+		debug_printf("scheduler inconsistency\n");
+		debug_panic("");
+	}
+
 	if (!schedule_queue.in) {
 		schedule_queue.out = thread;
 		schedule_queue.in  = thread;
@@ -45,7 +51,6 @@ void schedule_insert(struct thread *thread) {
 		schedule_queue.in = thread;
 		thread->next = NULL;
 	}
-
 }
 
 /****************************************************************************
@@ -56,6 +61,12 @@ void schedule_insert(struct thread *thread) {
 
 void schedule_remove(struct thread *thread) {
 	struct thread *temp;
+
+	if (!schedule_queue.out) {
+		debug_printf("scheduler empty, but tried to remove %x\n", thread);
+		debug_panic("");
+		return;
+	}
 
 	if (schedule_queue.out == thread) {
 		schedule_queue.out = thread->next;

@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
 	driver_init(&tarfs_driver, argc, argv);
 
 	/* daemonize */
-	psend(PORT_CHILD, getppid(), NULL);
+	msend(PORT_CHILD, getppid(), NULL);
 	_done();
 
 	return EXIT_SUCCESS;

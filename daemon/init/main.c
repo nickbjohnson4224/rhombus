@@ -33,7 +33,7 @@ const char *splash_art = "\n\
 \n";
 
 const char *splash ="\
-Flux Operating System 0.5a\n\
+Flux Operating System 0.6 Alpha\n\
 Written by Nick Johnson\n\
 \n";
 
@@ -52,7 +52,7 @@ uint64_t daemon_start(void *image, size_t image_size, char const **argv) {
 		for(;;);
 	}
 
-	pwaits(PORT_CHILD, pid);
+	mwaits(PORT_CHILD, pid);
 
 	return ((uint64_t) pid << 32);
 }
@@ -137,7 +137,7 @@ int main() {
 
 	setenv("NAME", "init");
 	
-	pwaits(PORT_CHILD, 0);
+	mwaits(PORT_CHILD, 0);
 
 	printf("INIT PANIC: system daemon died\n");
 	for(;;);

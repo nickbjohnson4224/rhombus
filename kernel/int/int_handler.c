@@ -77,7 +77,7 @@ struct thread *int_handler(struct thread *image) {
 	if (_int_handler[image->num]) {
 		new_image = _int_handler[image->num](image);
 
-		if (new_image != image) {
+		if (new_image && new_image != image) {
 			image = thread_switch(image, new_image);
 		}
 	}

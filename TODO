@@ -1,12 +1,10 @@
 Urgent:
 
-- new send()/event interface
-- unlimited size messages
+- password manager
+- device manager
 
 Less Urgent:
 
-- password manager
-- device manager
 - write proper vga/tty drivers
 - finish libc math functions
 - detect out of memory errors

@@ -14,24 +14,41 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdlib.h>
 #include <stdint.h>
 #include <abi.h>
 #include <ipc.h>
 
 /****************************************************************************
- * psend
+ * msend
  *
- * Sends a packet to the specified port of the specified target process.
- * The given packet is freed regardless of whether the call is successful.
- * Returns 0 on success, nonzero on error.
+ * Sends the message <msg> to the target <target> at port <port>. Returns 
+ * zero on success, nonzero on error. The message <msg> is freed on success.
  */
 
-int psend(uint8_t port, uint32_t target, struct packet *packet) {
+int msend(uint8_t port, uint32_t target, struct msg *msg) {
 	uint32_t err;
 
-	_svpr((uintptr_t) packet, 0);
-	pfree(packet);
-	err = _send(target, port);
+	if (!msg) {
+		err = _send(0, 0, port, 0, target);
+	}
+	else {
+		err = _send((uintptr_t) msg->packet, msg->count, port, msg->value, target);
+	}
 
-	return err;
+	if (err) {
+		return 1;
+	}
+	else {
+
+		if (msg) {
+			if (msg->packet) {
+				free(msg->packet);
+			}
+	
+			free(msg);
+		}
+
+		return 0;
+	}
 }

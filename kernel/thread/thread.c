@@ -40,16 +40,9 @@ struct thread *thread_alloc(void) {
  */
 
 struct thread *thread_exit(struct thread *image) {
-	struct thread *old_image;
+	thread_free(image);
 
-	old_image = image;
-	schedule_remove(old_image);
-
-	image = thread_switch(image, schedule_next());
-
-	thread_free(old_image);
-
-	return image;
+	return thread_switch(NULL, schedule_next());
 }
 
 /****************************************************************************
@@ -63,15 +56,21 @@ struct thread *thread_exit(struct thread *image) {
  * passed as image.
  */
 
-struct thread *thread_send(struct thread *image, pid_t target, portid_t port) {
-	extern void set_ts(void);
+struct thread *thread_send(struct thread *image, pid_t target, portid_t port, struct msg *msg, uint32_t value) {
 	struct process *p_targ;
 	struct thread *new_image;
 
+	/* find target process */
 	p_targ = process_get(target);
+
+	/* check process */
+	if (!p_targ) {
+		return image;
+	}
+
+	/* create new thread */
 	new_image = thread_alloc();
 	thread_bind(new_image, p_targ);
-	schedule_insert(new_image);
 
 	new_image->ds      = 0x23;
 	new_image->cs      = 0x1B;
@@ -82,24 +81,21 @@ struct thread *thread_send(struct thread *image, pid_t target, portid_t port) {
 	new_image->eip     = p_targ->entry;
 	new_image->fxdata  = NULL;
 
-	if (image) {
-		new_image->user = (p_targ->user) ? p_targ->user : image->user;
-	}
-	else {
-		new_image->user = p_targ->user;
-	}
+	/* set up registers in new thread */
+	new_image->ecx     = (msg) ? msg->count : 0;
+	new_image->edx     = port;
+	new_image->edi     = value;
+	new_image->esi     = (image) ? image->proc->pid : 0;
+	new_image->msg     = msg;
 
-	if (image) {
-		new_image->packet         = image->packet;
-		new_image->packet->source = image->proc->pid;
-		new_image->packet->port   = port;
-	}
-	else {
-		new_image->packet         = heap_alloc(sizeof(struct packet));
-		new_image->packet->port   = port;
-	}
+	/* set new thread's user id */
+	new_image->user = (!image || p_targ->user) ? p_targ->user : image->user;
 
-	return thread_switch(image, new_image);
+	/* insert new thread into scheduler */
+	schedule_insert(new_image);
+
+	/* return new thread */
+	return new_image;
 }
 
 /****************************************************************************
@@ -111,8 +107,24 @@ struct thread *thread_send(struct thread *image, pid_t target, portid_t port) {
 void thread_free(struct thread *thread) {
 	uintptr_t i;
 
+	/* remove thread from scheduler */
 	schedule_remove(thread);
 
+	/* free message packet if it exists */
+	if (thread->msg) {
+		
+		/* free packet contents */
+		for (i = 0; i < thread->msg->count; i++) {
+			frame_free(thread->msg->frame[i]);
+		}
+
+		/* free the message packet structure */
+		heap_free(thread->msg->frame, thread->msg->count * sizeof(uint32_t));
+		heap_free(thread->msg, sizeof(struct msg));
+
+	}
+
+	/* free thread local storage if it exists */
 	if (thread->stack) {
 		i = (thread->stack - SSPACE) / SEGSZ;
 
@@ -128,6 +140,7 @@ void thread_free(struct thread *thread) {
 		}
 	}
 
+	/* free thread structure */
 	heap_free(thread, sizeof(struct thread));
 }
 

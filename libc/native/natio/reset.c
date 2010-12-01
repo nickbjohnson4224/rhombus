@@ -26,21 +26,5 @@
  */
 
 int reset(uint64_t file) {
-	struct packet *packet;
-
-	packet = palloc(0);
-	packet->target_inode = file & 0xFFFFFFFF;
-
-	psend(PORT_RESET, file >> 32, packet);
-	pfree(packet);
-
-	packet = pwaits(PORT_REPLY, file >> 32);
-
-	if (packet) {
-		pfree(packet);
-		return 0;
-	}
-	else {
-		return 1;
-	}
+	return io_send(file, NULL, NULL, 0, 0, PORT_RESET);
 }

@@ -22,10 +22,10 @@
 /****************************************************************************
  * write
  *
- * Write <size> bytes from <buf> to offset <offset> in stream <file>. 
- * Returns the number of bytes written.
+ * Write <size> bytes from <buf> to offset <offset> in file <file>. Returns 
+ * the number of bytes written.
  */
 
 size_t write(uint64_t file, void *buf, size_t size, uint64_t offset) {
-	return ssend(file, NULL, buf, size, offset, PORT_WRITE);
+	return io_send(file, NULL, buf, size, offset, PORT_WRITE);
 }

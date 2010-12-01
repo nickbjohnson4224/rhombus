@@ -34,7 +34,8 @@ int main() {
 	setenv("PWD", "/");
 
 	while (1) {
-		printf("%s $ ", getenv("PWD"));
+		printf(getenv("PWD"));
+		printf(" $ ");
 
 		fgets(buffer, 100, stdin);
 
@@ -84,7 +85,7 @@ int main() {
 				abort();
 			}
 		}
-		pwaits(PORT_CHILD, pid);
+		mwaits(PORT_CHILD, pid);
 	}
 
 	return 0;

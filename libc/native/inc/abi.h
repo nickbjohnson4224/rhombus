@@ -21,18 +21,10 @@
 
 /* system calls *******************************************************/
 
+int         _send(uintptr_t base, size_t count, uint8_t port, uint32_t value, uint32_t target);
 void		_done(void) __attribute__ ((noreturn));
-uint32_t    _send(uint32_t port, uint32_t target);
 void        _when(uintptr_t entry);
 void        _rirq(uint8_t irq);
-uintptr_t	_gvpr(uintptr_t address, uint32_t field);
-uintptr_t   _svpr(uintptr_t address, uint32_t field);
-
-#define VPR_FRAME	0
-#define VPR_SOURCE	1
-#define VPR_LENGTH	2
-#define VPR_PORT	3
-
 int         _page(uintptr_t address, size_t count, uint32_t perm, int source, uintptr_t offset); 
 uintptr_t   _phys(uintptr_t address);
 int32_t		_fork(void);

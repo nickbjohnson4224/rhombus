@@ -76,13 +76,13 @@ INTN	64	; send
 INTN	65	; drop
 INTN	66	; when
 INTN	67	; rirq
-INTN	68	; gvpr
-INTN	69	; svpr
+INTN	68
+INTN	69
 INTN	70  ; page
 INTN	71	; phys
 INTN	72	; fork
 INTN	73	; exit
-INTN	74	; pctl
+INTN	74
 INTN	75	; exec
 INTN	76	; gpid
 INTN	77	; time

@@ -32,7 +32,7 @@ struct thread *fault_nomath(struct thread *image) {
 
 	if (!can_use_fpu) {
 		process_freeze(image->proc);
-		return thread_send(image, image->proc->pid, PORT_ILL);
+		return thread_send(image, image->proc->pid, PORT_ILL, NULL, 0);
 	}
 
 	return image;

@@ -36,31 +36,32 @@ bool   m_event_handler;
  * virtual packet register and redirects the event to proper event handler.
  */
 
-void on_event(void) {
-	struct packet *packet;
-	uint32_t source, port;
-	size_t length;
+void on_event(size_t count, uint32_t port, uint32_t value, uint32_t source) {
+	struct msg *msg;
 
-	length = _gvpr(0, VPR_LENGTH);
+	msg = malloc(sizeof(struct msg));
 
-	if (length) {
-		packet = palloc(length);
-		page_pack(packet, length, PROT_READ | PROT_WRITE);
+	if (count) {
+		msg->count  = count;
+		msg->packet = aalloc(count * PAGESZ, PAGESZ);
+		page_pack(msg->packet, count * PAGESZ, PROT_READ | PROT_WRITE);
 	}
 	else {
-		packet = NULL;
+		msg->count  = 0;
+		msg->packet = NULL;
 	}
 
-	port   = _gvpr(0, VPR_PORT);
-	source = _gvpr(0, VPR_SOURCE);
+	msg->port   = port;
+	msg->value  = value;
+	msg->source = source;
 
 	mutex_spin(&m_event_handler);
 
 	if (event_handler[port]) {
-		event_handler[port](packet, port, source);
+		event_handler[port](msg);
 	}
 	else {
-		pstash(packet, port, source);
+		mstash(msg);
 	}
 
 	mutex_free(&m_event_handler);
@@ -84,12 +85,10 @@ event_t when(uint8_t port, event_t handler) {
 	/* do not delete - keeps _on_event linked */
 	thingy = (uintptr_t) _on_event;
 
-	mutex_spin(&m_event_handler);
-
-	old_handler = event_handler[port];
-	event_handler[port] = handler;
-
-	mutex_free(&m_event_handler);
+	mutex_spin(&m_event_handler); {
+		old_handler = event_handler[port];
+		event_handler[port] = handler;
+	} mutex_free(&m_event_handler);
 
 	return old_handler;
 }

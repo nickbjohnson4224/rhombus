@@ -41,8 +41,8 @@ struct thread *fault_page(struct thread *image) {
 	/* If in kernelspace, panic */
 	if ((image->cs & 0x3) == 0) { /* i.e. if it was kernelmode */	
 
-		debug_printf("page fault at %x, ip = %x frame %x\n", 
-			cr2, image->eip, page_get(cr2));
+		debug_printf("page fault at %x, ip = %x, frame %x, esp = %x\n", 
+			cr2, image->eip, page_get(cr2), image->esp);
 
 		debug_panic("page fault exception");
 	}
@@ -60,6 +60,6 @@ struct thread *fault_page(struct thread *image) {
 //		debug_panic("page fault exception");
 
 		process_freeze(image->proc);
-		return thread_send(image, image->proc->pid, PORT_PAGE);
+		return thread_send(image, image->proc->pid, PORT_PAGE, NULL, cr2);
 	}
 }

@@ -84,11 +84,11 @@ void lfs_add(struct fs_obj *obj, const char *path);
 
 /* wrapper function prototypes **********************************************/
 
-void lfs_wrapper  (struct packet *packet, uint8_t port, uint32_t caller);
-void read_wrapper (struct packet *packet, uint8_t port, uint32_t caller);
-void write_wrapper(struct packet *packet, uint8_t port, uint32_t caller);
-void sync_wrapper (struct packet *packet, uint8_t port, uint32_t caller);
-void reset_wrapper(struct packet *packet, uint8_t port, uint32_t caller);
+void lfs_wrapper  (struct msg *msg);
+void read_wrapper (struct msg *msg);
+void write_wrapper(struct msg *msg);
+void sync_wrapper (struct msg *msg);
+void reset_wrapper(struct msg *msg);
 
 void find_wrapper(struct fs_cmd *cmd, uint32_t inode);
 void lfnd_wrapper(struct fs_cmd *cmd, uint32_t inode);
@@ -144,6 +144,6 @@ void iodelay(uint32_t usec);
 /* IRQ redirection **********************************************************/
 
 void rirq(uint8_t irq);
-void irq_wrapper(struct packet *packet, uint8_t port, uint32_t caller);
+void irq_wrapper(struct msg *msg);
 
 #endif/*DRIVER_H*/

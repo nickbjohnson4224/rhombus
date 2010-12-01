@@ -25,7 +25,9 @@ _on_event:
 	
 	push esi
 	push edi
+	push edx
+	push ecx
 	call on_event
-	add esp, 8
+	add esp, 16
 
 	call _done

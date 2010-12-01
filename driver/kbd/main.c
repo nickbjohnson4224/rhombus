@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
 
 	driver_init(&kbd_driver, argc, argv);
 
-	psend(PORT_CHILD, getppid(), NULL);
+	msend(PORT_CHILD, getppid(), NULL);
 	_done();
 
 	return 0;

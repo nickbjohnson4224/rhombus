@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
 
 	mode->fill(cx - 30, cy - 30, cx + 30, cy + 30, 0xFFFFFF);
 	
-	psend(PORT_CHILD, getppid(), NULL);
+	msend(PORT_CHILD, getppid(), NULL);
 	_done();
 
 	return 0;

@@ -36,5 +36,5 @@ struct thread *fault_float(struct thread *image) {
 	}
 
 	process_freeze(image->proc);
-	return thread_send(image, image->proc->pid, PORT_FLOAT);
+	return thread_send(image, image->proc->pid, PORT_FLOAT, NULL, 0);
 }

@@ -15,8 +15,10 @@
  */
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <driver.h>
 #include <abi.h>
+#include <ipc.h>
 
 /****************************************************************************
  * rirq
@@ -35,20 +37,13 @@ void rirq(uint8_t irq) {
  * Handles and redirects irqs to the current active driver.
  */
 
-void irq_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
+void irq_wrapper(struct msg *msg) {
 	
-	if (caller != 0) {
-		psend(PORT_REPLY, caller, NULL);
-		return;
-	}
-
 	if (!active_driver->irq) {
 		return;
 	}
 
 	active_driver->irq();
 
-	if (packet) {
-		pfree(packet);
-	}
+	free(msg);
 }

@@ -28,6 +28,7 @@
 
 void exit(int status) {
 	struct __atexit_func *f;
+	struct msg *msg;
 	
 	while (__atexit_func_list) {
 		f = __atexit_func_list;
@@ -36,7 +37,11 @@ void exit(int status) {
 		free(f);
 	}
 
-	psend(PORT_CHILD, getppid(), NULL);
+	msg = malloc(sizeof(struct msg));
+	msg->value  = status;
+	msg->packet = NULL;
+	msg->count  = 0;
+	msend(PORT_CHILD, getppid(), msg);
 
 	_exit(status);
 } 

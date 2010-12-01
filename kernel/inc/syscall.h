@@ -24,8 +24,7 @@
 #define SYSCALL_DONE	0x41
 #define SYSCALL_WHEN	0x42
 #define SYSCALL_RIRQ	0x43
-#define SYSCALL_GVPR	0x44
-#define SYSCALL_SVPR	0x45
+
 #define SYSCALL_PAGE	0x46
 #define SYSCALL_PHYS	0x47
 #define SYSCALL_FORK	0x48
@@ -41,8 +40,6 @@ struct thread *syscall_send(struct thread *image);
 struct thread *syscall_done(struct thread *image);
 struct thread *syscall_when(struct thread *image);
 struct thread *syscall_rirq(struct thread *image);
-struct thread *syscall_gvpr(struct thread *image);
-struct thread *syscall_svpr(struct thread *image);
 
 struct thread *syscall_page(struct thread *image);
 struct thread *syscall_phys(struct thread *image);

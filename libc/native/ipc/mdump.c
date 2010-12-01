@@ -15,44 +15,60 @@
  */
 
 #include <stdlib.h>
-#include <signal.h>
 #include <mutex.h>
-#include <proc.h>
 #include <ipc.h>
 
 /****************************************************************************
- * _sigwrap
+ * _mdumpm
  *
- * Wrapper for catching signals and redirecting them to __raise.
+ * For all matching messages in the message queue, either resend their events
+ * if possible or delete them. Used internally by dump* family of functions.
  */
 
-static void _sigwrap(struct msg *msg) {
+static void _mdumpm(uint8_t port, uint32_t source) {
+	struct msg *msg, *msg_temp;
+
+	mutex_spin(&m_msg_queue[port]);
+	msg = msg_queue[port].next;
 	
-	if (msg->packet) {
-		free(msg->packet);
+	while (msg) {
+		if (!source || source != msg->source) {
+			msg_temp = msg->next;
+
+			if (msg->prev) msg->prev->next = msg->next;
+			if (msg->next) msg->next->prev = msg->prev;
+
+			mutex_spin(&m_event_handler);
+
+			if (event_handler[port]) {
+				event_handler[port](msg);
+			}
+			
+			mutex_free(&m_event_handler);
+
+			free(msg);
+			msg = msg_temp;
+		}
+		else {
+			msg = msg->next;
+		}
 	}
 
-	__raise(msg->source, msg->port);
-
-	free(msg);
+	mutex_free(&m_msg_queue[port]);
 }
 
 /****************************************************************************
- * __sig_init
- *
- * Initializes signal subsystem: sets all signals handlers to SIG_DFL, and
- * registers signal wrappers for all events.
+ * mdump
  */
 
-void __sig_init(void) {
-	size_t i;
-	
-	mutex_spin(&__sigmutex);
+void mdump(uint8_t port) {
+	_mdumpm(port, 0);
+}
 
-	for (i = 0; i < SIGMAX; i++) {
-		__sighandlerv[i] = SIG_DFL;
-		when(i, _sigwrap);
-	}
+/****************************************************************************
+ * mdumps
+ */
 
-	mutex_free(&__sigmutex);
+void mdumps(uint8_t port, uint32_t source) {
+	_mdumpm(port, source);
 }

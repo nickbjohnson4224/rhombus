@@ -24,7 +24,13 @@
 
 /* native I/O routines *****************************************************/
 
-size_t ssend(uint64_t fd, void *r, void *s, size_t size, uint64_t off, uint8_t port);
+struct io_cmd {
+	size_t   length;
+	uint64_t offset;
+	uint8_t  data[];
+};
+
+size_t io_send(uint64_t fd, void *r, void *s, size_t size, uint64_t off, uint8_t port);
 
 size_t read (uint64_t fd, void *buf, size_t size, uint64_t offset);
 size_t write(uint64_t fd, void *buf, size_t size, uint64_t offset);

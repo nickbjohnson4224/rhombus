@@ -39,7 +39,7 @@ static pid_t irq_holder[IRQ_INT_SIZE];
  */
 
 struct thread *irq_redirect(struct thread *image) {
-	return thread_send(NULL, irq_holder[INT2IRQ(image->num)], PORT_IRQ);
+	return thread_send(NULL, irq_holder[INT2IRQ(image->num)], PORT_IRQ, NULL, INT2IRQ(image->num));
 }
 
 /*****************************************************************************

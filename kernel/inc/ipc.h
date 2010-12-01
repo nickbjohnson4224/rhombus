@@ -39,6 +39,11 @@
 #define PORT_USER1	14
 #define PORT_USER2	15
 
+struct msg {
+	size_t    count;
+	uint32_t *frame;	
+};
+
 struct packet {
 	portid_t port;
 	uint32_t frame;

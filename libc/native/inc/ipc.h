@@ -21,44 +21,6 @@
 #include <stdbool.h>
 #include <arch.h>
 
-/* Flux packet protocol (FPP) **********************************************/
-
-#define PACKET_MAXDATA		(PAGESZ - 40)
-#define PACKET_PROTOCOL		4	/* protocol version */
-
-struct packet {
-
-	/* general information */
-	uint16_t identity;
-	uint16_t protocol;
-
-	/* fragment information */
-	uint16_t fragment_index;
-	uint16_t fragment_count;
-
-	/* data buffer information */
-	uint32_t data_length;
-	uint32_t data_offset;
-
-	/* source routing information */
-	uint32_t source_pid;
-	uint32_t source_inode;
-
-	/* target routing information */
-	uint32_t target_pid;
-	uint32_t target_inode;
-
-	/* target file offset */
-	uint64_t offset;
-
-} __attribute__ ((packed));
-
-bool  psetbuf(struct packet **packet, uint32_t length);
-void *pgetbuf(struct packet *packet);
-
-void *palloc(uint32_t size);
-void  pfree (struct packet *packet);
-
 /* port numbers ************************************************************/
 
 #define PORT_QUIT	0
@@ -84,8 +46,6 @@ void  pfree (struct packet *packet);
 #define PORT_RESET	19
 #define PORT_FS		20
 
-#define PORT_VFS	27
-
 #define PORT_REPLY	32
 #define PORT_PING	33
 
@@ -93,51 +53,47 @@ void _on_event(void);
 
 /* queueing ****************************************************************/
 
-struct message {
-	struct message *next;
-	struct message *prev;
-	struct packet *packet;
+struct msg {
+	uint32_t port;
+	uint32_t value;
 	uint32_t source;
+
+	uint32_t count;
+	void    *packet;
+
+	struct msg *next;
+	struct msg *prev;
 };
 
-extern struct message msg_queue[256];
-extern bool         m_msg_queue[256];
+extern struct msg msg_queue[256];
+extern bool     m_msg_queue[256];
 
-void           pstash(struct packet *packet, uint8_t port, uint32_t source);
+void mstash(struct msg *msg);
 
-/* psend *******************************************************************/
+/* msend *******************************************************************/
 
-int            psend (uint8_t port, uint32_t target, struct packet *packet);
+int msend (uint8_t port, uint32_t target, struct msg *msg);
 
-/* precv family - asynchronous *********************************************/
+/* mrecv family - asynchronous *********************************************/
 
-struct packet *precv (uint8_t port);
-struct packet *precvs(uint8_t port, uint32_t source);
-struct packet *precvn(uint8_t port, uint32_t source, uint32_t inode);
-struct packet *precvi(uint8_t port, uint32_t source, uint16_t id);
-struct packet *precvf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag);
+struct msg *mrecv (uint8_t port);
+struct msg *mrecvs(uint8_t port, uint32_t source);
 
-/* pwait family - synchronous **********************************************/
+/* mwait family - synchronous **********************************************/
 
-struct packet *pwait (uint8_t port);
-struct packet *pwaits(uint8_t port, uint32_t source);
-struct packet *pwaitn(uint8_t port, uint32_t source, uint32_t inode);
-struct packet *pwaiti(uint8_t port, uint32_t source, uint16_t id);
-struct packet *pwaitf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag);
+struct msg *mwait (uint8_t port);
+struct msg *mwaits(uint8_t port, uint32_t source);
 
-/* pdump family ************************************************************/
+/* mdump family ************************************************************/
 
-void           pdump (uint8_t port);
-void           pdumps(uint8_t port, uint32_t source);
-void           pdumpn(uint8_t port, uint32_t source, uint32_t inode);
-void           pdumpi(uint8_t port, uint32_t source, uint16_t id);
-void           pdumpf(uint8_t port, uint32_t source, uint16_t id, uint16_t frag);
+void mdump (uint8_t port);
+void mdumps(uint8_t port, uint32_t source);
 
 /* events ******************************************************************/
 
-typedef void (*event_t)(struct packet *packet, uint8_t port, uint32_t source);
+typedef void (*event_t)(struct msg *msg);
 
-event_t        when (uint8_t port, event_t handler);
+event_t when(uint8_t port, event_t handler);
 
 extern event_t event_handler[256];
 extern bool  m_event_handler;

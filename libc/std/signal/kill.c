@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdlib.h>
 #include <signal.h>
 #include <proc.h>
 #include <ipc.h>
@@ -25,6 +26,10 @@
  */
 
 int kill(uint32_t pid, int signum) {
-	
-	return psend(signum, pid, NULL);
+	struct msg *msg;
+
+	msg = malloc(sizeof(struct msg));
+	msg->packet = NULL;
+	msg->count  = 0;
+	return msend(signum, pid, msg);
 }

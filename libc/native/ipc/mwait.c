@@ -15,27 +15,64 @@
  */
 
 #include <stdlib.h>
+#include <stdbool.h>
 #include <mutex.h>
 #include <ipc.h>
 
 /****************************************************************************
- * pstash
+ * _mwaitm
  *
- * Queues a message based on its metadata.
+ * Waits until a matching message is in the message queue. Returns the found
+ * message, which may be NULL if the packet is empty. Used internally by the
+ * wait* family of functions.
  */
 
-void pstash(struct packet *packet, uint8_t port, uint32_t source) {
-	struct message *m;
+static struct msg *_mwaitm(uint8_t port, uint32_t source) {
+	struct msg *msg;
+	event_t old_event;
 
-	m = malloc(sizeof(struct message));
-	m->packet = packet;
-	m->source = source;
+	old_event = when(port, NULL);
 
 	mutex_spin(&m_msg_queue[port]);
 
-	m->prev = &msg_queue[port];
-	m->next =  msg_queue[port].next;
-	msg_queue[port].next = m;
+	do {
+		msg = msg_queue[port].next;
+
+		while (msg) {
+			if (!source || source == msg->source) {
+				break;
+			}
+
+			msg = msg->next;
+		}
+
+		if (msg) {
+			if (msg->next) msg->next->prev = msg->prev;
+			if (msg->prev) msg->prev->next = msg->next;
+			break;
+		}
+
+	} while (1);
 
 	mutex_free(&m_msg_queue[port]);
+
+	when(port, old_event);
+
+	return msg;
+}
+
+/****************************************************************************
+ * mwait
+ */
+
+struct msg *mwait(uint8_t port) {
+	return _mwaitm(port, 0);
+}
+
+/****************************************************************************
+ * mwaits
+ */
+
+struct msg *mwaits(uint8_t port, uint32_t source) {
+	return _mwaitm(port, source);
 }

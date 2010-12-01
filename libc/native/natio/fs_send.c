@@ -33,7 +33,7 @@ struct fs_cmd *fs_send(uint64_t root, struct fs_cmd *cmd) {
 
 	cmd->null0 = '\0';
 	length = sizeof(struct fs_cmd);
-	length = ssend(root, cmd, cmd, length, 0, PORT_FS);
+	length = io_send(root, cmd, cmd, length, 0, PORT_FS);
 	
 	if (length != sizeof(struct fs_cmd)) {
 		return NULL;

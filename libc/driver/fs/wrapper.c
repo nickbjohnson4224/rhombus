@@ -43,36 +43,38 @@ static lfs_wrapper_t lfs_wrapper_v[12] = {
  * Handles all filesystem requests.
  */
 
-void lfs_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
+void lfs_wrapper(struct msg *msg) {
+	struct io_cmd *io_cmd;
 	struct fs_cmd *cmd;
 
 	/* reject null packets */
-	if (!packet) {
-		psend(PORT_REPLY, caller, NULL);
+	if (!msg->packet) {
+		msend(PORT_REPLY, msg->source, msg);
 		return;
 	}
+
+	io_cmd = msg->packet;
 
 	/* reject invalid packets */
-	if (packet->data_length != sizeof(struct fs_cmd)) {
-		pfree(packet);
-		psend(PORT_REPLY, caller, NULL);
+	if (io_cmd->length != sizeof(struct fs_cmd)) {
+		io_cmd->length = 0;
+		msend(PORT_REPLY, msg->source, msg);
 		return;
 	}
 
-	cmd = pgetbuf(packet);
+	cmd = (void*) io_cmd->data;
 	cmd->null0 = '\0';
 
 	/* perform action */
 	if ((cmd->op < 12) && lfs_wrapper_v[cmd->op]) {
-		lfs_wrapper_v[cmd->op](cmd, packet->target_inode);
+		lfs_wrapper_v[cmd->op](cmd, msg->value);
 	}
 	else {
 		cmd->op = FS_ERR;
 		cmd->v0 = ERR_FUNC;
 	}
 
-	psend(PORT_REPLY, caller, packet);
-	pfree(packet);
+	msend(PORT_REPLY, msg->source, msg);
 }
 
 /*****************************************************************************
@@ -81,33 +83,40 @@ void lfs_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
  * Handles and redirects read requests to the current active driver.
  */
 
-void read_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
+void read_wrapper(struct msg *msg) {
 	struct fs_obj *file;
+	struct io_cmd *cmd;
 	
-	if (!packet || !active_driver->read) {
-		psend(PORT_REPLY, caller, NULL);
+	if (!msg->packet) {
+		msend(PORT_REPLY, msg->source, msg);
 		return;
 	}
 
-	file = lfs_lookup(packet->target_inode);
+	cmd = msg->packet;
+
+	if (!active_driver->read) {
+		cmd->length = 0;
+		msend(PORT_REPLY, msg->source, msg);
+		return;
+	}
+
+	file = lfs_lookup(msg->value);
 
 	if (!file || (file->type != FOBJ_FILE)) {
-		pfree(packet);
-		psend(PORT_REPLY, caller, NULL);
+		cmd->length = 0;
+		msend(PORT_REPLY, msg->source, msg);
 		return;
 	}
 
 	if (!(acl_get(file->acl, gettuser()) & ACL_READ)) {
-		pfree(packet);
-		psend(PORT_REPLY, caller, NULL);
+		cmd->length = 0;
+		msend(PORT_REPLY, msg->source, msg);
 		return;
 	}
 	
-	packet->data_length = active_driver->read
-		(file, pgetbuf(packet), packet->data_length, packet->offset);
+	cmd->length = active_driver->read(file, cmd->data, cmd->length, cmd->offset);
 
-	psend(PORT_REPLY, caller, packet);
-	pfree(packet);
+	msend(PORT_REPLY, msg->source, msg);
 }
 
 /*****************************************************************************
@@ -116,33 +125,40 @@ void read_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
  * Handles and redirects write requests to the current active driver.
  */
 
-void write_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
+void write_wrapper(struct msg *msg) {
 	struct fs_obj *file;
+	struct io_cmd *cmd;
 
-	if (!packet || !active_driver->write) {
-		psend(PORT_REPLY, caller, NULL);
+	if (!msg->packet) {
+		msend(PORT_REPLY, msg->source, msg);
 		return;
 	}
 
-	file = lfs_lookup(packet->target_inode);
+	cmd = msg->packet;
+
+	if (!active_driver->write) {
+		cmd->length = 0;
+		msend(PORT_REPLY, msg->source, msg);
+		return;
+	}
+
+	file = lfs_lookup(msg->value);
 
 	if (!file || (file->type != FOBJ_FILE)) {
-		pfree(packet);
-		psend(PORT_REPLY, caller, NULL);
+		cmd->length = 0;
+		msend(PORT_REPLY, msg->source, msg);
 		return;
 	}
 
 	if (!(acl_get(file->acl, gettuser()) & ACL_WRITE)) {
-		pfree(packet);
-		psend(PORT_REPLY, caller, NULL);
+		cmd->length = 0;
+		msend(PORT_REPLY, msg->source, msg);
 		return;
 	}
 	
-	packet->data_length = active_driver->write
-		(file, pgetbuf(packet), packet->data_length, packet->offset);
-	
-	psend(PORT_REPLY, caller, packet);
-	pfree(packet);
+	cmd->length = active_driver->write(file, cmd->data, cmd->length, cmd->offset);
+
+	msend(PORT_REPLY, msg->source, msg);
 }
 
 /*****************************************************************************
@@ -151,32 +167,40 @@ void write_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
  * Handles and redirects sync requests to the current active driver.
  */
 
-void sync_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
+void sync_wrapper(struct msg *msg) {
 	struct fs_obj *file;
+	struct io_cmd *cmd;
 
-	if (!packet || !active_driver->sync) {
-		psend(PORT_REPLY, caller, NULL);
+	if (!msg->packet) {
+		msend(PORT_REPLY, msg->source, msg);
 		return;
 	}
 
-	file = lfs_lookup(packet->target_inode);
-	
-	if (!file) {
-		pfree(packet);
-		psend(PORT_REPLY, caller, NULL);
+	cmd = msg->packet;
+
+	if (!active_driver->write) {
+		cmd->length = 0;
+		msend(PORT_REPLY, msg->source, msg);
+		return;
+	}
+
+	file = lfs_lookup(msg->value);
+
+	if (!file || (file->type != FOBJ_FILE)) {
+		cmd->length = 0;
+		msend(PORT_REPLY, msg->source, msg);
 		return;
 	}
 
 	if (!(acl_get(file->acl, gettuser()) & ACL_WRITE)) {
-		pfree(packet);
-		psend(PORT_REPLY, caller, NULL);
+		cmd->length = 0;
+		msend(PORT_REPLY, msg->source, msg);
 		return;
 	}
 
 	active_driver->sync(file);
-	
-	psend(PORT_REPLY, caller, packet);
-	pfree(packet);
+
+	msend(PORT_REPLY, msg->source, msg);
 }
 
 /*****************************************************************************
@@ -185,30 +209,38 @@ void sync_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
  * Handles and redirects reset requests to the current active driver.
  */
 
-void reset_wrapper(struct packet *packet, uint8_t port, uint32_t caller) {
+void reset_wrapper(struct msg *msg) {
 	struct fs_obj *file;
+	struct io_cmd *cmd;
 
-	if (!packet || !active_driver->reset) {
-		psend(PORT_REPLY, caller, NULL);
+	if (!msg->packet) {
+		msend(PORT_REPLY, msg->source, msg);
 		return;
 	}
 
-	file = lfs_lookup(packet->target_inode);
-	
+	cmd = msg->packet;
+
+	if (!active_driver->write) {
+		cmd->length = 0;
+		msend(PORT_REPLY, msg->source, msg);
+		return;
+	}
+
+	file = lfs_lookup(msg->value);
+
 	if (!file || (file->type != FOBJ_FILE)) {
-		pfree(packet);
-		psend(PORT_REPLY, caller, NULL);
+		cmd->length = 0;
+		msend(PORT_REPLY, msg->source, msg);
 		return;
 	}
 
 	if (!(acl_get(file->acl, gettuser()) & ACL_WRITE)) {
-		pfree(packet);
-		psend(PORT_REPLY, caller, NULL);
+		cmd->length = 0;
+		msend(PORT_REPLY, msg->source, msg);
 		return;
 	}
-	
+
 	active_driver->reset(file);
-	
-	psend(PORT_REPLY, caller, packet);
-	pfree(packet);
+
+	msend(PORT_REPLY, msg->source, msg);
 }

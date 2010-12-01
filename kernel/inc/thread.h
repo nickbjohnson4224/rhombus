@@ -50,8 +50,8 @@ struct thread {
 	uint32_t kernel_stack;
 	uint32_t *fxdata;
 	
-	/* virtual packet register */
-	struct packet *packet;
+	/* message packet */
+	struct msg *msg;
 
 	/* effective user id */
 	uid_t user;
@@ -73,7 +73,7 @@ struct thread {
 struct thread *thread_alloc (void);
 void           thread_free  (struct thread *thread);
 struct thread *thread_switch(struct thread *old, struct thread *new);
-struct thread *thread_send  (struct thread *image, pid_t targ, portid_t sig);
+struct thread *thread_send  (struct thread *image, pid_t target, portid_t port, struct msg *msg, uint32_t value);
 struct thread *thread_freeze(struct thread *image);
 struct thread *thread_thaw  (struct thread *image);
 struct thread *thread_exit  (struct thread *image);

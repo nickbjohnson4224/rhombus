@@ -44,7 +44,7 @@ void debug_char(char c) {
 			__vga_cursor_pos += 80;
 			__vga_cursor_base = __vga_cursor_pos;
 
-			if (__vga_cursor_pos >= 1920) {
+			if (__vga_cursor_pos >= 960) {
 				debug_scroll(1);
 			}
 			break;
@@ -65,7 +65,7 @@ void debug_char(char c) {
 			break;
 	}
 
-	if (__vga_cursor_pos >= 2000) {
+	if (__vga_cursor_pos >= 1000) {
 		debug_scroll(1);
 	}
 	#endif

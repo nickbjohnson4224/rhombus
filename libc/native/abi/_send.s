@@ -15,7 +15,19 @@
 global _send
 
 _send:
-	mov ecx, [esp+4]
-	mov edx, [esp+8]
+	push ebx
+	push edi
+	push esi
+
+	mov ebx, [esp+16]
+	mov ecx, [esp+20]
+	mov edx, [esp+24]
+	mov edi, [esp+28]
+	mov esi, [esp+32]
+
 	int 0x40
+
+	pop esi
+	pop edi
+	pop ebx
 	ret

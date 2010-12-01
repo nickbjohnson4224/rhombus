@@ -23,7 +23,7 @@
  * Message queues for each port.
  */
 
-struct message msg_queue[256];
+struct msg msg_queue[256];
 
 /****************************************************************************
  * m_msg_queue

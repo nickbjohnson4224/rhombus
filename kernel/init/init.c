@@ -91,7 +91,7 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 
 	/* initialize debugging output */
 	debug_init();
-	debug_printf("Flux Operating System Kernel v0.5a\n");
+	debug_printf("Flux Operating System Kernel v0.6a\n");
 
 	/* check multiboot header */
 	if (mboot_magic != 0x2BADB002) {
@@ -165,8 +165,6 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	int_set_handler(SYSCALL_DONE, syscall_done);
 	int_set_handler(SYSCALL_WHEN, syscall_when);
 	int_set_handler(SYSCALL_RIRQ, syscall_rirq);
-	int_set_handler(SYSCALL_GVPR, syscall_gvpr);
-	int_set_handler(SYSCALL_SVPR, syscall_svpr);
 	int_set_handler(SYSCALL_PAGE, syscall_page);
 	int_set_handler(SYSCALL_PHYS, syscall_phys);
 	int_set_handler(SYSCALL_FORK, syscall_fork);

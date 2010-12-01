@@ -31,13 +31,9 @@
  * Action to be taken on the reception of an unwanted event.
  */
 
-static void reject(struct packet *packet, uint8_t port, uint32_t caller) {
+static void reject(struct msg *msg) {
 
-	if (packet) {
-		pfree(packet);
-	}
-
-	psend(PORT_REPLY, caller, NULL);
+	msend(PORT_REPLY, msg->source, msg);
 }
 
 /****************************************************************************

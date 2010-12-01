@@ -14,45 +14,56 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdint.h>
 #include <stdlib.h>
-#include <signal.h>
 #include <mutex.h>
-#include <proc.h>
+#include <abi.h>
 #include <ipc.h>
 
 /****************************************************************************
- * _sigwrap
+ * _mrecvm
  *
- * Wrapper for catching signals and redirecting them to __raise.
+ * Attempts to find a matching message. Returns the found message on 
+ * success, and NULL on failure. Used internally by mrecv* family of 
+ * functions.
  */
 
-static void _sigwrap(struct msg *msg) {
+static struct msg *_mrecvm(uint8_t port, uint32_t source) {
+	struct msg *msg;
+
+	mutex_spin(&m_msg_queue[port]);
+	msg = msg_queue[port].next;
 	
-	if (msg->packet) {
-		free(msg->packet);
+	while (msg) {
+		if (!source || source == msg->source) {
+			break;
+		}
+
+		msg = msg->next;
 	}
 
-	__raise(msg->source, msg->port);
+	if (msg) {
+		if (msg->prev) msg->prev->next = msg->next;
+		if (msg->next) msg->next->prev = msg->prev;
+	}
 
-	free(msg);
+	mutex_free(&m_msg_queue[port]);
+
+	return msg;
 }
 
 /****************************************************************************
- * __sig_init
- *
- * Initializes signal subsystem: sets all signals handlers to SIG_DFL, and
- * registers signal wrappers for all events.
+ * mrecv
  */
 
-void __sig_init(void) {
-	size_t i;
-	
-	mutex_spin(&__sigmutex);
+struct msg *mrecv(uint8_t port) {
+	return _mrecvm(port, 0);
+}
 
-	for (i = 0; i < SIGMAX; i++) {
-		__sighandlerv[i] = SIG_DFL;
-		when(i, _sigwrap);
-	}
+/****************************************************************************
+ * mrecvs
+ */
 
-	mutex_free(&__sigmutex);
+struct msg *mrecvs(uint8_t port, uint32_t source) {
+	return _mrecvm(port, source);
 }

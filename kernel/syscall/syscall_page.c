@@ -17,6 +17,7 @@
 #include <interrupt.h>
 #include <thread.h>
 #include <space.h>
+#include <debug.h>
 
 /*****************************************************************************
  * syscall_page (int 0x46)
@@ -56,6 +57,10 @@
  *     Map the virtual memory region from <offset> to <offset> + <count> *
  *     PAGESZ to the requested virtual memory region. This function is not yet
  *     implemented.
+ *
+ * PAGE_PROT - 5
+ *     Change the permissions on the memory region from <offset> to <offset> +
+ *     <count> * PAGESZ to the requested permissions.
  *
  * Flags for <perm>:
  *
@@ -129,29 +134,37 @@ struct thread *syscall_page(struct thread *image) {
 	case 2: /* PAGE_PACK */
 
 		/* reject if there is no packet */
-		if (!image->packet || !image->packet->frame) {
+		if (!image->msg) {
 			image->eax = 1;
 			return image;
 		}
 
-		/* 
-		 * NOTE - right now, packets are only one frame, 
-		 * but they will be larger later!
-		 */
-
-		/* skip if the request is too small */
-		if (count == 0) {
-			image->eax = 0;
-			return image;
+		/* calculate actual page count */
+		if (count > image->msg->count) {
+			count = image->msg->count;
 		}
-
-		/* free any encumbering frame */
-		if (page_get(address) & PF_PRES) {
-			frame_free(page_get(address));
-		}
-
+		
 		/* map the packet */
-		page_set(address, page_fmt(image->packet->frame, perm));
+		for (i = 0; i < count; i++) {
+
+			/* free encumbering frames */
+			if (page_get(address + i * PAGESZ) & PF_PRES) {
+				frame_free(page_ufmt(page_get(address + i * PAGESZ)));
+			}
+			
+			/* map frame from packet */
+			page_set(address + i * PAGESZ, page_fmt(image->msg->frame[i], perm));
+		}
+
+		/* free any unused packet contents */
+		for (; i < image->msg->count; i++) {
+			frame_free(image->msg->frame[i]);
+		}
+
+		/* free the message packet structure */
+		heap_free(image->msg->frame, image->msg->count * sizeof(uint32_t));
+		heap_free(image->msg, sizeof(struct msg));
+		image->msg = NULL;
 
 		break;
 	case 3: /* PAGE_PHYS */
