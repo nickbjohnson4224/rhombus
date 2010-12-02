@@ -24,27 +24,24 @@
  * EBX: base
  * ECX: count
  * EDX: port
- * EDI: value
  * ESI: target
  *
  * Sends a message to the port <port> of the process with pid <target>. If 
  * that process does not exist, the call is rejected. If <count> is nonzero, a
  * packet of <count> pages is created from the memory region at <base>, and 
  * unmapped from the current process. If the region is not entirely present, 
- * the call is rejected. The value <value> is copied exactly to the receiver. 
- * The receiving process will have the following register contents:
+ * the call is rejected. The receiving process will have the following register 
+ * contents:
  *
  * ECX: count
  * EDX: port
- * EDI: value
  * ESI: source
  *
  * <count> is the size of the attached packet in pages (zero means no packet);
- * <port> is the requested target port; <value> is the same value as in the
- * sender's register; source is the pid of the sender. The receiving thread
- * will have the effective user id of the sending thread if the receiving
- * process has user id 0, and will otherwise have the user id of the receiving
- * process.
+ * <port> is the requested target port; source is the pid of the sender. The 
+ * receiving thread will have the effective user id of the sending thread if the 
+ * receiving process has user id 0, and will otherwise have the user id of the 
+ * receiving process.
  * 
  * Returns zero on success, nonzero on failure. If <target> is zero, no
  * message is sent, and the current timeslice is relinquished.
@@ -54,7 +51,6 @@ struct thread *syscall_send(struct thread *image) {
 	uintptr_t base   = image->ebx;
 	uintptr_t count  = image->ecx;
 	uintptr_t port   = image->edx;
-	uintptr_t value  = image->edi;
 	uintptr_t target = image->esi;
 	uintptr_t i;
 	struct msg *message;
@@ -118,5 +114,5 @@ struct thread *syscall_send(struct thread *image) {
 	}
 
 	/* send message */
-	return thread_send(image, target, port, message, value);
+	return thread_send(image, target, port, message);
 }

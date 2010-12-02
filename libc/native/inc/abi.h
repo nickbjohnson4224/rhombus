@@ -21,7 +21,7 @@
 
 /* system calls *******************************************************/
 
-int         _send(uintptr_t base, size_t count, uint8_t port, uint32_t value, uint32_t target);
+int         _send(uintptr_t base, size_t count, uint8_t port, uint32_t target);
 void		_done(void) __attribute__ ((noreturn));
 void        _when(uintptr_t entry);
 void        _rirq(uint8_t irq);

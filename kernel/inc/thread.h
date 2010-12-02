@@ -73,7 +73,7 @@ struct thread {
 struct thread *thread_alloc (void);
 void           thread_free  (struct thread *thread);
 struct thread *thread_switch(struct thread *old, struct thread *new);
-struct thread *thread_send  (struct thread *image, pid_t target, portid_t port, struct msg *msg, uint32_t value);
+struct thread *thread_send  (struct thread *image, pid_t target, portid_t port, struct msg *msg);
 struct thread *thread_freeze(struct thread *image);
 struct thread *thread_thaw  (struct thread *image);
 struct thread *thread_exit  (struct thread *image);

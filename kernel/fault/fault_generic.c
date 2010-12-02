@@ -36,5 +36,5 @@ struct thread *fault_generic(struct thread *image) {
 	}
 
 	process_freeze(image->proc);
-	return thread_send(image, image->proc->pid, PORT_ILL, NULL, image->num);
+	return thread_send(image, image->proc->pid, PORT_ILL, NULL);
 }

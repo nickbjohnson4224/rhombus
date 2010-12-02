@@ -55,12 +55,12 @@ size_t io_send(uint64_t fd, void *r, void *s, size_t size, uint64_t off, uint8_t
 	cmd = msg->packet;
 	cmd->length = size;
 	cmd->offset = off;
+	cmd->inode  = fd & 0xFFFFFFFF;
 
 	/* copy data from source */
 	if (s) memcpy(cmd->data, s, size);
 
 	/* send message */
-	msg->value = fd & 0xFFFFFFFF;
 	msend(port, fd >> 32, msg);
 
 	/* recieve response */

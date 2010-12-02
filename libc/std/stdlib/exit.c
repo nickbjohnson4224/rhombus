@@ -38,7 +38,6 @@ void exit(int status) {
 	}
 
 	msg = malloc(sizeof(struct msg));
-	msg->value  = status;
 	msg->packet = NULL;
 	msg->count  = 0;
 	msend(PORT_CHILD, getppid(), msg);

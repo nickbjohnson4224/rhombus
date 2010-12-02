@@ -36,7 +36,7 @@ bool   m_event_handler;
  * virtual packet register and redirects the event to proper event handler.
  */
 
-void on_event(size_t count, uint32_t port, uint32_t value, uint32_t source) {
+void on_event(size_t count, uint32_t port, uint32_t source) {
 	struct msg *msg;
 
 	msg = malloc(sizeof(struct msg));
@@ -52,7 +52,6 @@ void on_event(size_t count, uint32_t port, uint32_t value, uint32_t source) {
 	}
 
 	msg->port   = port;
-	msg->value  = value;
 	msg->source = source;
 
 	mutex_spin(&m_event_handler);

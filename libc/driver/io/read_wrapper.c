@@ -43,7 +43,7 @@ void read_wrapper(struct msg *msg) {
 		return;
 	}
 
-	file = lfs_lookup(msg->value);
+	file = lfs_lookup(cmd->inode);
 
 	if (!file || (file->type != FOBJ_FILE)) {
 		cmd->length = 0;

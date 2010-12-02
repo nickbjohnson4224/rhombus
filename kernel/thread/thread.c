@@ -56,7 +56,7 @@ struct thread *thread_exit(struct thread *image) {
  * passed as image.
  */
 
-struct thread *thread_send(struct thread *image, pid_t target, portid_t port, struct msg *msg, uint32_t value) {
+struct thread *thread_send(struct thread *image, pid_t target, portid_t port, struct msg *msg) {
 	struct process *p_targ;
 	struct thread *new_image;
 
@@ -84,7 +84,6 @@ struct thread *thread_send(struct thread *image, pid_t target, portid_t port, st
 	/* set up registers in new thread */
 	new_image->ecx     = (msg) ? msg->count : 0;
 	new_image->edx     = port;
-	new_image->edi     = value;
 	new_image->esi     = (image) ? image->proc->pid : 0;
 	new_image->msg     = msg;
 

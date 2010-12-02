@@ -60,6 +60,6 @@ struct thread *fault_page(struct thread *image) {
 //		debug_panic("page fault exception");
 
 		process_freeze(image->proc);
-		return thread_send(image, image->proc->pid, PORT_PAGE, NULL, cr2);
+		return thread_send(image, image->proc->pid, PORT_PAGE, NULL);
 	}
 }

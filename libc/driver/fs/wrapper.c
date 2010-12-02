@@ -67,7 +67,7 @@ void lfs_wrapper(struct msg *msg) {
 
 	/* perform action */
 	if ((cmd->op < 12) && lfs_wrapper_v[cmd->op]) {
-		lfs_wrapper_v[cmd->op](cmd, msg->value);
+		lfs_wrapper_v[cmd->op](cmd, io_cmd->inode);
 	}
 	else {
 		cmd->op = FS_ERR;

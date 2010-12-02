@@ -25,6 +25,7 @@
 /* native I/O routines *****************************************************/
 
 struct io_cmd {
+	uint32_t inode;
 	size_t   length;
 	uint64_t offset;
 	uint8_t  data[];

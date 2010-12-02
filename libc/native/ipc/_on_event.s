@@ -24,10 +24,9 @@ section .event
 _on_event:
 	
 	push esi
-	push edi
 	push edx
 	push ecx
 	call on_event
-	add esp, 16
+	add esp, 12
 
 	call _done

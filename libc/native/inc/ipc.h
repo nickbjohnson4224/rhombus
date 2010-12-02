@@ -40,14 +40,12 @@
 #define PORT_USER1	14
 #define PORT_USER2	15
 
-#define PORT_READ	16
-#define PORT_WRITE	17
-#define PORT_SYNC	18
-#define PORT_RESET	19
-#define PORT_FS		20
-
-#define PORT_REPLY	32
-#define PORT_PING	33
+#define PORT_REPLY	16
+#define PORT_READ	17
+#define PORT_WRITE	18
+#define PORT_SYNC	19
+#define PORT_RESET	20
+#define PORT_FS		21
 
 void _on_event(void);
 
@@ -55,7 +53,6 @@ void _on_event(void);
 
 struct msg {
 	uint32_t port;
-	uint32_t value;
 	uint32_t source;
 
 	uint32_t count;

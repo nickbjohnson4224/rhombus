@@ -30,10 +30,10 @@ int msend(uint8_t port, uint32_t target, struct msg *msg) {
 	uint32_t err;
 
 	if (!msg) {
-		err = _send(0, 0, port, 0, target);
+		err = _send(0, 0, port, target);
 	}
 	else {
-		err = _send((uintptr_t) msg->packet, msg->count, port, msg->value, target);
+		err = _send((uintptr_t) msg->packet, msg->count, port, target);
 	}
 
 	if (err) {

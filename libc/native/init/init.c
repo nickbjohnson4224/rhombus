@@ -38,20 +38,6 @@ static void reject(struct msg *msg) {
 }
 
 /****************************************************************************
- * pfault
- *
- * Special handler for page faults, printing useful debugging information.
- */
-
-static void pfault(struct msg *msg) {
-	
-	fprintf(stderr, "page fault at %x, frame %x\n", msg->value, _phys(msg->value));
-	free(msg);
-
-	raise(SIGSEGV);
-}
-
-/****************************************************************************
  * _init
  *
  * Function called at beginning of all processes, used to initialize the C
@@ -74,8 +60,6 @@ void _init(bool is_init) {
 	fs_root = fdload(3);
 
 	__sig_init();
-
-	when(PORT_PAGE,  pfault);
 
 	when(PORT_FS,	 reject);
 	when(PORT_SYNC,	 reject);
