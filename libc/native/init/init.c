@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <natio.h>
 #include <pack.h>
+#include <abi.h>
 
 /****************************************************************************
  * reject
@@ -34,6 +35,20 @@
 static void reject(struct msg *msg) {
 
 	msend(PORT_REPLY, msg->source, msg);
+}
+
+/****************************************************************************
+ * pfault
+ *
+ * Special handler for page faults, printing useful debugging information.
+ */
+
+static void pfault(struct msg *msg) {
+	
+	fprintf(stderr, "page fault at %x, frame %x\n", msg->value, _phys(msg->value));
+	free(msg);
+
+	raise(SIGSEGV);
 }
 
 /****************************************************************************
@@ -59,6 +74,8 @@ void _init(bool is_init) {
 	fs_root = fdload(3);
 
 	__sig_init();
+
+	when(PORT_PAGE,  pfault);
 
 	when(PORT_FS,	 reject);
 	when(PORT_SYNC,	 reject);

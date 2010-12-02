@@ -1,13 +1,14 @@
 Urgent:
 
-- password manager
-- device manager
+- proper kernel frame allocator
+- graceful out of memory behavior
 
 Less Urgent:
 
+- password manager
+- device manager
 - write proper vga/tty drivers
 - finish libc math functions
-- detect out of memory errors
 - finish libc stdio functions (printf/scanf)
 
 Would Like:

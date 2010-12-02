@@ -20,59 +20,44 @@
 #include <proc.h>
 #include <ipc.h>
 
-typedef void (*lfs_wrapper_t)(struct fs_cmd *cmd, uint32_t inode);
-
-static lfs_wrapper_t lfs_wrapper_v[12] = {
-	NULL,
-	find_wrapper,
-	cons_wrapper,
-	move_wrapper,
-	remv_wrapper,
-	link_wrapper,
-	list_wrapper,
-	size_wrapper,
-	type_wrapper,
-	lfnd_wrapper,
-	perm_wrapper,
-	auth_wrapper
-};	
-
 /*****************************************************************************
- * lfs_wrapper
+ * write_wrapper
  *
- * Handles all filesystem requests.
+ * Handles and redirects write requests to the current active driver.
  */
 
-void lfs_wrapper(struct msg *msg) {
-	struct io_cmd *io_cmd;
-	struct fs_cmd *cmd;
+void write_wrapper(struct msg *msg) {
+	struct fs_obj *file;
+	struct io_cmd *cmd;
 
-	/* reject null packets */
 	if (!msg->packet) {
 		msend(PORT_REPLY, msg->source, msg);
 		return;
 	}
 
-	io_cmd = msg->packet;
+	cmd = msg->packet;
 
-	/* reject invalid packets */
-	if (io_cmd->length != sizeof(struct fs_cmd)) {
-		io_cmd->length = 0;
+	if (!active_driver->write) {
+		cmd->length = 0;
 		msend(PORT_REPLY, msg->source, msg);
 		return;
 	}
 
-	cmd = (void*) io_cmd->data;
-	cmd->null0 = '\0';
+	file = lfs_lookup(msg->value);
 
-	/* perform action */
-	if ((cmd->op < 12) && lfs_wrapper_v[cmd->op]) {
-		lfs_wrapper_v[cmd->op](cmd, msg->value);
+	if (!file || (file->type != FOBJ_FILE)) {
+		cmd->length = 0;
+		msend(PORT_REPLY, msg->source, msg);
+		return;
 	}
-	else {
-		cmd->op = FS_ERR;
-		cmd->v0 = ERR_FUNC;
+
+	if (!(acl_get(file->acl, gettuser()) & ACL_WRITE)) {
+		cmd->length = 0;
+		msend(PORT_REPLY, msg->source, msg);
+		return;
 	}
+	
+	cmd->length = active_driver->write(file, cmd->data, cmd->length, cmd->offset);
 
 	msend(PORT_REPLY, msg->source, msg);
 }

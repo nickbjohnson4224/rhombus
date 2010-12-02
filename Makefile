@@ -2,7 +2,7 @@ BUILDDIR=$(PWD)
 
 LIB_DIRS  = libc
 
-DRIVERS  := driver/term driver/kbd driver/vga driver/tmpfs driver/tarfs driver/time
+DRIVERS  := $(shell find driver -mindepth 1 -maxdepth 1)
 DAEMONS  := $(shell find daemon -mindepth 1 -maxdepth 1)
 UTILS    := $(shell find util   -mindepth 1 -maxdepth 1)
 PORTS    := $(shell find ports  -mindepth 1 -maxdepth 1)
