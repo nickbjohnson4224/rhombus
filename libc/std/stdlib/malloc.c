@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <mutex.h>
+#include <errno.h>
 #include <page.h>
 #include <arch.h>
 
@@ -58,6 +59,7 @@ void *aalloc(size_t size, size_t align) {
 
 	if (align) {
 		if (align != ((size_t) 1 << ilog2(align))) {
+			errno = EINVAL;
 			return NULL;
 		}
 
@@ -77,10 +79,16 @@ void *aalloc(size_t size, size_t align) {
 	} mutex_free(&_mutex);
 
 	if (!node) {
+		errno = ENOMEM;
 		return NULL;
 	}
 	else {
-		page_anon((void*) node->base, 1 << node->size, PROT_READ | PROT_WRITE);
+		if (page_anon((void*) node->base, 1 << node->size, PROT_READ | PROT_WRITE)) {
+			/* could not allocate memory */
+			errno = EINVAL;
+			return NULL;
+		}
+
 		return (void*) node->base;
 	}
 }

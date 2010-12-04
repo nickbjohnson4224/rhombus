@@ -85,8 +85,8 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	struct process *idle, *init;
 	struct module *module;
 	struct memory_map *mem_map;
-	size_t mem_map_count, i;
-	uintptr_t boot_image_size, memsize;
+	size_t mem_map_count, i, addr;
+	uintptr_t boot_image_size;
 	void *boot_image, *init_image;
 
 	/* initialize debugging output */
@@ -98,24 +98,21 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 		debug_panic("bootloader is not multiboot compliant");
 	}
 
+	/* touch pages for the kernel heap */
+	for (i = KSPACE; i < KERNEL_HEAP_END; i += SEGSZ) {
+		page_touch(i);
+	}
+
 	/* parse the multiboot memory map to find the size of memory */
 	mem_map       = (void*) (mboot->mmap_addr + KSPACE);
 	mem_map_count = mboot->mmap_length / sizeof(struct memory_map);
-	memsize       = 0;
+
 	for (i = 0; i < mem_map_count; i++) {
-		if (mem_map[i].base_addr_low == 0x100000) {
-			memsize = mem_map[i].length_low + 0x100000;
-			break;
+		if (mem_map[i].type == 1) {
+			for (addr = 0; addr < mem_map[i].length_low; addr += PAGESZ) {
+				frame_add(mem_map[i].base_addr_low + addr);
+			}
 		}
-	}
-	if (!memsize) memsize = 0x400000;
-
-	/* initialize the frame allocator */
-	frame_init(memsize);
-
-	/* touch pages for the kernel */
-	for (i = KSPACE; i < KERNEL_HEAP_END; i += SEGSZ) {
-		page_touch(i);
 	}
 
 	/* bootstrap process 0 (idle) */

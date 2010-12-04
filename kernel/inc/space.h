@@ -17,11 +17,12 @@
 #ifndef SPACE_H
 #define SPACE_H
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <types.h>
 #include <arch.h>
 
-/***** PAGE FLAGS *****/
+/* page flags ***************************************************************/
 
 /* MMAP flags */
 #define MMAP_CMASK	0x0BB /* Capability mask */
@@ -46,13 +47,16 @@
 
 #define PF_MASK 0x0E7F	/* Page flags that can be used */
 
-/***** FRAME ALLOCATOR *****/
+/* frame allocator **********************************************************/
 
-void    frame_init(uintptr_t memsize);
+extern bool out_of_memory;
+
+void    frame_add (frame_t frame);
 frame_t frame_new (void);
+void    frame_ref (frame_t frame);
 void    frame_free(frame_t frame);
 
-/***** ADDRESS SPACES *****/
+/* address spaces ***********************************************************/
 
 void    space_exmap(space_t space);
 space_t space_alloc(void);
@@ -62,12 +66,12 @@ void    space_free (space_t space);
 extern frame_t *cmap;		/* Address of current page directory */
 extern frame_t *ctbl;		/* Base of current page tables */
 
-/***** HIGH LEVEL MEMORY OPERATIONS *****/
+/* high level memory operations *********************************************/
 
 void   mem_alloc(uintptr_t base, uintptr_t size, uint16_t flags);
 void   mem_free (uintptr_t base, uintptr_t size);
 
-/***** ADDRESS SPACE SEGMENTS *****/
+/* address space segments ***************************************************/
 
 #define SEGSZ 0x400000
 
@@ -77,7 +81,7 @@ void   mem_free (uintptr_t base, uintptr_t size);
 #define SEG_USED 0x400 /* Segment is allocated and in use */
 #define SEG_ALLC 0x800 /* Segment allocated by segment_alloc or page_touch */
 
-/***** PAGE OPERATIONS *****/
+/* page operations **********************************************************/
 
 void    page_touch(uintptr_t page);
 void    page_set  (uintptr_t page, frame_t value);
@@ -90,9 +94,9 @@ frame_t page_exget  (uintptr_t page);
 #define page_fmt(base,flags) (((base)&0xFFFFF000)|((flags)&PF_MASK))
 #define page_ufmt(page) ((page)&0xFFFFF000)
 
-/***** KERNEL HEAP *****/
+/* kernel heap **************************************************************/
 
 void *heap_alloc(size_t size);
 void  heap_free(void *ptr, size_t size);
 
-#endif /*SPACE_H*/
+#endif/*SPACE_H*/

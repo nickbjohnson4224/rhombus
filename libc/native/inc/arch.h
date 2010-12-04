@@ -43,8 +43,11 @@
 	#define TMP_MAP     0xFF800000
 	#define PGE_MAP     0xFFC00000
 
-	#define KERNEL_HEAP     (KSPACE + 0x1000000)
-	#define KERNEL_HEAP_END (KSPACE + 0x8000000)
+	#define KERNEL_HEAP     (KSPACE + 0x01000000)
+	#define KERNEL_HEAP_END (KSPACE + 0x08000000)
+
+	/* physical address of emergency frames */
+	#define BOOT_POOL	0x00400000
 
 	/** These must remain in order **/
 	#define SSPACE	0x80000000	/* Stack space */

@@ -123,6 +123,12 @@ struct thread *syscall_page(struct thread *image) {
 		break;
 	case 1: /* PAGE_ANON */
 
+		/* check for out of memory error */
+		if (out_of_memory) {
+			image->eax = 1;
+			return image;
+		}
+
 		/* allocate requested pages, but don't free old ones if they're there */
 		for (i = address; i < address + count * PAGESZ; i += PAGESZ) {
 			if ((page_get(i) & PF_PRES) == 0) {
