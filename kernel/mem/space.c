@@ -33,7 +33,7 @@ space_t space_alloc(void) {
 	memclr(map, PAGESZ);
 
 	/* set recursive mapping */
-	map[PGE_MAP >> 22] = page_fmt(space, PF_PRES | PF_RW | SEG_USED);
+	map[PGE_MAP >> 22] = page_fmt(space, PF_PRES | PF_RW);
 
 	return space;
 }
@@ -63,7 +63,7 @@ space_t space_clone() {
 	/* Clone/clear userspace */
 	for (i = 0; i < 1023; i++) {
 		if (cmap[i] & PF_PRES) {
-			if (cmap[i] & SEG_LINK) {
+			if (i >= KSPACE / SEGSZ) {
 				exmap[i] = cmap[i];
 			}
 			else {
@@ -100,7 +100,7 @@ static void segment_clone(frame_t *extbl, frame_t *exmap, uintptr_t seg) {
  */
 
 void space_exmap(space_t space) {
-	cmap[TMP_MAP >> 22] = page_fmt(space, PF_PRES | PF_RW | SEG_LINK | SEG_USED);
+	cmap[TMP_MAP >> 22] = page_fmt(space, PF_PRES | PF_RW);
 	cpu_flush_tlb_full();
 }
 
@@ -118,8 +118,8 @@ void space_free(space_t space) {
 	extbl = (void*) TMP_MAP;
 	exmap = (void*) (TMP_MAP + 0x3FF000);
 
-	for (i = 0; i < PGE_MAP / SEGSZ; i++) {
-		if ((exmap[i] & PF_PRES) && !(exmap[i] & SEG_LINK)) {
+	for (i = 0; i < KSPACE / SEGSZ; i++) {
+		if (exmap[i] & PF_PRES) {
 			for (j = 0; j < 1024; j++) {
 				if (extbl[i * 1024 + j] & PF_PRES) {
 					frame_free(page_ufmt(extbl[i * 1024 + j]));

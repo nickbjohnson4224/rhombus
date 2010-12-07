@@ -77,12 +77,7 @@ void page_extouch(uintptr_t page) {
 	}
 
 	exmap[page >> 22]  = frame_new() | PF_PRES | PF_RW | PF_USER;
-	exmap[page >> 22] |= SEG_USED | SEG_ALLC;
 
-	if (page > KSPACE) {
-		exmap[page >> 22] |= SEG_LINK;
-	}
-	
 	cpu_flush_tlb_part((uint32_t) &extbl[page >> 12]);
 
 	memclr(&extbl[page >> 12], PAGESZ);
@@ -133,13 +128,7 @@ void page_touch(uintptr_t page) {
 	}
 
 	cmap[page >> 22]  = frame_new() | PF_PRES | PF_RW | PF_USER;
-	cmap[page >> 22] |= SEG_USED | SEG_ALLC;
 
-	if (page > KSPACE) {
-		cmap[page >> 22] |= SEG_LINK;
-	}
-	
-	
 	cpu_flush_tlb_part((uintptr_t) &ctbl[page >> 12]);
 
 	memclr(&ctbl[page >> 12], PAGESZ);

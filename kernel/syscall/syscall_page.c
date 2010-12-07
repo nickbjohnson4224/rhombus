@@ -55,8 +55,9 @@
  *
  * PAGE_SELF - 4
  *     Map the virtual memory region from <offset> to <offset> + <count> *
- *     PAGESZ to the requested virtual memory region. This function is not yet
- *     implemented.
+ *     PAGESZ to the requested virtual memory region. This function can be
+ *     used to make shared memory regions: make a copy of a region, then send
+ *     it as the packet of a message.
  *
  * PAGE_PROT - 5
  *     Change the permissions on the memory region from <offset> to <offset> +
@@ -159,7 +160,7 @@ struct thread *syscall_page(struct thread *image) {
 			}
 			
 			/* map frame from packet */
-			page_set(address + i * PAGESZ, page_fmt(image->msg->frame[i], perm));
+			page_set(address + i * PAGESZ, page_fmt(image->msg->frame[i], perm | PF_LOCK));
 		}
 
 		/* free any unused packet contents */
@@ -190,6 +191,59 @@ struct thread *syscall_page(struct thread *image) {
 			}
 
 			page_set(address + i, page_fmt(offset + i, perm));
+		}
+
+		break;
+	case 4: /* PAGE_SELF */
+
+		/* check for alignment errors */
+		if (offset & 0xFFF) {
+			image->eax = 1;
+			return image;
+		}
+
+		/* check bounds of region */
+		if (offset >= KSPACE || offset + (count * PAGESZ) >= KSPACE) {
+			image->eax = 1;
+			return image;
+		}
+
+		/* copy frames */
+		for (i = 0; i < count; i++) {
+			
+			/* skip if source not present */
+			if ((page_get(offset + i * PAGESZ) & PF_PRES) == 0) {
+				continue;
+			}
+
+			/* free encumbering frames */
+			if (page_get(address + i * PAGESZ)) {
+				frame_free(page_ufmt(page_get(address + i * PAGESZ)));
+			}
+
+			/* copy frame and increment reference count */
+			page_set(address + i * PAGESZ, page_get(offset + i * PAGESZ));
+			frame_ref(page_get(offset + i * PAGESZ));
+		}
+
+		break;
+	case 5: /* PAGE_PROT */
+		
+		/* set permissions on frames */
+		for (i = address; i < address + count * PAGESZ; i += PAGESZ) {
+			
+			/* skip empty frames */
+			if ((page_get(i) & PF_PRES) == 0) {
+				continue;
+			}
+
+			/* skip locked frames */
+			if (page_get(i) & PF_LOCK) {
+				continue;
+			}
+
+			/* set new permissions */
+			page_set(i, page_fmt(page_get(i), perm));
 		}
 
 		break;

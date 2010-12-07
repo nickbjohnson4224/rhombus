@@ -24,18 +24,6 @@
 
 /* page flags ***************************************************************/
 
-/* MMAP flags */
-#define MMAP_CMASK	0x0BB /* Capability mask */
-
-#define MMAP_READ	0x001
-#define MMAP_WRITE	0x002
-#define MMAP_EXEC	0x004
-#define MMAP_FREE	0x008
-#define MMAP_FRAME	0x010
-#define MMAP_PHYS	0x020
-#define MMAP_MOVE	0x040
-#define MMAP_LEAVE  0x080
-
 /* Normal page flags */
 #define PF_PRES 0x1		/* Is present */
 #define PF_RW   0x2		/* Is writeable */
@@ -44,8 +32,9 @@
 #define PF_DISC 0x10	/* Cache disabled */
 #define PF_DIRT 0x20	/* Is dirty */
 #define PF_ACCS 0x40	/* Has been accessed */
+#define PF_LOCK 0x200	/* Permissions locked */
 
-#define PF_MASK 0x0E7F	/* Page flags that can be used */
+#define PF_MASK 0x027F	/* Page flags that can be used */
 
 /* frame allocator **********************************************************/
 
@@ -74,12 +63,6 @@ void   mem_free (uintptr_t base, uintptr_t size);
 /* address space segments ***************************************************/
 
 #define SEGSZ 0x400000
-
-#define SEG_HIGH 0x001 /* Segment is as high as possible */
-
-#define SEG_LINK 0x200 /* Segment is linked when cloning */
-#define SEG_USED 0x400 /* Segment is allocated and in use */
-#define SEG_ALLC 0x800 /* Segment allocated by segment_alloc or page_touch */
 
 /* page operations **********************************************************/
 

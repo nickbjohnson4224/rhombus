@@ -142,15 +142,14 @@ void frame_free(frame_t frame) {
  */
 
 frame_t frame_new(void) {
-	extern uint32_t __end;
-	static uint32_t oom_pool = BOOT_POOL;
+	static uint32_t oom_pool = 0x80000;
 	struct frame_struct *fs;
 
 	if (out_of_memory) {
 		/* out of memory, allocate from OOM pool */
 		oom_pool -= PAGESZ;
 
-		if (oom_pool + KSPACE < __end) {
+		if (oom_pool == 0) {
 			/* out of emergency memory: panic */
 			debug_panic("out of memory");
 		}
@@ -192,7 +191,7 @@ frame_t frame_new(void) {
  * frame_add
  *
  * Add a new frame to the frame allocator (used only during init). Frames
- * for the lower 4 MB will be ignored. 
+ * for the kernel and below are ignored. 
  *
  * Note: This function uses the kernel heap, even though the frame allocator
  * is not set up when it is called. The boot pool hack in frame_new takes
