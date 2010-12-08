@@ -1,20 +1,47 @@
-Urgent:
+For 0.7 Alpha: (due 19 Dec 2010)
 
 - userspace exec
 - shared libraries
-
-Less Urgent:
-
+- shared library manager
 - password manager
-- device manager
-- write proper vga/tty drivers
+- daemon control
+
+For 0.8 Alpha: (due 31 Dec 2011)
+
 - finish libc math functions
-- finish libc stdio functions (printf/scanf)
+- finish printf/scanf
+- group manager
+- proper terminal driver
+- foreground/background processes?
+- signals from terminal (esp. ctrl-C)
 
-Would Like:
+For 0.9 Alpha: (due 15 Jan 2011)
 
-- fix up ATA driver
+- drivers as shared libraries?
+- device manager (PCI)
+- ATA/ATAPI driver
+- filesystem drivers (iso9660, ext2)
+
+For 1.0 Beta: (due 30 Jan 2011)
+
+- clean up as much as possible
+- full libc documentation
+- full kernel documentation
+- driver writing manual
+- user manual
+
+For 1.1 Beta:
+
+- networking stack
+- graphics stack
+- text editor
+- installer
+
+For later:
+
 - port UDI
-- interface manager
-- graphics control language
 - kernel SMP
+- ports to other architectures
+- C compiler
+- C++ support
+- LLVM integration
