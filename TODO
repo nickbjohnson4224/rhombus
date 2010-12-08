@@ -1,7 +1,7 @@
 Urgent:
 
-- proper kernel frame allocator
-- graceful out of memory behavior
+- userspace exec
+- shared libraries
 
 Less Urgent:
 
@@ -14,9 +14,6 @@ Less Urgent:
 Would Like:
 
 - fix up ATA driver
-- userspace exec
-- shared memory
-- shared libraries
 - port UDI
 - interface manager
 - graphics control language
