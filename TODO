@@ -1,8 +1,9 @@
 For 0.7 Alpha: (due 19 Dec 2010)
 
-- userspace exec
-- shared libraries
+- CoW and link page flags
 - shared library manager
+- userspace exec
+- dynamic linker
 - password manager
 - daemon control
 
