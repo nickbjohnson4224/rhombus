@@ -24,7 +24,6 @@
 
 /* page flags ***************************************************************/
 
-/* Normal page flags */
 #define PF_PRES 0x1		/* Is present */
 #define PF_RW   0x2		/* Is writeable */
 #define PF_USER 0x4		/* Is user-mode */
@@ -33,8 +32,10 @@
 #define PF_DIRT 0x20	/* Is dirty */
 #define PF_ACCS 0x40	/* Has been accessed */
 #define PF_LOCK 0x200	/* Permissions locked */
+#define PF_COW  0x400   /* Copy on write */
+#define PF_LINK 0x800   /* Link, don't copy (on fork) */
 
-#define PF_MASK 0x027F	/* Page flags that can be used */
+#define PF_MASK 0x0E7F	/* Page flags that can be used */
 
 /* frame allocator **********************************************************/
 
