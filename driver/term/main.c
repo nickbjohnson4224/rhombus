@@ -88,6 +88,7 @@ struct driver term_driver = {
 	term_write,
 	NULL,
 	NULL,
+	NULL,
 
 	NULL,
 };

@@ -125,6 +125,7 @@ struct driver tmpfs_driver = {
 	tmpfs_write,
 	tmpfs_reset,
 	NULL,
+	NULL,
 
 	NULL,
 };

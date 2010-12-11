@@ -14,26 +14,30 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <natio.h>
-#include <string.h>
+#include <errno.h>
 
 int main(int argc, char **argv) {
-	char *name, list[1000];
+	char *name, *path, list[1000];
 	size_t i, l = 0;
 	uint64_t dir;
 
 	if (argc == 1) {
-		dir = fs_find(0, getenv("PWD"));
+		path = (char*) getenv("PWD");
 	}
 	else {
-		dir = fs_find(0, path_simplify(argv[1]));
+		path = argv[1];
 	}
 	
+	dir = fs_find(0, path);
+	
 	if (!dir) {
-		printf("%s: no such directory\n", getenv("PWD"));
-		return EXIT_FAILURE;
+		fprintf(stderr, "%s: ", path_simplify(path));
+		perror(NULL);
+		abort();
 	}
 
 	list[0] = '\0';
@@ -54,6 +58,12 @@ int main(int argc, char **argv) {
 			free(name);
 		}
 		else {
+			if (errno == ENOTDIR) {
+				fprintf(stderr, "%s: ", path);
+				perror(NULL);
+				abort();
+			}
+
 			printf("%s", list);
 			if (l) printf("\n");
 			return EXIT_SUCCESS;

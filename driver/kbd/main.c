@@ -85,6 +85,7 @@ struct driver kbd_driver = {
 	NULL,
 	NULL,
 	NULL,
+	NULL,
 
 	kbd_irq,
 };

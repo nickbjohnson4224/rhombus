@@ -60,24 +60,28 @@ uint64_t daemon_start(void *image, size_t image_size, char const **argv) {
 int main() {
 	struct tar_file *boot_image, *file;
 	char const **argv;
-	uint64_t temp, temp1;
+	uint64_t temp, temp1, temp2;
 
-	argv = malloc(sizeof(char*) * 3);
+	argv = malloc(sizeof(char*) * 4);
 
 	/* Boot Image */
 	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);
 
-	/* Initial Root Filesystem / Device Filesystem (tmpfs) */
+	/* Initial Root Filesystem / Device Filesystem / System Filesystem (tmpfs) */
 	argv[0] = "tmpfs";
 	argv[1] = NULL;
-	if (!(file = tar_find(boot_image, (char*) "drv/tmpfs"))) panic("no tmpfs found");
+	if (!(file = tar_find(boot_image, (char*) "sbin/tmpfs"))) panic("no tmpfs found");
 	fs_root = daemon_start(file->start, file->size, argv);
 	fs_cons(fs_find(0, "/"), "dev", FOBJ_DIR);
+	fs_cons(fs_find(0, "/"), "sys", FOBJ_DIR);
+
+	/* Init control file */
+	fs_link(fs_cons(fs_find(0, "/sys"), "init", FOBJ_DIR), ((uint64_t) getpid() << 32) + 1);
 
 	/* Terminal Driver */
 	argv[0] = "term";
 	argv[1] = NULL;
-	if (!(file = tar_find(boot_image, (char*) "drv/term"))) panic("no term found");
+	if (!(file = tar_find(boot_image, (char*) "sbin/term"))) panic("no term found");
 	temp = daemon_start(file->start, file->size, argv); 
 	stderr = stdout = fdopen(temp, "w");
 	printf(splash);
@@ -93,29 +97,39 @@ int main() {
 	argv[0] = "tarfs";
 	argv[1] = "/dev/initrd";
 	argv[2] = NULL;
-	if (!(file = tar_find(boot_image, (char*) "drv/tarfs"))) panic("no tarfs found");
+	if (!(file = tar_find(boot_image, (char*) "sbin/tarfs"))) panic("no tarfs found");
 	temp = daemon_start(file->start, file->size, argv);
 	temp1 = fs_find(0, "/dev");
+	temp2 = fs_find(0, "/sys");
 	fs_root = temp;
 	fs_link(fs_find(0, "/dev"), temp1);
+	fs_link(fs_find(0, "/sys"), temp2);
+
+	/* Shared object daemon (sod) */
+	argv[0] = "sod";
+	argv[1] = "/lib";
+	argv[2] = NULL;
+	if (!(file = tar_find(boot_image, (char*) "sbin/sod"))) panic("no sod found");
+	temp = daemon_start(file->start, file->size, argv);
+	fs_link(fs_cons(fs_find(0, "/sys"), "lib", FOBJ_DIR), temp);
 
 	/* Temporary filesystem */
 	argv[0] = "tmpfs";
 	argv[1] = NULL;	
-	if (!(file = tar_find(boot_image, (char*) "drv/tmpfs"))) panic("no tmpfs found");
+	if (!(file = tar_find(boot_image, (char*) "sbin/tmpfs"))) panic("no tmpfs found");
 	temp = daemon_start(file->start, file->size, argv);
 	fs_link(fs_find(0, "/tmp"), temp);
 
 	/* Keyboard Driver */
 	argv[0] = "kbd";
-	if (!(file = tar_find(boot_image, (char*) "drv/kbd"))) panic("no kbd found");
+	if (!(file = tar_find(boot_image, (char*) "sbin/kbd"))) panic("no kbd found");
 	temp = daemon_start(file->start, file->size, argv);
 	fs_link(fs_cons(fs_find(0, "/dev"), "kbd", FOBJ_DIR), temp);
 	stdin = fdopen(temp, "r");
 
 	/* Time Driver */
 	argv[0] = "time";
-	if (!(file = tar_find(boot_image, (char*) "drv/time"))) panic("no time found");
+	if (!(file = tar_find(boot_image, (char*) "sbin/time"))) panic("no time found");
 	temp = daemon_start(file->start, file->size, argv);
 	fs_link(fs_cons(fs_find(0, "/dev"), "time", FOBJ_DIR), temp);
 

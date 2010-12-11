@@ -71,6 +71,7 @@ struct driver initrd_driver = {
 	NULL,
 	NULL,
 	NULL,
+	NULL,
 
 	NULL,
 };

@@ -29,11 +29,16 @@
 
 uint64_t fs_find(uint64_t root, const char *path) {
 	struct fs_cmd command;
+	char *path_s;
+
+	path_s = path_simplify(path);
 
 	command.op = FS_FIND;
 	command.v0 = 0;
 	command.v1 = 0;
-	strlcpy(command.s0, path, 4000);
+	strlcpy(command.s0, path_s, 4000);
+
+	free(path_s);
 	
 	if (!fs_send(root, &command)) {
 		errno = EBADMSG;

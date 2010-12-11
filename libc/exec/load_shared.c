@@ -14,35 +14,31 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef PAGE_H
-#define PAGE_H
+#include <string.h>
+#include <stdlib.h>
+#include <natio.h>
+#include <exec.h>
+#include <page.h>
 
-#include <arch.h>
-#include <abi.h>
+/*****************************************************************************
+ * load_shared
+ *
+ * Load a shared library image in read-only shared memory from the shared
+ * object daemon.
+ */
 
-#define PROT_NONE 	0
-#define PROT_READ 	1
-#define PROT_WRITE 	2
-#define PROT_EXEC 	4
-#define PROT_LOCK	8
-#define PROT_LINK	16
+void *load_shared(const char *soname) {
+	uint64_t fd;
+	char *path;
 
-#define PAGE_NULL	0
-#define PAGE_ANON	1
-#define PAGE_PACK	2
-#define PAGE_PHYS	3
-#define PAGE_SELF	4
-#define PAGE_PROT	5
+	path = strvcat("/sys/lib/", soname, NULL);
+	fd = fs_find(0, path);
+	free(path);
 
-int page(void *addr, size_t length, int prot, int source, uintptr_t off);
-
-int page_free(void *addr, size_t length);
-int page_anon(void *addr, size_t length, int prot);
-int page_pack(void *addr, size_t length, int prot);
-int page_phys(void *addr, size_t length, int prot, uintptr_t base);
-int page_self(void *addrs, void *addrd, size_t length);
-int page_prot(void *addr, size_t length, int prot);
-
-uintptr_t phys(void *addr);
-
-#endif/*PAGE_H*/
+	if (!fd) {
+		return NULL;
+	}
+	else {
+		return mmap(fd, fs_size(fd), PROT_READ | PROT_EXEC, 0);
+	}
+}

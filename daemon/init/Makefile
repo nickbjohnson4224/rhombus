@@ -4,7 +4,7 @@ SOURCES += $(BUILDDIR)/lib/c0.o
 SUBDIR	:= daemon/init
 TARGET	:= init
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -lc -T$(BUILDDIR)/inc/link.ld
+LDFLAGS += -lc
 ASFLAGS := -felf
 
 all: $(TARGET)
@@ -12,9 +12,8 @@ all: $(TARGET)
 $(TARGET): $(SOURCES)
 	@ echo " LD	" $(SUBDIR)/$(TARGET)
 	@ $(LD) -o $(TARGET) $(SOURCES) $(LDFLAGS)
-	@ echo " MV	" $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/drv
-	@ mkdir -p $(BUILDDIR)/drv
-	@ mv $(TARGET) $(BUILDDIR)/drv
+	@ echo " MV	" $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/sbin
+	@ mv $(TARGET) $(BUILDDIR)/sbin
 
 %.o: %.s
 	echo " AS	" $(SUBDIR)/$<

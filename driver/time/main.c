@@ -67,6 +67,7 @@ struct driver time_driver = {
 	NULL,
 	NULL,
 	NULL,
+	NULL,
 
 	NULL,
 };

@@ -11,9 +11,8 @@ all: $(TARGET)
 $(TARGET): $(SOURCES)
 	echo " LD	" $(SUBDIR)/$(TARGET)
 	@ $(LD) -o $(TARGET) $(SOURCES) $(LDFLAGS)
-	echo " MV	" $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/bin
-	@ mkdir -p $(BUILDDIR)/bin
-	@ mv $(TARGET) $(BUILDDIR)/bin
+	echo " MV	" $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/sbin
+	@ mv $(TARGET) $(BUILDDIR)/sbin
 
 %.o: %.s
 	@ echo " PP	" $(SUBDIR)/$<

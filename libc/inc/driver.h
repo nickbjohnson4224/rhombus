@@ -89,6 +89,7 @@ void read_wrapper (struct msg *msg);
 void write_wrapper(struct msg *msg);
 void sync_wrapper (struct msg *msg);
 void reset_wrapper(struct msg *msg);
+void mmap_wrapper (struct msg *msg);
 
 void find_wrapper(struct fs_cmd *cmd, uint32_t inode);
 void lfnd_wrapper(struct fs_cmd *cmd, uint32_t inode);
@@ -121,6 +122,7 @@ extern struct driver {
 	size_t   (*write)(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset);
 	int      (*reset)(struct fs_obj *file);
 	int      (*sync) (struct fs_obj *file);
+	void *   (*mmap) (struct fs_obj *file, size_t size, uint64_t offset, int prot);
 
 	/* irq handler */
 	void (*irq)(void);

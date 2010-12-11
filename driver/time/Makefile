@@ -17,8 +17,8 @@ all: $(SOURCES) $(TARGET)
 $(TARGET): $(SOURCES)
 	@ echo " LD	" $(SUBDIR)/$@
 	@ $(LD) -o $(TARGET) $(SOURCES) $(LDFLAGS)
-	@ echo " MV	" $(SUBDIR)/$@ "->" $(BUILDDIR)/drv
-	@ mv $@ $(BUILDDIR)/drv
+	@ echo " MV	" $(SUBDIR)/$@ "->" $(BUILDDIR)/sbin
+	@ mv $@ $(BUILDDIR)/sbin
 
 clean:
 	@ rm $(SOURCES) $(TARGET)

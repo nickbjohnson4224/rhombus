@@ -188,6 +188,7 @@ struct driver tarfs_driver = {
 	NULL,
 	NULL,
 	NULL,
+	NULL,
 
 	NULL,
 };

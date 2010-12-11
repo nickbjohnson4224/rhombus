@@ -9,5 +9,5 @@
 /run/boot.tar
 /boot
 /bin
-/drv
+/sbin
 /tools/*

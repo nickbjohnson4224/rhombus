@@ -38,6 +38,17 @@ size_t write(uint64_t fd, void *buf, size_t size, uint64_t offset);
 int    sync (uint64_t fd);
 int    reset(uint64_t fd);
 
+/* memory mapped I/O routines **********************************************/
+
+struct mmap_cmd {
+	uint32_t inode;
+	size_t   length;
+	uint64_t offset;
+	uint32_t prot;
+};
+
+void *mmap(uint64_t fd, size_t length, int prot, uint64_t offset);
+
 /* filesystem operations ***************************************************/
 
 extern uint64_t fs_root;

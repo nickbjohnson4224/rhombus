@@ -23,7 +23,7 @@ CFLAGS  += -mno-mmx
 CFLAGS	+= -O3 -fomit-frame-pointer
 CFLAGS	+= -ffreestanding -I$(BUILDDIR)/inc
 CFLAGS	+= -fPIC
-LDFLAGS := -L$(BUILDDIR)/lib -static
+LDFLAGS := -L$(BUILDDIR)/lib -static -T$(BUILDDIR)/inc/link.ld
 ARFLAGS := rcs
 PPFLAGS := -x assembler-with-cpp -I$(BUILDDIR)/inc
 
@@ -60,10 +60,11 @@ image:	all
 	@ - mkdir boot/dev
 	@ - mkdir boot/tmp
 	@ - mkdir boot/lib
-	@ - mkdir boot/drv
+	@ - mkdir boot/sbin
+	@ - mkdir boot/sys
 	@ cp bin/* boot/bin
 	@ cp lib/* boot/lib
-	@ cp drv/* boot/drv
+	@ cp sbin/* boot/sbin
 
 	@ export BUILDDIR
 	@ sudo run/make_image.sh
@@ -76,4 +77,4 @@ makedirs:
 	@ mkdir -p $(BUILDDIR)/lib
 	@ mkdir -p $(BUILDDIR)/inc
 	@ mkdir -p $(BUILDDIR)/bin
-	@ mkdir -p $(BUILDDIR)/drv
+	@ mkdir -p $(BUILDDIR)/sbin

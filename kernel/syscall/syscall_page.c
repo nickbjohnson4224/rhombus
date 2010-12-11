@@ -175,7 +175,12 @@ struct thread *syscall_page(struct thread *image) {
 			}
 			
 			/* map frame from packet */
-			page_set(address + i * PAGESZ, page_fmt(image->msg->frame[i], perm | PF_LOCK));
+			if (image->msg->frame[i] & PF_LOCK) {
+				page_set(address + i * PAGESZ, image->msg->frame[i]);
+			}
+			else {
+				page_set(address + i * PAGESZ, page_fmt(image->msg->frame[i], perm | PF_LOCK));
+			}
 		}
 
 		/* free any unused packet contents */

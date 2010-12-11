@@ -19,6 +19,10 @@
 
 #include <stdint.h>
 
+/* shared object daemon ****************************************************/
+
+void *load_shared(const char *soname);
+
 /* execution from exectuable image *****************************************/
 
 int execiv(uint8_t *image, size_t size, char const **argv);

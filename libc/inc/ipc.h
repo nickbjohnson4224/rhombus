@@ -46,6 +46,8 @@
 #define PORT_SYNC	19
 #define PORT_RESET	20
 #define PORT_FS		21
+#define PORT_MMAP	22
+#define PORT_EVENT	23
 
 void _on_event(void);
 

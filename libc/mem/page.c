@@ -49,3 +49,11 @@ int page_pack(void *addr, size_t length, int prot) {
 int page_phys(void *addr, size_t length, int prot, uintptr_t base) {
 	return page(addr, length, prot, PAGE_PHYS, base);
 }
+
+int page_self(void *addrs, void *addrd, size_t length) {
+	return page(addrd, length, 0, PAGE_SELF, (uintptr_t) addrs);
+}
+
+int page_prot(void *addr, size_t length, int prot) {
+	return page(addr, length, prot, PAGE_PROT, 0);
+}
