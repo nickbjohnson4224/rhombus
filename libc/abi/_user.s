@@ -14,9 +14,12 @@
 
 [bits 32]
 
-global _user
+section .text
+
+global _user:function _user.end-_user
 
 _user:
 	mov ecx, [esp+4]
 	int 0x4E
 	ret
+.end:

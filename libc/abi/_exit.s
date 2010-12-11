@@ -14,8 +14,11 @@
 
 [bits 32]
 
-global _exit
+section .text
+
+global _exit:function _exit.end-_exit
 
 _exit:
 	mov eax, [esp+4]
 	int 0x49
+.end:

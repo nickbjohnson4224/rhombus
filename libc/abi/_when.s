@@ -14,7 +14,9 @@
 
 [bits 32]
 
-global _when
+section .text
+
+global _when:function _when.end-_when
 
 _when:
 
@@ -22,3 +24,4 @@ _when:
 	int 0x42
 
 	ret
+.end:

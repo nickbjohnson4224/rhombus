@@ -14,9 +14,12 @@
 
 [bits 32]
 
-global _time
+section .text
+
+global _time:function _time.end-_time
 
 _time:
 	mov ecx, [esp+4]
 	int 0x4D
 	ret
+.end:

@@ -14,9 +14,12 @@
 
 [bits 32]
 
-global _rirq
+section .text
+
+global _rirq:function _rirq.end-_rirq
 
 _rirq:
 	mov ecx, [esp+4]
 	int 0x43
 	ret
+.end:

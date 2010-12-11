@@ -14,8 +14,11 @@
 
 [bits 32]
 
-global _exec
+section .text
+
+global _exec:function _exec.end-_exec
 
 _exec:
 	int 0x4B
 	ret
+.end:

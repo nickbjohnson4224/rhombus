@@ -12,7 +12,11 @@
 ; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-global _send
+[bits 32]
+
+section .text
+
+global _send:function _send.end-_send
 
 _send:
 	push ebx
@@ -28,3 +32,4 @@ _send:
 	pop esi
 	pop ebx
 	ret
+.end:

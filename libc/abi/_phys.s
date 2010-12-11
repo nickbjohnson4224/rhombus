@@ -14,9 +14,12 @@
 
 [bits 32]
 
-global _phys
+section .text
+
+global _phys:function _phys.end-_phys
 
 _phys:
 	mov ecx, [esp+4]
 	int 0x47
 	ret
+.end:

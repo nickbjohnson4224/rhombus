@@ -14,10 +14,13 @@
 
 [bits 32]
 
-global _auth
+section .text
+
+global _auth:function _auth.end-_auth
 
 _auth:
 	mov ecx, [esp+4]
 	mov edx, [esp+8]
 	int 0x4F
 	ret
+.end:

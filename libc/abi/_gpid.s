@@ -14,9 +14,12 @@
 
 [bits 32]
 
-global _gpid
+section .text
+
+global _gpid:function _gpid.end-_gpid
 
 _gpid:
 	mov ecx, [esp+4]
 	int 0x4C
 	ret
+.end:

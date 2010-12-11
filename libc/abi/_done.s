@@ -14,7 +14,10 @@
 
 [bits 32]
 
-global _done
+section .text
+
+global _done:function _done.end-_done
 
 _done:
 	int 0x41
+.end:

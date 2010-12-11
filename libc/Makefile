@@ -4,26 +4,36 @@ CNAUGHT := c0.o
 HEADERS := $(shell find . -name "*.h")
 HEADERS += inc/link.ld
 SUBDIR	:= libc
-TARGET	:= libc.a
+STATIC	:= libc.a
+SHARED	:= libc.so
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -r
 ASFLAGS := -felf
 
 .PHONY: $(HEADERS) clean
 
-all: $(TARGET)
+all: $(STATIC) $(CNAUGHT) $(SHARED)
 
 $(HEADERS):
 	@ echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/inc
 	@ cp $@ $(BUILDDIR)/inc
 
-$(TARGET): $(HEADERS) $(SOURCES) $(CNAUGHT)
-	@ echo " AR	" $(SUBDIR)/$(TARGET)
-	@ $(AR) $(ARFLAGS) $(TARGET) $(shell find . -name "*.o")
-	@ echo " CP	" $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/lib
-	@ mkdir -p $(BUILDDIR)/inc
-	@ cp $(TARGET) $(BUILDDIR)/lib
+$(STATIC): $(HEADERS) $(SOURCES)
+	@ echo " AR	" $(SUBDIR)/$(STATIC)
+	@ $(AR) $(ARFLAGS) $(STATIC) $(SOURCES)
+	@ echo " CP	" $(SUBDIR)/$(STATIC) "->" $(BUILDDIR)/lib
+	@ cp $(STATIC) $(BUILDDIR)/lib
+
+$(CNAUGHT): $(patsubst %.o,%.s,$(CNAUGHT))
+	@ echo " AS	" $(SUBDIR)/$<
+	@ $(AS) $(ASFLAGS) $<
+	@ echo " CP	" $(SUBDIR)/$(CNAUGHT) "->" $(BUILDDIR)/lib
 	@ cp $(CNAUGHT) $(BUILDDIR)/lib
+
+$(SHARED): $(HEADERS) $(SOURCES) $(CNAUGHT)
+	@ echo " LD	" $(SUBDIR)/$(SHARED)
+	@ $(LD) $(LDFLAGS) -shared $(SOURCES) -o $(SHARED)
+	@ echo " CP	" $(SUBDIR)/$(SHARED) "->" $(BUILDDIR)/lib
+	@ cp $(SHARED) $(BUILDDIR)/lib
 
 %.o: %.s
 	@ echo " AS	" $(SUBDIR)/$<

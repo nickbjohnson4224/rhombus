@@ -14,8 +14,11 @@
 
 [bits 32]
 
-global _fork
+section .text
+
+global _fork:function _fork.end-_fork
 
 _fork:
 	int 0x48
 	ret
+.end:

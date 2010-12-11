@@ -1,5 +1,6 @@
 SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
 SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
+SOURCES += $(BUILDDIR)/lib/c0.o
 SUBDIR	:= daemon/init
 TARGET	:= init
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc

@@ -22,7 +22,8 @@ CFLAGS	+= -Wno-unused-parameter -Wno-unused-function
 CFLAGS  += -mno-mmx
 CFLAGS	+= -O3 -fomit-frame-pointer
 CFLAGS	+= -ffreestanding -I$(BUILDDIR)/inc
-LDFLAGS := -L$(BUILDDIR)/lib
+CFLAGS	+= -fPIC
+LDFLAGS := -L$(BUILDDIR)/lib -static
 ARFLAGS := rcs
 PPFLAGS := -x assembler-with-cpp -I$(BUILDDIR)/inc
 

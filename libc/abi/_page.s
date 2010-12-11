@@ -14,7 +14,9 @@
 
 [bits 32]
 
-global _page
+section .text
+
+global _page:function _page.end-_page
 
 _page:
 	push ebx
@@ -32,3 +34,4 @@ _page:
 	pop edi
 	pop ebx
 	ret
+.end:
