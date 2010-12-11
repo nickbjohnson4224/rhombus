@@ -15,6 +15,7 @@
  */
 
 #include <stdbool.h>
+#include <string.h>
 #include <stdint.h>
 #include <space.h>
 #include <debug.h>
@@ -242,4 +243,41 @@ void frame_ref(frame_t frame) {
 	}
 
 	fs->refc++;
+}
+
+/*****************************************************************************
+ * frame_refc
+ *
+ * Returns the reference count of frame <frame>.
+ */
+
+uint32_t frame_refc(frame_t frame) {
+	struct frame_struct *fs;
+
+	fs = frame_find(frame);
+
+	if (fs) {
+		return fs->refc;
+	}
+	else {
+		return 0;
+	}
+}
+
+/*****************************************************************************
+ * frame_copy
+ *
+ * Returns a new frame with the same permissions and contents as <frame>, but
+ * at a different physical address than <frame>.
+ */
+
+frame_t frame_copy(frame_t frame) {
+	frame_t frame1;
+
+	frame1 = page_fmt(frame_new(), frame);
+	page_set(TMP_DST, page_fmt(frame1, PF_PRES | PF_RW));
+	page_set(TMP_SRC, page_fmt(frame,  PF_PRES | PF_RW));
+	memcpy((void*) TMP_DST, (void*) TMP_SRC, PAGESZ);
+
+	return frame1;
 }

@@ -15,6 +15,7 @@
  */
 
 #include <interrupt.h>
+#include <string.h>
 #include <thread.h>
 #include <space.h>
 #include <debug.h>
@@ -57,7 +58,8 @@
  *     Map the virtual memory region from <offset> to <offset> + <count> *
  *     PAGESZ to the requested virtual memory region. This function can be
  *     used to make shared memory regions: make a copy of a region, then send
- *     it as the packet of a message.
+ *     it as the packet of a message. This function ignores <perm>, instead
+ *     using the permission bits of the source region.
  *
  * PAGE_PROT - 5
  *     Change the permissions on the memory region from <offset> to <offset> +
@@ -73,6 +75,16 @@
  *
  * PROT_EXEC  - 4
  *     Allow execution from the page.
+ *
+ * PROT_LOCK  - 8
+ *     Prevent permissions from being changed further. This is useful for
+ *     shared memory, to prevent the reciever from changing the permissions of
+ *     a granted memory region.
+ *
+ * PROT_LINK  - 16
+ *     Page is linked instead of copied during fork(), creating a shared 
+ *     memory region. This is used for shared libraries (and shared memory
+ *     in general) to prevent duplication of those shared resources.
  */
 
 struct thread *syscall_page(struct thread *image) {
@@ -108,7 +120,10 @@ struct thread *syscall_page(struct thread *image) {
 	}
 
 	/* change <perm> to real page flags */
-	perm = PF_USER | PF_PRES | ((perm & 2) ? PF_RW : 0);
+	perm = PF_USER | PF_PRES 
+		| ((perm & 2)  ? PF_RW   : 0) 
+		| ((perm & 8)  ? PF_LOCK : 0) 
+		| ((perm & 16) ? PF_LINK : 0);
 
 	switch (source) {
 	case 0: /* PAGE_NULL */

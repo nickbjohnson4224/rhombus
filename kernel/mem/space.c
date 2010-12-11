@@ -84,11 +84,13 @@ static void segment_clone(frame_t *extbl, frame_t *exmap, uintptr_t seg) {
 
 	for (i = seg / PAGESZ; i < (seg + SEGSZ) / PAGESZ; i++) {
 		if (ctbl[i] & PF_PRES) {
-			extbl[i] = frame_new() | (ctbl[i] & PF_MASK);
-			cpu_flush_tlb_full();
-			page_set(TMP_SRC, page_fmt( ctbl[i], PF_PRES | PF_RW));
-			page_set(TMP_DST, page_fmt(extbl[i], PF_PRES | PF_RW));
-			memcpy((void*) TMP_DST, (void*) TMP_SRC, PAGESZ);
+			if (ctbl[i] & PF_LINK) {
+				extbl[i] = ctbl[i];
+				cpu_flush_tlb_full();
+			}
+			else {
+				extbl[i] = frame_copy(ctbl[i]);
+			}
 		}
 	}
 }

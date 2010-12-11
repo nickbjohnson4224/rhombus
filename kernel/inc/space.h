@@ -41,10 +41,13 @@
 
 extern bool out_of_memory;
 
-void    frame_add (frame_t frame);
-frame_t frame_new (void);
-void    frame_ref (frame_t frame);
-void    frame_free(frame_t frame);
+void     frame_add (frame_t frame);
+frame_t  frame_new (void);
+void     frame_ref (frame_t frame);
+void     frame_free(frame_t frame);
+uint32_t frame_refc(frame_t frame);
+
+frame_t  frame_copy(frame_t frame);
 
 /* address spaces ***********************************************************/
 

@@ -1,6 +1,6 @@
 For 0.7 Alpha: (due 19 Dec 2010)
 
-- CoW and link page flags
++ "link" page flag
 - shared library manager
 - userspace exec
 - dynamic linker
