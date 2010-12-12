@@ -46,11 +46,13 @@ static void reject(struct msg *msg) {
 
 void _init(bool is_init) {
 	extern int main(int argc, char **argv);
-	char **argv;
+	char **argv, *pack;
+	size_t length;
 	int argc;
 
 	_when((uintptr_t) _on_event);
 
+	/* unpack environment variables */
 	__loadenv();
 
 	/* setup standard streams */
@@ -59,22 +61,33 @@ void _init(bool is_init) {
 	stderr  = fdopen(fdload(2), "w");
 	fs_root = fdload(3);
 
+	/* set up signals */
 	__sig_init();
 
+	/* set up I/O handlers */
 	when(PORT_FS,	 reject);
 	when(PORT_SYNC,	 reject);
 	when(PORT_RESET, reject);
 	when(PORT_READ,  reject);
 	when(PORT_WRITE, reject);
+	when(PORT_MMAP,  reject);
 
-	argc = argc_unpack();
-	argv = argv_unpack();
-
-	if (argc) {
+	/* unpack argument list */
+	pack = __pack_load(PACK_KEY_ARG, &length);
+	if (pack) {
+		argv = loadarg(pack);
+		free(pack);
+		for (argc = 0; argv[argc]; argc++);
 		setenv("NAME", argv[0]);
+	}
+	else {
+		argv = NULL;
+		argc = 0;
+		setenv("NAME", "unknown");
 	}
 
 	__pack_reset();
 
+	/* execute main program */
 	exit(main(argc, argv));
 }

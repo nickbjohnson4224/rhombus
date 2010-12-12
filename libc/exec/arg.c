@@ -21,70 +21,59 @@
 #include <pack.h>
 
 /****************************************************************************
- * argv_pack
+ * packarg
  *
- * Copies an argument list to the dictionary in the namespace "arg:", for 
- * later retrieval.
+ * Convert the argument list <argv> into a contiguous page-aligned pack.
+ * This pack is backspace terminated.
  */
 
-void argv_pack(int argc, const char **argv) {
+char *packarg(const char **argv) {
+	size_t size, i;
+	char *pack, *top;
+	
+	size = 1;
+	for (i = 0; argv[i]; i++) {
+		size += strlen(argv[i]) + 1;
+	}
+
+	pack = aalloc(size, PAGESZ);
+
+	top = pack;
+	for (i = 0; argv[i]; i++) {
+		strcpy(top, argv[i]);
+		top += strlen(top) + 1;
+	}
+	top[0] = '\b';
+
+	return pack;
+}
+
+/****************************************************************************
+ * loadarg
+ *
+ * Convert the pack <pack> into an argument list.
+ */
+
+char **loadarg(char *pack) {
 	size_t i;
-
-	__pack_add(PACK_KEY_ARG | 0, &argc, sizeof(int));
-
-	for (i = 0; i < (size_t) argc; i++) {
-		__pack_add(PACK_KEY_ARG | (i + 1), argv[i], strlen(argv[i]) + 1);
-	}
-}
-
-/****************************************************************************
- * argc_unpack
- *
- * Returns the value of argc packed in the dictionary.
- */
-
-int argc_unpack(void) {
-	size_t length;
-	const int *value;
-
-	value = __pack_load(PACK_KEY_ARG, &length);
-
-	if (!value || length != sizeof(int)) {
-		return 0;
-	}
-	else {
-		return (*value);
-	}
-}
-
-/****************************************************************************
- * argv_unpack
- *
- * Returns the value of argv packed in the dictionary.
- */
-
-char **argv_unpack(void) {
-	int argc;
-	size_t i, length;
-	const char *value;
+	char *top;
 	char **argv;
 
-	argc = argc_unpack();
-	argv = malloc(sizeof(char*) * (argc + 1));
-
-	for (i = 0; i < (size_t) argc; i++) {
-		value = __pack_load(PACK_KEY_ARG | (i + 1), &length);
-
-		if (!value) {
+	argv = NULL;
+	top = pack;
+	for (i = 0;; i++) {
+		argv = realloc(argv, (i + 1) * sizeof(char*));
+		
+		if (top[0] == '\b') {
 			argv[i] = NULL;
+			break;
 		}
 		else {
-			argv[i] = malloc(strlen(value) + 1);
-			strcpy(argv[i], value);
+			argv[i] = strdup(top);
 		}
-	}
 
-	argv[i] = NULL;
+		top += strlen(top) + 1;
+	}
 
 	return argv;
 }

@@ -25,6 +25,10 @@ static bool _m_pack_list;
 void __pack_add(uint32_t key, const void *data, size_t size) {
 	struct pack_list *pack;
 
+	if (!data || !size) {
+		return;
+	}
+
 	pack = malloc(sizeof(struct pack_list));
 
 	pack->key = key;

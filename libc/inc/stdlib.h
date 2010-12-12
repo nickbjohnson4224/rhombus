@@ -72,6 +72,9 @@ uint32_t rand(void);
 
 const char *getenv (const char *name);
 int         setenv (const char *name, const char *value);
+char       *packenv(const char **envp);
+void        loadenv(const char *pack);
+
 void      __saveenv(void);
 void      __loadenv(void);
 

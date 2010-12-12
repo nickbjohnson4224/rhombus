@@ -112,6 +112,7 @@ int main() {
 	if (!(file = tar_find(boot_image, (char*) "sbin/sod"))) panic("no sod found");
 	temp = daemon_start(file->start, file->size, argv);
 	fs_link(fs_cons(fs_find(0, "/sys"), "lib", FOBJ_DIR), temp);
+	setenv("LDPATH", "/sys/lib");
 
 	/* Temporary filesystem */
 	argv[0] = "tmpfs";

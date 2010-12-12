@@ -21,30 +21,53 @@
 #include <page.h>
 
 /*****************************************************************************
- * load_shared
+ * load_exec
  *
- * Load a shared library image in read-only shared memory from the shared
- * object daemon. This function does searches through LDPATH if <soname> is
- * a relative path. Currently, only single-directory LDPATHs are supported.
+ * Load an executable image into memory. This function does searches through
+ * PATH if <name> is a relative path. Currently, only single-directory PATHs
+ * are supported. Returns a page-aligned pointer to the executable image on
+ * success, NULL on failure.
  */
 
-void *load_shared(const char *soname) {
+void *load_exec(const char *name) {
 	uint64_t fd;
+	uint64_t size;
 	char *path;
+	void *image;
 
-	if (soname[0] == '/') {
-		fd = fs_find(0, soname);
+	/* attempt to find requested file */
+	if (name[0] == '/') {
+		fd = fs_find(0, name);
 	}
 	else {
-		path = strvcat(getenv("LDPATH"), soname, NULL);
+		path = strvcat(getenv("PATH"), "/", name, NULL);
 		fd = fs_find(0, path);
 		free(path);
 	}
 
 	if (!fd) {
+		/* file not found */
 		return NULL;
 	}
 	else {
-		return mmap(fd, fs_size(fd), PROT_READ | PROT_EXEC, 0);
+		/* read whole file into buffer */
+		size = fs_size(fd);
+
+		if (!size) {
+			return NULL;
+		}
+
+		image = aalloc(size, PAGESZ);
+		
+		if (!image) {
+			return NULL;
+		}
+
+		if (read(fd, image, size, 0) != size) {
+			free(image);
+			return NULL;
+		}
+
+		return image;
 	}
 }

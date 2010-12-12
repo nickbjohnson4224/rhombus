@@ -90,7 +90,8 @@ int setenv(const char *name, const char *value) {
 		if (value) {
 			i = environ_size;
 			environ_size++;
-			environ = realloc(environ, sizeof(char*) * environ_size);
+			environ = realloc(environ, sizeof(char*) * (environ_size + 1));
+			environ[environ_size] = NULL;
 			
 			if (!environ) {
 				errno = ENOMEM;
@@ -111,6 +112,7 @@ int setenv(const char *name, const char *value) {
 		sprintf(new, "%s=%s", name, value);
 		*strchr(new, '=') = '\0';
 		environ[i] = new;
+		free(old);
 	}
 	else {
 		free(environ[i]);
@@ -123,23 +125,89 @@ int setenv(const char *name, const char *value) {
 }
 
 /****************************************************************************
+ * packenv
+ *
+ * Converts the environment variable vector <envp> into a flat environment
+ * variable vector. If <envp> is null, the current environment is packed
+ * instead. The returned pointer is page aligned.
+ *
+ * The format of the returned vector is this: each pair is separated by a
+ * null character, as well as the pairs from each other (parity is used to
+ * figure out what goes where); the entire vector is terminated by a single
+ * backspace character.
+ */
+
+char *packenv(const char **envp) {
+	char *pack, *top;
+	size_t i, size;
+
+	if (!envp) {
+		return NULL;
+	}
+
+	size = 1;
+	for (i = 0; envp[i]; i++) {
+		while (envp[i][0] == '\0') i++;
+		size += strlen(envp[i]) + 1;
+		size += strlen(&envp[i][strlen(envp[i]) + 1]) + 1;
+	}
+
+	pack = aalloc(size, PAGESZ);
+
+	top = pack;
+	for (i = 0; envp[i]; i++) {
+		while (envp[i][0] == '\0') i++;
+		strcpy(top, envp[i]);
+		top += strlen(top) + 1;
+		strcpy(top, &envp[i][strlen(envp[i]) + 1]);
+		top += strlen(top) + 1;
+	}
+	top[0] = '\b';
+
+	return pack;
+}
+
+/****************************************************************************
+ * loadenv
+ *
+ * Unpacks the flat environment variable vector <pack> into the current
+ * environment.
+ */
+
+void loadenv(const char *pack) {
+	const char *top_key, *top_val;
+
+	if (!pack) {
+		return;
+	}
+
+	top_key = pack;
+	while (1) {
+		if (top_key[0] == '\b') {
+			break;
+		}
+
+		top_val = &top_key[strlen(top_key) + 1];
+		setenv(top_key, top_val);
+		top_key = &top_val[strlen(top_val) + 1];
+	}
+}
+
+/****************************************************************************
  * __saveenv
  *
  * Packs all environment variables into exec-persistent space.
  */
 
 void __saveenv(void) {
-	size_t i, length;
+	char *pack;
 
-	mutex_spin(&m_environ);
+	pack = packenv((const char **) environ);
 
-	for (i = 0; i < environ_size; i++) {
-		length =  strlen(environ[i]) + 1;
-		length += strlen(&environ[i][length]) + 1;
-		__pack_add(PACK_KEY_ENV | i, environ[i], length);
+	if (pack) {
+		__pack_add(PACK_KEY_ENV, pack, msize(pack));
+		free(pack);
 	}
-
-	mutex_free(&m_environ);
 }
 
 /****************************************************************************
@@ -149,17 +217,12 @@ void __saveenv(void) {
  */
 
 void __loadenv(void) {
-	const char *value;
+	char *pack;
 	size_t length;
-	size_t i;
 
-	for (i = 0;; i++) {
-		value = __pack_load(PACK_KEY_ENV | i, &length);
+	pack = __pack_load(PACK_KEY_ENV, &length);
 
-		if (!value) {
-			break;
-		}
-
-		setenv(value, &value[strlen(value) + 1]);
+	if (pack) {
+		loadenv(pack);
 	}
 }

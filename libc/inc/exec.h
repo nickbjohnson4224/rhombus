@@ -19,29 +19,24 @@
 
 #include <stdint.h>
 
-/* shared object daemon ****************************************************/
+/* executable loading *******************************************************/
 
+void *load_exec  (const char *name);
 void *load_shared(const char *soname);
 
-/* execution from exectuable image *****************************************/
+/* execute ******************************************************************/
 
-int execiv(uint8_t *image, size_t size, char const **argv);
-int execi (uint8_t *image, size_t size);
+int execive(uint8_t *image, size_t size, char const **argv, char const **envp);
+int execiv (uint8_t *image, size_t size, char const **argv);
+int execi  (uint8_t *image, size_t size);
 
-/* execution from exectuable file ******************************************/
+int execve (const char *path, char const **argv, char const **envp);
+int execv  (const char *path, char const **argv);
+int exec   (const char *path);
 
-int execv (const char *path, char const **argv);
-int exec  (const char *path);
+/* things to save on exec ***************************************************/
 
-/* argument lists **********************************************************/
-
-void   argv_pack  (int argc, const char **argv);
-int    argc_unpack(void);
-char **argv_unpack(void);
-
-/* file descriptors ********************************************************/
-
-void file_pack  (void);
-void file_unpack(void);
+char  *packarg(const char **argv);
+char **loadarg(char *pack);
 
 #endif/*EXEC_H*/
