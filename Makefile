@@ -23,7 +23,7 @@ CFLAGS  += -mno-mmx
 #CFLAGS	+= -O3 -fomit-frame-pointer
 CFLAGS	+= -ffreestanding -I$(BUILDDIR)/inc
 CFLAGS	+= -fPIC
-LDFLAGS := -L$(BUILDDIR)/lib -static -T$(BUILDDIR)/inc/link.ld
+LDFLAGS := -L$(BUILDDIR)/lib -static -melf_i386 -T$(BUILDDIR)/inc/link.ld
 ARFLAGS := rcs
 PPFLAGS := -x assembler-with-cpp -I$(BUILDDIR)/inc
 
