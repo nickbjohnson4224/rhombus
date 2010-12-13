@@ -6,7 +6,7 @@ HEADERS += inc/link.ld
 SUBDIR	:= libc
 STATIC	:= libc.a
 SHARED	:= libc.so
-CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
+CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc -fPIC
 ASFLAGS := -felf
 
 .PHONY: $(HEADERS) clean

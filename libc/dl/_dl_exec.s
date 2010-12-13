@@ -16,8 +16,40 @@
 
 section .text
 
-global _start
-extern _init
+global _dl_exec:function _dl_exec.end-_dl_exec
+extern _dl_entry
+extern _dl_start
+extern _dl_end
+extern _page
 
-_start:
-	call _init ; libc initialization, runs main and exits
+_dl_exec:
+
+	; copy dynamic linker to 0xC0000000
+	mov eax, _dl_start
+	mov ecx, _dl_end
+	sub ecx, _dl_start
+	shr ecx, 12
+	inc ecx
+	
+	push eax
+	push dword 4
+	push dword 0
+	push ecx
+	push 0xC0000000
+	call _page
+	add  esp, 20
+
+	; load list pointer into EAX
+	mov eax, [esp+4]
+
+	; load entry pointer into ECX and relocate
+	mov ecx, _dl_entry
+	sub ecx, _dl_start
+	add ecx, 0xC0000000
+
+	push eax
+	call ecx
+	add  esp, 4
+
+	ret
+.end:

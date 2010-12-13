@@ -25,17 +25,6 @@ SECTIONS {
 		*(.pdata);
 	}
 
-	.idata ALIGN (0x1000) : AT(ADDR(.idata) - 0xF0000000) {
-		START_OF_INIT = .;
-		*(.idata)
-	}
-
-	.itext : AT(ADDR(.itext) - 0xF0000000) {
-		*(.itext)
-		. = ALIGN(0x1000);
-		END_OF_INIT = .;
-	}
-
 	.bss : AT(ADDR(.bss) - 0xF0000000) {
 		_sbss = .;
 		*(COMMON)

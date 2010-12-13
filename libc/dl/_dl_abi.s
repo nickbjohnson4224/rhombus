@@ -14,10 +14,30 @@
 
 [bits 32]
 
-section .text
+section .dltext
 
-global _start
-extern _init
+global _dl_page:function _dl_page.end-_dl_page
+global _dl_exit:function _dl_exit.end-_dl_exit
 
-_start:
-	call _init ; libc initialization, runs main and exits
+_dl_page:
+	push ebx
+	push edi
+	push esi
+
+	mov ebx, [esp+16]
+	mov ecx, [esp+20]
+	mov edx, [esp+24]
+	mov esi, [esp+28]
+	mov edi, [esp+32]
+	int 0x46
+
+	pop esi
+	pop edi
+	pop ebx
+	ret
+.end:
+
+_exit:
+	mov eax, [esp+4]
+	int 0x49
+.end:

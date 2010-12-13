@@ -14,34 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <interrupt.h>
-#include <space.h>
-#include <elf.h>
+#include <dl.h>
 
-/*****************************************************************************
- * syscall_exec (int 0x4b)
- * 
- * (no arguments)
- *
- * Executes the executable image at ESPACE. This image must be an ELF file.
- * This system call is going to be removed once userspace executable loading
- * is finished, so for now it is not secure and can be used to crash the
- * kernel. Returns zero and jumps to the loaded executable on success, returns
- * nonzero on failure.
- */
-
-struct thread *syscall_exec(struct thread *image) {
-
-	if (elf_check((void*) ESPACE)) {
-		image->eax = -1;
-		return image;
-	}
-
-	mem_free(0, SSPACE);
-
-	image->eip = elf_load((void*) ESPACE);
-	image->useresp = image->stack + SEGSZ;
-	image->proc->entry = 0;
-
-	return image;
+__attribute__ ((section (".dltext")))
+int _dl_entry(struct _dl_list *list) {
+	return 42;
 }

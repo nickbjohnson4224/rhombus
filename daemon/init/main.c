@@ -22,6 +22,7 @@
 #include <proc.h>
 #include <exec.h>
 #include <ipc.h>
+#include <dl.h>
 
 #include "inc/tar.h"
 #include "initrd.h"

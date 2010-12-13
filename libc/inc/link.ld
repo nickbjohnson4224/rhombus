@@ -3,21 +3,38 @@ ENTRY(_start)
 OUTPUT_FORMAT(elf32-i386)
 
 SECTIONS {
-	. = 0xC000;
-
-	.event : { *(.event) }
-
+	/* read-only sections (code) */
 	. = 0x10000;
 
-	_stext = .;
-	.text  : { *(.text) }
-	_etext = .;
+	.text : { 
+		_stext = .;
+		*(.text)
+		*(.rodata.*)
+		_etext = .;
+	}
 
-	_sdata = .;
-	.data  : { *(.data) }
-	_edata = .;
+	/* read-write sections (data) */
+	. = ALIGN (0x1000);
 
-	_sbss = .;
-	.bss   : { *(.bss)  }
-	_ebss = .;
+	.data : { 
+		_sdata = .;
+		*(.data)
+		_edata = .;
+	}
+
+	.bss : {
+		_sbss = .;
+		*(.bss)
+		_ebss = .;
+	}
+
+	/* dynamic linker */
+	. = ALIGN (0x1000);
+
+	.dl : { 
+		_dl_start = .;
+		*(.dltext)
+		*(.dldata)
+		_dl_end = .;
+	}
 }
