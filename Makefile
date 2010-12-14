@@ -20,10 +20,10 @@ CFLAGS	:= -pipe -Wall -Werror -Wextra -pedantic -std=c99
 CFLAGS	+= -Wpointer-arith -Wcast-align -Wwrite-strings
 CFLAGS	+= -Wno-unused-parameter -Wno-unused-function
 CFLAGS  += -mno-mmx
-#CFLAGS	+= -O3 -fomit-frame-pointer
+CFLAGS	+= -O3 -fomit-frame-pointer
 CFLAGS	+= -ffreestanding -I$(BUILDDIR)/inc
-CFLAGS	+= -fPIC
-LDFLAGS := -L$(BUILDDIR)/lib -static -T$(BUILDDIR)/inc/link.ld
+LDFLAGS := -L$(BUILDDIR)/lib -T$(BUILDDIR)/inc/link.ld -I/lib/dl.so
+LDFLAGS	+= -static
 ARFLAGS := rcs
 PPFLAGS := -x assembler-with-cpp -I$(BUILDDIR)/inc
 

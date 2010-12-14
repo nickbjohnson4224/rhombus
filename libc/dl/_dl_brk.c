@@ -14,34 +14,31 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <interrupt.h>
-#include <space.h>
-#include <elf.h>
+#include <arch.h>
+#include <dl.h>
 
-/*****************************************************************************
- * syscall_exec (int 0x4b)
- * 
- * (no arguments)
- *
- * Executes the executable image at ESPACE. This image must be an ELF file.
- * This system call is going to be removed once userspace executable loading
- * is finished, so for now it is not secure and can be used to crash the
- * kernel. Returns zero and jumps to the loaded executable on success, returns
- * nonzero on failure.
- */
+__attribute__ ((section (".dldata")))
+uintptr_t _dl_load_brk = DL_LOAD;
 
-struct thread *syscall_exec(struct thread *image) {
+__attribute__ ((section (".dldata")))
+uintptr_t _dl_temp_brk = DL_TEMP;
 
-	if (elf_check((void*) ESPACE)) {
-		image->eax = -1;
-		return image;
-	}
+__attribute__ ((section (".dltext")))
+void *_dl_alloc_load(size_t size) {
+	void *ptr;
 
-	mem_free(0, SSPACE);
+	ptr = (void*) _dl_load_brk;
+	_dl_load_brk += size;
 
-	image->eip = elf_load((void*) ESPACE);
-	image->useresp = image->stack + SEGSZ;
-	image->proc->entry = 0;
+	return ptr;
+}
 
-	return image;
+__attribute__ ((section (".dltext")))
+void *_dl_alloc_temp(size_t size) {
+	void *ptr;
+
+	ptr = (void*) _dl_temp_brk;
+	_dl_temp_brk += size;
+
+	return ptr;
 }
