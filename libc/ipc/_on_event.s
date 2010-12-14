@@ -19,7 +19,7 @@ global _on_event
 extern on_event
 extern _done
 
-section .text
+section .event
 
 _on_event:
 	

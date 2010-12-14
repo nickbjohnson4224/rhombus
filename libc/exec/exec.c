@@ -36,7 +36,7 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 	char *argv_pack;
 
 	if (!image) {
-		errno = ENOENT;
+		errno = EEXIST;
 		return -1;
 	}
 

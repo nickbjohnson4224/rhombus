@@ -64,7 +64,7 @@ struct thread *thread_send(struct thread *image, pid_t target, portid_t port, st
 	p_targ = process_get(target);
 
 	/* check process */
-	if (!p_targ || !p_targ->entry) {
+	if (!p_targ) {
 		return image;
 	}
 

@@ -44,7 +44,7 @@ static void reject(struct msg *msg) {
  * library.
  */
 
-void _init() {
+void _init(bool is_init) {
 	extern int main(int argc, char **argv);
 	char **argv, *pack;
 	size_t length;

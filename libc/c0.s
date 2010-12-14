@@ -17,7 +17,11 @@
 section .text
 
 global _start
+extern main
 extern _init
+extern _exit
 
 _start:
+
+	push dword 0
 	call _init ; libc initialization, runs main and exits

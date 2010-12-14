@@ -31,16 +31,12 @@
 /* address space layout ***********************************************/
 
 #if ARCH == X86
-	#define EXEC_START	0x00010000
+	#define EXEC_START	0x00000000
 	#define HEAP_START	0x10000000
 	#define HEAP_MXBRK	0x11000000
 	#define HEAP2_START	0x20000000
 	#define HEAP2_MXBRK	0x21000000
 	#define BOOT_IMAGE	0x40000000
-
-	#define DL_BASE		0xC0000000
-	#define DL_TEMP		0xC2000000
-	#define DL_LOAD		0xD0000000
 
 	#define TMP_DST     0xFF000000
 	#define TMP_SRC     0xFF010000
