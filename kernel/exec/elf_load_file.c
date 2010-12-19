@@ -14,31 +14,26 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <arch.h>
-#include <dl.h>
+#include <stdint.h>
+#include <string.h>
+#include <space.h>
+#include <elf.h>
 
-__attribute__ ((section (".dldata")))
-uintptr_t _dl_load_brk = DL_LOAD;
+/*****************************************************************************
+ * elf_load_file
+ *
+ * Load an ELF executable.
+ */
 
-__attribute__ ((section (".dldata")))
-uintptr_t _dl_temp_brk = DL_TEMP;
+void elf_load_file(struct elf32_ehdr *file) {
+	struct elf32_phdr *phdr_tbl;
+	size_t i;
 
-__attribute__ ((section (".dltext")))
-void *_dl_alloc_load(size_t size) {
-	void *ptr;
+	/* get pointer to program header table */
+	phdr_tbl = (void*) ((uintptr_t) file + file->e_phoff);
 
-	ptr = (void*) _dl_load_brk;
-	_dl_load_brk += size;
-
-	return ptr;
-}
-
-__attribute__ ((section (".dltext")))
-void *_dl_alloc_temp(size_t size) {
-	void *ptr;
-
-	ptr = (void*) _dl_temp_brk;
-	_dl_temp_brk += size;
-
-	return ptr;
+	/* load all segments */
+	for (i = 0; i < file->e_phnum; i++) {
+		elf_load_phdr(file, &phdr_tbl[i]);
+	}
 }

@@ -16,50 +16,56 @@
 
 section .text
 
-global inb
-global inw
-global ind
+global inb:function inb.end-inb
+global inw:function inw.end-inw
+global ind:function ind.end-ind
 
 inb:
 	mov dx, [esp+4]
 	xor eax, eax
 	in al, dx
 	ret
+.end:
 
 inw:
 	mov dx, [esp+4]
 	xor eax, eax
 	in ax, dx
 	ret
+.end:
 
 ind:
 	mov dx, [esp+4]
 	in eax, dx
 	ret
+.end:
 
-global outb
-global outw
-global outd
+global outb:function outb.end-outb
+global outw:function outw.end-outw
+global outd:function outd.end-outd
 
 outb:
 	mov dx, [esp+4]
 	mov al, [esp+8]
 	out dx, al
 	ret
+.end:
 
 outw:
 	mov dx, [esp+4]
 	mov ax, [esp+8]
 	out dx, ax
 	ret
+.end:
 
 outd:
 	mov dx, [esp+4]
 	mov eax, [esp+8]
 	out dx, eax
 	ret
+.end:
 
-global iodelay
+global iodelay:function iodelay.end-iodelay
 
 iodelay:
 	mov ecx, [esp+4]
@@ -73,3 +79,4 @@ iodelay:
 	jne .loop
 
 	ret
+.end:

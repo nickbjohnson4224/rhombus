@@ -26,6 +26,18 @@
 #include <pack.h>
 
 /****************************************************************************
+ * execdv
+ *
+ * Execute with executable and dynamic linker pointers and argument list.
+ */
+
+int execdv(uint8_t *image, size_t size, uint8_t *dl, size_t dlsize, char const **argv) {
+	
+
+	return 1;
+}
+
+/****************************************************************************
  * execiv
  *
  * Execute with executable pointer and argument list.
@@ -42,10 +54,12 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 
 	/* move to exec space */
 	if ((uintptr_t) image % PAGESZ) {
+		page_free(bootstrap, size);
 		page_anon(bootstrap, size, PROT_READ | PROT_WRITE);
 		memcpy(bootstrap, image, size);
 	}
 	else {
+		page_free(bootstrap, size);
 		page_self(image, bootstrap, size);
 		page_prot(bootstrap, size, PROT_READ | PROT_WRITE);
 	}

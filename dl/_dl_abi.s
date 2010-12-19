@@ -14,7 +14,7 @@
 
 [bits 32]
 
-section .dltext
+section .text
 
 global _dl_page:function _dl_page.end-_dl_page
 global _dl_exit:function _dl_exit.end-_dl_exit
@@ -37,7 +37,7 @@ _dl_page:
 	ret
 .end:
 
-_exit:
+_dl_exit:
 	mov eax, [esp+4]
 	int 0x49
 .end:

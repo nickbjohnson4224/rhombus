@@ -16,7 +16,8 @@
 
 section .text
 
-global mutex_lock
+global mutex_lock:function mutex_lock.end-mutex_lock
+
 mutex_lock:
 	mov edx, [esp+4]
 	mov eax, 0
@@ -30,3 +31,4 @@ mutex_lock:
 .win:
 	mov eax, 1
 	ret
+.end:

@@ -16,10 +16,12 @@
 
 section .text
 
-global mutex_test
+global mutex_test:function mutex_test.end-mutex_test
+
 mutex_test:
 	mov edx, [esp+4]
 	
 	lock mov al, [edx]
 
 	ret
+.end:

@@ -14,9 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <dl.h>
+#include <stdint.h>
+#include "dl.h"
 
-__attribute__ ((section (".dltext")))
-int _dl_entry(struct _dl_list *list) {
+int _dl_entry(void) {
 	return 42;
 }

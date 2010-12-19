@@ -16,7 +16,8 @@
 
 section .text
 
-global mutex_free
+global mutex_free:function mutex_free.end-mutex_free
+
 mutex_free:
 	mov edx, [esp+4]
 
@@ -24,3 +25,4 @@ mutex_free:
 	mov [edx], al
 
 	ret
+.end:

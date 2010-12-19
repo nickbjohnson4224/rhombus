@@ -14,38 +14,27 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <interrupt.h>
+#include <stdint.h>
+#include <string.h>
 #include <space.h>
 #include <elf.h>
 
 /*****************************************************************************
- * syscall_exec (int 0x4b)
- * 
- * (no arguments)
+ * elf_check_file
  *
- * Executes the executable image at ESPACE. This image must be an ELF file.
- * This system call is going to be removed once userspace executable loading
- * is finished, so for now it is not secure and can be used to crash the
- * kernel. Returns zero and jumps to the loaded executable on success, returns
- * nonzero on failure.
+ * Verifies an ELF header. Returns zero if the header is acceptable for 
+ * loading, nonzero otherwise.
  */
 
-struct thread *syscall_exec(struct thread *image) {
-	struct elf32_ehdr *file;
+int elf_check_file(struct elf32_ehdr *file) {
+	
+	if (file->e_ident[EI_MAG0] != ELFMAG0) return 1;
+	if (file->e_ident[EI_MAG1] != ELFMAG1) return 1;
+	if (file->e_ident[EI_MAG2] != ELFMAG2) return 1;
+	if (file->e_ident[EI_MAG3] != ELFMAG3) return 1;
+	if (file->e_type           != ET_EXEC) return 1;
+	if (file->e_machine        != EM_386 ) return 1;
+	if (file->e_version        != 1)       return 1;
 
-	file = (void*) ESPACE;
-
-	if (elf_check_file(file)) {
-		image->eax = -1;
-		return image;
-	}
-
-	mem_free(0, SSPACE);
-
-	elf_load_file(file);
-	image->eip = file->e_entry;
-	image->useresp = image->stack + SEGSZ;
-	image->proc->entry = 0;
-
-	return image;
+	return 0;
 }

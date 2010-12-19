@@ -14,7 +14,9 @@
 
 [bits 32]
 
-global longjmp
+section .text
+
+global longjmp:function longjmp.end-longjmp
 
 longjmp:
 	mov edx, [esp+4]
@@ -29,3 +31,4 @@ longjmp:
 
 	push ecx
 	ret
+.end:

@@ -26,10 +26,17 @@ void *load_shared(const char *soname);
 
 /* execute ******************************************************************/
 
+/* with executable and dynamic linker images (hack for init) */
+int execdve(uint8_t *image, size_t size, uint8_t *dl, size_t dlsize, char const **argv, char const **envp);
+int execdv (uint8_t *image, size_t size, uint8_t *dl, size_t dlsize, char const **argv);
+int execd  (uint8_t *image, size_t size, uint8_t *dl, size_t dlsize);
+
+/* with executable image */
 int execive(uint8_t *image, size_t size, char const **argv, char const **envp);
 int execiv (uint8_t *image, size_t size, char const **argv);
 int execi  (uint8_t *image, size_t size);
 
+/* from filesystem */
 int execve (const char *path, char const **argv, char const **envp);
 int execv  (const char *path, char const **argv);
 int exec   (const char *path);
@@ -38,5 +45,21 @@ int exec   (const char *path);
 
 char  *packarg(const char **argv);
 char **loadarg(char *pack);
+
+/* dynamic linker interface *************************************************/
+
+#define DL_EXEC	0
+#define DL_LIB	1
+#define DL_SAVE	2
+
+struct dl_list {
+	int    type;
+	void  *base;
+	size_t size;
+	char   name[24];
+};
+
+int dl_load(void *dl_image);
+int dl_exec(struct dl_list *list, size_t count);
 
 #endif/*EXEC_H*/

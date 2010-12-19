@@ -3,7 +3,7 @@ SOURCES += $(BUILDDIR)/lib/c0.o
 TARGET  := time
 SUBDIR	:= driver/time
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -lc -T$(BUILDDIR)/inc/link.ld
+LDFLAGS += -lc -l:dl.so -T$(BUILDDIR)/inc/link.ld
 ASFLAGS += -felf
 
 .PHONY: clean install

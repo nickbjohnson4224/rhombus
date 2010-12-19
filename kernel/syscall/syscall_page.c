@@ -120,7 +120,7 @@ struct thread *syscall_page(struct thread *image) {
 	}
 
 	/* change <perm> to real page flags */
-	perm = PF_USER | PF_PRES 
+	perm = PF_USER | PF_PRES
 		| ((perm & 2)  ? PF_RW   : 0) 
 		| ((perm & 8)  ? PF_LOCK : 0) 
 		| ((perm & 16) ? PF_LINK : 0);

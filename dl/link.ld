@@ -1,30 +1,25 @@
-/* Flux default linker script */
-ENTRY(_start)
+/* Flux dynamic linker linker script */
+ENTRY(_dl_entry)
 OUTPUT_FORMAT(elf32-i386)
 
 SECTIONS {
-	. = 0x10000;
+
+	. = 0xC0000000;
 
 	/* read-only sections (code) */
-	.text : { 
-		_stext = .;
+	.text : {
 		*(.text)
 		*(.rodata.*)
-		_etext = .;
 	}
 
 	/* read-write sections (data) */
-	. = ALIGN (0x1000);
+	. = ALIGN(0x1000);
 
 	.data : { 
-		_sdata = .;
 		*(.data)
-		_edata = .;
 	}
 
 	.bss : {
-		_sbss = .;
 		*(.bss)
-		_ebss = .;
 	}
 }

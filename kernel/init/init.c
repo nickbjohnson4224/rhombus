@@ -87,7 +87,8 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	struct memory_map *mem_map;
 	size_t mem_map_count, i, addr;
 	uintptr_t boot_image_size;
-	void *boot_image, *init_image;
+	void *boot_image;
+	struct elf32_ehdr *init_image;
 
 	/* initialize debugging output */
 	debug_init();
@@ -152,10 +153,11 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	init->thread[0]->eflags  = cpu_get_eflags() | 0x3200; /* IF, IOPL = 3 */
 
 	/* execute init */
-	if (elf_check(init_image)) {
+	if (elf_check_file(init_image)) {
 		debug_panic("init is not a valid ELF executable");
 	}
-	init->thread[0]->eip = elf_load(init_image);
+	elf_load_file(init_image);
+	init->thread[0]->eip = init_image->e_entry;
 
 	/* register system calls */
 	int_set_handler(SYSCALL_SEND, syscall_send);

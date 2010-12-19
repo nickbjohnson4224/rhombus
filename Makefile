@@ -1,6 +1,6 @@
 BUILDDIR=$(PWD)
 
-LIB_DIRS  = libc
+LIB_DIRS  = libc dl
 
 DRIVERS  := $(shell find driver -mindepth 1 -maxdepth 1)
 DAEMONS  := $(shell find daemon -mindepth 1 -maxdepth 1)
@@ -22,8 +22,7 @@ CFLAGS	+= -Wno-unused-parameter -Wno-unused-function
 CFLAGS  += -mno-mmx
 CFLAGS	+= -O3 -fomit-frame-pointer
 CFLAGS	+= -ffreestanding -I$(BUILDDIR)/inc
-LDFLAGS := -L$(BUILDDIR)/lib -T$(BUILDDIR)/inc/link.ld -I/lib/dl.so
-LDFLAGS	+= -static
+LDFLAGS := -L$(BUILDDIR)/lib -T$(BUILDDIR)/inc/link.ld
 ARFLAGS := rcs
 PPFLAGS := -x assembler-with-cpp -I$(BUILDDIR)/inc
 
@@ -35,11 +34,11 @@ export BUILDDIR CC LD AR AS PP CFLAGS LDFLAGS ARFLAGS PPFLAGS
 
 all: makedirs $(LIB_DIRS) $(BIN_DIRS) libc
 
-$(BIN_DIRS): $(LIB_DIRS)
+$(LIB_DIRS):
 	@ echo " MAKE	" $@
 	@ make -s -C $@
 
-$(LIB_DIRS):
+$(BIN_DIRS): $(LIB_DIRS)
 	@ echo " MAKE	" $@
 	@ make -s -C $@
 

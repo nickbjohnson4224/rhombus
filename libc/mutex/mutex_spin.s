@@ -16,7 +16,8 @@
 
 section .text
 
-global mutex_spin
+global mutex_spin:function mutex_spin.end-mutex_spin
+
 mutex_spin:
 	mov edx, [esp+4]
 	mov eax, 0
@@ -27,3 +28,4 @@ mutex_spin:
 	jnz .retry
 
 	ret
+.end:

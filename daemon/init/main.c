@@ -22,7 +22,6 @@
 #include <proc.h>
 #include <exec.h>
 #include <ipc.h>
-#include <dl.h>
 
 #include "inc/tar.h"
 #include "initrd.h"
@@ -37,6 +36,8 @@ const char *splash ="\
 Flux Operating System 0.6 Alpha\n\
 Written by Nick Johnson\n\
 \n";
+
+struct tar_file *dl;
 
 void panic(const char *message) {
 	printf("INIT PANIC: %s\n", message);
@@ -68,6 +69,10 @@ int main() {
 	/* Boot Image */
 	boot_image = tar_parse((uint8_t*) BOOT_IMAGE);
 
+	/* Dynamic Linker */
+	if (!(file = tar_find(boot_image, (char*) "lib/dl.so"))) panic("no dynamic linker found\n");
+	dl_load(file->start);
+
 	/* Initial Root Filesystem / Device Filesystem / System Filesystem (tmpfs) */
 	argv[0] = "tmpfs";
 	argv[1] = NULL;
@@ -87,6 +92,9 @@ int main() {
 	stderr = stdout = fdopen(temp, "w");
 	printf(splash);
 	fs_link(fs_cons(fs_find(0, "/dev"), "term", FOBJ_DIR), temp);
+
+	/* Test Dynamic Linker */
+	printf("dl_exec -> %d\n", dl_exec(NULL, 0));
 
 	/* Initrd */
 	driver_init(&initrd_driver, 0, NULL);

@@ -14,9 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <dl.h>
+#include "dl.h"
 
-__attribute__ ((section (".dltext"))) 
 void *_dl_memcpy(void *dst, const void *src, size_t size) {
 	size_t i;
 	uint8_t *d = dst;
@@ -29,7 +28,6 @@ void *_dl_memcpy(void *dst, const void *src, size_t size) {
 	return dst;
 }
 
-__attribute__ ((section (".dltext"))) 
 void *_dl_memclr(void *ptr, size_t size) {
 	size_t i;
 	uint8_t *a = ptr;
@@ -41,7 +39,6 @@ void *_dl_memclr(void *ptr, size_t size) {
 	return ptr;
 }
 
-__attribute__ ((section (".dltext"))) 
 char *_dl_strcpy(char *dst, const char *src) {
 	size_t i;
 
@@ -54,7 +51,6 @@ char *_dl_strcpy(char *dst, const char *src) {
 	return dst;
 }
 
-__attribute__ ((section (".dltext"))) 
 int _dl_strcmp(const char *s1, const char *s2) {
 	size_t i;
 
@@ -70,7 +66,6 @@ int _dl_strcmp(const char *s1, const char *s2) {
 	}
 }
 
-__attribute__ ((section (".dltext"))) 
 size_t _dl_strlen(const char *str) {
 	size_t i;
 

@@ -16,40 +16,23 @@
 
 section .text
 
-global _dl_exec:function _dl_exec.end-_dl_exec
-extern _dl_entry
-extern _dl_start
-extern _dl_end
-extern _page
+global dl_exec:function dl_exec.end-dl_exec
+extern dl_entry
 
-_dl_exec:
-
-	; copy dynamic linker to 0xC0000000
-	mov eax, _dl_start
-	mov ecx, _dl_end
-	sub ecx, _dl_start
-	shr ecx, 12
-	inc ecx
+dl_exec:
 	
-	push eax
-	push dword 4
-	push dword 0
-	push ecx
-	push 0xC0000000
-	call _page
-	add  esp, 20
+	; get entry point
+	mov ecx, [dl_entry]
 
-	; load list pointer into EAX
-	mov eax, [esp+4]
+	; copy arguments
+	mov eax, [esp+8]
+	mov edx, [esp+12]
 
-	; load entry pointer into ECX and relocate
-	mov ecx, _dl_entry
-	sub ecx, _dl_start
-	add ecx, 0xC0000000
-
+	; call dynamic linker
+	push edx
 	push eax
 	call ecx
-	add  esp, 4
+	add esp, 8
 
 	ret
 .end:

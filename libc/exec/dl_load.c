@@ -14,10 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef KERNEL_ELF_H
-#define KERNEL_ELF_H
-
-#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <arch.h>
+#include <page.h>
 
 /* ELF header ***************************************************************/
 
@@ -63,21 +63,6 @@ struct elf32_ehdr {
 int  elf_check_file(struct elf32_ehdr *file);
 void elf_load_file (struct elf32_ehdr *file);
 
-/* ELF section header *******************************************************/
-
-struct elf32_shdr {
-	uint32_t sh_name;
-	uint32_t sh_type;
-	uint32_t sh_flags;
-	uint32_t sh_addr;
-	uint32_t sh_offset;
-	uint32_t sh_size;
-	uint32_t sh_link;
-	uint32_t sh_info;
-	uint32_t sh_addralign;
-	uint32_t sh_entsize;
-};
-
 /* ELF program header *******************************************************/
 
 struct elf32_phdr {
@@ -103,6 +88,65 @@ struct elf32_phdr {
 #define PF_W	0x2
 #define PF_X	0x4
 
-void elf_load_phdr(struct elf32_ehdr *file, struct elf32_phdr *phdr);
+uint32_t dl_entry;
 
-#endif/*KERNEL_ELF_H*/
+/*****************************************************************************
+ * dl_load
+ *
+ * Load the dynamic linker <dl_image>. This is usually done only at init, but
+ * can be done later if a different linker is needed.
+ */
+
+int dl_load(void *dl_image) {
+	struct elf32_ehdr *dl_elf;
+	struct elf32_phdr *phdr;
+	size_t phdr_count;
+	size_t i;
+	int prot;
+	uintptr_t dst, src;
+	
+	dl_elf = dl_image;
+
+	/* check ELF header */
+	if (dl_elf->e_ident[EI_MAG0] != ELFMAG0) return 1;
+	if (dl_elf->e_ident[EI_MAG1] != ELFMAG1) return 1;
+	if (dl_elf->e_ident[EI_MAG2] != ELFMAG2) return 1;
+	if (dl_elf->e_ident[EI_MAG3] != ELFMAG3) return 1;
+	if (dl_elf->e_type           != ET_DYN)  return 1;
+	if (dl_elf->e_machine        != EM_386)  return 1;
+	if (dl_elf->e_version        != 1)       return 1;
+
+	/* get program header table */
+	phdr = (void*) ((uintptr_t) dl_image + dl_elf->e_phoff);
+	phdr_count = dl_elf->e_phnum;
+
+	/* load all loadable segments */
+	for (i = 0; i < phdr_count; i++) {
+		if (phdr[i].p_type == PT_LOAD) {
+
+			dst = phdr[i].p_vaddr + DL_BASE;
+			src = phdr[i].p_offset + (uintptr_t) dl_image;
+			
+			/* calculate page flags */
+			prot = 0;
+			if (phdr[i].p_flags & PF_R) prot |= PROT_READ;
+			if (phdr[i].p_flags & PF_W) prot |= PROT_WRITE;
+			if (phdr[i].p_flags & PF_X) prot |= PROT_EXEC;
+
+			/* allocate memory */
+			page_anon((void*) dst, phdr[i].p_filesz, prot | PROT_WRITE);
+
+			/* copy segment */
+			memcpy((void*) dst, (void*) src, phdr[i].p_filesz);
+			memclr((void*) (dst + phdr[i].p_filesz), phdr[i].p_memsz - phdr[i].p_filesz);
+
+			/* fix flags */
+			page_prot((void*) dst, phdr[i].p_filesz, prot);
+		}
+	}
+
+	/* get and relocate entry */
+	dl_entry = dl_elf->e_entry + DL_BASE;
+
+	return 0;
+}

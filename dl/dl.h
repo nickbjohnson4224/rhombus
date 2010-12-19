@@ -25,29 +25,12 @@
  * These functions belong to the dynamic linker, part of the C library. In
  * Flux, all execution is done completely from userspace: the dynamic linker
  * is a key part of this execution cycle. The C library will set up a certain
- * environment for the linker, then copy the contents of the ELF section ".dl"
- * as well as any necessary files into a special region of memory. This 
- * section acts as an independent program which then loads the executable.
- *
- * Because of this mechanism, the rest of the C library cannot be called from
- * the linker once it has been moved, so don't try to do that! The dynamic
- * linker has its own versions of basic string functions and system call 
- * stubs.
+ * environment for the linker, then load it at address 0xC0000000.
  */
-
-/* libc interface functions *************************************************/
-
-struct _dl_list {
-	int  type;
-	void *ptr;
-	char name[56];
-};
-
-int _dl_exec(struct _dl_list *list);
 
 /* dynamic linker ***********************************************************/
 
-int      _dl_entry(struct _dl_list *list);
+int      _dl_entry(void);
 
 /* dynamic linker string functions ******************************************/
 
@@ -59,11 +42,7 @@ size_t    _dl_strlen(const char *str);
 
 /* dynamic linker memory management *****************************************/
 
-extern uintptr_t _dl_load_brk;
-extern uintptr_t _dl_temp_brk;
-
-void     *_dl_alloc_temp(size_t size);
-void     *_dl_alloc_load(size_t size);
+void     *_dl_alloc(size_t size);
 
 /* dynamic linker syscalls **************************************************/
 

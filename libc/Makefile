@@ -6,12 +6,12 @@ HEADERS += inc/link.ld
 SUBDIR	:= libc
 STATIC	:= libc.a
 SHARED	:= libc.so
-CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc -fPIC
+CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
 ASFLAGS := -felf
 
 .PHONY: $(HEADERS) clean
 
-all: $(STATIC) $(CNAUGHT) $(SHARED)
+all: $(STATIC) $(CNAUGHT) # $(SHARED)
 
 $(HEADERS):
 	@ echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/inc

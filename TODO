@@ -4,8 +4,8 @@ For 0.7 Alpha: (due 19 Dec 2010)
 + shared library manager
 - userspace exec
 - dynamic linker
-- password manager
 - daemon control
+- event protocol
 
 For 0.8 Alpha: (due 31 Dec 2011)
 
@@ -18,25 +18,30 @@ For 0.8 Alpha: (due 31 Dec 2011)
 
 For 0.9 Alpha: (due 15 Jan 2011)
 
+- dynamic linking
 - drivers as shared libraries?
 - device manager (PCI)
 - ATA/ATAPI driver
 - filesystem drivers (iso9660, ext2)
 
-For 1.0 Beta: (due 30 Jan 2011)
+For 0.10 Beta: (due 30 Jan 2011)
 
+- password manager
 - clean up as much as possible
 - full libc documentation
 - full kernel documentation
 - driver writing manual
 - user manual
 
-For 1.1 Beta:
+For 0.11 Beta:
 
 - networking stack
-- graphics stack
 - text editor
 - installer
+
+For 0.12 Beta:
+
+- graphics stack
 
 For later:
 

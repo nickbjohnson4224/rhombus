@@ -14,7 +14,7 @@
 
 [bits 32]
 
-global setjmp
+global setjmp:function setjmp.end-setjmp
 
 setjmp:
 	mov eax, [esp+4]
@@ -32,3 +32,4 @@ setjmp:
 
 	push ecx
 	ret
+.end:

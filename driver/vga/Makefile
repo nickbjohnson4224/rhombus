@@ -3,7 +3,7 @@ SOURCES += $(BUILDDIR)/lib/c0.o
 TARGET  := vga
 SUBDIR	:= driver/vga
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -lc -T$(BUILDDIR)/inc/link.ld
+LDFLAGS += -lc -l:dl.so -T$(BUILDDIR)/inc/link.ld
 ASFLAGS += -felf
 
 .PHONY: clean install
