@@ -29,7 +29,6 @@ int         _page(uintptr_t address, size_t count, uint32_t perm, int source, ui
 uintptr_t   _phys(uintptr_t address);
 int32_t		_fork(void);
 void		_exit(uint32_t value) __attribute__ ((noreturn));
-int         _exec(void);
 uint32_t    _gpid(uint32_t selector);
 uint32_t    _user(uint32_t pid);
 int         _auth(uint32_t pid, uint32_t user);

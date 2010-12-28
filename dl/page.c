@@ -14,9 +14,37 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
 #include "dl.h"
 
-int _dl_entry(void) {
-	return 42;
+int dl_page(void *addr, size_t length, int prot, int source, uintptr_t off) {
+
+	if ((uintptr_t) addr % PAGESZ) {
+		length += (uintptr_t) addr % PAGESZ;
+		addr    = (void*) ((uintptr_t) addr - ((uintptr_t) addr % PAGESZ));
+	}
+
+	if (length % PAGESZ) {
+		length = (length / PAGESZ) + 1;
+	}
+	else {
+		length = length / PAGESZ;
+	}
+
+	return _dl_page(addr, length, prot, source, off);
+}
+
+int dl_page_free(void *addr, size_t length) {
+	return dl_page(addr, length, 0, PAGE_NULL, 0);
+}
+
+int dl_page_anon(void *addr, size_t length, int prot) {
+	return dl_page(addr, length, prot, PAGE_ANON, 0);
+}
+
+int dl_page_self(void *addrs, void *addrd, size_t length) {
+	return dl_page(addrd, length, 0, PAGE_SELF, (uintptr_t) addrs);
+}
+
+int dl_page_prot(void *addr, size_t length, int prot) {
+	return dl_page(addr, length, prot, PAGE_PROT, 0);
 }

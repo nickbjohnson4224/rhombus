@@ -113,12 +113,6 @@ struct thread *syscall_page(struct thread *image) {
 		return image;
 	}
 
-	/* reject insane requests (> 64MB) */
-	if (count > 0x4000) {
-		image->eax = 1;
-		return image;
-	}
-
 	/* change <perm> to real page flags */
 	perm = PF_USER | PF_PRES
 		| ((perm & 2)  ? PF_RW   : 0) 

@@ -1,13 +1,13 @@
-For 0.7 Alpha: (due 19 Dec 2010)
+For 0.7 Alpha: (due 31 Dec 2010)
 
 + "link" page flag
 + shared library manager
-- userspace exec
-- dynamic linker
++ userspace exec
++ dynamic linker
 - daemon control
 - event protocol
 
-For 0.8 Alpha: (due 31 Dec 2011)
+For 0.8 Alpha: (due 15 Jan 2011)
 
 - finish libc math functions
 - finish printf/scanf
@@ -15,8 +15,9 @@ For 0.8 Alpha: (due 31 Dec 2011)
 - proper terminal driver
 - foreground/background processes?
 - signals from terminal (esp. ctrl-C)
+- curses port
 
-For 0.9 Alpha: (due 15 Jan 2011)
+For 0.9 Alpha: (due 30 Jan 2011)
 
 - dynamic linking
 - drivers as shared libraries?
@@ -24,7 +25,7 @@ For 0.9 Alpha: (due 15 Jan 2011)
 - ATA/ATAPI driver
 - filesystem drivers (iso9660, ext2)
 
-For 0.10 Beta: (due 30 Jan 2011)
+For 0.10 Alpha:
 
 - password manager
 - clean up as much as possible

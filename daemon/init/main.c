@@ -93,9 +93,6 @@ int main() {
 	printf(splash);
 	fs_link(fs_cons(fs_find(0, "/dev"), "term", FOBJ_DIR), temp);
 
-	/* Test Dynamic Linker */
-	printf("dl_exec -> %d\n", dl_exec(NULL, 0));
-
 	/* Initrd */
 	driver_init(&initrd_driver, 0, NULL);
 	setenv("NAME", "unknown");

@@ -30,7 +30,6 @@
 #define SYSCALL_FORK	0x48
 #define SYSCALL_EXIT	0x49
 
-#define SYSCALL_EXEC	0x4B
 #define SYSCALL_GPID	0x4C
 #define SYSCALL_TIME	0x4D
 #define SYSCALL_USER	0x4E
@@ -47,7 +46,6 @@ struct thread *syscall_phys(struct thread *image);
 struct thread *syscall_fork(struct thread *image);
 struct thread *syscall_exit(struct thread *image);
 
-struct thread *syscall_exec(struct thread *image);
 struct thread *syscall_gpid(struct thread *image);
 struct thread *syscall_time(struct thread *image);
 struct thread *syscall_user(struct thread *image);

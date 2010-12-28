@@ -3,7 +3,6 @@ SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
 SUBDIR	:= dl
 HEADERS := $(shell find . -name "*.h")
 TARGET	:= dl.so
-CFLAGS  += -fPIC
 LDFLAGS	:= -T$(BUILDDIR)/$(SUBDIR)/link.ld
 ASFLAGS := -felf
 
@@ -11,7 +10,7 @@ all: $(TARGET)
 
 $(TARGET): $(HEADERS) $(SOURCES)
 	@ echo " LD	" $(SUBDIR)/$(TARGET)
-	@ $(LD) $(LDFLAGS) -shared $(SOURCES) -o $(TARGET)
+	@ $(LD) $(LDFLAGS) $(SOURCES) -o $(TARGET)
 	@ echo " CP	" $(SUBDIR)/$(TARGET) "->" $(BUILDDIR)/lib
 	@ cp $(TARGET) $(BUILDDIR)/lib
 

@@ -16,22 +16,29 @@
 
 section .text
 
-global dl_exec:function dl_exec.end-dl_exec
+global _dl_page:function _dl_page.end-_dl_page
+global _dl_when:function _dl_when.end-_dl_when
 
-dl_exec:
-	
-	; get entry point
-	mov ecx, 0xC0000000
+_dl_page:
+	push ebx
+	push edi
+	push esi
 
-	; copy arguments
-	mov eax, [esp+4]
-	mov edx, [esp+8]
+	mov ebx, [esp+16]
+	mov ecx, [esp+20]
+	mov edx, [esp+24]
+	mov esi, [esp+28]
+	mov edi, [esp+32]
+	int 0x46
 
-	; call dynamic linker
-	push edx
-	push eax
-	call ecx
-	add esp, 8
+	pop esi
+	pop edi
+	pop ebx
+	ret
+.end:
 
+_dl_when:
+	mov ecx, [esp+4]
+	int 0x42
 	ret
 .end:

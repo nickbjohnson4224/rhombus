@@ -14,24 +14,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <space.h>
-#include <elf.h>
+#include "dl.h"
 
-/*****************************************************************************
- * elf_load_phdr
- *
- * Attempt to load an ELF segment from the ELF file <file> and the program 
- * header <phdr>. If the segment is not of the type PT_LOAD or PT_DYNAMIC, 
- * nothing is loaded.
- */
-
-void elf_load_phdr(struct elf32_ehdr *file, struct elf32_phdr *phdr) {
+static void _elf_load_phdr(struct elf32_ehdr *file, struct elf32_phdr *phdr) {
 	uint8_t *file_base;
 	uint8_t *seg_base;
 	uint8_t *dst;
-	frame_t pflags;
+	int prot;
 	
 	/* get pointer to start of file */
 	file_base = (void*) file;
@@ -47,22 +36,49 @@ void elf_load_phdr(struct elf32_ehdr *file, struct elf32_phdr *phdr) {
 		dst = (void*) phdr->p_vaddr;
 
 		/* allocate memory */
-		pflags = PF_USER | PF_PRES;
-
-		if (phdr->p_flags & PF_W) {
-			pflags |= PF_RW;
-		}
-
-		mem_alloc((uintptr_t) dst, phdr->p_memsz, pflags);
+		dl_page_anon(dst, phdr->p_memsz, PROT_READ | PROT_WRITE);
 
 		/* copy data */
-		memcpy(dst, seg_base, phdr->p_filesz);
+		dl_memcpy(dst, seg_base, phdr->p_filesz);
 
 		/* clear remaining space */
-		memclr(dst + phdr->p_filesz, phdr->p_memsz - phdr->p_filesz);
+		dl_memclr(&dst[phdr->p_filesz], phdr->p_memsz - phdr->p_filesz);
+
+		/* set proper permissions */
+		prot = 0;
+		if (phdr->p_flags & PF_R) prot |= PROT_READ;
+		if (phdr->p_flags & PF_W) prot |= PROT_WRITE;
+		if (phdr->p_flags & PF_X) prot |= PROT_EXEC;
+
+		dl_page_prot(dst, phdr->p_memsz, prot);
 		
 		break;
 	default:
 		break;
 	}
+}
+
+int dl_elf_load(struct elf32_ehdr *file) {
+	struct elf32_phdr *phdr_tbl;
+	size_t i;
+
+	phdr_tbl = (void*) ((uintptr_t) file + file->e_phoff);
+
+	for (i = 0; i < file->e_phnum; i++) {
+		_elf_load_phdr(file, &phdr_tbl[i]);
+	}
+
+	return 0;
+}
+
+int dl_elf_check(struct elf32_ehdr *file) {
+
+	if (file->e_ident[EI_MAG0] != ELFMAG0) return 1;
+	if (file->e_ident[EI_MAG1] != ELFMAG1) return 1;
+	if (file->e_ident[EI_MAG2] != ELFMAG2) return 1;
+	if (file->e_ident[EI_MAG3] != ELFMAG3) return 1;
+	if (file->e_machine        != EM_386)  return 1;
+	if (file->e_version        != 1)       return 1;
+
+	return 0;
 }

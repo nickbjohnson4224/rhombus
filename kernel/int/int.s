@@ -83,7 +83,7 @@ INTN	71	; phys
 INTN	72	; fork
 INTN	73	; exit
 INTN	74
-INTN	75	; exec
+INTN	75
 INTN	76	; gpid
 INTN	77	; time
 INTN	78	; user

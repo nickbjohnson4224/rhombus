@@ -16,28 +16,21 @@
 
 section .text
 
-global _dl_page:function _dl_page.end-_dl_page
-global _dl_exit:function _dl_exit.end-_dl_exit
+global dl_enter:function dl_enter.end-dl_enter
 
-_dl_page:
-	push ebx
-	push edi
-	push esi
+dl_enter:
 
-	mov ebx, [esp+16]
-	mov ecx, [esp+20]
-	mov edx, [esp+24]
-	mov esi, [esp+28]
-	mov edi, [esp+32]
-	int 0x46
+	; get entry point
+	mov edx, [esp+4]
 
-	pop esi
-	pop edi
-	pop ebx
-	ret
-.end:
+	; get new stack pointer
+	mov ecx, 3
+	int 0x4C
+	mov ecx, eax
+	add ecx, 0x00400000
+	mov esp, ecx
+	mov ebp, ecx
 
-_dl_exit:
-	mov eax, [esp+4]
-	int 0x49
+	; enter
+	jmp edx
 .end:

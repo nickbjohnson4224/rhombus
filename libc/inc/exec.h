@@ -26,11 +26,6 @@ void *load_shared(const char *soname);
 
 /* execute ******************************************************************/
 
-/* with executable and dynamic linker images (hack for init) */
-int execdve(uint8_t *image, size_t size, uint8_t *dl, size_t dlsize, char const **argv, char const **envp);
-int execdv (uint8_t *image, size_t size, uint8_t *dl, size_t dlsize, char const **argv);
-int execd  (uint8_t *image, size_t size, uint8_t *dl, size_t dlsize);
-
 /* with executable image */
 int execive(uint8_t *image, size_t size, char const **argv, char const **envp);
 int execiv (uint8_t *image, size_t size, char const **argv);

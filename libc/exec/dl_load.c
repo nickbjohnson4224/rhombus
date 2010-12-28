@@ -18,83 +18,15 @@
 #include <string.h>
 #include <arch.h>
 #include <page.h>
-
-/* ELF header ***************************************************************/
-
-#define EI_MAG0		0
-#define EI_MAG1		1
-#define EI_MAG2		2
-#define EI_MAG3		3
-#define EI_CLASS	4
-#define EI_DATA		5
-#define EI_VERSION	6
-#define EI_PAD		7
-#define EI_NIDENT	16
-
-struct elf32_ehdr {
-	uint8_t  e_ident[EI_NIDENT];
-	uint16_t e_type;
-	uint16_t e_machine;
-	uint32_t e_version;
-	uint32_t e_entry;
-	uint32_t e_phoff;
-	uint32_t e_shoff;
-	uint32_t e_flags;
-	uint16_t e_ehsize;
-	uint16_t e_phentsize;
-	uint16_t e_phnum;
-	uint16_t e_shentsize;
-	uint16_t e_shnum;
-	uint16_t e_shstrndx;
-};
-
-#define ET_NONE		0
-#define ET_REL		1
-#define ET_EXEC 	2
-#define ET_DYN		3
-
-#define EM_386  	3
-
-#define ELFMAG0		0x7F
-#define ELFMAG1		'E'
-#define ELFMAG2		'L'
-#define ELFMAG3		'F'
-
-int  elf_check_file(struct elf32_ehdr *file);
-void elf_load_file (struct elf32_ehdr *file);
-
-/* ELF program header *******************************************************/
-
-struct elf32_phdr {
-	uint32_t p_type;
-	uint32_t p_offset;
-	uint32_t p_vaddr;
-	uint32_t p_paddr;
-	uint32_t p_filesz;
-	uint32_t p_memsz;
-	uint32_t p_flags;
-	uint32_t p_align;
-};
-
-#define PT_NULL 	0
-#define PT_LOAD 	1
-#define PT_DYNAMIC 	2
-#define PT_INTERP 	3
-#define PT_NOTE 	4
-#define PT_SHLIB 	5
-#define PT_PHDR		6
-
-#define PF_R	0x1
-#define PF_W	0x2
-#define PF_X	0x4
-
-uint32_t dl_entry;
+#include <elf.h>
 
 /*****************************************************************************
  * dl_load
  *
  * Load the dynamic linker <dl_image>. This is usually done only at init, but
- * can be done later if a different linker is needed.
+ * can be done later if a different linker is needed. The given object must
+ * not have relocations, must be linked at 0xC0000000, and must have its entry
+ * point at 0xC0000000.
  */
 
 int dl_load(void *dl_image) {
@@ -112,7 +44,6 @@ int dl_load(void *dl_image) {
 	if (dl_elf->e_ident[EI_MAG1] != ELFMAG1) return 1;
 	if (dl_elf->e_ident[EI_MAG2] != ELFMAG2) return 1;
 	if (dl_elf->e_ident[EI_MAG3] != ELFMAG3) return 1;
-	if (dl_elf->e_type           != ET_DYN)  return 1;
 	if (dl_elf->e_machine        != EM_386)  return 1;
 	if (dl_elf->e_version        != 1)       return 1;
 
@@ -124,7 +55,7 @@ int dl_load(void *dl_image) {
 	for (i = 0; i < phdr_count; i++) {
 		if (phdr[i].p_type == PT_LOAD) {
 
-			dst = phdr[i].p_vaddr + DL_BASE;
+			dst = phdr[i].p_vaddr;
 			src = phdr[i].p_offset + (uintptr_t) dl_image;
 			
 			/* calculate page flags */
@@ -144,9 +75,6 @@ int dl_load(void *dl_image) {
 			page_prot((void*) dst, phdr[i].p_filesz, prot);
 		}
 	}
-
-	/* get and relocate entry */
-	dl_entry = dl_elf->e_entry + DL_BASE;
 
 	return 0;
 }

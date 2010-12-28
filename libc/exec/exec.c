@@ -26,25 +26,13 @@
 #include <pack.h>
 
 /****************************************************************************
- * execdv
- *
- * Execute with executable and dynamic linker pointers and argument list.
- */
-
-int execdv(uint8_t *image, size_t size, uint8_t *dl, size_t dlsize, char const **argv) {
-	
-
-	return 1;
-}
-
-/****************************************************************************
  * execiv
  *
  * Execute with executable pointer and argument list.
  */
 
 int execiv(uint8_t *image, size_t size, char const **argv) {
-	uint8_t *bootstrap = (void*) ESPACE;
+	struct dl_list *list;
 	char *argv_pack;
 
 	if (!image) {
@@ -52,17 +40,12 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 		return -1;
 	}
 
-	/* move to exec space */
-	if ((uintptr_t) image % PAGESZ) {
-		page_free(bootstrap, size);
-		page_anon(bootstrap, size, PROT_READ | PROT_WRITE);
-		memcpy(bootstrap, image, size);
-	}
-	else {
-		page_free(bootstrap, size);
-		page_self(image, bootstrap, size);
-		page_prot(bootstrap, size, PROT_READ | PROT_WRITE);
-	}
+	/* build list for linker */
+	list = malloc(sizeof(struct dl_list));
+	list[0].type = DL_EXEC;
+	list[0].base = image;
+	list[0].size = size;
+	list[0].name[0] = '\0';
 
 	/* save standard streams and filesystem root */
 	if (stdin)  fdsave(0,  stdin->fd);
@@ -82,8 +65,7 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 	/* persist saved stuff */
 	__pack_save();
 
-	/* execute */
-	if (_exec()) {
+	if (dl_exec(list, 1)) {
 		errno = ENOEXEC;
 		return -1;
 	}

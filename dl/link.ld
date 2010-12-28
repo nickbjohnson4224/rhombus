@@ -1,10 +1,13 @@
 /* Flux dynamic linker linker script */
-ENTRY(_dl_entry)
 OUTPUT_FORMAT(elf32-i386)
 
 SECTIONS {
-
 	. = 0xC0000000;
+
+	/* header section */
+	.head : {
+		*(.head)
+	}
 
 	/* read-only sections (code) */
 	.text : {
