@@ -97,6 +97,11 @@ int      fs_auth  (uint64_t fobj, uint32_t user, uint8_t perm);
 
 void     fs_chroot(FILE *root);
 
+int      fs_bind  (uint64_t fobj, const char *path);
+int      fs_ubind (const char *path);
+int      fs_mkdir (const char *path);
+int      fs_touch (const char *path);
+
 #define FOBJ_NULL	0x00
 #define FOBJ_FILE	0x01
 #define FOBJ_DIR	0x02

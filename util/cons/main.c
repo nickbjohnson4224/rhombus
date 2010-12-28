@@ -19,6 +19,23 @@
 #include <natio.h>
 #include <errno.h>
 
+/*****************************************************************************
+ * cons - create filesystem objects
+ *
+ * SYNOPSIS
+ *
+ *     cons --file <filename>
+ *     cons -f <filename>
+ *     cons <filename>
+ *
+ *     Creates an empty file at the path <filename>.
+ *
+ *     cons --dir <path>
+ *     cons -d <path>
+ *     
+ *     Creates an empty directory at the path <path>.
+ */ 
+
 int main(int argc, char **argv) {
 	uint64_t fobj, dir;
 	char *path;

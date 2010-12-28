@@ -89,7 +89,7 @@ struct tar_file *tar_parse(uint8_t *base) {
 	return filelist;
 }
 
-struct tar_file *tar_find(struct tar_file *archive, char *name) {
+struct tar_file *tar_find(struct tar_file *archive, const char *name) {
 	uintptr_t i;
 
 	for (i = 0; archive[i].name; i++) {

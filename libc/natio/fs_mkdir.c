@@ -14,31 +14,38 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef TAR_H
-#define TAR_H
+#include <stdint.h>
+#include <stdlib.h>
+#include <natio.h>
+#include <errno.h>
 
-#define TAR_BLOCKSIZE 512
+/*****************************************************************************
+ * fs_mkdir
+ *
+ * Creates a new directory at path <path>. Returns zero on success, nonzero
+ * on failure.
+ */
 
-struct tar_file {
-	char *name;
-	void *start;
-	size_t size;
-};
+int fs_mkdir(const char *path) {
+	uint64_t dir, newdir;
+	char *str;
 
-struct tar_block {
-	char filename[100];
-	char mode[8];
-	char owner[8];
-	char group[8];
-	char filesize[12];
-	char timestamp[12];
-	char checksum[8];
-	char link[1];
-	char linkname[100];
-};
+	if (fs_find(0, path)) {
+		errno = EEXIST;
+		return 1;
+	}
 
-size_t           tar_size(uint8_t *base);
-struct tar_file *tar_parse(uint8_t *base);
-struct tar_file *tar_find(struct tar_file *archive, const char *name);
+	str = path_parent(path);
+	if (!str) return 1;
+	dir = fs_find(0, str);
+	if (!dir) return 1;
+	free(str);
 
-#endif/*TAR_H*/
+	str = path_name(path);
+	if (!str) return 1;
+	newdir = fs_cons(dir, str, FOBJ_DIR);
+	if (!newdir) return 1;
+	free(str);
+
+	return 0;
+}

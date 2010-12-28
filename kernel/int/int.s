@@ -73,7 +73,7 @@ INTN	47
 
 ; System calls
 INTN	64	; send
-INTN	65	; drop
+INTN	65	; done
 INTN	66	; when
 INTN	67	; rirq
 INTN	68
