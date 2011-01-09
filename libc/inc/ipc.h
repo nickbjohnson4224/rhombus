@@ -48,6 +48,7 @@
 #define PORT_FS		21
 #define PORT_MMAP	22
 #define PORT_EVENT	23
+#define PORT_CMD	24
 
 void _on_event(void);
 

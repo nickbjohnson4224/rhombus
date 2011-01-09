@@ -27,5 +27,9 @@ char *strrchr(const char *s, char c) {
 		}
 	}
 
+	if (s[0] == c) {
+		return (char*) s;
+	}
+
 	return NULL;
 }

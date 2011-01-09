@@ -29,7 +29,6 @@ int main() {
 	int pid;
 	char *argv[100];
 	char *path;
-	bool daemon;
 
 	setenv("PWD", "/");
 
@@ -62,14 +61,6 @@ int main() {
 				fprintf(stderr, "%s: %s: no such directory\n", getenv("NAME"), argv[1]);
 			}
 			continue;
-		}
-
-		if (argv[n-1][0] == '&') {
-			argv[n-1] = NULL;
-			daemon = true;
-		}
-		else {
-			daemon = false;
 		}
 
 		pid = fork();

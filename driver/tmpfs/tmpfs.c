@@ -35,7 +35,7 @@ void tmpfs_init(int argc, char **argv) {
 
 struct fs_obj *tmpfs_cons(int type) {
 	struct fs_obj *fobj = NULL;
-	
+
 	switch (type) {
 	case FOBJ_FILE:
 		fobj        = calloc(sizeof(struct fs_obj), 1);

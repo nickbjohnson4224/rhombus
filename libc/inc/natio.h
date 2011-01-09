@@ -24,6 +24,11 @@
 
 /* native I/O routines *****************************************************/
 
+#define RP_CONS(pid, idx) ((((uint64_t) (pid)) << 32) | (uint64_t) (idx))
+#define RP_PID(rp) ((rp) >> 32)
+#define RP_INDEX(rp) ((rp) & 0xFFFFFFFF)
+#define RP_NULL ((uint64_t) 0)
+
 struct io_cmd {
 	uint32_t inode;
 	size_t   length;
@@ -31,23 +36,17 @@ struct io_cmd {
 	uint8_t  data[];
 };
 
-size_t io_send(uint64_t fd, void *r, void *s, size_t size, uint64_t off, uint8_t port);
+size_t io_send(uint64_t rp, void *r, void *s, size_t size, uint64_t off, uint8_t port);
 
-size_t read (uint64_t fd, void *buf, size_t size, uint64_t offset);
-size_t write(uint64_t fd, void *buf, size_t size, uint64_t offset);
-int    sync (uint64_t fd);
-int    reset(uint64_t fd);
+size_t   read (uint64_t rp, void *buf, size_t size, uint64_t offset);
+size_t   write(uint64_t rp, void *buf, size_t size, uint64_t offset);
+int      sync (uint64_t rp);
+int      reset(uint64_t rp);
 
-/* memory mapped I/O routines **********************************************/
-
-struct mmap_cmd {
-	uint32_t inode;
-	size_t   length;
-	uint64_t offset;
-	uint32_t prot;
-};
-
-void *mmap(uint64_t fd, size_t length, int prot, uint64_t offset);
+uint64_t io_find(const char *name);
+uint64_t io_cons(const char *name, int type);
+int      io_remv(const char *name);
+int      io_link(const char *name, uint64_t rp);
 
 /* filesystem operations ***************************************************/
 
@@ -95,16 +94,10 @@ uint64_t fs_lfind (uint64_t root, const char *path);
 uint8_t  fs_perm  (uint64_t fobj, uint32_t user);
 int      fs_auth  (uint64_t fobj, uint32_t user, uint8_t perm);
 
-void     fs_chroot(FILE *root);
-
-int      fs_bind  (uint64_t fobj, const char *path);
-int      fs_ubind (const char *path);
-int      fs_mkdir (const char *path);
-int      fs_touch (const char *path);
-
 #define FOBJ_NULL	0x00
 #define FOBJ_FILE	0x01
 #define FOBJ_DIR	0x02
+#define FOBJ_PORT	0x04
 
 /* path manipulation *******************************************************/
 
@@ -132,5 +125,16 @@ char *path_simplify(const char *path);
 
 uint64_t fdload(int id);
 int      fdsave(int id, uint64_t fd);
+
+/* memory mapped I/O routines **********************************************/
+
+struct mmap_cmd {
+	uint32_t inode;
+	size_t   length;
+	uint64_t offset;
+	uint32_t prot;
+};
+
+void *mmap(uint64_t fd, size_t length, int prot, uint64_t offset);
 
 #endif/*NATIO_H*/

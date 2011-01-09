@@ -71,6 +71,7 @@ void _init() {
 	when(PORT_READ,  reject);
 	when(PORT_WRITE, reject);
 	when(PORT_MMAP,  reject);
+	when(PORT_CMD,   reject);
 
 	/* unpack argument list */
 	pack = __pack_load(PACK_KEY_ARG, &length);

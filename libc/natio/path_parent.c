@@ -37,6 +37,7 @@ char *path_parent(const char *path) {
 	}
 	
 	size = (uintptr_t) tail - (uintptr_t) path;
+
 	parent = malloc(size + 1);
 	strlcpy(parent, path, size + 1);
 

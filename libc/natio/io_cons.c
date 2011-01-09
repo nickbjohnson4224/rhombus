@@ -15,21 +15,42 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
 #include <natio.h>
-#include <ipc.h>
+#include <errno.h>
 
-/****************************************************************************
- * reset
+/*****************************************************************************
+ * io_cons
  *
- * Deletes the contents of the file <file>.
+ * High level filesystem operation. Attempts to construct a resource of type
+ * <type> at the path <name>. Returns a resource pointer to the constructed
+ * resource on success, RP_NULL on failure.
  */
 
-int reset(uint64_t file) {
+uint64_t io_cons(const char *name, int type) {
+	uint64_t dir, rp;
+	char *dirname, *resname;
 
-	if (fs_size(file) == 0) {
-		return 1;
+	dirname = path_parent(name);
+	resname = path_name(name);
+
+	if (!dirname || !resname) {
+		return RP_NULL;
 	}
 
-	return io_send(file, NULL, NULL, 0, 0, PORT_RESET);
+	/* find requested parent directory */
+	dir = fs_find(RP_NULL, dirname);
+	free(dirname);
+
+	if (!dir) {
+		free(resname);
+		return RP_NULL;
+	}
+
+	/* construct file */
+	rp = fs_cons(dir, resname, type);
+	free(resname);
+
+	return rp;
 }

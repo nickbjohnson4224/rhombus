@@ -15,21 +15,16 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
+#include <stdlib.h>
 #include <natio.h>
-#include <ipc.h>
 
-/****************************************************************************
- * reset
+/*****************************************************************************
+ * io_find
  *
- * Deletes the contents of the file <file>.
+ * High level filesystem operation. Returns the resource pointer corresponding
+ * to the path <name>.
  */
 
-int reset(uint64_t file) {
-
-	if (fs_size(file) == 0) {
-		return 1;
-	}
-
-	return io_send(file, NULL, NULL, 0, 0, PORT_RESET);
+uint64_t io_find(const char *name) {
+	return fs_find(RP_NULL, name);
 }

@@ -20,7 +20,7 @@
 #include <proc.h>
 
 /*****************************************************************************
- * find_wrapper
+ * lfnd_wrapper
  *
  * Performs the requested actions of a FS_LFND command.
  */

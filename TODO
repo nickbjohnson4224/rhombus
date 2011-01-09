@@ -1,4 +1,4 @@
-For 0.7 Alpha: (due 31 Dec 2010)
+For 0.7 Alpha:
 
 + "link" page flag
 + shared library manager
@@ -6,8 +6,10 @@ For 0.7 Alpha: (due 31 Dec 2010)
 + dynamic linker
 - daemon control
 - event protocol
+- thread operations
+- timeouts for I/O
 
-For 0.8 Alpha: (due 15 Jan 2011)
+For 0.8 Alpha:
 
 - finish libc math functions
 - finish printf/scanf
@@ -17,7 +19,7 @@ For 0.8 Alpha: (due 15 Jan 2011)
 - signals from terminal (esp. ctrl-C)
 - curses port
 
-For 0.9 Alpha: (due 30 Jan 2011)
+For 0.9 Alpha:
 
 - dynamic linking
 - drivers as shared libraries?

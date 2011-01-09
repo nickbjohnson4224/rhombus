@@ -48,7 +48,7 @@ static uint64_t start(struct tar_file *file, char const **argv) {
 
 	mwaits(PORT_CHILD, pid);
 
-	return ((uint64_t) pid << 32);
+	return RP_CONS(pid, 0);
 }
 
 int main() {
@@ -70,28 +70,32 @@ int main() {
 	argv[1] = NULL;
 	file = tar_find(boot_image, "sbin/tmpfs");
 	fs_root = start(file, argv);
-	fs_cons(fs_find(0, "/"), "dev", FOBJ_DIR);
-	fs_cons(fs_find(0, "/"), "sys", FOBJ_DIR);
+	io_cons("/dev", FOBJ_DIR);
+	io_cons("/sys", FOBJ_DIR);
+
+	/* Logfile */
+	io_cons("/dev/stderr", FOBJ_FILE);
 
 	/* Init control file */
-	fs_bind((uint64_t) getpid() << 32 + 1, "/sys/init");
+	io_link("/sys/init", RP_CONS(getpid(), 1));
 
 	/* Terminal Driver */
 	argv[0] = "term";
 	argv[1] = NULL;
 	file = tar_find(boot_image, "sbin/term");
 	temp = start(file, argv);
-	fs_bind(temp, "/dev/term");
+	io_link("/dev/term", temp);
+	io_link("/dev/stdout", temp);
 
 	/* Splash */
-	stderr = stdout = fdopen(temp, "w");
+	stderr = stdout = fopen("/dev/stdout", "w");
 	printf(splash);
 
 	/* Initrd */
 	driver_init(&initrd_driver, 0, NULL);
 	setenv("NAME", "unknown");
-	fs_bind((uint64_t) getpid() << 32, "/dev/initrd");
-
+	io_link("/dev/initrd", RP_CONS(getpid(), 0));
+	
 	/* Root filesystem (tarfs) */
 	argv[0] = "tarfs";
 	argv[1] = "/dev/initrd";
@@ -99,38 +103,33 @@ int main() {
 	file = tar_find(boot_image, "sbin/tarfs");
 	temp = start(file, argv);
 
-	/* Bind /dev and /sys and change root */
-	temp1 = fs_find(0, "/dev");
-	temp2 = fs_find(0, "/sys");
+	/* Link /dev and /sys and change root */
+	temp1 = io_find("/dev");
+	temp2 = io_find("/sys");
 	fs_root = temp;
-	fs_link(fs_find(0, "/dev"), temp1);
-	fs_link(fs_find(0, "/sys"), temp2);
-
-	/* Shared object daemon (sod) */
-	argv[0] = "sod";
-	argv[1] = "/lib";
-	argv[2] = NULL;
-	file = tar_find(boot_image, "sbin/sod");
-	fs_bind(start(file, argv), "/sys/lib");
-	setenv("LDPATH", "/sys/lib");
+	io_link("/dev", temp1);
+	io_link("/sys", temp2);
 
 	/* Temporary filesystem */
 	argv[0] = "tmpfs";
 	argv[1] = NULL;	
 	file = tar_find(boot_image, "sbin/tmpfs");
-	fs_bind(start(file, argv), "/tmp");
+	io_link("/tmp", start(file, argv));
 
 	/* Keyboard Driver */
 	argv[0] = "kbd";
 	file = tar_find(boot_image, "sbin/kbd");
-	temp = start(file, argv);
-	fs_bind(temp, "/dev/kbd");
-	stdin = fdopen(temp, "r");
+	io_link("/dev/kbd", start(file, argv));
+	io_link("/dev/stdin", io_find("/dev/kbd"));
+
+	/* Stdin */
+	stdin = fopen("/dev/stdin", "r");
 
 	/* Time Driver */
 	argv[0] = "time";
+	argv[1] = NULL;
 	file = tar_find(boot_image, "sbin/time");
-	fs_bind(start(file, argv), "/dev/time");
+	io_link("/dev/time", start(file, argv));
 
 	/* Path */
 	setenv("PATH", "/bin");

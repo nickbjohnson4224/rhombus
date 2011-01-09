@@ -15,21 +15,34 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
 #include <natio.h>
-#include <ipc.h>
+#include <errno.h>
 
-/****************************************************************************
- * reset
+/*****************************************************************************
+ * io_link
  *
- * Deletes the contents of the file <file>.
+ * High level filesystem operation. Modifies the link pointer of an existing
+ * link or directory at path <name> to resource pointer <rp>. If <rp> is null,
+ * the link becomes a directory. Returns zero on success, nonzero on error.
  */
 
-int reset(uint64_t file) {
+int io_link(const char *name, uint64_t rp) {
+	uint64_t link;
 
-	if (fs_size(file) == 0) {
-		return 1;
+	/* find actual link */
+	link = fs_lfind(RP_NULL, name);
+
+	if (!link) {
+		/* try to create a new link */
+		link = io_cons(name, FOBJ_DIR);
+
+		if (!link) {
+			return 1;
+		}
 	}
 
-	return io_send(file, NULL, NULL, 0, 0, PORT_RESET);
+	/* set link value */
+	return fs_link(link, rp);
 }
