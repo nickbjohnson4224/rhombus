@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -28,9 +28,22 @@
 
 #define fork _fork		/* Spawn new process */
 
-/* scheduler management ****************************************************/
+/* thread management *******************************************************/
 
-void sleep(void);
+void     stop  (void);               /* block current thread */
+void     freeze(uint32_t tid);       /* block other thread */
+void     wake  (uint32_t tid);       /* unblock thread by ID */
+uint32_t also  (void (*func)(void)); /* spawn new thread */
+void     sleep (void);               /* relinquish timeslice */
+void     done  (void);               /* end current thread */
+
+/* kernel time *************************************************************/
+
+/* note: all times are in 256ths of a second since bootup */
+uint64_t getktime(void); /* kernel time */
+uint64_t getctime(void); /* cpu time */
+uint64_t getptime(void); /* process time */
+uint64_t getttime(void); /* thread time */
 
 /* PIDs ********************************************************************/
 

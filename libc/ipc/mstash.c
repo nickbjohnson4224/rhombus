@@ -16,6 +16,7 @@
 
 #include <stdlib.h>
 #include <mutex.h>
+#include <proc.h>
 #include <ipc.h>
 
 /****************************************************************************
@@ -26,9 +27,10 @@
 
 void mstash(struct msg *msg) {
 
-	mutex_spin(&m_msg_queue[msg->port]); {
+	/* add message to queue */
+	mutex_spin(&m_msg_queue[msg->port]);
 		msg->prev = &msg_queue[msg->port];
 		msg->next =  msg_queue[msg->port].next;
 		msg_queue[msg->port].next = msg;
-	} mutex_free(&m_msg_queue[msg->port]);
+	mutex_free(&m_msg_queue[msg->port]);
 }

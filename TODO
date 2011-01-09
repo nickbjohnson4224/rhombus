@@ -6,7 +6,7 @@ For 0.7 Alpha:
 + dynamic linker
 - daemon control
 + event protocol
-- thread operations
++ thread operations
 - timeouts for I/O
 
 For 0.8 Alpha:

@@ -135,7 +135,7 @@ extern void
  */
 
 typedef void (*int_raw_handler_t) (void);
-static int_raw_handler_t idt_raw[] = {
+static int_raw_handler_t idt_raw[256] = {
 
 	/* faults */
 	int0, 	int1, 	int2, 	int3, 	int4, 	int5, 	int6, 	int7, 

@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <mutex.h>
+#include <proc.h>
 #include <ipc.h>
 
 /****************************************************************************
@@ -52,6 +53,7 @@ static struct msg *_mwaitm(uint8_t port, uint32_t source) {
 			break;
 		}
 
+		sleep();
 	} while (1);
 
 	mutex_free(&m_msg_queue[port]);

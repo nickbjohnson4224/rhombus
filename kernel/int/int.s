@@ -76,14 +76,14 @@ INTN	64	; send
 INTN	65	; done
 INTN	66	; when
 INTN	67	; rirq
-INTN	68
-INTN	69
+INTN	68	; also
+INTN	69	; stat
 INTN	70  ; page
 INTN	71	; phys
 INTN	72	; fork
 INTN	73	; exit
-INTN	74
-INTN	75
+INTN	74	; stop
+INTN	75	; wake
 INTN	76	; gpid
 INTN	77	; time
 INTN	78	; user

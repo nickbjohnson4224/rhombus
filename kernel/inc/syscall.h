@@ -24,12 +24,14 @@
 #define SYSCALL_DONE	0x41
 #define SYSCALL_WHEN	0x42
 #define SYSCALL_RIRQ	0x43
-
+#define SYSCALL_ALSO	0x44
+#define SYSCALL_STAT	0x45
 #define SYSCALL_PAGE	0x46
 #define SYSCALL_PHYS	0x47
 #define SYSCALL_FORK	0x48
 #define SYSCALL_EXIT	0x49
-
+#define SYSCALL_STOP	0x4A
+#define SYSCALL_WAKE	0x4B
 #define SYSCALL_GPID	0x4C
 #define SYSCALL_TIME	0x4D
 #define SYSCALL_USER	0x4E
@@ -39,13 +41,14 @@ struct thread *syscall_send(struct thread *image);
 struct thread *syscall_done(struct thread *image);
 struct thread *syscall_when(struct thread *image);
 struct thread *syscall_rirq(struct thread *image);
-
+struct thread *syscall_also(struct thread *image);
+struct thread *syscall_stat(struct thread *image);
 struct thread *syscall_page(struct thread *image);
 struct thread *syscall_phys(struct thread *image);
-
 struct thread *syscall_fork(struct thread *image);
 struct thread *syscall_exit(struct thread *image);
-
+struct thread *syscall_stop(struct thread *image);
+struct thread *syscall_wake(struct thread *image);
 struct thread *syscall_gpid(struct thread *image);
 struct thread *syscall_time(struct thread *image);
 struct thread *syscall_user(struct thread *image);
