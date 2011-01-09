@@ -25,19 +25,19 @@
  * Performs the requested actions of a FS_MOVE command.
  */
 
-void move_wrapper(struct fs_cmd *cmd, uint32_t inode) {
+void move_wrapper(struct mp_fs *cmd) {
 	struct fs_obj *dir, *obj;	
 
 	/* make sure the request is within the driver */
-	if (cmd->v0 >> 32 != getpid()) {
+	if (RP_PID(cmd->v0) != getpid()) {
 		cmd->op = FS_ERR;
 		cmd->v0 = ERR_FILE;
 		return;
 	}
 
 	/* get the requested object and new parent directory */
-	dir = lfs_lookup(inode);
-	obj = lfs_lookup(cmd->v0 & 0xFFFFFFFF);
+	dir = lfs_lookup(cmd->index);
+	obj = lfs_lookup(RP_INDEX(cmd->v0));
 
 	if (!dir || !obj) {
 		/* return ERR_FILE on failure to find object or directory */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -28,36 +28,33 @@
 
 void read_wrapper(struct msg *msg) {
 	struct fs_obj *file;
-	struct io_cmd *cmd;
-	
-	if (!msg->packet) {
-		msend(PORT_REPLY, msg->source, msg);
+	struct mp_io *cmd;
+
+	cmd = io_recv(msg);
+
+	if (!cmd) {
+		error_reply(msg, 1);
 		return;
 	}
-
-	cmd = msg->packet;
 
 	if (!active_driver->read) {
-		cmd->length = 0;
-		msend(PORT_REPLY, msg->source, msg);
+		error_reply(msg, 1);
 		return;
 	}
 
-	file = lfs_lookup(cmd->inode);
+	file = lfs_lookup(cmd->index);
 
 	if (!file || (file->type != FOBJ_FILE)) {
-		cmd->length = 0;
-		msend(PORT_REPLY, msg->source, msg);
+		error_reply(msg, 1);
 		return;
 	}
 
 	if (!(acl_get(file->acl, gettuser()) & ACL_READ)) {
-		cmd->length = 0;
-		msend(PORT_REPLY, msg->source, msg);
+		error_reply(msg, 1);
 		return;
 	}
 	
-	cmd->length = active_driver->read(file, cmd->data, cmd->length, cmd->offset);
+	cmd->size = active_driver->read(file, cmd->data, cmd->size, cmd->offset);
 
 	msend(PORT_REPLY, msg->source, msg);
 }

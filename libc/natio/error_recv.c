@@ -14,51 +14,48 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
 #include <string.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <natio.h>
-#include <errno.h>
 
 /*****************************************************************************
- * fs_list
+ * error_recv
  *
- * Gives the name of the entry of number <entry> in the directory <dir>.
- * Returns a copy of that string on success, NULL on failure.
+ * Extract an error message from the given message <msg>. If the message
+ * contained is not a valid error message, this function returns NULL.
  */
 
-char *fs_list(uint64_t dir, int entry) {
-	struct mp_fs *command;
-	char *ret;
+struct mp_error *error_recv(struct msg *msg) {
+	struct mp_error *mp;
 
-	command = malloc(sizeof(struct mp_fs));
-	command->op = FS_LIST;
-	command->v0 = entry;
-	command->v1 = 0;
-	
-	command = fs_send(dir, command);
-	if (!command) {
-		errno = EBADMSG;
+	/* reject null messages and packets */
+	if (!msg || !msg->packet || !msg->count) {
 		return NULL;
 	}
 
-	/* check for errors */
-	if (command->op == FS_ERR) {
-		switch (command->v0) {
-		case ERR_NULL: errno = 0; break;
-		case ERR_FILE: errno = ENOENT; break;
-		case ERR_DENY: errno = EACCES; break;
-		case ERR_FUNC: errno = ENOSYS; break;
-		case ERR_TYPE: errno = ENOTDIR; break;
-		case ERR_FULL: errno = EUNK; break;
-		}
+	/* get pointer to packet */
+	mp = msg->packet;
 
-		free(command);
+	/* reject other architectures */
+	if (mp->arch != MP_ARCH_NATIVE) {
 		return NULL;
 	}
-	
-	command->null0 = '\0';
-	ret = strdup(command->s0);
-	free(command);
-	return ret;
+
+	/* reject potential overflows */
+	if (mp->length > msg->count * PAGESZ) {
+		return NULL;
+	}
+
+	/* reject undersized packets */
+	if (mp->length < sizeof(struct mp_error)) {
+		return NULL;
+	}
+
+	/* reject other protocols */
+	if (mp->protocol != MP_PROT_ERROR) {
+		return NULL;
+	}
+
+	return mp;
 }

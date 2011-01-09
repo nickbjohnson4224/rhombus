@@ -91,17 +91,17 @@ void sync_wrapper (struct msg *msg);
 void reset_wrapper(struct msg *msg);
 void mmap_wrapper (struct msg *msg);
 
-void find_wrapper(struct fs_cmd *cmd, uint32_t inode);
-void lfnd_wrapper(struct fs_cmd *cmd, uint32_t inode);
-void cons_wrapper(struct fs_cmd *cmd, uint32_t inode);
-void move_wrapper(struct fs_cmd *cmd, uint32_t inode);
-void remv_wrapper(struct fs_cmd *cmd, uint32_t inode);
-void link_wrapper(struct fs_cmd *cmd, uint32_t inode);
-void list_wrapper(struct fs_cmd *cmd, uint32_t inode);
-void size_wrapper(struct fs_cmd *cmd, uint32_t inode);
-void type_wrapper(struct fs_cmd *cmd, uint32_t inode);
-void perm_wrapper(struct fs_cmd *cmd, uint32_t inode);
-void auth_wrapper(struct fs_cmd *cmd, uint32_t inode);
+void find_wrapper(struct mp_fs *cmd);
+void lfnd_wrapper(struct mp_fs *cmd);
+void cons_wrapper(struct mp_fs *cmd);
+void move_wrapper(struct mp_fs *cmd);
+void remv_wrapper(struct mp_fs *cmd);
+void link_wrapper(struct mp_fs *cmd);
+void list_wrapper(struct mp_fs *cmd);
+void size_wrapper(struct mp_fs *cmd);
+void type_wrapper(struct mp_fs *cmd);
+void perm_wrapper(struct mp_fs *cmd);
+void auth_wrapper(struct mp_fs *cmd);
 
 /* driver interface structure ***********************************************/
 

@@ -112,6 +112,9 @@ struct thread *syscall_send(struct thread *image) {
 	else {
 		message = NULL;
 	}
+	
+	/* return zero unless otherwise specified */
+	image->eax = 0;
 
 	/* send message */
 	return thread_send(image, target, port, message);

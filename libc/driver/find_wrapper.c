@@ -25,11 +25,11 @@
  * Performs the requested actions of a FS_FIND command.
  */
 
-void find_wrapper(struct fs_cmd *cmd, uint32_t inode) {
+void find_wrapper(struct mp_fs *cmd) {
 	uint64_t file;
 
 	/* find pointer to file */
-	file = lfs_find(inode, cmd->s0, false);
+	file = lfs_find(cmd->index, cmd->s0, false);
 
 	if (file) {
 		/* return file pointer on success */

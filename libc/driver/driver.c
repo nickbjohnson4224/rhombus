@@ -46,7 +46,6 @@ void driver_init(struct driver *driver, int argc, char **argv) {
 	when(PORT_WRITE, write_wrapper);
 	when(PORT_SYNC,  sync_wrapper);
 	when(PORT_RESET, reset_wrapper);
-	when(PORT_MMAP,  mmap_wrapper);
 
 	if (active_driver->init) {
 		active_driver->init(argc, argv);

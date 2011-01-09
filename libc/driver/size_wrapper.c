@@ -17,6 +17,7 @@
 #include <driver.h>
 #include <stdlib.h>
 #include <mutex.h>
+#include <natio.h>
 #include <proc.h>
 
 /*****************************************************************************
@@ -25,11 +26,11 @@
  * Performs the requested actions of a FS_SIZE command.
  */
 
-void size_wrapper(struct fs_cmd *cmd, uint32_t inode) {
+void size_wrapper(struct mp_fs *cmd) {
 	struct fs_obj *file;
 	
 	/* get requested file */
-	file = lfs_lookup(inode);
+	file = lfs_lookup(cmd->index);
 
 	if (file) {
 		mutex_spin(&file->mutex);

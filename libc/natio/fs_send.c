@@ -14,31 +14,58 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <natio.h>
 
 /*****************************************************************************
  * fs_send
  *
  * Send the filesystem command <cmd> to the root directory <root>. The 
- * response is saved back to <cmd> and returned. Returns NULL on error.
+ * response is returned. <cmd> is freed. Returns NULL on error.
  */
 
-struct fs_cmd *fs_send(uint64_t root, struct fs_cmd *cmd) {
-	size_t length;
+struct mp_fs *fs_send(uint64_t root, struct mp_fs *cmd) {
+	struct msg *reply;
+	struct mp_fs *ret;
+	struct mp_error *err;
 
 	if (!root) {
 		root = fs_root;
 	}
 
-	cmd->null0 = '\0';
-	length = sizeof(struct fs_cmd);
-	length = io_send(root, cmd, cmd, length, 0, PORT_FS);
+	/* set up command */
+	cmd->length   = sizeof(struct mp_fs);
+	cmd->protocol = MP_PROT_FS;
+	cmd->null0    = '\0';
+
+	/* send and recieve */
+	reply = rp_send(root, PORT_FS, (struct mp_basic*) cmd);
+
+	/* attempt to interpret as filesystem command */
+	ret = fs_recv(reply);
+	if (ret) {
+		free(reply);
+		return ret;
+	}
+
+	/* attempt to interpret as error */
+	err = error_recv(reply);
+	if (err) {
+		free(err);
+		free(reply);
+
+		ret = malloc(sizeof(struct mp_fs));
+		ret->op = FS_ERR;
+		ret->v0 = ERR_NULL;
+		return ret;
+	}
 	
-	if (length != sizeof(struct fs_cmd)) {
-		return NULL;
+	/* reject and return NULL */
+	if (reply) {
+		if (reply->packet) free(reply->packet);
+		free(reply);
 	}
-	else {
-		return cmd;
-	}
+	return NULL;
 }

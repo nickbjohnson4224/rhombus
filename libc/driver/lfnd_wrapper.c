@@ -17,6 +17,7 @@
 #include <driver.h>
 #include <stdlib.h>
 #include <mutex.h>
+#include <natio.h>
 #include <proc.h>
 
 /*****************************************************************************
@@ -25,11 +26,11 @@
  * Performs the requested actions of a FS_LFND command.
  */
 
-void lfnd_wrapper(struct fs_cmd *cmd, uint32_t inode) {
+void lfnd_wrapper(struct mp_fs *cmd) {
 	uint64_t file;
 
 	/* find pointer to file without following terminal links */
-	file = lfs_find(inode, cmd->s0, true);
+	file = lfs_find(cmd->index, cmd->s0, true);
 
 	if (file) {
 		/* return file pointer on success */

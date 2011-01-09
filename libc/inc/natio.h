@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -22,21 +22,78 @@
 #include <stdio.h>
 #include <ipc.h>
 
-/* native I/O routines *****************************************************/
+/* resource pointer macros *************************************************/
 
 #define RP_CONS(pid, idx) ((((uint64_t) (pid)) << 32) | (uint64_t) (idx))
 #define RP_PID(rp) ((rp) >> 32)
 #define RP_INDEX(rp) ((rp) & 0xFFFFFFFF)
 #define RP_NULL ((uint64_t) 0)
 
-struct io_cmd {
-	uint32_t inode;
-	size_t   length;
+/* high level message primitives *******************************************/
+
+struct mp_basic {
+	uint32_t length;
+	uint32_t index;
+	uint16_t protocol;
+	uint8_t  arch;
+	uint8_t  type;
+};
+
+#define MP_PROT_BASIC 0 // vanilla message protocol (gcd of all others)
+#define MP_PROT_ERROR 1 // simple error protocol
+#define MP_PROT_IO    2 // I/O message protocol
+#define MP_PROT_FS    3 // filesystem message protocol
+#define MP_PROT_EVENT 4 // event protocol
+#define MP_PROT_RPC   5 // remote procedure call message protocol
+// note: all user defined protocols must be > 1024
+
+#define MP_ARCH_L32	0  // little endian 32-bit architecture
+#define MP_ARCH_B32	1  // big endian 32-bit architecture
+#define MP_ARCH_L64	2  // little endian 64-bit architecture
+#define MP_ARCH_B64	3  // big endian 64-bit architecture
+#define MP_ARCH_NATIVE MP_ARCH_L32
+
+#define MP_TYPE_ASYNC 0 // asynchronous request
+#define MP_TYPE_SYNC  1 // synchronous request
+#define MP_TYPE_TSYNC 2 // timeout synchronous request
+
+struct msg *rp_send (uint64_t rp, uint8_t port, struct mp_basic *msg);
+struct msg *rp_tsend(uint64_t rp, uint8_t port, struct mp_basic *msg, uint32_t timeout);
+int         rp_asend(uint64_t rp, uint8_t port, struct mp_basic *msg);
+
+struct mp_basic *mp_recv(struct msg *msg);
+
+/* simple error protocol ***************************************************/
+
+struct mp_error {
+	uint32_t length;
+	uint32_t index;
+	uint16_t protocol;
+	uint8_t  arch;
+	uint8_t  type;
+	int      value;
+};
+
+struct mp_error *error_cons(int value);
+struct mp_error *error_recv(struct msg *msg);
+
+void error_reply(struct msg *msg, int value);
+
+/* native I/O routines *****************************************************/
+
+struct mp_io {
+	uint32_t length;
+	uint32_t index;
+	uint16_t protocol;
+	uint8_t  arch;
+	uint8_t  type;
+	size_t   size;
 	uint64_t offset;
 	uint8_t  data[];
 };
 
 size_t io_send(uint64_t rp, void *r, void *s, size_t size, uint64_t off, uint8_t port);
+struct mp_io *io_recv(struct msg *msg);
 
 size_t   read (uint64_t rp, void *buf, size_t size, uint64_t offset);
 size_t   write(uint64_t rp, void *buf, size_t size, uint64_t offset);
@@ -49,6 +106,19 @@ int      io_remv(const char *name);
 int      io_link(const char *name, uint64_t rp);
 
 /* filesystem operations ***************************************************/
+
+struct mp_fs {
+	uint32_t length;
+	uint32_t index;
+	uint16_t protocol;
+	uint8_t  arch;
+	uint8_t  type;
+	uint64_t v0;
+	uint64_t v1;
+	uint8_t  op;
+	char     s0[4000];
+	char     null0;
+};
 
 extern uint64_t fs_root;
 
@@ -72,15 +142,8 @@ extern uint64_t fs_root;
 #define ERR_TYPE 0x04
 #define ERR_FULL 0x05
 
-struct fs_cmd {
-	uint64_t v0;
-	uint64_t v1;
-	uint8_t  op;
-	char     s0[4000];
-	char     null0;
-};
-
-struct fs_cmd *fs_send(uint64_t root, struct fs_cmd *cmd);
+struct mp_fs *fs_send(uint64_t root, struct mp_fs *cmd);
+struct mp_fs *fs_recv(struct msg *msg);
 
 uint64_t fs_find  (uint64_t root, const char *path);
 uint64_t fs_cons  (uint64_t dir, const char *name, int type);
@@ -98,6 +161,38 @@ int      fs_auth  (uint64_t fobj, uint32_t user, uint8_t perm);
 #define FOBJ_FILE	0x01
 #define FOBJ_DIR	0x02
 #define FOBJ_PORT	0x04
+
+/* high level events *******************************************************/
+
+struct mp_event {
+	uint32_t length;
+	uint32_t index;
+	uint16_t protocol;
+	uint8_t  arch;
+	uint8_t  type;
+	uint32_t event_id;
+	uint32_t value;
+	uint64_t timestamp;
+};
+
+int event_send(uint64_t rp, uint32_t event_id, uint32_t value);
+struct mp_event *event_recv(struct msg *msg);
+
+/* remote procedure calling ************************************************/
+
+struct mp_rpc {
+	uint32_t length;
+	uint32_t index;
+	uint16_t protocol;
+	uint8_t  arch;
+	uint8_t  type;
+	uint16_t argc;
+	char     args[];
+};
+
+int rpc_send (uint64_t rp, char *args);
+int rpc_sendv(uint64_t rp, ...);
+struct mp_rpc *rpc_recv(struct msg *msg);
 
 /* path manipulation *******************************************************/
 
@@ -125,16 +220,5 @@ char *path_simplify(const char *path);
 
 uint64_t fdload(int id);
 int      fdsave(int id, uint64_t fd);
-
-/* memory mapped I/O routines **********************************************/
-
-struct mmap_cmd {
-	uint32_t inode;
-	size_t   length;
-	uint64_t offset;
-	uint32_t prot;
-};
-
-void *mmap(uint64_t fd, size_t length, int prot, uint64_t offset);
 
 #endif/*NATIO_H*/

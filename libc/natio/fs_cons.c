@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,27 +21,31 @@
 #include <errno.h>
 
 /*****************************************************************************
- * fs_find
+ * fs_cons
  *
  * Attempts to create a new filesystem object of type <type> and name <name> 
  * in directory <dir>. Returns the new object on success, NULL on failure.
  */
 
 uint64_t fs_cons(uint64_t dir, const char *name, int type) {
-	struct fs_cmd command;
+	struct mp_fs *command;
+	uint64_t ret;
 
-	command.op = FS_CONS;
-	command.v0 = type;
-	command.v1 = 0;
-	strlcpy(command.s0, name, 4000);
+	command = malloc(sizeof(struct mp_fs));
+	command->op = FS_CONS;
+	command->v0 = type;
+	command->v1 = 0;
+	strlcpy(command->s0, name, 4000);
 	
-	if (!fs_send(dir, &command)) {
+	command = fs_send(dir, command);
+	if (!command) {
+		errno = EBADMSG;
 		return 0;
 	}
 
 	/* check for errors */
-	if (command.op == FS_ERR) {
-		switch (command.v0) {
+	if (command->op == FS_ERR) {
+		switch (command->v0) {
 		case ERR_NULL: errno = EUNK; break;
 		case ERR_FILE: errno = ENOENT; break;
 		case ERR_DENY: errno = EACCES; break;
@@ -50,8 +54,11 @@ uint64_t fs_cons(uint64_t dir, const char *name, int type) {
 		case ERR_FULL: errno = ENOSPC; break;
 		}
 
+		free(command);
 		return 0;
 	}
 
-	return command.v0;
+	ret = command->v0;
+	free(command);
+	return ret;
 }

@@ -25,11 +25,11 @@
  * Performs the requested actions of a FS_LINK command.
  */
 
-void link_wrapper(struct fs_cmd *cmd, uint32_t inode) {
+void link_wrapper(struct mp_fs *cmd) {
 	struct fs_obj *dir;
 	
 	/* get the requested directory */
-	dir = lfs_lookup(inode);
+	dir = lfs_lookup(cmd->index);
 
 	if (dir) {
 		mutex_spin(&dir->mutex);

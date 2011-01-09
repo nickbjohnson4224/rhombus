@@ -17,6 +17,7 @@
 #include <driver.h>
 #include <stdlib.h>
 #include <mutex.h>
+#include <natio.h>
 #include <proc.h>
 
 /*****************************************************************************
@@ -25,11 +26,11 @@
  * Performs the requested actions of a FS_PERM command.
  */
 
-void perm_wrapper(struct fs_cmd *cmd, uint32_t inode) {
+void perm_wrapper(struct mp_fs *cmd) {
 	struct fs_obj *fobj;
 	
 	/* look up the requested object */
-	fobj = lfs_lookup(inode);
+	fobj = lfs_lookup(cmd->index);
 
 	if (fobj) {
 		mutex_spin(&fobj->mutex);
@@ -45,4 +46,3 @@ void perm_wrapper(struct fs_cmd *cmd, uint32_t inode) {
 		cmd->v0 = ERR_FILE;
 	}
 }
-

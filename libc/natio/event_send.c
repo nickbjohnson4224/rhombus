@@ -14,47 +14,31 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
 #include <natio.h>
-#include <errno.h>
+#include <stdio.h>
+#include <arch.h>
+#include <ipc.h>
 
-/*****************************************************************************
- * fs_remove
+/***************************************************************************
+ * event_send
  *
- * Attempts to remove the fileystem object <fobj>. Returns zero on success,
- * nonzero on failure.
+ * Send an event to the resource <rp> with event id <event_id> and the value
+ * <value>. This event is timestamped with the current kernel time. Returns
+ * zero on success, nonzero on failure.
  */
 
-int fs_remove(uint64_t fobj) {
-	struct mp_fs *command;
+int event_send(uint64_t rp, uint32_t event_id, uint32_t value) {
+	struct mp_event *event;
 
-	command = malloc(sizeof(struct mp_fs));
-	command->op = FS_REMV;
-	command->v0 = 0;
-	command->v1 = 0;
-	
-	command = fs_send(fobj, command);
-	if (!command) {
-		errno = EBADMSG;
-		return 1;
-	}
+	event = malloc(sizeof(struct mp_event));
+	event->length    = sizeof(struct mp_event);
+	event->protocol  = MP_PROT_EVENT;
+	event->event_id  = event_id;
+	event->value     = value;
+	event->timestamp = 0; /* TODO - actual timestamp */
 
-	/* check for errors */
-	if (command->op == FS_ERR) {
-		switch (command->v0) {
-		case ERR_NULL: errno = EUNK; break;
-		case ERR_FILE: errno = ENOENT; break;
-		case ERR_DENY: errno = EACCES; break;
-		case ERR_FUNC: errno = ENOSYS; break;
-		case ERR_TYPE: errno = EUNK; break;
-		case ERR_FULL: errno = ENOTEMPTY; break;
-		}
-
-		free(command);
-		return 1;
-	}
-
-	free(command);
-	return 0;
+	return rp_asend(rp, PORT_EVENT, (struct mp_basic*) event);
 }

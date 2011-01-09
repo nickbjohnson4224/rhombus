@@ -15,50 +15,28 @@
  */
 
 #include <stdint.h>
-#include <string.h>
 #include <stdlib.h>
 #include <natio.h>
-#include <errno.h>
+#include <ipc.h>
 
 /*****************************************************************************
- * fs_list
+ * error_reply
  *
- * Gives the name of the entry of number <entry> in the directory <dir>.
- * Returns a copy of that string on success, NULL on failure.
+ * Send an error message with value <value> to the sender of the message
+ * <msg> on port PORT_REPLY and free the message <msg>.
  */
 
-char *fs_list(uint64_t dir, int entry) {
-	struct mp_fs *command;
-	char *ret;
+void error_reply(struct msg *msg, int value) {
+	struct mp_error *error;
 
-	command = malloc(sizeof(struct mp_fs));
-	command->op = FS_LIST;
-	command->v0 = entry;
-	command->v1 = 0;
-	
-	command = fs_send(dir, command);
-	if (!command) {
-		errno = EBADMSG;
-		return NULL;
-	}
+	error = error_cons(value);
 
-	/* check for errors */
-	if (command->op == FS_ERR) {
-		switch (command->v0) {
-		case ERR_NULL: errno = 0; break;
-		case ERR_FILE: errno = ENOENT; break;
-		case ERR_DENY: errno = EACCES; break;
-		case ERR_FUNC: errno = ENOSYS; break;
-		case ERR_TYPE: errno = ENOTDIR; break;
-		case ERR_FULL: errno = EUNK; break;
+	if (msg) {
+		rp_asend(RP_CONS(msg->source, 0), PORT_REPLY, (struct mp_basic*) error);
+
+		if (msg->packet) {
+			free(msg->packet);
 		}
-
-		free(command);
-		return NULL;
+		free(msg);
 	}
-	
-	command->null0 = '\0';
-	ret = strdup(command->s0);
-	free(command);
-	return ret;
 }

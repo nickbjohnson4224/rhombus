@@ -17,6 +17,7 @@
 #include <driver.h>
 #include <stdlib.h>
 #include <mutex.h>
+#include <natio.h>
 #include <proc.h>
 #include <ipc.h>
 
@@ -28,32 +29,29 @@
 
 void sync_wrapper(struct msg *msg) {
 	struct fs_obj *file;
-	struct io_cmd *cmd;
+	struct mp_basic *cmd;
 
 	if (!msg->packet) {
-		msend(PORT_REPLY, msg->source, msg);
+		error_reply(msg, 1);
 		return;
 	}
 
 	cmd = msg->packet;
 
 	if (!active_driver->write) {
-		cmd->length = 0;
-		msend(PORT_REPLY, msg->source, msg);
+		error_reply(msg, 1);
 		return;
 	}
 
-	file = lfs_lookup(cmd->inode);
+	file = lfs_lookup(cmd->index);
 
 	if (!file || (file->type != FOBJ_FILE)) {
-		cmd->length = 0;
-		msend(PORT_REPLY, msg->source, msg);
+		error_reply(msg, 1);
 		return;
 	}
 
 	if (!(acl_get(file->acl, gettuser()) & ACL_WRITE)) {
-		cmd->length = 0;
-		msend(PORT_REPLY, msg->source, msg);
+		error_reply(msg, 1);
 		return;
 	}
 

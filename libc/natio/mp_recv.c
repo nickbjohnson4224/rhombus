@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,36 +15,42 @@
  */
 
 #include <string.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <natio.h>
-#include <exec.h>
-#include <page.h>
 
 /*****************************************************************************
- * load_shared
+ * mp_recv
  *
- * Load a shared library image in read-only shared memory from the shared
- * object daemon. This function does searches through LDPATH if <soname> is
- * a relative path. Currently, only single-directory LDPATHs are supported.
+ * Extract a basic message from the given message <msg>. If the message
+ * contained is not a valid basic message, this function returns NULL.
  */
 
-void *load_shared(const char *soname) {
-	uint64_t fd;
-	char *path;
+struct mp_basic *mp_recv(struct msg *msg) {
+	struct mp_basic *mp;
 
-	if (soname[0] == '/') {
-		fd = fs_find(0, soname);
-	}
-	else {
-		path = strvcat(getenv("LDPATH"), soname, NULL);
-		fd = fs_find(0, path);
-		free(path);
-	}
-
-	if (!fd) {
+	/* reject null messages and packets */
+	if (!msg || !msg->packet || !msg->count) {
 		return NULL;
 	}
-	else {
-		return mmap(fd, fs_size(fd), PROT_READ | PROT_EXEC, 0);
+
+	/* get pointer to packet */
+	mp = msg->packet;
+
+	/* reject other architectures */
+	if (mp->arch != MP_ARCH_NATIVE) {
+		return NULL;
 	}
+
+	/* reject potential overflows */
+	if (mp->length > msg->count * PAGESZ) {
+		return NULL;
+	}
+
+	/* reject undersized packets */
+	if (mp->length < sizeof(struct mp_basic)) {
+		return NULL;
+	}
+
+	return mp;
 }

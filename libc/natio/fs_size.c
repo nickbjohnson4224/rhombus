@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,6 +15,7 @@
  */
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <natio.h>
 #include <errno.h>
 
@@ -27,20 +28,23 @@
  */
 
 uint64_t fs_size(uint64_t file) {
-	struct fs_cmd command;
+	struct mp_fs *command;
+	uint64_t ret;
 
-	command.op = FS_SIZE;
-	command.v0 = 0;
-	command.v1 = 0;
+	command = malloc(sizeof(struct mp_fs));
+	command->op = FS_SIZE;
+	command->v0 = 0;
+	command->v1 = 0;
 	
-	if (!fs_send(file, &command)) {
+	command = fs_send(file, command);
+	if (!command) {
 		errno = EBADMSG;
 		return 0;
 	}
 
 	/* check for errors */
-	if (command.op == FS_ERR) {
-		switch (command.v0) {
+	if (command->op == FS_ERR) {
+		switch (command->v0) {
 		case ERR_NULL: errno = EUNK; break;
 		case ERR_FILE: errno = ENOENT; break;
 		case ERR_DENY: errno = EACCES; break;
@@ -49,8 +53,11 @@ uint64_t fs_size(uint64_t file) {
 		case ERR_FULL: errno = EUNK; break;
 		}
 
+		free(command);
 		return 0;
 	}
 
-	return command.v0;
+	ret = command->v0;
+	free(command);
+	return ret;
 }

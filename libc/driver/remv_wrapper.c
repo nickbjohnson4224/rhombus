@@ -25,11 +25,11 @@
  * Performs the requested actions of a FS_REMV command.
  */
 
-void remv_wrapper(struct fs_cmd *cmd, uint32_t inode) {
+void remv_wrapper(struct mp_fs *cmd) {
 	struct fs_obj *fobj;
 	
 	/* get the requested object */
-	fobj = lfs_lookup(inode);
+	fobj = lfs_lookup(cmd->index);
 
 	if (fobj) {
 		mutex_spin(&fobj->mutex);

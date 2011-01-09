@@ -35,6 +35,7 @@ int io_link(const char *name, uint64_t rp) {
 	link = fs_lfind(RP_NULL, name);
 
 	if (!link) {
+
 		/* try to create a new link */
 		link = io_cons(name, FOBJ_DIR);
 

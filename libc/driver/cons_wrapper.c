@@ -26,7 +26,7 @@
  * Performs the requested actions of a FS_CONS command.
  */
 
-void cons_wrapper(struct fs_cmd *cmd, uint32_t inode) {
+void cons_wrapper(struct mp_fs *cmd) {
 	struct fs_obj *dir, *new_fobj;
 
 	/* make sure the active driver can construct new objects */
@@ -37,7 +37,7 @@ void cons_wrapper(struct fs_cmd *cmd, uint32_t inode) {
 	}
 
 	/* get the requested parent directory */
-	dir = lfs_lookup(inode);
+	dir = lfs_lookup(cmd->index);
 
 	if (dir) {
 		mutex_spin(&dir->mutex);

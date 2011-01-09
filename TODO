@@ -5,7 +5,7 @@ For 0.7 Alpha:
 + userspace exec
 + dynamic linker
 - daemon control
-- event protocol
++ event protocol
 - thread operations
 - timeouts for I/O
 

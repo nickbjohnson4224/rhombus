@@ -20,7 +20,7 @@
 #include <proc.h>
 #include <ipc.h>
 
-typedef void (*lfs_wrapper_t)(struct fs_cmd *cmd, uint32_t inode);
+typedef void (*lfs_wrapper_t)(struct mp_fs *cmd);
 
 static lfs_wrapper_t lfs_wrapper_v[12] = {
 	NULL,
@@ -44,30 +44,27 @@ static lfs_wrapper_t lfs_wrapper_v[12] = {
  */
 
 void lfs_wrapper(struct msg *msg) {
-	struct io_cmd *io_cmd;
-	struct fs_cmd *cmd;
+	struct mp_fs *cmd;
 
 	/* reject null packets */
 	if (!msg->packet) {
-		msend(PORT_REPLY, msg->source, msg);
+		error_reply(msg, 1);
 		return;
 	}
 
-	io_cmd = msg->packet;
+	cmd = msg->packet;
 
 	/* reject invalid packets */
-	if (io_cmd->length != sizeof(struct fs_cmd)) {
-		io_cmd->length = 0;
-		msend(PORT_REPLY, msg->source, msg);
+	if (cmd->length != sizeof(struct mp_fs)) {
+		error_reply(msg, 1);
 		return;
 	}
 
-	cmd = (void*) io_cmd->data;
 	cmd->null0 = '\0';
 
 	/* perform action */
 	if ((cmd->op < 12) && lfs_wrapper_v[cmd->op]) {
-		lfs_wrapper_v[cmd->op](cmd, io_cmd->inode);
+		lfs_wrapper_v[cmd->op](cmd);
 	}
 	else {
 		cmd->op = FS_ERR;

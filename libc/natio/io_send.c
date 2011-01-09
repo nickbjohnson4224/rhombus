@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -32,57 +32,49 @@
  * the number of bytes sent.
  */
 
-size_t io_send(uint64_t fd, void *r, void *s, size_t size, uint64_t off, uint8_t port) {
-	struct io_cmd *cmd;
-	size_t packet_size;
-	struct msg *msg;
-	event_t old_handler;
+size_t io_send(uint64_t rp, void *r, void *s, size_t size, uint64_t off, uint8_t port) {
+	struct mp_io *cmd;
+	struct mp_error *err;
+	struct msg *reply;
 
-	/* save old PORT_REPLY handler */
-	old_handler = when(PORT_REPLY, NULL);
+	/* format I/O command */
+	cmd = malloc(sizeof(struct mp_io) + size);
+	cmd->length   = sizeof(struct mp_io) + size;
+	cmd->size     = size;
+	cmd->offset   = off;
+	cmd->protocol = MP_PROT_IO;
 
-	/* allocate message */
-	msg = malloc(sizeof(struct msg));
-
-	/* figure out size of whole packet */
-	packet_size = sizeof(struct io_cmd) + size;
-	
-	/* allocate packet */
-	msg->count  = (packet_size % PAGESZ) ? (size / PAGESZ) + 1 : size / PAGESZ;
-	msg->packet = aalloc(msg->count * PAGESZ, PAGESZ);
-
-	/* set up I/O command header */
-	cmd = msg->packet;
-	cmd->length = size;
-	cmd->offset = off;
-	cmd->inode  = fd & 0xFFFFFFFF;
-
-	/* copy data from source */
+	/* copy from sending buffer */
 	if (s) memcpy(cmd->data, s, size);
 
-	/* send message */
-	msend(port, fd >> 32, msg);
+	reply = rp_send(rp, port, (struct mp_basic*) cmd);
 
-	/* recieve response */
-	msg = mwaits(PORT_REPLY, fd >> 32);
-	cmd = msg->packet;
+	/* attempt to interpret as I/O command */
+	cmd = io_recv(reply);
+	if (cmd) {
+		free(reply);
 
-	if (!cmd) {
-		size = 0;
-	}
-	else {
-		size = cmd->length;
+		/* copy to receiving buffer */
+		if (r) memcpy(r, cmd->data, cmd->size);
 
-		/* copy data to destination */
-		if (r) memcpy(r, cmd->data, size);
+		return cmd->size;
 	}
 
-	/* free recieved message */
-	if (msg->packet) free(msg->packet);
-	free(msg);
+	/* attempt to interpret as error */
+	err = error_recv(reply);
+	if (err) {
+		free(err);
+		free(reply);
+		return 0;
+	}
 
-	/* restore old PORT_REPLY handler */
-	when(PORT_REPLY, old_handler);
+	/* free message */
+	if (reply) {
+		if (reply->packet) {
+			free(reply->packet);
+		}
+		free(reply);
+	}
 
-	return size;
+	return 0;
 }
