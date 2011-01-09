@@ -25,13 +25,76 @@
 
 #include "vga.h"
 
-uint8_t  *vmem;
+uint8_t *vmem;
+
+void vga_init(int argc, char **argv) {
+	struct fs_obj *root;
+
+	root        = calloc(sizeof(struct fs_obj), 1);
+	root->type  = FOBJ_FILE;
+	root->size  = 0;
+	root->inode = 0;
+	root->acl   = acl_set_default(root->acl, ACL_READ | ACL_WRITE);
+	lfs_root(root);
+
+	vmem = valloc(0x20000);
+	page_phys(vmem, 0x20000, PROT_READ | PROT_WRITE, 0xA0000);
+
+	vga_set_mode(MODE_320x200x256);
+
+	mode->fill(0, 0, mode->width, mode->height, 0);
+
+	/* register the driver as /dev/vga0 */
+	io_link("/dev/vga0", RP_CONS(getpid(), 0));
+}
+
+size_t vga_read(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+	char data[16];
+
+	sprintf(data, "%u %u", mode->width, mode->height);
+
+	if (strlen(data) >= size) {
+		return 0;
+	}
+
+	memcpy(buffer, data, strlen(data) + 1);
+	return strlen(data);
+}
+
+size_t vga_write(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+	int off = offset;
+	size_t i;
+	uint32_t pixel;
+
+	for (i = 0; i < size / 3; i++) {
+		pixel = (buffer[i * 3] << 16) | (buffer[i * 3 + 1] << 8) | buffer[i * 3 + 2];
+		mode->plot((i + off) % mode->width, (i + off) / mode->width, pixel);
+	}
+
+	return size;
+}
+
+struct driver vga_driver = {
+	vga_init,
+
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+
+	NULL,
+	vga_read,
+	vga_write,
+	NULL,
+	NULL,
+	NULL,
+
+	NULL,
+};
 
 int main(int argc, char **argv) {
 
-	/* map the VGA memory region */
-	vmem = valloc(0x20000);
-	page_phys(vmem, 0x20000, PROT_READ | PROT_WRITE, 0xA0000);
+	driver_init(&vga_driver, argc, argv);
 	
 	msend(PORT_CHILD, getppid(), NULL);
 	_done();

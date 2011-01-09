@@ -143,7 +143,7 @@ int main() {
 	}
 
 	if (fork() < 0) {
-		setcuser(1);
+//		setcuser(1);
 		execiv(file->start, file->size, argv);
 	}
 
