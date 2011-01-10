@@ -1,6 +1,6 @@
 BUILDDIR=$(PWD)
 
-LIB_DIRS  = libc dl libwmanager
+LIB_DIRS  = libc dl libwmanager libdriver
 
 DRIVERS  := $(shell find driver -mindepth 1 -maxdepth 1)
 DAEMONS  := $(shell find daemon -mindepth 1 -maxdepth 1)

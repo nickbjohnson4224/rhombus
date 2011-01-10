@@ -19,7 +19,7 @@
 #include <string.h>
 #include <ctype.h>
 
-static char buffer[2048];
+static char buffer[0x1000];
 
 int main(int argc, char **argv) {
 	size_t n, i;
@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
 		}
 
 		while (1) {
-			i = fread(buffer, sizeof(char), 2048, file);
+			i = fread(buffer, sizeof(char), 0x1000, file);
 			if (i == 0) break;
 			fwrite(buffer, sizeof(char), i, stdout);
 		}

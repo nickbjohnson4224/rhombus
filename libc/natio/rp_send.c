@@ -38,6 +38,11 @@ struct msg *rp_send(uint64_t rp, uint8_t port, struct mp_basic *msg) {
 
 	old_handler = when(PORT_REPLY, NULL);
 	
+	/* reject bad messages */
+	if (!msg || msize(msg) < msg->length) {
+		return NULL;
+	}
+
 	/* set necessary message values */
 	if (msg) {
 		msg->index = RP_INDEX(rp);
@@ -52,6 +57,13 @@ struct msg *rp_send(uint64_t rp, uint8_t port, struct mp_basic *msg) {
 	if (msg) {
 		message->count = (msg->length % PAGESZ) ? (msg->length / PAGESZ) + 1 : msg->length / PAGESZ;
 		message->packet = aalloc(message->count * PAGESZ, PAGESZ);
+
+		/* check for out of memory error */
+		if (!message->packet) {
+			free(msg);
+			return NULL;
+		}
+
 		memcpy(message->packet, msg, msg->length);
 		free(msg);
 	}
