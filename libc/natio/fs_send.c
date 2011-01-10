@@ -41,7 +41,7 @@ struct mp_fs *fs_send(uint64_t root, struct mp_fs *cmd) {
 	cmd->null0    = '\0';
 
 	/* send and recieve */
-	reply = rp_send(root, PORT_FS, (struct mp_basic*) cmd);
+	reply = rp_tsend(root, PORT_FS, (struct mp_basic*) cmd, 100);
 
 	/* attempt to interpret as filesystem command */
 	ret = fs_recv(reply);

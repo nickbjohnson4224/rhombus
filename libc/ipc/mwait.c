@@ -28,13 +28,14 @@
  * wait* family of functions.
  */
 
-static struct msg *_mwaitm(uint8_t port, uint32_t source) {
+static struct msg *_mwaitm(uint8_t port, uint32_t source, uint32_t timeout) {
 	struct msg *msg;
 	event_t old_event;
 
 	old_event = when(port, NULL);
 
 	mutex_spin(&m_msg_queue[port]);
+	timeout++;
 
 	do {
 		msg = msg_queue[port].next;
@@ -54,7 +55,8 @@ static struct msg *_mwaitm(uint8_t port, uint32_t source) {
 		}
 
 		sleep();
-	} while (1);
+		if (timeout) timeout--;
+	} while (timeout != 1);
 
 	mutex_free(&m_msg_queue[port]);
 
@@ -68,7 +70,7 @@ static struct msg *_mwaitm(uint8_t port, uint32_t source) {
  */
 
 struct msg *mwait(uint8_t port) {
-	return _mwaitm(port, 0);
+	return _mwaitm(port, 0, 0);
 }
 
 /****************************************************************************
@@ -76,5 +78,21 @@ struct msg *mwait(uint8_t port) {
  */
 
 struct msg *mwaits(uint8_t port, uint32_t source) {
-	return _mwaitm(port, source);
+	return _mwaitm(port, source, 0);
+}
+
+/****************************************************************************
+ * mwaitt
+ */
+
+struct msg *mwaitt(uint8_t port, uint32_t timeout) {
+	return _mwaitm(port, 0, timeout);
+}
+
+/****************************************************************************
+ * mwaitst
+ */
+
+struct msg *mwaitst(uint8_t port, uint32_t source, uint32_t timeout) {
+	return _mwaitm(port, source, timeout);
 }

@@ -81,8 +81,10 @@ struct msg *mrecvs(uint8_t port, uint32_t source);
 
 /* mwait family - synchronous **********************************************/
 
-struct msg *mwait (uint8_t port);
-struct msg *mwaits(uint8_t port, uint32_t source);
+struct msg *mwait  (uint8_t port);
+struct msg *mwaits (uint8_t port, uint32_t source);
+struct msg *mwaitt (uint8_t port, uint32_t timeout);
+struct msg *mwaitst(uint8_t port, uint32_t source, uint32_t timeout);
 
 /* mdump family ************************************************************/
 

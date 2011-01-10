@@ -50,5 +50,6 @@ extern int errnov[MAX_THREADS];
 #define ERANGE	21
 #define EUNK	22
 #define ENOTEMPTY 23
+#define ETIMEDOUT 24
 
 #endif/*ERRNO_H*/

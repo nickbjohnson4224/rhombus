@@ -7,7 +7,7 @@ For 0.7 Alpha:
 - daemon control
 + event protocol
 + thread operations
-- timeouts for I/O
++ timeouts for I/O
 
 For 0.8 Alpha:
 
