@@ -77,7 +77,7 @@ static void sod_init(int argc, char **argv) {
 	file = calloc(sizeof(struct fs_obj), 1);
 	file->type  = FOBJ_DIR;
 	file->inode = 0;
-	file->acl   = acl_set_default(file->acl, ACL_READ);
+	file->acl   = acl_set_default(file->acl, FS_PERM_READ);
 	lfs_root(file);
 
 	/* add directory contents */
@@ -90,7 +90,7 @@ static void sod_init(int argc, char **argv) {
 				file = calloc(sizeof(struct fs_obj), 1);
 				file->type  = FOBJ_FILE;
 				file->inode = inode++;
-				file->acl   = acl_set_default(file->acl, ACL_READ);
+				file->acl   = acl_set_default(file->acl, FS_PERM_READ);
 				lfs_add(file, name);
 
 				file->size = fs_size(src);

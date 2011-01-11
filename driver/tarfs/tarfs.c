@@ -96,7 +96,7 @@ void tarfs_init(int argc, char **argv) {
 	file = calloc(sizeof(struct fs_obj), 1);
 	file->type = FOBJ_DIR;
 	file->inode = 0;
-	file->acl = acl_set_default(file->acl, ACL_READ);
+	file->acl = acl_set_default(file->acl, FS_PERM_READ);
 	lfs_root(file);
 
 	/* allocate buffer space for header block */
@@ -120,7 +120,7 @@ void tarfs_init(int argc, char **argv) {
 			file        = calloc(sizeof(struct fs_obj), 1);
 			file->type  = FOBJ_DIR;
 			file->inode = n;
-			file->acl   = acl_set_default(file->acl, ACL_READ);
+			file->acl   = acl_set_default(file->acl, FS_PERM_READ);
 			lfs_add(file, block->filename);
 
 		}
@@ -132,7 +132,7 @@ void tarfs_init(int argc, char **argv) {
 			file->inode = n;
 			file->data  = (uint8_t*) (i + 512);
 			file->size  = getvalue(block->filesize, 12);
-			file->acl   = acl_set_default(file->acl, ACL_READ);
+			file->acl   = acl_set_default(file->acl, FS_PERM_READ);
 			lfs_add(file, block->filename);
 
 		}

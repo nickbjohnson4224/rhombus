@@ -49,7 +49,7 @@ void reset_wrapper(struct msg *msg) {
 		return;
 	}
 
-	if (!(acl_get(file->acl, gettuser()) & ACL_WRITE)) {
+	if (!(acl_get(file->acl, gettuser()) & FS_PERM_WRITE)) {
 		error_reply(msg, 1);
 		return;
 	}

@@ -4,10 +4,11 @@ For 0.7 Alpha:
 + shared library manager
 + userspace exec
 + dynamic linker
-- daemon control
++ daemon control
 + event protocol
 + thread operations
 + timeouts for I/O
+- cleanups and docs
 
 For 0.8 Alpha:
 

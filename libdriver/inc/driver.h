@@ -23,10 +23,6 @@
 
 /* access control lists *****************************************************/
 
-#define ACL_READ	0x01
-#define ACL_WRITE	0x02
-#define ACL_ALTER	0x04
-
 struct fs_acl {
 	struct fs_acl *next;
 

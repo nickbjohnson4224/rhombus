@@ -37,7 +37,7 @@ void list_wrapper(struct mp_fs *cmd) {
 		if (dir->type == FOBJ_DIR) {
 
 			/* check permissions */
-			if ((acl_get(dir->acl, gettuser()) & ACL_READ) == 0) {
+			if ((acl_get(dir->acl, gettuser()) & FS_PERM_READ) == 0) {
 				cmd->op = FS_ERR;
 				cmd->v0 = ERR_DENY; 
 			}

@@ -42,7 +42,7 @@ void size_wrapper(struct mp_fs *cmd) {
 		}
 
 		/* check all permissions */
-		else if ((acl_get(file->acl, gettuser()) & ACL_READ) == 0) {
+		else if ((acl_get(file->acl, gettuser()) & FS_PERM_READ) == 0) {
 			cmd->op = FS_ERR;
 			cmd->v0 = ERR_DENY;
 		}

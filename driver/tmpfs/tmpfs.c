@@ -28,7 +28,7 @@ void tmpfs_init(int argc, char **argv) {
 	root = calloc(sizeof(struct fs_obj), 1);
 	root->type = FOBJ_DIR;
 	root->inode = 0;
-	root->acl = acl_set_default(root->acl, ACL_READ | ACL_WRITE);
+	root->acl = acl_set_default(root->acl, FS_PERM_READ | FS_PERM_WRITE);
 
 	lfs_root(root);
 }
@@ -43,13 +43,13 @@ struct fs_obj *tmpfs_cons(int type) {
 		fobj->size  = 0;
 		fobj->data  = NULL;
 		fobj->inode = tmpfs_inode_top++;
-		fobj->acl   = acl_set_default(fobj->acl, ACL_READ | ACL_WRITE);
+		fobj->acl   = acl_set_default(fobj->acl, FS_PERM_READ | FS_PERM_WRITE);
 		break;
 	case FOBJ_DIR:
 		fobj        = calloc(sizeof(struct fs_obj), 1);
 		fobj->type  = FOBJ_DIR;
 		fobj->inode = tmpfs_inode_top++;
-		fobj->acl   = acl_set_default(fobj->acl, ACL_READ | ACL_WRITE);
+		fobj->acl   = acl_set_default(fobj->acl, FS_PERM_READ | FS_PERM_WRITE);
 		fobj->link  = 0;
 		break;
 	}

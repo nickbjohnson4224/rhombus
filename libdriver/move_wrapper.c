@@ -50,8 +50,8 @@ void move_wrapper(struct mp_fs *cmd) {
 	mutex_spin(&obj->mutex);
 
 	/* check all permissions */
-	if (((acl_get(dir->acl, gettuser()) & ACL_WRITE) == 0) || 
-		((acl_get(obj->mother->acl, gettuser()) & ACL_WRITE) == 0)) {
+	if (((acl_get(dir->acl, gettuser()) & FS_PERM_WRITE) == 0) || 
+		((acl_get(obj->mother->acl, gettuser()) & FS_PERM_WRITE) == 0)) {
 		cmd->op = FS_ERR;
 		cmd->v0 = ERR_DENY;
 

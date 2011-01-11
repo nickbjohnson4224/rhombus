@@ -66,7 +66,7 @@ image:	all
 	@ cp sbin/* boot/sbin
 
 	@ export BUILDDIR
-	@ sudo run/make_image.sh
+	@ run/make_image.sh
 
 test:	all image
 	@ export BUILDDIR

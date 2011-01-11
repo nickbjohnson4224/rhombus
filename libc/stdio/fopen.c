@@ -15,7 +15,6 @@
  */
 
 #include <stdlib.h>
-#include <driver.h>
 #include <stdio.h>
 #include <natio.h>
 #include <errno.h>
@@ -66,7 +65,7 @@ FILE *fopen(const char *path, const char *mode) {
 
 	/* check read permissions */
 	if (mode[0] == 'r' || mode[1] == '+') {
-		if ((perm & ACL_READ) == 0) {
+		if ((perm & FS_PERM_READ) == 0) {
 			errno = EACCES;
 			return NULL;
 		}
@@ -74,7 +73,7 @@ FILE *fopen(const char *path, const char *mode) {
 
 	/* check write permissions */
 	if (mode[0] == 'w' || mode[0] == 'a' || mode[1] == '+') {
-		if ((perm & ACL_WRITE) == 0) {
+		if ((perm & FS_PERM_WRITE) == 0) {
 			errno = EACCES;
 			return NULL;
 		}

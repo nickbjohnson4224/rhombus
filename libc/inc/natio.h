@@ -133,7 +133,11 @@ extern uint64_t fs_root;
 #define FS_TYPE 0x08
 #define FS_LFND	0x09
 #define FS_PERM 0x0A
-#define FS_AUTH 0x0B
+#define FS_AUTH	0x0B
+
+#define FS_PERM_READ  0x01
+#define FS_PERM_WRITE 0x02
+#define FS_PERM_ALTER 0x04
 
 #define ERR_NULL 0x00
 #define ERR_FILE 0x01

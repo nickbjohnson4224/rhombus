@@ -40,7 +40,7 @@ void term_init(int argc, char **argv) {
 	root->type = FOBJ_FILE;
 	root->size = 0;
 	root->inode = 0;
-	root->acl = acl_set_default(root->acl, ACL_WRITE);
+	root->acl = acl_set_default(root->acl, FS_PERM_WRITE);
 
 	mutex_spin(&m_vbuf);
 

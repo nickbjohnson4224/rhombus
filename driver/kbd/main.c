@@ -30,7 +30,7 @@ void kbd_init(int argc, char **argv) {
 	root->type  = FOBJ_FILE;
 	root->size  = 0;
 	root->inode = 0;
-	root->acl   = acl_set_default(root->acl, ACL_READ);
+	root->acl   = acl_set_default(root->acl, FS_PERM_READ);
 	lfs_root(root);
 
 	rirq(1);

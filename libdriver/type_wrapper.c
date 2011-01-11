@@ -36,7 +36,7 @@ void type_wrapper(struct mp_fs *cmd) {
 		mutex_spin(&fobj->mutex);
 		
 		/* check permissions */
-		if ((acl_get(fobj->acl, gettuser()) & ACL_READ) == 0) {
+		if ((acl_get(fobj->acl, gettuser()) & FS_PERM_READ) == 0) {
 			cmd->op = FS_ERR;
 			cmd->v0 = ERR_DENY;
 		}

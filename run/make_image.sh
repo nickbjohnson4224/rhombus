@@ -2,7 +2,7 @@
 
 export BUILDDIR=${PWD}
 
-mkdir -p ${BUILDDIR}/cd/boot/grub
+mkdir -p ${BUILDDIR}/run/cd/boot/grub
 cp ${BUILDDIR}/run/grub/* ${BUILDDIR}/run/cd/boot/grub
 
 tar -C ${BUILDDIR}/boot -vvcf ${BUILDDIR}/run/boot.tar `ls ${BUILDDIR}/boot`

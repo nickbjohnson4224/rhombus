@@ -35,8 +35,8 @@ void remv_wrapper(struct mp_fs *cmd) {
 		mutex_spin(&fobj->mutex);
 
 		/* check all permissions */
-		if ((acl_get(fobj->acl, gettuser()) & ACL_WRITE) == 0 ||
-			(acl_get(fobj->mother->acl, gettuser() & ACL_WRITE) == 0)) {
+		if ((acl_get(fobj->acl, gettuser()) & FS_PERM_WRITE) == 0 ||
+			(acl_get(fobj->mother->acl, gettuser() & FS_PERM_WRITE) == 0)) {
 			cmd->op = FS_ERR;
 			cmd->v0 = ERR_DENY;
 			return;

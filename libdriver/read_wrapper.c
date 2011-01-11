@@ -49,7 +49,7 @@ void read_wrapper(struct msg *msg) {
 		return;
 	}
 
-	if (!(acl_get(file->acl, gettuser()) & ACL_READ)) {
+	if (!(acl_get(file->acl, gettuser()) & FS_PERM_READ)) {
 		error_reply(msg, 1);
 		return;
 	}

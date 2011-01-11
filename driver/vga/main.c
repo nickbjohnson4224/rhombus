@@ -34,7 +34,7 @@ void vga_init(int argc, char **argv) {
 	root->type  = FOBJ_FILE;
 	root->size  = 0;
 	root->inode = 0;
-	root->acl   = acl_set_default(root->acl, ACL_READ | ACL_WRITE);
+	root->acl   = acl_set_default(root->acl, FS_PERM_READ | FS_PERM_WRITE);
 	lfs_root(root);
 
 	vmem = valloc(0x20000);

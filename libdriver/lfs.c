@@ -118,7 +118,7 @@ uint64_t lfs_find(uint32_t inode, const char *path_str, bool nolink) {
 				return fs_find(fobj->link, path_tail(path));
 			}
 
-			if ((acl_get(fobj->acl, gettuser()) & ACL_READ) == 0) {
+			if ((acl_get(fobj->acl, gettuser()) & FS_PERM_READ) == 0) {
 				return 0;
 			}
 

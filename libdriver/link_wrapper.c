@@ -42,7 +42,7 @@ void link_wrapper(struct mp_fs *cmd) {
 		}
 
 		/* check all permissions */
-		if ((acl_get(dir->acl, gettuser() & ACL_WRITE) == 0)) {
+		if ((acl_get(dir->acl, gettuser() & FS_PERM_WRITE) == 0)) {
 			cmd->op = FS_ERR;
 			cmd->v0 = ERR_DENY;
 			return;
