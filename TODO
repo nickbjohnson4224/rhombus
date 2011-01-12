@@ -9,8 +9,6 @@ For 0.7 Alpha:
 + thread operations
 + timeouts for I/O
 + driver interface revision
-- cleanups and docs
-- driver interface manual
 
 For 0.8 Alpha:
 

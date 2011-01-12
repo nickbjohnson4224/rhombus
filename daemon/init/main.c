@@ -28,7 +28,7 @@
 #include "initrd.h"
 
 const char *splash ="\
-Flux Operating System 0.6 Alpha\n\
+Flux Operating System 0.7 Alpha\n\
 Written by Nick Johnson\n\
 \n";
 
