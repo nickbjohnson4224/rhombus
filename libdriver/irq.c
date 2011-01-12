@@ -21,29 +21,20 @@
 #include <ipc.h>
 
 /****************************************************************************
- * rirq
+ * di_wrap_irq
  *
- * Redirects all IRQs of number <irq> to this process as events. Only driver
- * processes have permission to do this.
+ * Registers <irq_wrapper> as an IRQ handler for IRQ number <irq>. If
+ * <irq_wrapper> is null, the IRQs are queued as messages (so it is possible
+ * to mwait() for them). Returns zero on success, nonzero on error.
  */
 
-void rirq(uint8_t irq) {
-	_rirq(irq);
-}
-
-/*****************************************************************************
- * irq_wrapper
- *
- * Handles and redirects irqs to the current active driver.
- */
-
-void irq_wrapper(struct msg *msg) {
+int di_wrap_irq(uint8_t irq, void (*irq_handler)(struct msg *msg)) {
 	
-	if (!active_driver->irq) {
-		return;
-	}
+	/* register IRQ redirect with kernel */
+	_rirq(irq);
 
-	active_driver->irq();
+	/* register IRQ handler */
+	when(PORT_IRQ, irq_handler);
 
-	free(msg);
+	return 0;
 }

@@ -17,33 +17,34 @@
 #include <driver.h>
 #include <stdlib.h>
 #include <mutex.h>
+#include <stdio.h>
 #include <proc.h>
 #include <ipc.h>
 
-typedef void (*lfs_wrapper_t)(struct mp_fs *cmd);
+typedef void (*vfs_wrapper_t)(struct mp_fs *cmd);
 
-static lfs_wrapper_t lfs_wrapper_v[12] = {
+static vfs_wrapper_t vfs_wrapper_v[256] = {
 	NULL,
-	find_wrapper,
-	cons_wrapper,
-	move_wrapper,
-	remv_wrapper,
-	link_wrapper,
-	list_wrapper,
-	size_wrapper,
-	type_wrapper,
-	lfnd_wrapper,
-	perm_wrapper,
-	auth_wrapper
+	__find_wrapper,
+	__cons_wrapper,
+	__move_wrapper,
+	__remv_wrapper,
+	__link_wrapper,
+	__list_wrapper,
+	__size_wrapper,
+	__type_wrapper,
+	__lfnd_wrapper,
+	__perm_wrapper,
+	__auth_wrapper
 };	
 
 /*****************************************************************************
- * lfs_wrapper
+ * __vfs_wrapper
  *
  * Handles all filesystem requests.
  */
 
-void lfs_wrapper(struct msg *msg) {
+void __vfs_wrapper(struct msg *msg) {
 	struct mp_fs *cmd;
 
 	/* reject null packets */
@@ -63,8 +64,8 @@ void lfs_wrapper(struct msg *msg) {
 	cmd->null0 = '\0';
 
 	/* perform action */
-	if ((cmd->op < 12) && lfs_wrapper_v[cmd->op]) {
-		lfs_wrapper_v[cmd->op](cmd);
+	if (vfs_wrapper_v[cmd->op]) {
+		vfs_wrapper_v[cmd->op](cmd);
 	}
 	else {
 		cmd->op = FS_ERR;
@@ -72,4 +73,30 @@ void lfs_wrapper(struct msg *msg) {
 	}
 
 	msend(PORT_REPLY, msg->source, msg);
+}
+
+/*****************************************************************************
+ * vfs_wrap_cmd
+ *
+ * Set the action to be performed on VFS opcode <op> to <vfs_cmd>. Returns
+ * zero on success, nonzero on error.
+ */
+
+int vfs_wrap_cmd(uint8_t op, void (*vfs_cmd)(struct mp_fs *cmd)) {
+	vfs_wrapper_v[op] = vfs_cmd;
+
+	return 0;
+}
+
+/*****************************************************************************
+ * vfs_wrap_init
+ *
+ * Initialize VFS request handling system. Returns zero on success, nonzero on
+ * error.
+ */
+
+int vfs_wrap_init(void) {
+	when(PORT_FS, __vfs_wrapper);
+
+	return 0;
 }

@@ -14,12 +14,36 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef DRIVER_H
-#define DRIVER_H
+#include <stdint.h>
+#include <ipc.h>
 
 #include <driver/vfs.h>
-#include <driver/io.h>
-#include <driver/ports.h>
-#include <driver/irq.h>
 
-#endif/*DRIVER_H*/
+/* wrapper function pointers ************************************************/
+
+struct vfs_obj *(*_vfs_cons)(int type);
+int             (*_vfs_push)(struct vfs_obj *obj);
+int             (*_vfs_pull)(struct vfs_obj *obj);
+int             (*_vfs_free)(struct vfs_obj *obj);
+
+/* wrapper registering functions ********************************************/
+
+int vfs_wrap_cons(struct vfs_obj *(*vfs_cons)(int type)) {
+	_vfs_cons = vfs_cons;
+	return 0;
+}
+
+int vfs_wrap_push(int (*vfs_push)(struct vfs_obj *obj)) {
+	_vfs_push = vfs_push;
+	return 0;
+}
+
+int vfs_wrap_pull(int (*vfs_pull)(struct vfs_obj *obj)) {
+	_vfs_pull = vfs_pull;
+	return 0;
+}
+
+int vfs_wrap_free(int (*vfs_free)(struct vfs_obj *obj)) {
+	_vfs_free = vfs_free;
+	return 0;
+}

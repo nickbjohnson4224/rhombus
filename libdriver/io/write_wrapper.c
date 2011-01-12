@@ -14,37 +14,40 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
 #include <stdlib.h>
 #include <mutex.h>
+#include <natio.h>
 #include <proc.h>
 #include <ipc.h>
 
+#include <driver/vfs.h>
+#include <driver/io.h>
+
 /*****************************************************************************
- * reset_wrapper
+ * __write_wrapper
  *
- * Handles and redirects reset requests to the current active driver.
+ * Handles and redirects write requests to the current active driver.
  */
 
-void reset_wrapper(struct msg *msg) {
-	struct fs_obj *file;
-	struct mp_basic *cmd;
+void __write_wrapper(struct msg *msg) {
+	struct vfs_obj *file;
+	struct mp_io *cmd;
 
-	if (!msg->packet) {
+	cmd = io_recv(msg);
+
+	if (!cmd) {
 		error_reply(msg, 1);
 		return;
 	}
 
-	cmd = msg->packet;
-
-	if (!active_driver->write) {
+	if (!_di_write) {
 		error_reply(msg, 1);
 		return;
 	}
 
-	file = lfs_lookup(cmd->index);
+	file = vfs_get_index(cmd->index);
 
-	if (!file || (file->type != FOBJ_FILE)) {
+	if (!file || !(file->type & FOBJ_FILE)) {
 		error_reply(msg, 1);
 		return;
 	}
@@ -54,7 +57,8 @@ void reset_wrapper(struct msg *msg) {
 		return;
 	}
 
-	active_driver->reset(file);
+	cmd->size   = _di_write(file, cmd->data, cmd->size, cmd->offset);
+	cmd->length = sizeof(struct mp_io);
 
 	msend(PORT_REPLY, msg->source, msg);
 }

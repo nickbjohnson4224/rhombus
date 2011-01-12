@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,44 +19,37 @@
 #include <mutex.h>
 #include <natio.h>
 #include <proc.h>
-#include <ipc.h>
 
 /*****************************************************************************
- * write_wrapper
+ * __type_wrapper
  *
- * Handles and redirects write requests to the current active driver.
+ * Performs the requested actions of a FS_TYPE command.
  */
 
-void write_wrapper(struct msg *msg) {
-	struct fs_obj *file;
-	struct mp_io *cmd;
+void __type_wrapper(struct mp_fs *cmd) {
+	struct vfs_obj *fobj;
+	
+	/* get the requested object */
+	fobj = vfs_get_index(cmd->index);
 
-	cmd = io_recv(msg);
+	if (fobj) {
+		mutex_spin(&fobj->mutex);
+		
+		/* check permissions */
+		if ((acl_get(fobj->acl, gettuser()) & FS_PERM_READ) == 0) {
+			cmd->op = FS_ERR;
+			cmd->v0 = ERR_DENY;
+		}
+		else {
+			/* return the type of the object */
+			cmd->v0 = fobj->type;
+		}
 
-	if (!cmd) {
-		error_reply(msg, 1);
-		return;
+		mutex_free(&fobj->mutex);
 	}
-
-	if (!active_driver->write) {
-		error_reply(msg, 1);
-		return;
+	else {
+		/* return ERR_FILE on failure to find object */
+		cmd->op = FS_ERR;
+		cmd->v0 = ERR_FILE;
 	}
-
-	file = lfs_lookup(cmd->index);
-
-	if (!file || !(file->type & FOBJ_FILE)) {
-		error_reply(msg, 1);
-		return;
-	}
-
-	if (!(acl_get(file->acl, gettuser()) & FS_PERM_WRITE)) {
-		error_reply(msg, 1);
-		return;
-	}
-
-	cmd->size   = active_driver->write(file, cmd->data, cmd->size, cmd->offset);
-	cmd->length = sizeof(struct mp_io);
-
-	msend(PORT_REPLY, msg->source, msg);
 }

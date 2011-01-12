@@ -75,5 +75,6 @@ test:	all image
 makedirs:
 	@ mkdir -p $(BUILDDIR)/lib
 	@ mkdir -p $(BUILDDIR)/inc
+	@ mkdir -p $(BUILDDIR)/driver
 	@ mkdir -p $(BUILDDIR)/bin
 	@ mkdir -p $(BUILDDIR)/sbin

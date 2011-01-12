@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,38 +17,36 @@
 #include <driver.h>
 #include <stdlib.h>
 #include <mutex.h>
-#include <natio.h>
 #include <proc.h>
 
 /*****************************************************************************
- * type_wrapper
+ * __find_wrapper
  *
- * Performs the requested actions of a FS_TYPE command.
+ * Performs the requested actions of a FS_FIND command.
  */
 
-void type_wrapper(struct mp_fs *cmd) {
-	struct fs_obj *fobj;
-	
-	/* get the requested object */
-	fobj = lfs_lookup(cmd->index);
+void __find_wrapper(struct mp_fs *cmd) {
+	uint64_t file;
+	struct vfs_obj *root;
 
-	if (fobj) {
-		mutex_spin(&fobj->mutex);
-		
-		/* check permissions */
-		if ((acl_get(fobj->acl, gettuser()) & FS_PERM_READ) == 0) {
-			cmd->op = FS_ERR;
-			cmd->v0 = ERR_DENY;
-		}
-		else {
-			/* return the type of the object */
-			cmd->v0 = fobj->type;
-		}
+	/* find root node */
+	root = vfs_get_index(cmd->index);
 
-		mutex_free(&fobj->mutex);
+	if (!root) {
+		cmd->op = FS_ERR;
+		cmd->v0 = ERR_FILE;
+		return;
+	}
+
+	/* find pointer to file */
+	file = vfs_find(root, cmd->s0, false);
+
+	if (file) {
+		/* return file pointer on success */
+		cmd->v0 = file;
 	}
 	else {
-		/* return ERR_FILE on failure to find object */
+		/* return ERR_FILE on failure */
 		cmd->op = FS_ERR;
 		cmd->v0 = ERR_FILE;
 	}

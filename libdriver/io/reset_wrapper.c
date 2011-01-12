@@ -14,35 +14,49 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
 #include <stdlib.h>
 #include <mutex.h>
-#include <natio.h>
 #include <proc.h>
+#include <ipc.h>
+
+#include <driver/io.h>
+#include <driver/vfs.h>
 
 /*****************************************************************************
- * perm_wrapper
+ * __reset_wrapper
  *
- * Performs the requested actions of a FS_PERM command.
+ * Handles and redirects reset requests to the current active driver.
  */
 
-void perm_wrapper(struct mp_fs *cmd) {
-	struct fs_obj *fobj;
-	
-	/* look up the requested object */
-	fobj = lfs_lookup(cmd->index);
+void __reset_wrapper(struct msg *msg) {
+	struct vfs_obj *file;
+	struct mp_basic *cmd;
 
-	if (fobj) {
-		mutex_spin(&fobj->mutex);
-
-		/* return the permissions of the object for user <cmd->v0> */	
-		cmd->v0 = acl_get(fobj->acl, cmd->v0);
-
-		mutex_free(&fobj->mutex);
+	if (!msg->packet) {
+		error_reply(msg, 1);
+		return;
 	}
-	else {
-		/* return ERR_FILE on failure to find object */
-		cmd->op = FS_ERR;
-		cmd->v0 = ERR_FILE;
+
+	cmd = msg->packet;
+
+	if (!_di_write) {
+		error_reply(msg, 1);
+		return;
 	}
+
+	file = vfs_get_index(cmd->index);
+
+	if (!file || (file->type != FOBJ_FILE)) {
+		error_reply(msg, 1);
+		return;
+	}
+
+	if (!(acl_get(file->acl, gettuser()) & FS_PERM_WRITE)) {
+		error_reply(msg, 1);
+		return;
+	}
+
+	_di_reset(file);
+
+	msend(PORT_REPLY, msg->source, msg);
 }

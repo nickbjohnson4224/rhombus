@@ -27,19 +27,7 @@
 #include "initrd.h"
 #include "inc/tar.h"
 
-void initrd_init(int argc, char **argv) {
-	struct fs_obj *root;
-
-	root = calloc(sizeof(struct fs_obj), 1);
-	root->type = FOBJ_FILE;
-	root->data = (void*) BOOT_IMAGE;
-	root->size = tar_size(root->data);
-	root->inode = 0;
-
-	lfs_root(root);
-}
-
-size_t initrd_read(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+size_t initrd_read(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 
 	if (!file->data) {
 		return 0;
@@ -58,20 +46,15 @@ size_t initrd_read(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t o
 	return size;
 }
 
-struct driver initrd_driver = {
-	initrd_init, 
+void initrd_init(void) {
+	struct vfs_obj *root;
 
-	NULL,
-	NULL,
-	NULL,
-	NULL,
+	root = calloc(sizeof(struct vfs_obj), 1);
+	root->type = FOBJ_FILE;
+	root->data = (void*) BOOT_IMAGE;
+	root->size = tar_size(root->data);
+	vfs_set_index(0, root);
 
-	NULL,
-	initrd_read,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-
-	NULL,
-};
+	di_wrap_read(initrd_read);
+	vfs_wrap_init();
+}

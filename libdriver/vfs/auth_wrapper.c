@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,36 +16,40 @@
 
 #include <driver.h>
 #include <stdlib.h>
-#include <string.h>
+#include <mutex.h>
+#include <natio.h>
+#include <proc.h>
 
 /*****************************************************************************
- * lfs_add
+ * __auth_wrapper
  *
- * Adds the filesystem object <obj> to the local filesystem at path <path>.
- * This function is intended for internal use by drivers, esp. during init.
+ * Performs the requested actions of a FS_AUTH command.
  */
 
-void lfs_add(struct fs_obj *obj, const char *path) {
-	char *path1;
-	uint64_t dirfd;
-	struct fs_obj *dir;
+void __auth_wrapper(struct mp_fs *cmd) {
+	struct vfs_obj *fobj;
 	
-	if (!obj) {
-		return;
+	/* get the requested object */
+	fobj = vfs_get_index(cmd->index);
+
+	if (fobj) {
+		mutex_spin(&fobj->mutex);
+
+		/* check permissions */
+		if ((acl_get(fobj->acl, gettuser()) & FS_PERM_ALTER) == 0) {
+			cmd->op = FS_ERR;
+			cmd->v0 = ERR_DENY;
+		}
+		else {
+			/* set the permissions on the object for user <cmd->v0> */
+			acl_set(fobj->acl, cmd->v0, cmd->v1);
+		}
+
+		mutex_free(&fobj->mutex);
 	}
-
-	/* find parent directory */
-	path1 = path_parent(path);
-	dirfd = lfs_find(0, path1, false);
-	dir = lfs_lookup(dirfd & 0xFFFFFFFF);
-	free(path1);
-
-	if (!dir) {
-		return;
+	else {
+		/* return ERR_FILE on failure to find object */
+		cmd->op = FS_ERR;
+		cmd->v0 = ERR_FILE;
 	}
-
-	/* push object into parent directory */
-	path1 = path_name(path);
-	lfs_push(dir, obj, path1);
-	free(path1);
 }

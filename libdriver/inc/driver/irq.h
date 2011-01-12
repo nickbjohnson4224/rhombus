@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,30 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
-#include <stdlib.h>
-#include <mutex.h>
-#include <proc.h>
+#ifndef DRIVER_IRQ_H
+#define DRIVER_IRQ_H
 
-/*****************************************************************************
- * find_wrapper
- *
- * Performs the requested actions of a FS_FIND command.
- */
+/* IRQ redirection **********************************************************/
 
-void find_wrapper(struct mp_fs *cmd) {
-	uint64_t file;
+int di_wrap_irq(uint8_t irq, void (*irq_handler)(struct msg *msg));
 
-	/* find pointer to file */
-	file = lfs_find(cmd->index, cmd->s0, false);
-
-	if (file) {
-		/* return file pointer on success */
-		cmd->v0 = file;
-	}
-	else {
-		/* return ERR_FILE on failure */
-		cmd->op = FS_ERR;
-		cmd->v0 = ERR_FILE;
-	}
-}
+#endif/*DRIVER_H*/

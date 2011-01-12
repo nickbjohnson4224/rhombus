@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,43 +19,48 @@
 #include <mutex.h>
 #include <natio.h>
 #include <proc.h>
-#include <ipc.h>
 
 /*****************************************************************************
- * sync_wrapper
+ * __size_wrapper
  *
- * Handles and redirects sync requests to the current active driver.
+ * Performs the requested actions of a FS_SIZE command.
  */
 
-void sync_wrapper(struct msg *msg) {
-	struct fs_obj *file;
-	struct mp_basic *cmd;
+void __size_wrapper(struct mp_fs *cmd) {
+	struct vfs_obj *file;
+	
+	/* get requested file */
+	file = vfs_get_index(cmd->index);
 
-	if (!msg->packet) {
-		error_reply(msg, 1);
-		return;
+	if (file) {
+		mutex_spin(&file->mutex);
+
+		/* check to make sure <file> is a file */
+		if (file->type != FOBJ_FILE) {
+			cmd->op = FS_ERR;
+			cmd->v0 = ERR_TYPE;
+		}
+
+		/* check all permissions */
+		else if ((acl_get(file->acl, gettuser()) & FS_PERM_READ) == 0) {
+			cmd->op = FS_ERR;
+			cmd->v0 = ERR_DENY;
+		}
+
+		else if (_di_size) {
+			/* allow driver to figure out the file's size */
+			cmd->v0 = _di_size(file);
+		}
+		else {
+			/* default to <file->size> for size */
+			cmd->v0 = file->size;
+		}
+
+		mutex_free(&file->mutex);
 	}
-
-	cmd = msg->packet;
-
-	if (!active_driver->write) {
-		error_reply(msg, 1);
-		return;
+	else {
+		/* return ERR_FILE on failure to find file */
+		cmd->op = FS_ERR;
+		cmd->v0 = ERR_FILE;
 	}
-
-	file = lfs_lookup(cmd->index);
-
-	if (!file || (file->type != FOBJ_FILE)) {
-		error_reply(msg, 1);
-		return;
-	}
-
-	if (!(acl_get(file->acl, gettuser()) & FS_PERM_WRITE)) {
-		error_reply(msg, 1);
-		return;
-	}
-
-	active_driver->sync(file);
-
-	msend(PORT_REPLY, msg->source, msg);
 }

@@ -16,45 +16,46 @@
 
 #include <driver.h>
 #include <stdlib.h>
+#include <mutex.h>
+#include <natio.h>
 #include <proc.h>
 #include <ipc.h>
 
 /*****************************************************************************
- * active_driver
+ * __sync_wrapper
  *
- * The active driver, obviously. The functions in this structure are used to
- * handle filesystem and file requests.
+ * Handles and redirects sync requests to the current active driver.
  */
 
-struct driver *active_driver = NULL;
+void __sync_wrapper(struct msg *msg) {
+	struct vfs_obj *file;
+	struct mp_basic *cmd;
 
-/*****************************************************************************
- * driver_init
- *
- * Initializes the driver <driver> on the current process, allowing read/write
- * and filesystem control messages.
- */
-
-void driver_init(struct driver *driver, int argc, char **argv) {
-	struct fs_obj *root;
-	
-	active_driver = driver;
-
-	when(PORT_IRQ,   irq_wrapper);
-	when(PORT_FS,    lfs_wrapper);
-	when(PORT_READ,  read_wrapper);
-	when(PORT_WRITE, write_wrapper);
-	when(PORT_SYNC,  sync_wrapper);
-	when(PORT_RESET, reset_wrapper);
-
-	if (active_driver->init) {
-		active_driver->init(argc, argv);
+	if (!msg->packet) {
+		error_reply(msg, 1);
+		return;
 	}
-	else {
-		root = calloc(sizeof(struct fs_obj), 1);
-		root->type = FOBJ_FILE;
-		root->size = 0;
-		root->inode = 0;
-		lfs_root(root);
+
+	cmd = msg->packet;
+
+	if (!_di_write) {
+		error_reply(msg, 1);
+		return;
 	}
+
+	file = vfs_get_index(cmd->index);
+
+	if (!file || (file->type != FOBJ_FILE)) {
+		error_reply(msg, 1);
+		return;
+	}
+
+	if (!(acl_get(file->acl, gettuser()) & FS_PERM_WRITE)) {
+		error_reply(msg, 1);
+		return;
+	}
+
+	_di_sync(file);
+
+	msend(PORT_REPLY, msg->source, msg);
 }

@@ -26,18 +26,7 @@
 
 static bool m_time = false;
 
-void time_init(int argc, char **argv) {
-	struct fs_obj *root;
-
-	root        = calloc(sizeof(struct fs_obj), 1);
-	root->type  = FOBJ_FILE;
-	root->size  = 0;
-	root->inode = 0;
-	root->acl   = acl_set_default(root->acl, FS_PERM_READ);
-	lfs_root(root);
-}
-
-size_t time_read(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+size_t time_read(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	char *data;
 
 	if (size > 20) {
@@ -54,27 +43,17 @@ size_t time_read(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t off
 	return size;
 }
 
-struct driver time_driver = {
-	time_init,
-
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-
-	NULL,
-	time_read,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-
-	NULL,
-};
-
 int main(int argc, char **argv) {
+	struct vfs_obj *root;
 
-	driver_init(&time_driver, argc, argv);
+	root        = calloc(sizeof(struct vfs_obj), 1);
+	root->type  = FOBJ_FILE;
+	root->size  = 0;
+	root->acl   = acl_set_default(root->acl, FS_PERM_READ);
+	vfs_set_index(0, root);
+
+	di_wrap_read(time_read);
+	vfs_wrap_init();
 
 	msend(PORT_CHILD, getppid(), NULL);
 	_done();

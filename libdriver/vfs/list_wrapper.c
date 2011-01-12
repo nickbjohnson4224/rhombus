@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,36 +20,38 @@
 #include <proc.h>
 
 /*****************************************************************************
- * link_wrapper
+ * __list_wrapper
  *
- * Performs the requested actions of a FS_LINK command.
+ * Performs the requested actions of a FS_LIST command.
  */
 
-void link_wrapper(struct mp_fs *cmd) {
-	struct fs_obj *dir;
+void __list_wrapper(struct mp_fs *cmd) {
+	struct vfs_obj *dir;
 	
-	/* get the requested directory */
-	dir = lfs_lookup(cmd->index);
+	/* get requested directory */
+	dir = vfs_get_index(cmd->index);
 
 	if (dir) {
 		mutex_spin(&dir->mutex);
 
-		/* check type of object */
-		if (dir->type != FOBJ_DIR) {
+		if (dir->type == FOBJ_DIR) {
+
+			/* check permissions */
+			if ((acl_get(dir->acl, gettuser()) & FS_PERM_READ) == 0) {
+				cmd->op = FS_ERR;
+				cmd->v0 = ERR_DENY; 
+			}
+			else if (vfs_dir_list(dir, cmd->v0, cmd->s0, 4000)) {
+				/* return ERR_FILE if the entry does not exist */
+				cmd->op = FS_ERR;
+				cmd->v0 = ERR_FILE;
+			}
+		}
+		else {
+			/* return ERR_TYPE if <dir> is not a directory */
 			cmd->op = FS_ERR;
 			cmd->v0 = ERR_TYPE;
-			return;
 		}
-
-		/* check all permissions */
-		if ((acl_get(dir->acl, gettuser() & FS_PERM_WRITE) == 0)) {
-			cmd->op = FS_ERR;
-			cmd->v0 = ERR_DENY;
-			return;
-		}
-	
-		/* set link location */
-		dir->link = cmd->v0;
 
 		mutex_free(&dir->mutex);
 	}

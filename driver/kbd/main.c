@@ -23,20 +23,7 @@
 
 #include "keyboard.h"
 
-void kbd_init(int argc, char **argv) {
-	struct fs_obj *root;
-
-	root        = calloc(sizeof(struct fs_obj), 1);
-	root->type  = FOBJ_FILE;
-	root->size  = 0;
-	root->inode = 0;
-	root->acl   = acl_set_default(root->acl, FS_PERM_READ);
-	lfs_root(root);
-
-	rirq(1);
-}
-
-size_t kbd_read(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+size_t kbd_read(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	size_t i;
 
 	for (i = 0; i < size; i++) {
@@ -50,7 +37,7 @@ size_t kbd_read(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offs
 	return i;
 }
 
-void kbd_irq(void) {
+void kbd_irq(struct msg *msg) {
 	static bool shift = false;
 	uint8_t scan;
 	char c;
@@ -72,27 +59,19 @@ void kbd_irq(void) {
 	}
 }
 
-struct driver kbd_driver = {
-	kbd_init,
-
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-
-	NULL,
-	kbd_read,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-
-	kbd_irq,
-};
-
 int main(int argc, char **argv) {
+	struct vfs_obj *root;
 
-	driver_init(&kbd_driver, argc, argv);
+	root        = calloc(sizeof(struct vfs_obj), 1);
+	root->type  = FOBJ_FILE;
+	root->size  = 0;
+	root->acl   = acl_set_default(root->acl, FS_PERM_READ);
+	vfs_set_index(0, root);
+
+	/* set up interface */
+	di_wrap_read(kbd_read);
+	di_wrap_irq (1, kbd_irq);
+	vfs_wrap_init();
 
 	msend(PORT_CHILD, getppid(), NULL);
 	_done();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,34 +21,33 @@
 #include <proc.h>
 
 /*****************************************************************************
- * auth_wrapper
+ * __lfnd_wrapper
  *
- * Performs the requested actions of a FS_AUTH command.
+ * Performs the default actions of a FS_LFND command.
  */
 
-void auth_wrapper(struct mp_fs *cmd) {
-	struct fs_obj *fobj;
-	
-	/* get the requested object */
-	fobj = lfs_lookup(cmd->index);
+void __lfnd_wrapper(struct mp_fs *cmd) {
+	uint64_t file;
+	struct vfs_obj *root;
 
-	if (fobj) {
-		mutex_spin(&fobj->mutex);
+	/* find root node */
+	root = vfs_get_index(cmd->index);
 
-		/* check permissions */
-		if ((acl_get(fobj->acl, gettuser()) & FS_PERM_ALTER) == 0) {
-			cmd->op = FS_ERR;
-			cmd->v0 = ERR_DENY;
-		}
-		else {
-			/* set the permissions on the object for user <cmd->v0> */
-			acl_set(fobj->acl, cmd->v0, cmd->v1);
-		}
+	if (!root) {
+		cmd->op = FS_ERR;
+		cmd->v0 = ERR_FILE;
+		return;
+	}
 
-		mutex_free(&fobj->mutex);
+	/* find pointer to file without following terminal links */
+	file = vfs_find(root, cmd->s0, true);
+
+	if (file) {
+		/* return file pointer on success */
+		cmd->v0 = file;
 	}
 	else {
-		/* return ERR_FILE on failure to find object */
+		/* return ERR_FILE on failure */
 		cmd->op = FS_ERR;
 		cmd->v0 = ERR_FILE;
 	}

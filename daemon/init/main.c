@@ -42,10 +42,14 @@ static uint64_t start(struct tar_file *file, char const **argv) {
 
 	pid = fork();
 
+	setenv("NAME", "unknown");
+
 	if (pid < 0) {
 		execiv(file->start, file->size, argv);
 		for(;;);
 	}
+
+	setenv("NAME", "init");
 
 	mwaits(PORT_CHILD, pid);
 
@@ -93,8 +97,7 @@ int main() {
 	printf(splash);
 
 	/* Initrd */
-	driver_init(&initrd_driver, 0, NULL);
-	setenv("NAME", "unknown");
+	initrd_init();
 	io_link("/dev/initrd", RP_CONS(getpid(), 0));
 	
 	/* Root filesystem (tarfs) */

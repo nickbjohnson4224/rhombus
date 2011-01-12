@@ -14,47 +14,49 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
 #include <stdlib.h>
-#include <mutex.h>
+#include <string.h>
 #include <proc.h>
-#include <ipc.h>
+
+#include <driver/vfs.h>
 
 /*****************************************************************************
- * read_wrapper
+ * vfs_add
  *
- * Handles and redirects read requests to the current active driver.
+ * Adds the filesystem object <obj> to the virtual filesystem at path <path>
+ * from the directory <root>; the object is given index <index> and entered
+ * into the VFS index. This function is intended for internal use by drivers, 
+ * esp. during init. Returns zero on success, nonzero on error.
  */
 
-void read_wrapper(struct msg *msg) {
-	struct fs_obj *file;
-	struct mp_io *cmd;
-
-	cmd = io_recv(msg);
-
-	if (!cmd) {
-		error_reply(msg, 1);
-		return;
-	}
-
-	if (!active_driver->read) {
-		error_reply(msg, 1);
-		return;
-	}
-
-	file = lfs_lookup(cmd->index);
-
-	if (!file || (file->type != FOBJ_FILE)) {
-		error_reply(msg, 1);
-		return;
-	}
-
-	if (!(acl_get(file->acl, gettuser()) & FS_PERM_READ)) {
-		error_reply(msg, 1);
-		return;
-	}
+int vfs_add(struct vfs_obj *root, const char *path, struct vfs_obj *obj) {
+	char *path1;
+	uint64_t dirrp;
+	struct vfs_obj *dir;
 	
-	cmd->size = active_driver->read(file, cmd->data, cmd->size, cmd->offset);
+	if (!obj) {
+		return 1;
+	}
 
-	msend(PORT_REPLY, msg->source, msg);
+	/* find parent directory */
+	path1 = path_parent(path);
+	dirrp = vfs_find(root, path1, false);
+	if (RP_PID(dirrp) != getpid()) {
+		dir = NULL;
+	}
+	else {
+		dir = vfs_get_index(RP_INDEX(dirrp));
+	}
+	free(path1);
+
+	if (!dir) {
+		return 1;
+	}
+
+	/* push object into parent directory */
+	path1 = path_name(path);
+	vfs_dir_push(dir, obj, path1);
+	free(path1);
+
+	return 0;
 }

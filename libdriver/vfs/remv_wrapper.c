@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,16 +20,16 @@
 #include <proc.h>
 
 /*****************************************************************************
- * remv_wrapper
+ * __remv_wrapper
  *
  * Performs the requested actions of a FS_REMV command.
  */
 
-void remv_wrapper(struct mp_fs *cmd) {
-	struct fs_obj *fobj;
+void __remv_wrapper(struct mp_fs *cmd) {
+	struct vfs_obj *fobj;
 	
 	/* get the requested object */
-	fobj = lfs_lookup(cmd->index);
+	fobj = vfs_get_index(cmd->index);
 
 	if (fobj) {
 		mutex_spin(&fobj->mutex);
@@ -50,11 +50,11 @@ void remv_wrapper(struct mp_fs *cmd) {
 		}
 
 		/* remove the object from its directory */
-		lfs_pull(fobj);
+		vfs_dir_pull(fobj);
 
-		if (active_driver->free) {
+		if (_vfs_free) {
 			/* allow the driver to free the object */
-			active_driver->free(fobj);
+			_vfs_free(fobj);
 		}
 		else {
 			/* free the object, assuming data is not allocated */

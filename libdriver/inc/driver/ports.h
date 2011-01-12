@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,31 +14,21 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
-#include <stdlib.h>
-#include <mutex.h>
-#include <natio.h>
-#include <proc.h>
+#ifndef DRIVER_PORTS_H
+#define DRIVER_PORTS_H
 
-/*****************************************************************************
- * lfnd_wrapper
- *
- * Performs the requested actions of a FS_LFND command.
- */
+#include <stdint.h>
 
-void lfnd_wrapper(struct mp_fs *cmd) {
-	uint64_t file;
+/* port access **************************************************************/
 
-	/* find pointer to file without following terminal links */
-	file = lfs_find(cmd->index, cmd->s0, true);
+uint8_t  inb(uint16_t port);
+uint16_t inw(uint16_t port);
+uint32_t ind(uint16_t port);
 
-	if (file) {
-		/* return file pointer on success */
-		cmd->v0 = file;
-	}
-	else {
-		/* return ERR_FILE on failure */
-		cmd->op = FS_ERR;
-		cmd->v0 = ERR_FILE;
-	}
-}
+void outb(uint16_t port, uint8_t value);
+void outw(uint16_t port, uint16_t value);
+void outd(uint16_t port, uint32_t value);
+
+void iodelay(uint32_t usec);
+
+#endif/*DRIVER_PORTS_H*/

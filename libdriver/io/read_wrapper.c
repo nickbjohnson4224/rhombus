@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,42 +14,49 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
-#include <string.h>
+#include <stdlib.h>
+#include <mutex.h>
+#include <proc.h>
+#include <ipc.h>
+
+#include <driver/vfs.h>
+#include <driver/io.h>
 
 /*****************************************************************************
- * lfs_list
+ * __read_wrapper
  *
- * Copy the name of the <entry>th entry in the directory <dir> into <buffer>.
- * Returns zero on success, nonzero on error.
+ * Handles and redirects read requests to the current active driver.
  */
 
-int lfs_list(struct fs_obj *dir, int entry, char *buffer, size_t size) {
-	struct fs_obj *daughter;
+void __read_wrapper(struct msg *msg) {
+	struct vfs_obj *file;
+	struct mp_io *cmd;
 
-	if (!dir) {
-		return 1;
+	cmd = io_recv(msg);
+
+	if (!cmd) {
+		error_reply(msg, 1);
+		return;
 	}
 
-	daughter = dir->daughter;
-
-	/* select the <entry>th daughter node */
-	while (daughter) {
-		if (entry <= 0) {
-			break;
-		}
-		else {
-			daughter = daughter->sister1;
-			entry--;
-		}
+	if (!_di_read) {
+		error_reply(msg, 1);
+		return;
 	}
 
-	if (daughter) {
-		/* return name of selected daughter */
-		strlcpy(buffer, daughter->name, size);
-		return 0;
+	file = vfs_get_index(cmd->index);
+
+	if (!file || (file->type != FOBJ_FILE)) {
+		error_reply(msg, 1);
+		return;
 	}
-	else {
-		return 1;
+
+	if (!(acl_get(file->acl, gettuser()) & FS_PERM_READ)) {
+		error_reply(msg, 1);
+		return;
 	}
+	
+	cmd->size = _di_read(file, cmd->data, cmd->size, cmd->offset);
+
+	msend(PORT_REPLY, msg->source, msg);
 }

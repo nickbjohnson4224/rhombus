@@ -19,6 +19,6 @@
 
 #include <driver.h>
 
-extern struct driver initrd_driver;
+void initrd_init(void);
 
 #endif/*INIT_INITRD_H*/

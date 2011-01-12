@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,45 +21,27 @@
 #include <proc.h>
 
 /*****************************************************************************
- * size_wrapper
+ * __perm_wrapper
  *
- * Performs the requested actions of a FS_SIZE command.
+ * Performs the requested actions of a FS_PERM command.
  */
 
-void size_wrapper(struct mp_fs *cmd) {
-	struct fs_obj *file;
+void __perm_wrapper(struct mp_fs *cmd) {
+	struct vfs_obj *fobj;
 	
-	/* get requested file */
-	file = lfs_lookup(cmd->index);
+	/* look up the requested object */
+	fobj = vfs_get_index(cmd->index);
 
-	if (file) {
-		mutex_spin(&file->mutex);
+	if (fobj) {
+		mutex_spin(&fobj->mutex);
 
-		/* check to make sure <file> is a file */
-		if (file->type != FOBJ_FILE) {
-			cmd->op = FS_ERR;
-			cmd->v0 = ERR_TYPE;
-		}
+		/* return the permissions of the object for user <cmd->v0> */	
+		cmd->v0 = acl_get(fobj->acl, cmd->v0);
 
-		/* check all permissions */
-		else if ((acl_get(file->acl, gettuser()) & FS_PERM_READ) == 0) {
-			cmd->op = FS_ERR;
-			cmd->v0 = ERR_DENY;
-		}
-
-		else if (active_driver->size) {
-			/* allow driver to figure out the file's size */
-			cmd->v0 = active_driver->size(file);
-		}
-		else {
-			/* default to <file->size> for size */
-			cmd->v0 = file->size;
-		}
-
-		mutex_free(&file->mutex);
+		mutex_free(&fobj->mutex);
 	}
 	else {
-		/* return ERR_FILE on failure to find file */
+		/* return ERR_FILE on failure to find object */
 		cmd->op = FS_ERR;
 		cmd->v0 = ERR_FILE;
 	}

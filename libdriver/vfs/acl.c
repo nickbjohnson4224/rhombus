@@ -25,8 +25,8 @@
  * there is no entry for user -1, zero.
  */
 
-uint8_t acl_get(struct fs_acl *acl, uint32_t user) {
-	struct fs_acl *ace;
+uint8_t acl_get(struct vfs_acl *acl, uint32_t user) {
+	struct vfs_acl *ace;
 
 	if (user == 0) {
 		return 0xFF;
@@ -49,8 +49,8 @@ uint8_t acl_get(struct fs_acl *acl, uint32_t user) {
  * Returns NULL on out of memory error.
  */
 
-struct fs_acl *acl_set(struct fs_acl *acl, uint32_t user, uint8_t permit) {
-	struct fs_acl *ace;
+struct vfs_acl *acl_set(struct vfs_acl *acl, uint32_t user, uint8_t permit) {
+	struct vfs_acl *ace;
 
 	for (ace = acl; ace; ace = ace->next) {
 		if (ace->user == user) {
@@ -59,7 +59,7 @@ struct fs_acl *acl_set(struct fs_acl *acl, uint32_t user, uint8_t permit) {
 		}
 	}
 
-	ace = malloc(sizeof(struct fs_acl));
+	ace = malloc(sizeof(struct vfs_acl));
 
 	if (ace) {
 		ace->user   = user;
@@ -79,8 +79,8 @@ struct fs_acl *acl_set(struct fs_acl *acl, uint32_t user, uint8_t permit) {
  * ACL. Returns zero if there is no default permission bitmap.
  */
 
-uint8_t acl_get_default(struct fs_acl *acl) {
-	struct fs_acl *ace;
+uint8_t acl_get_default(struct vfs_acl *acl) {
+	struct vfs_acl *ace;
 
 	for (ace = acl; ace; ace = ace->next) {
 		if (ace->user == 0) {
@@ -99,7 +99,7 @@ uint8_t acl_get_default(struct fs_acl *acl) {
  * success, NULL on out of memory error.
  */
 
-struct fs_acl *acl_set_default(struct fs_acl *acl, uint8_t permit) {
+struct vfs_acl *acl_set_default(struct vfs_acl *acl, uint8_t permit) {
 	return acl_set(acl, 0, permit);
 }
 
@@ -109,7 +109,7 @@ struct fs_acl *acl_set_default(struct fs_acl *acl, uint8_t permit) {
  * Frees an ACL structure fully.
  */
 
-void acl_free(struct fs_acl *acl) {
+void acl_free(struct vfs_acl *acl) {
 
 	if (acl) {
 		acl_free(acl->next);

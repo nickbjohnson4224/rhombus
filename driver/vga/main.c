@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -27,28 +27,7 @@
 
 uint8_t *vmem;
 
-void vga_init(int argc, char **argv) {
-	struct fs_obj *root;
-
-	root        = calloc(sizeof(struct fs_obj), 1);
-	root->type  = FOBJ_FILE;
-	root->size  = 0;
-	root->inode = 0;
-	root->acl   = acl_set_default(root->acl, FS_PERM_READ | FS_PERM_WRITE);
-	lfs_root(root);
-
-	vmem = valloc(0x20000);
-	page_phys(vmem, 0x20000, PROT_READ | PROT_WRITE, 0xA0000);
-
-	vga_set_mode(MODE_320x200x256);
-
-	mode->fill(0, 0, mode->width, mode->height, 0);
-
-	/* register the driver as /dev/vga0 */
-	io_link("/dev/vga0", RP_CONS(getpid(), 0));
-}
-
-size_t vga_read(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+size_t vga_read(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	char data[16];
 
 	sprintf(data, "%u %u", mode->width, mode->height);
@@ -61,7 +40,7 @@ size_t vga_read(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offs
 	return strlen(data);
 }
 
-size_t vga_write(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+size_t vga_write(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	int off = offset;
 	size_t i;
 	uint32_t pixel;
@@ -74,28 +53,29 @@ size_t vga_write(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t off
 	return size;
 }
 
-struct driver vga_driver = {
-	vga_init,
-
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-
-	NULL,
-	vga_read,
-	vga_write,
-	NULL,
-	NULL,
-	NULL,
-
-	NULL,
-};
-
 int main(int argc, char **argv) {
+	struct vfs_obj *root;
 
-	driver_init(&vga_driver, argc, argv);
-	
+	root        = calloc(sizeof(struct vfs_obj), 1);
+	root->type  = FOBJ_FILE;
+	root->size  = 0;
+	root->acl   = acl_set_default(root->acl, FS_PERM_READ | FS_PERM_WRITE);
+	vfs_set_index(0, root);
+
+	vmem = valloc(0x20000);
+	page_phys(vmem, 0x20000, PROT_READ | PROT_WRITE, 0xA0000);
+
+	vga_set_mode(MODE_320x200x256);
+
+	mode->fill(0, 0, mode->width, mode->height, 0);
+
+	/* set up driver interface */
+	di_wrap_read (vga_read);
+	di_wrap_write(vga_write);
+	vfs_wrap_init();
+
+	/* register the driver as /dev/vga0 */
+	io_link("/dev/vga0", RP_CONS(getpid(), 0));
 	msend(PORT_CHILD, getppid(), NULL);
 	_done();
 

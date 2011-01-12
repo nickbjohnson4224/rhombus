@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,56 +16,40 @@
 
 #include <driver.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <mutex.h>
 #include <proc.h>
 
 /*****************************************************************************
- * cons_wrapper
+ * __link_wrapper
  *
- * Performs the requested actions of a FS_CONS command.
+ * Performs the requested actions of a FS_LINK command.
  */
 
-void cons_wrapper(struct mp_fs *cmd) {
-	struct fs_obj *dir, *new_fobj;
-
-	/* make sure the active driver can construct new objects */
-	if (!active_driver->cons) {
-		cmd->op = FS_ERR;
-		cmd->v0 = ERR_FUNC;
-		return;
-	}
-
-	/* get the requested parent directory */
-	dir = lfs_lookup(cmd->index);
+void __link_wrapper(struct mp_fs *cmd) {
+	struct vfs_obj *dir;
+	
+	/* get the requested directory */
+	dir = vfs_get_index(cmd->index);
 
 	if (dir) {
 		mutex_spin(&dir->mutex);
 
-		/* check permissions */
-		if ((acl_get(dir->acl, gettuser()) & FS_PERM_WRITE) == 0) {
+		/* check type of object */
+		if (dir->type != FOBJ_DIR) {
+			cmd->op = FS_ERR;
+			cmd->v0 = ERR_TYPE;
+			return;
+		}
+
+		/* check all permissions */
+		if ((acl_get(dir->acl, gettuser() & FS_PERM_WRITE) == 0)) {
 			cmd->op = FS_ERR;
 			cmd->v0 = ERR_DENY;
 			return;
 		}
-
-		/* construct new object */
-		new_fobj = active_driver->cons(cmd->v0);
-
-		if (new_fobj) {
-			/* add new object to parent directory */
-			lfs_push(dir, new_fobj, cmd->s0);
-
-			/* return pointer to new object on success */
-			cmd->v0   = getpid();
-			cmd->v0 <<= 32;
-			cmd->v0  |= new_fobj->inode;
-		}
-		else {
-			/* return ERR_NULL on failure to create file */
-			cmd->op = FS_ERR;
-			cmd->v0 = ERR_NULL;
-		}
+	
+		/* set link location */
+		dir->link = cmd->v0;
 
 		mutex_free(&dir->mutex);
 	}

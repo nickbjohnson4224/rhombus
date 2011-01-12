@@ -32,31 +32,7 @@ static uint16_t *vbuf  = NULL;
 static bool m_vbuf     = false;
 static void char_write(char c);
 
-void term_init(int argc, char **argv) {
-	struct fs_obj *root;
-	size_t i;
-
-	root = calloc(sizeof(struct fs_obj), 1);
-	root->type = FOBJ_FILE;
-	root->size = 0;
-	root->inode = 0;
-	root->acl = acl_set_default(root->acl, FS_PERM_WRITE);
-
-	mutex_spin(&m_vbuf);
-
-	vbuf = valloc(WIDTH * HEIGHT * 2);
-	page_phys(vbuf, WIDTH * HEIGHT * 2, PROT_READ | PROT_WRITE, 0xB8000);
-
-	for (i = 0; i < WIDTH * HEIGHT; i++) {
-		vbuf[i] = 0x0F00 | ' ';
-	}
-
-	mutex_free(&m_vbuf);
-
-	lfs_root(root);
-}
-
-size_t term_write(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+size_t term_write(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	size_t i;
 	
 	mutex_spin(&file->mutex);
@@ -75,27 +51,29 @@ size_t term_write(struct fs_obj *file, uint8_t *buffer, size_t size, uint64_t of
 	return size;
 }
 
-struct driver term_driver = {
-	term_init, 
-
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-
-	NULL,
-	NULL,
-	term_write,
-	NULL,
-	NULL,
-	NULL,
-
-	NULL,
-};
-
 int main(int argc, char **argv) {
+	struct vfs_obj *root;
+	size_t i;
 
-	driver_init(&term_driver, argc, argv);
+	root = calloc(sizeof(struct vfs_obj), 1);
+	root->type = FOBJ_FILE;
+	root->size = 0;
+	root->acl = acl_set_default(root->acl, FS_PERM_WRITE);
+	vfs_set_index(0, root);
+
+	mutex_spin(&m_vbuf);
+
+	vbuf = valloc(WIDTH * HEIGHT * 2);
+	page_phys(vbuf, WIDTH * HEIGHT * 2, PROT_READ | PROT_WRITE, 0xB8000);
+
+	for (i = 0; i < WIDTH * HEIGHT; i++) {
+		vbuf[i] = 0x0F00 | ' ';
+	}
+
+	mutex_free(&m_vbuf);
+
+	di_wrap_write(term_write);
+	vfs_wrap_init();
 
 	msend(PORT_CHILD, getppid(), NULL);
 	_done();

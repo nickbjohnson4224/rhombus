@@ -12,7 +12,7 @@ all: $(TARGET) $(CNAUGHT)
 
 $(HEADERS):
 	@ echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/inc
-	@ cp $@ $(BUILDDIR)/inc
+	@ cp $@ $(BUILDDIR)/$@
 
 $(TARGET): $(HEADERS) $(SOURCES)
 	@ echo " AR	" $(SUBDIR)/$(TARGET)

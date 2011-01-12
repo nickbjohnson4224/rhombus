@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,41 +16,55 @@
 
 #include <driver.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <mutex.h>
 #include <proc.h>
 
 /*****************************************************************************
- * list_wrapper
+ * __cons_wrapper
  *
- * Performs the requested actions of a FS_LIST command.
+ * Performs the requested actions of a FS_CONS command.
  */
 
-void list_wrapper(struct mp_fs *cmd) {
-	struct fs_obj *dir;
-	
-	/* get requested directory */
-	dir = lfs_lookup(cmd->index);
+void __cons_wrapper(struct mp_fs *cmd) {
+	struct vfs_obj *dir, *new_fobj;
+
+	/* make sure the active driver can construct new objects */
+	if (!_vfs_cons) {
+		cmd->op = FS_ERR;
+		cmd->v0 = ERR_FUNC;
+		return;
+	}
+
+	/* get the requested parent directory */
+	dir = vfs_get_index(cmd->index);
 
 	if (dir) {
 		mutex_spin(&dir->mutex);
 
-		if (dir->type == FOBJ_DIR) {
+		/* check permissions */
+		if ((acl_get(dir->acl, gettuser()) & FS_PERM_WRITE) == 0) {
+			cmd->op = FS_ERR;
+			cmd->v0 = ERR_DENY;
+			return;
+		}
 
-			/* check permissions */
-			if ((acl_get(dir->acl, gettuser()) & FS_PERM_READ) == 0) {
-				cmd->op = FS_ERR;
-				cmd->v0 = ERR_DENY; 
-			}
-			else if (lfs_list(dir, cmd->v0, cmd->s0, 4000)) {
-				/* return ERR_FILE if the entry does not exist */
-				cmd->op = FS_ERR;
-				cmd->v0 = ERR_FILE;
-			}
+		/* construct new object */
+		new_fobj = _vfs_cons(cmd->v0);
+
+		if (new_fobj) {
+			/* add new object to parent directory */
+			vfs_dir_push(dir, new_fobj, cmd->s0);
+
+			/* return pointer to new object on success */
+			cmd->v0   = getpid();
+			cmd->v0 <<= 32;
+			cmd->v0  |= new_fobj->index;
 		}
 		else {
-			/* return ERR_TYPE if <dir> is not a directory */
+			/* return ERR_NULL on failure to create file */
 			cmd->op = FS_ERR;
-			cmd->v0 = ERR_TYPE;
+			cmd->v0 = ERR_NULL;
 		}
 
 		mutex_free(&dir->mutex);
