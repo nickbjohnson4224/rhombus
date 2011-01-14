@@ -4,6 +4,7 @@
 *.swp
 *.swo
 *.iso
+*.patch
 /inc
 /run/cd
 /run/boot.tar

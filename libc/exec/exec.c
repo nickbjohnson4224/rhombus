@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Jaagup Repan
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -94,4 +95,9 @@ int execv(const char *path, char const **argv) {
 
 	image = load_exec(path);
 	return execiv(image, msize(image), argv);
+}
+
+int exec(const char *path) {
+	const char *argv[] = { path, NULL };
+	return execv(path, argv);
 }
