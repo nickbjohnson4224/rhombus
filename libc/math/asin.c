@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+* Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
 * 
 * Permission to use, copy, modify, and/or distribute this software for any
 * purpose with or without fee is hereby granted, provided that the above
@@ -18,13 +18,70 @@
 #include <float.h>
 
 float asinf(float x) {
-	return atanf(x / sqrtf(1.0 - (x * x)));
+	long double y, y_sin, y_cos;
+
+	y = 0;
+
+	while (1) {
+		y_sin = sinf(y);
+		y_cos = cosf(y);
+
+		if (y > M_PI_2 || y < -M_PI_2) {
+			y = fmodf(y, M_PI);
+		}
+
+		if (y_sin + DBL_EPSILON >= x && y_sin - DBL_EPSILON <= x) {
+			break;
+		}
+
+		y = y - (y_sin - x) / y_cos;
+	}
+
+	return y;
 }
 
 double asin(double x) {
-	return atan(x / sqrt(1.0 - (x * x)));
+	long double y, y_sin, y_cos;
+
+	y = 0;
+
+	while (1) {
+		y_sin = sin(y);
+		y_cos = cos(y);
+
+		if (y > M_PI_2 || y < -M_PI_2) {
+			y = fmod(y, M_PI);
+		}
+
+		if (y_sin + DBL_EPSILON >= x && y_sin - DBL_EPSILON <= x) {
+			break;
+		}
+
+		y = y - (y_sin - x) / y_cos;
+	}
+
+	return y;
 }
 
 long double asinl(long double x) {
-	return atanl(x / sqrtl(1.0 - (x * x)));
+	long double y, y_sin, y_cos;
+
+	y = 0;
+
+	while (1) {
+		y_sin = sinl(y);
+		y_cos = cosl(y);
+
+		if (y > M_PI_2 || y < -M_PI_2) {
+			y = fmodl(y, M_PI);
+		}
+
+		if (y_sin + LDBL_EPSILON >= x && y_sin - LDBL_EPSILON <= x) {
+			break;
+		}
+
+		y = y - (y_sin - x) / y_cos;
+	}
+
+	return y;
 }

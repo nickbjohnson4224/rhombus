@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -22,8 +22,10 @@
 
 #define assert(expr) \
 do {\
-	fprintf(stderr, "assertion failed: file %s, line %s", __FILE__, __LINE__); \
-	abort();\
+	if (!(expr)) {\
+		fprintf(stderr, "assertion failed: file %s, line %s", __FILE__, __LINE__); \
+		abort();\
+	}\
 } while (0);
 
 #endif/*ASSERT_H*/

@@ -12,7 +12,9 @@ For 0.7 Alpha:
 
 For 0.8 Alpha:
 
-- finish libc math functions
++ fill in math function stubs
++ test math functions
+- write fenv.h, tgmath.h
 - finish printf/scanf
 - group manager
 - proper terminal driver

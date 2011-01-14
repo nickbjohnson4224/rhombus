@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,16 +19,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* XXX - stubbed */
-
 float atanf(float x) {	
-	return NAN;
+	return asinf(x / sqrtf(x * x + 1));
 }
 
 double atan(double x) {
-	return NAN;
+	return asin(x / sqrt(x * x + 1));
 }
 
 long double atanl(long double x) {
-	return NAN;
+	return asinl(x / sqrtl(x * x + 1));
 }

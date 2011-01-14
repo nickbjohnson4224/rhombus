@@ -32,10 +32,10 @@ float atan2f(float y, float x) {
 			return M_PI_2;
 		}
 		else if (x > 0.0) {
-			return tanf(y / x);
+			return atanf(y / x);
 		}
 		else {
-			return M_PI - tanf(y / x);
+			return M_PI - atanf(y / x);
 		}
 	}
 	else {
@@ -43,10 +43,10 @@ float atan2f(float y, float x) {
 			return M_PI + M_PI_2;
 		}
 		else if (x > 0.0) {
-			return 2 * M_PI - tanf(y / x);
+			return 2 * M_PI - atanf(y / x);
 		}
 		else {
-			return M_PI + tanf(y / x);
+			return M_PI + atanf(y / x);
 		}
 	}
 }
@@ -66,10 +66,10 @@ double atan2(double y, double x) {
 			return M_PI_2;
 		}
 		else if (x > 0.0) {
-			return tan(y / x);
+			return atan(y / x);
 		}
 		else {
-			return M_PI - tan(y / x);
+			return M_PI - atan(y / x);
 		}
 	}
 	else {
@@ -77,10 +77,10 @@ double atan2(double y, double x) {
 			return M_PI + M_PI_2;
 		}
 		else if (x > 0.0) {
-			return 2 * M_PI - tan(y / x);
+			return 2 * M_PI - atan(y / x);
 		}
 		else {
-			return M_PI + tan(y / x);
+			return M_PI + atan(y / x);
 		}
 	}
 }
@@ -100,10 +100,10 @@ long double atan2l(long double y, long double x) {
 			return M_PI_2;
 		}
 		else if (x > 0.0) {
-			return tanl(y / x);
+			return atanl(y / x);
 		}
 		else {
-			return M_PI - tanl(y / x);
+			return M_PI - atanl(y / x);
 		}
 	}
 	else {
@@ -111,10 +111,10 @@ long double atan2l(long double y, long double x) {
 			return M_PI + M_PI_2;
 		}
 		else if (x > 0.0) {
-			return 2 * M_PI - tanl(y / x);
+			return 2 * M_PI - atanl(y / x);
 		}
 		else {
-			return M_PI + tanl(y / x);
+			return M_PI + atanl(y / x);
 		}
 	}
 }
