@@ -140,4 +140,6 @@ float       tanhf (float x);
 double      tanh  (double x);
 long double tanhl (long double x);
 
+/* GCC builtin math functions ***********************************************/
+
 #endif/*MATH_H*/

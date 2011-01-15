@@ -32,7 +32,8 @@ int mmap(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot) {
 	cmd->protocol = MP_PROT_IO;
 
 	/* map sending buffer into message */
-	page_self(buf, (void*) ((uintptr_t) cmd + PAGESZ), prot);
+	page_self(buf, (void*) ((uintptr_t) cmd + PAGESZ), size);
+	page_prot((void*) ((uintptr_t) cmd + PAGESZ), size, prot);
 
 	return rp_asend(rp, PORT_MMAP, (struct mp_basic*) cmd);
 }

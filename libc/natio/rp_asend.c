@@ -20,6 +20,7 @@
 #include <natio.h>
 #include <stdio.h>
 #include <arch.h>
+#include <page.h>
 #include <ipc.h>
 
 /*****************************************************************************
@@ -49,7 +50,22 @@ int rp_asend(uint64_t rp, uint8_t port, struct mp_basic *msg) {
 	if (msg) {
 		message->count = (msg->length % PAGESZ) ? (msg->length / PAGESZ) + 1 : msg->length / PAGESZ;
 		message->packet = aalloc(message->count * PAGESZ, PAGESZ);
-		memcpy(message->packet, msg, msg->length);
+
+		/* check for out of memory error */
+		if (!message->packet) {
+			free(msg);
+			return 1;
+		}
+
+		if ((uintptr_t) msg % PAGESZ) {
+			/* unaligned message: copy */
+			memcpy(message->packet, msg, msg->length);
+		}
+		else {
+			/* aligned message: move */
+			page_self(msg, message->packet, message->count * PAGESZ);
+		}
+
 		free(msg);
 	}
 
