@@ -1,8 +1,28 @@
+/*
+ * Copyright (C) 2011 Jaagup Repan
+ * 
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <exec.h>
 #include <ipc.h>
+#include <natio.h>
+#include <proc.h>
+#include <page.h>
 #include <wmanager.h>
 
 #define LIST_ADD(item) \
@@ -182,19 +202,29 @@ void set_bitmap(struct msg *msg) {
 }
 
 int main(int argc, char **argv) {
+	stdout = stderr = fopen("/dev/serial", "w");
+
+	if (fork() < 0) {
+		exec("/sbin/vga");
+	}
+	mwaits(PORT_CHILD, 0);
+
 	when(WMANAGER_PORT_SET_BITMAP, set_bitmap);
 	when(WMANAGER_PORT_ADD_WINDOW, add_window);
 	when(WMANAGER_PORT_SET_WINDOW, set_window);
 	when(WMANAGER_PORT_DESTROY_WINDOW, destroy_window);
+	io_link("/sys/wmanager", RP_CONS(getpid(), 0));
 
-	FILE *vga = fopen("/dev/vga0", "r+");
-#if 0
-	fscanf(vga, "%d %d", &screen_width, &screen_height);
-#else
-	screen_width = 320;
-	screen_height = 200;
-#endif
+	FILE *vga = fopen("/dev/vga0", "r");
+	fscanf(vga, "%i %i", &screen_width, &screen_height);
+	fclose(vga);
 	screen = malloc(screen_width * screen_height * 3);
+	uint64_t vgafd = io_find("/dev/vga0");
+	mmap(vgafd, screen, screen_width * screen_height * 3, 0, PROT_READ);
+
+	if (fork() < 0) {
+		exec("/bin/testapp");
+	}
 
 	while (1) {
 		memset(screen, 0, screen_width * screen_height * 3);
@@ -245,11 +275,9 @@ int main(int argc, char **argv) {
 
 			window = window->next;
 		}
-		fseek(vga, 0, SEEK_SET);
-		fwrite(screen, sizeof(char), screen_width * screen_height * 3, vga);
+		sync(vgafd);
 	}
 
-	fclose(vga);
 	free(screen);
 	LIST_FREE(bitmap)
 	LIST_FREE(window)

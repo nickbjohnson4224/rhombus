@@ -20,6 +20,7 @@
 #include <natio.h>
 #include <stdio.h>
 #include <arch.h>
+#include <page.h>
 #include <ipc.h>
 
 /*****************************************************************************
@@ -64,7 +65,15 @@ struct msg *rp_send(uint64_t rp, uint8_t port, struct mp_basic *msg) {
 			return NULL;
 		}
 
-		memcpy(message->packet, msg, msg->length);
+		if ((uintptr_t) msg % PAGESZ) {
+			/* unaligned message: copy */
+			memcpy(message->packet, msg, msg->length);
+		}
+		else {
+			/* aligned message: move */
+			page_self(msg, message->packet, message->count * PAGESZ);
+		}
+
 		free(msg);
 	}
 

@@ -38,7 +38,7 @@ size_t io_send(uint64_t rp, void *r, void *s, size_t size, uint64_t off, uint8_t
 	struct msg *reply;
 
 	/* format I/O command */
-	cmd = malloc(sizeof(struct mp_io) + size);
+	cmd = aalloc(sizeof(struct mp_io) + size, PAGESZ);
 	cmd->length   = sizeof(struct mp_io) + size;
 	cmd->size     = size;
 	cmd->offset   = off;

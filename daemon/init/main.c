@@ -135,6 +135,12 @@ int main() {
 	file = tar_find(boot_image, "sbin/time");
 	io_link("/dev/time", start(file, argv));
 
+	/* Serial Driver */
+	argv[0] = "serial";
+	argv[1] = NULL;
+	file = tar_find(boot_image, "sbin/serial");
+	io_link("/dev/serial", start(file, argv));
+
 	/* Path */
 	setenv("PATH", "/bin");
 

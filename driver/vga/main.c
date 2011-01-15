@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Jaagup Repan
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -22,35 +23,43 @@
 #include <proc.h>
 #include <page.h>
 #include <ipc.h>
+#include <mutex.h>
 
 #include "vga.h"
 
 uint8_t *vmem;
+uint8_t *screen;
 
 size_t vga_read(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	char data[16];
 
-	sprintf(data, "%u %u", mode->width, mode->height);
+	sprintf(data, "%i %i", mode->width, mode->height);
 
-	if (strlen(data) >= size) {
-		return 0;
+	size_t length = strlen(data) - offset;
+	if (length > size) {
+		length = size;
 	}
 
-	memcpy(buffer, data, strlen(data) + 1);
-	return strlen(data);
+	memcpy(buffer, data + offset, length);
+	return length;
 }
 
-size_t vga_write(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
-	int off = offset;
-	size_t i;
-	uint32_t pixel;
-
-	for (i = 0; i < size / 3; i++) {
-		pixel = (buffer[i * 3] << 16) | (buffer[i * 3 + 1] << 8) | buffer[i * 3 + 2];
-		mode->plot((i + off) % mode->width, (i + off) / mode->width, pixel);
+int vga_sync(struct vfs_obj *file) {
+	if (!screen) {
+		return -1;
 	}
+	mutex_spin(&file->mutex);
+	for (size_t i = 0; i < mode->width * mode->height; i++) {
+		uint32_t pixel = (screen[i * 3] << 16) | (screen[i * 3 + 1] << 8) | screen[i * 3 + 2];
+		mode->plot(i % mode->width, i / mode->width, pixel);
+	}
+	mutex_free(&file->mutex);
+	return 0;
+}
 
-	return size;
+int vga_mmap(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off) {
+	screen = buffer;
+	return 0;
 }
 
 int main(int argc, char **argv) {
@@ -71,7 +80,8 @@ int main(int argc, char **argv) {
 
 	/* set up driver interface */
 	di_wrap_read (vga_read);
-	di_wrap_write(vga_write);
+	di_wrap_sync(vga_sync);
+	di_wrap_mmap(vga_mmap);
 	vfs_wrap_init();
 
 	/* register the driver as /dev/vga0 */

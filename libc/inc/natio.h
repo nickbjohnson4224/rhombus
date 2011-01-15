@@ -99,6 +99,7 @@ size_t   read (uint64_t rp, void *buf, size_t size, uint64_t offset);
 size_t   write(uint64_t rp, void *buf, size_t size, uint64_t offset);
 int      sync (uint64_t rp);
 int      reset(uint64_t rp);
+int      mmap (uint64_t rp, void *buf, size_t size, uint64_t offset, int prot);
 
 uint64_t io_find(const char *name);
 uint64_t io_cons(const char *name, int type);

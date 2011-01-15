@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,31 +14,27 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
 #include <stdlib.h>
 #include <mutex.h>
 #include <natio.h>
 #include <proc.h>
 #include <ipc.h>
 
-/*****************************************************************************
- * __sync_wrapper
- *
- * Handles and redirects sync requests to the current active driver.
- */
+#include <driver/vfs.h>
+#include <driver/io.h>
 
-void __sync_wrapper(struct msg *msg) {
+void __mmap_wrapper(struct msg *msg) {
 	struct vfs_obj *file;
-	struct mp_basic *cmd;
+	struct mp_io *cmd;
 
-	if (!msg->packet) {
+	cmd = io_recv(msg);
+
+	if (!cmd) {
 		error_reply(msg, 1);
 		return;
 	}
 
-	cmd = msg->packet;
-
-	if (!_di_sync) {
+	if (!_di_mmap) {
 		error_reply(msg, 1);
 		return;
 	}
@@ -47,15 +43,11 @@ void __sync_wrapper(struct msg *msg) {
 
 	if (!file || (file->type != FOBJ_FILE)) {
 		error_reply(msg, 1);
-		return;
 	}
 
-	if (!(acl_get(file->acl, gettuser()) & FS_PERM_WRITE)) {
-		error_reply(msg, 1);
-		return;
+	_di_mmap(file, (void*) ((uintptr_t) cmd + PAGESZ), cmd->size, cmd->offset);
+
+	if (cmd->type != MP_TYPE_ASYNC) {
+		msend(PORT_REPLY, msg->source, msg);
 	}
-
-	_di_sync(file);
-
-	msend(PORT_REPLY, msg->source, msg);
 }
