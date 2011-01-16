@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,6 +17,23 @@
 #include <math.h>
 #include <float.h>
 #include <stdint.h>
+
+/* If GCC/CLang builtins are available, use them */
+#ifdef __GNUC__
+
+float modff(float x, float *iptr) {
+	return __builtin_modff(x, iptr);
+}
+
+double modf(double x, double *iptr) {
+	return __builtin_modf(x, iptr);
+}
+
+long double modfl(long double x, long double *iptr) {
+	return __builtin_modfl(x, iptr);
+}
+
+#else
 
 float modff(float x, float *iptr) {
 	if (fabsf(x) >= 8388608.0) {
@@ -62,3 +79,5 @@ long double modfl(long double x, long double *iptr) {
 		return (x - *iptr);
 	}
 }
+
+#endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,6 +16,23 @@
 
 #include <math.h>
 #include <float.h>
+
+/* If GCC/CLang builtins are available, use them */
+#ifdef __GNUC__
+
+float ceilf(float x) {
+	return __builtin_ceilf(x);
+}
+
+double ceil(double x) {
+	return __builtin_ceil(x);
+}
+
+long double ceill(long double x) {
+	return __builtin_ceill(x);
+}
+
+#else
 
 float ceilf(float x) {
 	modff(x, &x);
@@ -34,3 +51,5 @@ long double ceill(long double x) {
 	if (x > 0.0) x += 1.0;
 	return x;
 }
+
+#endif

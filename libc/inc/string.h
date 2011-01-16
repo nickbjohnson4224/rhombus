@@ -18,6 +18,7 @@
 #define STRING_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 /* memory functions ********************************************************/
 

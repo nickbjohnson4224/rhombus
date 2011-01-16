@@ -17,6 +17,23 @@
 #include <math.h>
 #include <float.h>
 
+/* If GCC/CLang builtins are available, use them */
+#ifdef __GNUC__
+
+float frexpf(float x, int *exp) {
+	return __builtin_frexpf(x, exp);
+}
+
+double frexp(double x, int *exp) {
+	return __builtin_frexp(x, exp);
+}
+
+long double frexpl(long double x, int *exp) {
+	return __builtin_frexpl(x, exp);
+}
+
+#else
+
 float frexpf(float x, int *exp) {
 	*exp = (int) ceilf(log2f(x));
 	return x / ldexpf(1.0, *exp);
@@ -31,3 +48,5 @@ long double frexpl(long double x, int *exp) {
 	*exp = (int) ceill(log2(x));
 	return x / ldexpl(1.0, *exp);
 }
+
+#endif

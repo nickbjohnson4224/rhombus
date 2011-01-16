@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,6 +18,23 @@
 #include <float.h>
 #include <math.h>
 
+/* If GCC/CLang builtins are available, use them */
+#ifdef __GNUC__
+
+float sinf(float x) {
+	return __builtin_sinf(x);
+}
+
+double sin(double x) {
+	return __builtin_sin(x);
+}
+
+long double sinl(long double x) {
+	return __builtin_sinl(x);
+}
+
+#else
+
 static float _flt_inv_fact[] = {
 	1.0 / 1.0,			// 1 / 1!
 	1.0 / 6.0,			// 1 / 3!
@@ -27,7 +44,7 @@ static float _flt_inv_fact[] = {
 	1.0 / 39916800.0,	// 1 / 11!
 };
 
-float sinf(float x) {	
+float sinf(float x) {
 	float x_squared;
 	float sin_x;
 	size_t i;
@@ -148,3 +165,5 @@ long double sinl(long double x) {
 
 	return sin_x;
 }
+
+#endif

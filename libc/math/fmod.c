@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,6 +16,23 @@
 
 #include <math.h>
 #include <float.h>
+
+/* If GCC/CLang builtins are available, use them */
+#ifdef __GNUC__
+
+float fmodf(float x, float div) {
+	return __builtin_fmodf(x, div);
+}
+
+double fmod(double x, double div) {
+	return __builtin_fmod(x, div);
+}
+
+long double fmodl(long double x, long double div) {
+	return __builtin_fmodl(x, div);
+}
+
+#else
 
 float fmodf(float x, float div) {
 	float n0;
@@ -46,3 +63,5 @@ long double fmodl(long double x, long double div) {
 
 	return x;
 }
+
+#endif

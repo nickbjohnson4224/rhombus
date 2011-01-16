@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,6 +16,23 @@
 
 #include <math.h>
 #include <float.h>
+
+/* If GCC/CLang builtins are available, use them */
+#ifdef __GNUC__
+
+float floorf(float x) {
+	return __builtin_floorf(x);
+}
+
+double floor(double x) {
+	return __builtin_floor(x);
+}
+
+long double floorl(long double x) {
+	return __builtin_floorl(x);
+}
+
+#else
 
 float floorf(float x) {
 	modff(x, &x);
@@ -34,3 +51,5 @@ long double floorl(long double x) {
 	if (x < 0.0) x -= 1.0;
 	return x;
 }
+
+#endif

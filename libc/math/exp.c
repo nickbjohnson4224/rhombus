@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,6 +18,23 @@
 #include <float.h>
 #include <stdint.h>
 #include <stdbool.h>
+
+/* If GCC/CLang builtins are available, use them */
+#ifdef __GNUC__
+
+float expf(float x) {
+	return __builtin_expf(x);
+}
+
+double exp(double x) {
+	return __builtin_exp(x);
+}
+
+long double expl(long double x) {
+	return __builtin_expl(x);
+}
+
+#else
 
 #define M_E2 	(M_E * M_E)
 #define M_E4 	(M_E2 * M_E2)
@@ -250,3 +267,5 @@ long double expl(long double x) {
 		return value;
 	}
 }
+
+#endif

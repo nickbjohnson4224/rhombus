@@ -18,6 +18,7 @@
 #define KERNEL_TYPES_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 typedef uint32_t reg_t;
 typedef uint32_t pid_t;

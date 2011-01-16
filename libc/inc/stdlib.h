@@ -18,6 +18,7 @@
 #define STDLIB_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 /* memory management (internal) ********************************************/
 

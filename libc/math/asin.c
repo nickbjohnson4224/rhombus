@@ -17,6 +17,23 @@
 #include <math.h>
 #include <float.h>
 
+/* If GCC/CLang builtins are available, use them */
+#ifdef __GNUC__
+
+float asinf(float x) {
+	return __builtin_asinf(x);
+}
+
+double asin(double x) {
+	return __builtin_asin(x);
+}
+
+long double asinl(long double x) {
+	return __builtin_asinl(x);
+}
+
+#else
+
 float asinf(float x) {
 	long double y, y_sin, y_cos;
 
@@ -85,3 +102,5 @@ long double asinl(long double x) {
 
 	return y;
 }
+
+#endif

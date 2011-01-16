@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,6 +17,23 @@
 #include <math.h>
 #include <float.h>
 
+/* If GCC/CLang builtins are available, use them */
+#ifdef __GNUC__
+
+float ldexpf(float x, int n) {
+	return __builtin_ldexpf(x, n);
+}
+
+double ldexp(double x, int n) {
+	return __builtin_ldexp(x, n);
+}
+
+long double ldexpl(long double x, int n) {
+	return __builtin_ldexpl(x, n);
+}
+
+#else
+
 float ldexpf(float x, int n) {
 	return (x * powf(2.0, (float) n));
 }
@@ -28,3 +45,5 @@ double ldexp(double x, int n) {
 long double ldexpl(long double x, int n) {
 	return (x * powl(2.0, (long double) n));
 }
+
+#endif
