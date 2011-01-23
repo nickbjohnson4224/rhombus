@@ -58,6 +58,12 @@ int vga_sync(struct vfs_obj *file) {
 }
 
 int vga_mmap(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off) {
+	if (size != mode->width * mode->height * 3) {
+		return -1;
+	}
+	if (off != 0) {
+		return -1;
+	}
 	screen = buffer;
 	return 0;
 }

@@ -26,11 +26,13 @@ const size_t width = 256;
 const size_t height = 30;
 const size_t size = width * height * 4;
 uint8_t *bitmap;
+uint64_t bID, wID;
 
 void draw(uint8_t alpha) {
 	for (size_t i = 3; i <= size; i += 4)	{
 		bitmap[i] = alpha;
 	}
+	wm_update(wID);
 }
 
 int main(int argc, char **argv) {
@@ -46,21 +48,19 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	if (wm_init()) {
-		fprintf(stderr, "%s: error: cannot initialize window manager\n", argv[0]);
-		return 1;
-	}
-
-	wm_set_bitmap(0, bitmap, size);
-	wm_add_window(0, width, height, 0);
+	bID = wm_create_bitmap(bitmap, size);
+	wID = wm_create_window(width, height);
+	wm_set_bitmap(wID, bID);
 	while (1) {
-		for (int alpha = 0; alpha <= 0xff; alpha++) {
+		for (int alpha = 0; alpha <= 0xff; alpha += 0x10) {
 			draw(alpha);
 		}
-		for (int alpha = 0xfe; alpha >= 0; alpha--) {
+		for (int alpha = 0xfe; alpha >= 0; alpha -= 0x10) {
 			draw(alpha);
 		}
 	}
 
+	wm_destroy_window(wID);
+	wm_destroy_bitmap(bID);
 	return 0;
 }

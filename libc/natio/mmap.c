@@ -25,7 +25,7 @@
 int mmap(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot) {
 	struct mp_io *cmd;
 
-	cmd = aalloc(sizeof(struct mp_io) + size, PAGESZ);
+	cmd = aalloc(PAGESZ + size, PAGESZ);
 	cmd->length   = PAGESZ + size;
 	cmd->size     = size;
 	cmd->offset   = offset;

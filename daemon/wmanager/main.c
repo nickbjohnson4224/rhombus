@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <driver.h>
 #include <exec.h>
 #include <ipc.h>
 #include <natio.h>
@@ -41,7 +42,7 @@
 		item->prev->next = item->next; \
 	} \
 	else { \
-		item ## s = item->next; \
+		item##s = item->next; \
 	} \
 	if (item->next) { \
 		item->next->prev = item->prev; \
@@ -49,11 +50,11 @@
 	free(item); \
 }
 
-#define LIST_FIND(list, owner, id) \
+#define LIST_FIND(list, id) \
 { \
 	struct list##_t *item = list##s; \
 	while (item) { \
-		if (item->owner == owner && item->id == id) { \
+		if (item->id == id) { \
 			return item; \
 		} \
 		item = item->next; \
@@ -72,136 +73,221 @@
 }
 
 struct window_t {
-	uint32_t owner;
-	uint8_t id;
+	uint32_t id;
 	size_t x, y;
 	size_t width, height;
 	uint8_t bitmap;
 	struct window_t *prev, *next;
 };
 struct bitmap_t {
-	uint32_t owner;
-	uint8_t id;
+	uint32_t id;
 	uint8_t *address;
 	size_t size;
 	struct bitmap_t *prev, *next;
 };
 
+const uint32_t bitmaps_dir = 1, windows_dir = 2;
 uint8_t *screen;
 size_t screen_width, screen_height;
 struct window_t *windows;
 struct bitmap_t *bitmaps;
+uint64_t vgafd;
 
-void return_message(int ret, int target) {
-	struct msg *msg = malloc(sizeof(struct msg));
-	msg->count = 1;
-	msg->packet = aalloc(msg->count * PAGESZ, PAGESZ);
-	*((uint32_t*) msg->packet) = ret;
-	msend(PORT_REPLY, target, msg);
-}
+struct window_t *find_window(uint32_t id) LIST_FIND(window, id)
+struct bitmap_t *find_bitmap(uint32_t id) LIST_FIND(bitmap, id)
 
-struct window_t *find_window(uint32_t owner, uint8_t id) LIST_FIND(window, owner, id)
-struct bitmap_t *find_bitmap(uint32_t owner, uint8_t id) LIST_FIND(bitmap, owner, id)
-
-void add_window(struct msg *msg) {
+int wmanager_push(struct vfs_obj *file) {
 	static int tmp = 0;
-	uint8_t id    = ((uint32_t *) msg->packet)[0];
-	size_t width  = ((uint32_t *) msg->packet)[1];
-	size_t height = ((uint32_t *) msg->packet)[2];
-	size_t bitmap = ((uint32_t *) msg->packet)[3];
 
-	if (find_window(msg->source, id)) {
-		return_message(WMANAGER_RETURN_INVALID_WINDOW_ID, msg->source);
-		return;
-	}
-	if (!find_bitmap(msg->source, id)) {
-		return_message(WMANAGER_RETURN_INVALID_BITMAP_ID, msg->source);
-		return;
-	}
-	if (find_bitmap(msg->source, id)->size < width * height * 4) {
-		return_message(WMANAGER_RETURN_INVALID_SIZE, msg->source);
-		return;
+	if (file->index == bitmaps_dir || file->index == windows_dir) {
+		return 0;
 	}
 
-	struct window_t *window = malloc(sizeof(struct window_t));
-	window->owner = msg->source;
-	window->id = id;
-	window->x = tmp;
-	window->y = tmp;
-	tmp += 15;
-	window->width = width;
-	window->height = height;
-	window->bitmap = bitmap;
-	window->next = window->prev = NULL;
-
-	LIST_ADD(window)
-	return_message(WMANAGER_RETURN_OK, msg->source);
-}
-
-void set_window(struct msg *msg) {
-	uint8_t id    = ((uint32_t *) msg->packet)[0];
-	size_t width  = ((uint32_t *) msg->packet)[1];
-	size_t height = ((uint32_t *) msg->packet)[2];
-	size_t bitmap = ((uint32_t *) msg->packet)[3];
-	struct window_t *window = find_window(msg->source, id);
-
-	if (!window) {
-		return_message(WMANAGER_RETURN_INVALID_WINDOW_ID, msg->source);
-		return;
-	}
-	if (!find_bitmap(msg->source, id)) {
-		return_message(WMANAGER_RETURN_INVALID_BITMAP_ID, msg->source);
-		return;
-	}
-	if (find_bitmap(msg->source, id)->size < width * height * 4) {
-		return_message(WMANAGER_RETURN_INVALID_SIZE, msg->source);
-		return;
-	}
-
-	window->width = width;
-	window->height = height;
-	window->bitmap = bitmap;
-
-	return_message(WMANAGER_RETURN_OK, msg->source);
-}
-
-void destroy_window(struct msg *msg) {
-	uint8_t id = *(uint32_t*) msg->packet;
-	struct window_t *window = find_window(msg->source, id);
-	if (!window) {
-		return_message(WMANAGER_RETURN_INVALID_WINDOW_ID, msg->source);
-		return;
-	}
-	LIST_REMOVE(window)
-	return_message(WMANAGER_RETURN_OK, msg->source);
-}
-
-void set_bitmap(struct msg *msg) {
-	uint8_t id = *(uint8_t*) msg->packet;
-	struct bitmap_t *bitmap = find_bitmap(msg->source, id);
-	if (bitmap) {
-		if (msg->packet) {
-			bitmap->address = msg->packet;
-			bitmap->size = msg->count * PAGESZ;
+	else if (file->mother->index == windows_dir) {
+		if (find_window(file->index)) {
+			return -1;
 		}
-		else {
-			LIST_REMOVE(bitmap)
-		}
+
+		struct window_t *window = malloc(sizeof(struct window_t));
+		window->id = file->index;
+		window->x = tmp;
+		window->y = tmp;
+		tmp += 15;
+		window->width = window->height = window->bitmap = 0;
+		window->next = window->prev = NULL;
+
+		LIST_ADD(window)
 	}
-	else {
-		/* Add bitmap */
-		bitmap = malloc(sizeof(struct bitmap_t));
-		bitmap->id = id;
-		bitmap->owner = msg->source;
-		bitmap->address = msg->packet;
+
+	else if (file->mother->index == bitmaps_dir) {
+		if (find_bitmap(file->index)) {
+			return -1;
+		}
+
+		struct bitmap_t *bitmap = malloc(sizeof(struct bitmap_t));
+		bitmap->id = file->index;
+		bitmap->address = NULL;
+		bitmap->size = 0;
 		bitmap->prev = bitmap->next = NULL;
-		bitmap->size = msg->count * PAGESZ;
-		LIST_ADD(bitmap)
+
+		LIST_ADD(bitmap);
 	}
-	return_message(WMANAGER_RETURN_OK, msg->source);
+
+	else {
+		return -1;
+	}
+
+	return 0;
 }
 
+size_t wmanager_write(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+	struct window_t *window = find_window(file->index);
+
+	if (!window) {
+		return -1;
+	}
+
+	if (offset == 0) { // size
+		sscanf((char*) buffer, "%i %i", &window->width, &window->height);
+	}
+
+	else  if (offset == 1) { //bitmap
+		uint32_t bitmap;
+		sscanf((char*) buffer, "%i", &bitmap);
+		if (!find_bitmap(bitmap)) {
+			return -1;
+		}
+		if (find_bitmap(bitmap)->size != window->width * window->height * 4) {
+			return -1;
+		}
+		window->bitmap = bitmap;
+	}
+
+	else {
+		return -1;
+	}
+
+	return size;
+}
+
+int wmanager_pull(struct vfs_obj *file) {
+	if (file->mother->index == windows_dir) {
+		struct window_t *window = find_window(file->index);
+		if (!window) {
+			return -1;
+		}
+		LIST_REMOVE(window)
+	}
+
+	else if (file->mother->index == bitmaps_dir) {
+		struct bitmap_t *bitmap = find_bitmap(file->index);
+		if (!bitmap) {
+			return -1;
+		}
+		LIST_REMOVE(bitmap)
+	}
+
+	else {
+		return -1;
+	}
+
+	return 0;
+}
+
+int wmanager_mmap(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off) {
+	struct bitmap_t *bitmap = find_bitmap(file->index);
+	if (off != 0) {
+		return -1;
+	}
+	if (!bitmap) {
+		return -1;
+	}
+	if (bitmap->address) {
+		return -1;
+	}
+	bitmap->address = buffer;
+	bitmap->size = size;
+	return 0;
+}
+
+int wmanager_sync(struct vfs_obj *file) {
+	memset(screen, 0, screen_width * screen_height * 3);
+	struct window_t *window = windows;
+	while (window) {
+		/* content */
+		struct bitmap_t *bitmap = find_bitmap(window->bitmap);
+		if (bitmap && bitmap->size >= window->width * window->height * 4) {
+			for (size_t x = window->x; (x < (window->x + window->width)) && (x < screen_width); x++) {
+				for (size_t y = window->y; (y < (window->y + window->height)) && (y < screen_height); y++) {
+					size_t screen_index = (x + y * screen_width) * 3;
+					size_t window_index = ((x - window->x) + (y - window->y) * window->width) * 4;
+					double alpha = bitmap->address[window_index + 3] / 255.0;
+					for (int c = 0; c < 3; c++) {
+						screen[screen_index + c] = (1 - alpha) * screen[screen_index + c] +
+							alpha * bitmap->address[window_index + c];
+					}
+				}
+			}
+		}
+		
+		/* decorations */
+		for (size_t x = window->x >= 1 ? window->x - 1 : 0;
+				(x < (window->x + window->width + 1)) && (x < screen_width); x++) {
+			if (window->y >= 1) {
+				for (int c = 0; c < 3; c++) {
+					screen[(x + (window->y - 1) * screen_width) * 3 + c] = 0xff;
+				}
+			}
+			if (window->y + window->height < screen_height) {
+				for (int c = 0; c < 3; c++) {
+					screen[(x + (window->y + window->height) * screen_width) * 3 + c] = 0xff;
+				}
+			}
+		}
+		for (size_t y = window->y; (y < (window->y + window->height)) && (y < screen_height); y++) {
+			if (window->x >= 1) {
+				for (int c = 0; c < 3; c++) {
+					screen[(window->x - 1 + y * screen_width) * 3 + c] = 0xff;
+				}
+			}
+			if (window->x + window->width < screen_width) {
+				for (int c = 0; c < 3; c++) {
+					screen[(window->x + window->width + y * screen_width) * 3 + c] = 0xff;
+				}
+			}
+		}
+
+		window = window->next;
+	}
+	sync(vgafd);
+	return 0;
+}
+
+struct vfs_obj *wmanager_cons(int type) {
+	static int next_index = 1;
+	struct vfs_obj *fobj = NULL;
+
+	switch (type) {
+	case FOBJ_FILE:
+	case FOBJ_DIR:
+		fobj        = calloc(sizeof(struct vfs_obj), 1);
+		fobj->type  = type;
+		fobj->size  = 0;
+		fobj->link  = 0;
+		fobj->data  = NULL;
+		fobj->index = next_index++;
+		fobj->acl   = acl_set_default(fobj->acl, FS_PERM_READ | FS_PERM_WRITE);
+		break;
+	}
+
+	return fobj;
+}
+
+//todo: owner control
 int main(int argc, char **argv) {
+	struct vfs_obj *root;
+	FILE *vga;
+
 	stdout = stderr = fopen("/dev/serial", "w");
 
 	if (fork() < 0) {
@@ -209,74 +295,36 @@ int main(int argc, char **argv) {
 	}
 	mwaits(PORT_CHILD, 0);
 
-	when(WMANAGER_PORT_SET_BITMAP, set_bitmap);
-	when(WMANAGER_PORT_ADD_WINDOW, add_window);
-	when(WMANAGER_PORT_SET_WINDOW, set_window);
-	when(WMANAGER_PORT_DESTROY_WINDOW, destroy_window);
-	io_link("/sys/wmanager", RP_CONS(getpid(), 0));
+	root        = calloc(sizeof(struct vfs_obj), 1);
+	root->type  = FOBJ_DIR;
+	root->size  = 0;
+	root->acl   = acl_set_default(root->acl, FS_PERM_READ | FS_PERM_WRITE);
+	vfs_set_index(0, root);
 
-	FILE *vga = fopen("/dev/vga0", "r");
+	di_wrap_mmap(wmanager_mmap);
+	di_wrap_write(wmanager_write);
+	di_wrap_sync(wmanager_sync);
+	vfs_wrap_cons(wmanager_cons);
+	vfs_wrap_push(wmanager_push);
+	vfs_wrap_pull(wmanager_pull);
+	vfs_wrap_init();
+
+	io_link("/sys/wmanager", RP_CONS(getpid(), 0));
+	io_cons("/sys/wmanager/bitmaps", FOBJ_DIR);
+	io_cons("/sys/wmanager/windows", FOBJ_DIR);
+
+	vga = fopen("/dev/vga0", "r");
 	fscanf(vga, "%i %i", &screen_width, &screen_height);
 	fclose(vga);
 	screen = malloc(screen_width * screen_height * 3);
-	uint64_t vgafd = io_find("/dev/vga0");
+	vgafd = io_find("/dev/vga0");
 	mmap(vgafd, screen, screen_width * screen_height * 3, 0, PROT_READ);
 
 	if (fork() < 0) {
 		exec("/bin/testapp");
 	}
 
-	while (1) {
-		memset(screen, 0, screen_width * screen_height * 3);
-		struct window_t *window = windows;
-		while (window) {
-			/* content */
-			struct bitmap_t *bitmap = find_bitmap(window->owner, window->id);
-			if (bitmap && bitmap->size >= window->width * window->height * 4) {
-				for (size_t x = window->x; (x < (window->x + window->width)) && (x < screen_width); x++) {
-					for (size_t y = window->y; (y < (window->y + window->height)) && (y < screen_height); y++) {
-						size_t screen_index = (x + y * screen_width) * 3;
-						size_t window_index = ((x - window->x) + (y - window->y) * window->width) * 4;
-						double alpha = bitmap->address[window_index + 3] / 255.0;
-						for (int c = 0; c < 3; c++) {
-							screen[screen_index + c] = (1 - alpha) * screen[screen_index + c] +
-								alpha * bitmap->address[window_index + c];
-						}
-					}
-				}
-			}
-			
-			/* decorations */
-			for (size_t x = window->x >= 1 ? window->x - 1 : 0;
-					(x < (window->x + window->width + 1)) && (x < screen_width); x++) {
-				if (window->y >= 1) {
-					for (int c = 0; c < 3; c++) {
-						screen[(x + (window->y - 1) * screen_width) * 3 + c] = 0xff;
-					}
-				}
-				if (window->y + window->height < screen_height) {
-					for (int c = 0; c < 3; c++) {
-						screen[(x + (window->y + window->height) * screen_width) * 3 + c] = 0xff;
-					}
-				}
-			}
-			for (size_t y = window->y; (y < (window->y + window->height)) && (y < screen_height); y++) {
-				if (window->x >= 1) {
-					for (int c = 0; c < 3; c++) {
-						screen[(window->x - 1 + y * screen_width) * 3 + c] = 0xff;
-					}
-				}
-				if (window->x + window->width < screen_width) {
-					for (int c = 0; c < 3; c++) {
-						screen[(window->x + window->width + y * screen_width) * 3 + c] = 0xff;
-					}
-				}
-			}
-
-			window = window->next;
-		}
-		sync(vgafd);
-	}
+	_done();
 
 	free(screen);
 	LIST_FREE(bitmap)
