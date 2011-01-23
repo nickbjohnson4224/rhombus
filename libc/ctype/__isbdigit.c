@@ -25,5 +25,5 @@
  */
 
 bool __isbdigit(char c, int base) {
-	return (__digit(c, 100) < base);
+	return (__digit(c, 100) != -1);
 }

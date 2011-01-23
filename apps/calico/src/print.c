@@ -29,7 +29,7 @@ int print_goban(struct goban *goban) {
 
 	for (y = 0; y < 19; y++) {
 
-		printf(" %2d ", 19 - y);
+		printf("%3d ", 19 - y);
 
 		for (x = 0; x < 19; x++) {
 

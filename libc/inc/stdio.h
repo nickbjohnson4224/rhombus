@@ -119,46 +119,7 @@ int puts(const char *s);
 
 /* formatted input/output **************************************************/
 
-int __utoa(char *buffer, unsigned int n, int base, bool ucase);
-int __itoa(char *buffer, int n, int base, bool ucase);
-int __ftoa(char *buffer, double n, int precision);
-int __etoa(char *buffer, double n, int precision);
-
 char *__format(const char **fmt, va_list *argp);
-
-int __parse_format(const char **format, int *width, int *precision);
-
-#define FMT_FLAG_SIGN	0x00000001
-#define FMT_FLAG_LEFT	0x00000002
-#define FMT_FLAG_ALT	0x00000004
-#define FMT_FLAG_FILL	0x00000008
-#define FMT_FLAG_WIDTH	0x00000010
-#define FMT_FLAG_PREC	0x00000020
-#define FMT_FLAG_UCASE	0x00000040
-
-#define FMT_LEN(n) (((n) >> 8) & 0xFF)
-#define FMT_LEN_INT		0x00000000
-#define FMT_LEN_BYTE	0x00000100
-#define FMT_LEN_SHORT	0x00000200
-#define FMT_LEN_LONG	0x00000300
-#define FMT_LEN_LLONG	0x00000400
-#define FMT_LEN_LDBL	0x00000500
-
-#define FMT_TYPE_INT	0x00010000
-#define FMT_TYPE_UINT	0x00020000
-#define FMT_TYPE_FLT	0x00040000
-#define FMT_TYPE_CHAR	0x00080000
-#define FMT_TYPE_STR	0x00100000
-#define FMT_TYPE_DEC	0x00200000
-#define FMT_TYPE_OCT	0x00400000
-#define FMT_TYPE_HEX	0x00800000
-#define FMT_TYPE_PTR	0x01000000
-#define FMT_TYPE_COUNT	0x02000000
-#define FMT_TYPE_LIT	0x08000000
-#define FMT_TYPE_EXP	0x10000000
-
-size_t __fformat(FILE *stream, int flags, int width, int precision, void *datum);
-size_t __sformat(char *buffer, int flags, int width, int precision, void *datum, size_t size);
 
 int printf   (const char *format, ...);
 int vprintf  (const char *format, va_list ap);

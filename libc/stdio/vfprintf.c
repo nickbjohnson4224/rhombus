@@ -19,12 +19,6 @@
 #include <string.h>
 #include <stdarg.h>
 
-/****************************************************************************
- * vfprintf
- *
- * XXX - doc
- */
-
 int vfprintf(FILE *stream, const char *format, va_list ap) {
 	size_t i, fbt;
 	char *fmtbuffer;

@@ -20,7 +20,8 @@
 /****************************************************************************
  * __digit
  *
- * Returns the value of digit <digit> in base <base>.
+ * Returns the value of digit <digit> in base <base>. Returns -1 if the
+ * digit is invalid.
  */
 
 int __digit(char digit, int base) {
@@ -34,8 +35,8 @@ int __digit(char digit, int base) {
 		val = digit - 'A';
 	}
 	else {
-		val = 0;
+		return -1;
 	}
 
-	return (val >= base) ? 0 : val;
+	return (val >= base) ? -1 : val;
 }

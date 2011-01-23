@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
 #include "calico.h"
 
 int read_move(int *x, int *y) {
@@ -24,7 +25,13 @@ int read_move(int *x, int *y) {
 	int number;
 
 	fgets(buffer, 100, stdin);
-	sscanf(buffer, "%c%d", &letter, &number);
+
+	if (!strcmp(buffer, "exit\n")) {
+		return 1;
+	}
+	else {
+		sscanf(buffer, "%c%d", &letter, &number);
+	}
 
 	letter = toupper(letter) - 'A';
 	number = 19 - number;

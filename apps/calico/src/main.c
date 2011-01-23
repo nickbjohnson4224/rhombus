@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
 	while (1) {
 
 		printf("%s(%d): ", (color == COL_B) ? "black" : "white", move);
-		read_move(&x, &y);
+		if (read_move(&x, &y)) return 0;
 
 		if (goban_check(goban, x, y, color)) {
 			printf("illegal move\n");
