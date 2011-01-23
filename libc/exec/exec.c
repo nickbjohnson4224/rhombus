@@ -2,7 +2,7 @@
  * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
  * Copyright (C) 2011 Jaagup Repan
  * 
- * Permission to use, copy, modify, and/or distribute this software for any
+ * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  * 
