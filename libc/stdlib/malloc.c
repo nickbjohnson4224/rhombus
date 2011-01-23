@@ -113,12 +113,14 @@ void free(void *ptr) {
 	struct __heap_node *node;
 	uintptr_t base = (uintptr_t) ptr;
 
-	return;
-
 	mutex_spin(&_mutex); {
 		node = _get_by_addr(base);
 
+
 		if (node) {
+			if (1 << node->size >= PAGESZ) {
+				page_free((void*) node->base, 1 << node->size);
+			}
 			_add_to_list(node);
 		}
 	} mutex_free(&_mutex);
@@ -258,6 +260,8 @@ static void _del_from_list(struct __heap_node *node) {
 	if (node->next) {
 		node->next->prev = node->prev;
 	}
+
+	node->next = node->prev = NULL;
 }
 
 /*****************************************************************************

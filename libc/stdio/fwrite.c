@@ -35,6 +35,10 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
 		return 0;
 	}
 
+	if (!(size * nmemb)) {
+		return 0;
+	}
+
 	mutex_spin(&stream->mutex);
 
 	if (stream->flags & FILE_NBF) {

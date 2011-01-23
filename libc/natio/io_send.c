@@ -19,6 +19,7 @@
 #include <string.h>
 #include <natio.h>
 #include <stdio.h>
+#include <errno.h>
 #include <arch.h>
 #include <ipc.h>
 
@@ -52,12 +53,14 @@ size_t io_send(uint64_t rp, void *r, void *s, size_t size, uint64_t off, uint8_t
 	/* attempt to interpret as I/O command */
 	cmd = io_recv(reply);
 	if (cmd) {
-		free(reply);
 
 		/* copy to receiving buffer */
 		if (r) memcpy(r, cmd->data, cmd->size);
 
-		return cmd->size;
+		size = cmd->size;
+		free(cmd);
+		free(reply);
+		return size;
 	}
 
 	/* attempt to interpret as error */

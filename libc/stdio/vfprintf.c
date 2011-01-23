@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -29,7 +29,7 @@ int vfprintf(FILE *stream, const char *format, va_list ap) {
 		return -1;
 	}
 
-	fmtbuffer = malloc(sizeof(char) * strlen(format));
+	fmtbuffer = malloc(sizeof(char) * (strlen(format) + 1));
 	fbt = 0;
 
 	for (i = 0; format[i]; i++) {
@@ -54,4 +54,3 @@ int vfprintf(FILE *stream, const char *format, va_list ap) {
 
 	return 0;
 }
-
