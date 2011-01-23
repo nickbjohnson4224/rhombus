@@ -6,9 +6,10 @@ DRIVERS  := $(shell find driver -mindepth 1 -maxdepth 1)
 DAEMONS  := $(shell find daemon -mindepth 1 -maxdepth 1)
 UTILS    := $(shell find util   -mindepth 1 -maxdepth 1)
 PORTS    := $(shell find ports  -mindepth 1 -maxdepth 1)
+APPS     := $(shell find apps   -mindepth 1 -maxdepth 1)
 
 BIN_DIRS  = kernel fish
-BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS) $(PORTS)
+BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS) $(PORTS) $(APPS)
 
 CC := clang -m32
 LD := ld
