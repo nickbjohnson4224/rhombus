@@ -103,7 +103,7 @@ float expf(float x) {
 	size_t i;
 
 	if (x == 0) {
-		return M_E;
+		return 1;
 	}
 	else if (x < 0) {
 		invert = true;
@@ -168,7 +168,7 @@ double exp(double x) {
 	size_t i;
 
 	if (x == 0) {
-		return M_E;
+		return 1;
 	}
 	else if (x < 0) {
 		invert = true;
@@ -233,7 +233,7 @@ long double expl(long double x) {
 	size_t i;
 
 	if (x == 0) {
-		return M_E;
+		return 1;
 	}
 	else if (x < 0) {
 		invert = true;

@@ -27,10 +27,9 @@
 
 int vfprintf(FILE *stream, const char *format, va_list ap) {
 	size_t i, fbt;
-	char buffer[100];
 	char *fmtbuffer;
-	const char *str;
-	char c;
+	const char *format_tmp;
+	char *string;
 
 	if (!stream) {
 		return -1;
@@ -44,59 +43,12 @@ int vfprintf(FILE *stream, const char *format, va_list ap) {
 			fwrite(fmtbuffer, sizeof(char), fbt, stream);
 			fbt = 0;
 
-			switch (format[i+1]) {
-			case 'x':
-				__utoa(buffer, va_arg(ap, int), 16, false);
-				fwrite(buffer, strlen(buffer), sizeof(char), stream);
-				break;
-			case 'X':
-				__utoa(buffer, va_arg(ap, int), 16, true);
-				fwrite(buffer, strlen(buffer), sizeof(char), stream);
-				break;
-			case 'u':
-				__utoa(buffer, va_arg(ap, int), 10, false);
-				fwrite(buffer, strlen(buffer), sizeof(char), stream);
-				break;
-			case 'd':
-			case 'i':
-				__itoa(buffer, va_arg(ap, int), 10, false);
-				fwrite(buffer, strlen(buffer), sizeof(char), stream);
-				break;
-			case 'o':
-				__utoa(buffer, va_arg(ap, int), 8, false);
-				fwrite(buffer, strlen(buffer), sizeof(char), stream);
-				break;
-			case 'O':
-				__utoa(buffer, va_arg(ap, int), 8, false);
-				fwrite(buffer, strlen(buffer), sizeof(char), stream);
-				break;
-			case 's':
-				str = va_arg(ap, const char*);
-				if (str) {
-					fwrite(str, strlen(str), sizeof(char), stream);
-				}
-				else {
-					fprintf(stream, "(null)");
-				}
-				break;
-			case 'c':
-				c = va_arg(ap, int);
-				fwrite(&c, 1, sizeof(char), stream);
-				break;
-			case 'f':
-				__ftoa(buffer, va_arg(ap, double), 16);
-				fwrite(buffer, strlen(buffer), sizeof(char), stream);
-				break;
-			case 'e':
-				__etoa(buffer, va_arg(ap, double), 16);
-				fwrite(buffer, strlen(buffer), sizeof(char), stream);
-				break;
-			case '%':
-				c = '%';
-				fwrite(&c, 1, sizeof(char), stream);
-				break;
-			}
-			i++;
+			format_tmp = &format[i];
+			string = __format(&format_tmp, &ap);
+			i = (uintptr_t) format_tmp - (uintptr_t) format;
+			if (!string) continue;
+			fwrite(string, strlen(string), sizeof(char), stream);
+			free(string);
 		}
 		else {
 			fmtbuffer[fbt++] = format[i];

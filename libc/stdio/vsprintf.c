@@ -18,6 +18,7 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <string.h>
+#include <stdlib.h>
 
 /****************************************************************************
  * vsprintf
@@ -27,60 +28,21 @@
 
 int vsprintf(char *str, const char *format, va_list ap) {
 	size_t i;
-	char m[2], buffer[100];
+	const char *format_tmp;
+	char m[2];
+	char *string;
 
 	strcpy(str, "");
 	m[1] = '\0';
 
 	for (i = 0; format[i]; i++) {
 		if (format[i] == '%') {
-			switch (format[i+1]) {
-			case 'x':
-				__utoa(buffer, va_arg(ap, int), 16, false);
-				strcat(str, buffer);
-				break;
-			case 'X':
-				__utoa(buffer, va_arg(ap, int), 16, true);
-				strcat(str, buffer);
-				break;
-			case 'u':
-				__utoa(buffer, va_arg(ap, int), 16, false);
-				strcat(str, buffer);
-				break;
-			case 'd':
-			case 'i':
-				__itoa(buffer, va_arg(ap, int), 10, false);
-				strcat(str, buffer);
-				break;
-			case 'o':
-			case 'O':
-				__utoa(buffer, va_arg(ap, int), 8, false);
-				strcat(str, buffer);
-				break;
-			case 's':
-				strcat(str, va_arg(ap, const char*));
-				break;
-			case 'c':
-				m[0] = va_arg(ap, int);
-				strcat(str, m);
-				break;
-			case '.':
-				i++;
-				while(isdigit(format[i+1])) i++;
-			case 'f': case 'g':
-				__ftoa(buffer, va_arg(ap, double), 16);
-				strcat(str, buffer);
-				break;
-			case 'e':
-				__etoa(buffer, va_arg(ap, double), 16);
-				strcat(str, buffer);
-				break;
-			case '%':
-				m[0] = '%';
-				strcat(str, m);
-				break;
-			}
-			i++;
+			format_tmp = &format[i];
+			string = __format(&format_tmp, &ap);
+			i = (uintptr_t) format_tmp - (uintptr_t) format;
+			if (!string) continue;
+			strcat(str, string);
+			free(string);
 		}
 		else {
 			m[0] = format[i];

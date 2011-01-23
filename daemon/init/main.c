@@ -23,7 +23,6 @@
 #include <proc.h>
 #include <exec.h>
 #include <ipc.h>
-#include <math.h>
 
 #include "inc/tar.h"
 #include "initrd.h"

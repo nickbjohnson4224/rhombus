@@ -14,8 +14,8 @@ For 0.8 Alpha:
 
 + fill in math function stubs
 + test math functions
-- write fenv.h, tgmath.h
-- finish printf/scanf
++ finish printf
+- finish scanf
 - group manager
 - proper terminal driver
 - foreground/background processes?
@@ -24,6 +24,7 @@ For 0.8 Alpha:
 
 For 0.9 Alpha:
 
+- write fenv.h, tgmath.h
 - dynamic linking
 - drivers as shared libraries?
 - device manager (PCI)

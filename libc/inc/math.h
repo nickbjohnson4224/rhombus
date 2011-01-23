@@ -17,11 +17,16 @@
 #ifndef MATH_H
 #define MATH_H
 
+#undef __GNUC__
+
 /* general constants *******************************************************/
 
 #define INFINITY (1.0/0.0)
 #define NAN (0.0/0.0)
 #define HUGE_VAL INFINITY
+
+#define isnan(x) ((x) != (x))
+#define isinf(x) (((x) == INFINITY) || ((x) == -INFINITY))
 
 /* general functions *******************************************************/
 
