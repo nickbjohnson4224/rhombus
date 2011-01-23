@@ -280,7 +280,8 @@ char *__format(const char **_fmt, va_list *argp) {
 		case '0': flags |= FLAG_ZERO;  continue;
 		case '\0': return NULL;
 		}
-	} while (0);
+		break;
+	} while (1);
 
 	/* read width */
 	if (*fmt == '*') {
@@ -426,14 +427,24 @@ char *__format(const char **_fmt, va_list *argp) {
 		string1 = malloc(sizeof(char) * (width + 1));
 
 		if (flags & FLAG_LEFT) {
-			strlcpy(string1, string, width);
+			strlcpy(string1, string, width + 1);
 
 			if (flags & FLAG_ZERO) {
-				strlcat(string1, "000000000000000000000000", width);
+				strlcat(string1, "000000000000000000000000", width + 1);
 			}
 			else {
-				strlcat(string1, "                      ", width);
+				strlcat(string1, "                        ", width + 1);
 			}
+		}
+		else {
+			if (flags & FLAG_ZERO) {
+				strlcpy(string1, "000000000000000000000000", width - strlen(string) + 1);
+			}
+			else {
+				strlcpy(string1, "                        ", width - strlen(string) + 1);
+			}
+
+			strlcat(string1, string, width + 1);
 		}
 
 		free(string);

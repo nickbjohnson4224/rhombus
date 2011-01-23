@@ -1,8 +1,8 @@
 SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
 SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
 SOURCES += $(BUILDDIR)/lib/c0.o
-SUBDIR	:= apps/testapp
-TARGET	:= testapp
+SUBDIR	:= apps/calico
+TARGET	:= calico
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
 LDFLAGS += -lwmanager -lc -T$(BUILDDIR)/inc/link.ld
 ASFLAGS := -felf
