@@ -72,9 +72,11 @@ int rp_asend(uint64_t rp, uint8_t port, struct mp_basic *msg) {
 	/* send message */
 	err = msend(port, RP_PID(rp), message);
 
-	/* free message */
-	free(message->packet);
-	free(message);
+	if (err) {
+		/* free message */
+		free(message->packet);
+		free(message);
+	}
 
 	return err;
 }

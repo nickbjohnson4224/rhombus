@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,23 +26,10 @@ static struct __heap_node *_tree;
 static struct __heap_node *_list[32];
 static bool _mutex 		= false;
 
-static struct __heap_node *_get_from_list(uint8_t index);
-static void                _del_from_list(struct __heap_node *node);
 static void                _add_to_list  (struct __heap_node *node);
 static struct __heap_node *_get_by_addr  (uintptr_t addr);
 static struct __heap_node *_find_node    (uint8_t index);
 static uint8_t             ilog2         (uintptr_t n);
-
-/*****************************************************************************
- * malloc
- *
- * Allocates a block of size <size> from the heap and returns a pointer to it.
- * The block is readable and writable. Returns null on failure.
- */
-
-void *malloc(size_t size) {
-	return aalloc(size, 0);
-}
 
 /*****************************************************************************
  * aalloc
@@ -54,8 +41,6 @@ void *malloc(size_t size) {
  */
 
 void *aalloc(size_t size, size_t align) {
-	struct __heap_node *node;
-	uint8_t index;
 
 	if (align) {
 		if (align != ((size_t) 1 << ilog2(align))) {
@@ -63,32 +48,41 @@ void *aalloc(size_t size, size_t align) {
 			return NULL;
 		}
 
-		if (ilog2(size) > ilog2(align)) {
-			index = ilog2(size);
-		}
-		else {
-			index = ilog2(align);
-		}
-	}
-	else {
-		index = ilog2(size);
+		size = (size > align) ? size : align;
 	}
 
-	mutex_spin(&_mutex); {
-		node = _find_node(index);
-	} mutex_free(&_mutex);
+	return malloc(size);
+}
+
+/*****************************************************************************
+ * malloc
+ *
+ * Allocates a block of size <size> from the heap and returns a pointer to it.
+ * The block is readable and writable. Returns null on failure.
+ */
+
+void *malloc(size_t size) {
+	struct __heap_node *node;
+	uint8_t index;
+
+	index = ilog2(size);
+
+	mutex_spin(&_mutex);
+	node = _find_node(index);
+	mutex_free(&_mutex);
 
 	if (!node) {
 		errno = ENOMEM;
 		return NULL;
 	}
 	else {
-		if (page_anon((void*) node->base, 1 << node->size, PROT_READ | PROT_WRITE)) {
+		if (page_anon((void*) node->base, 1 << index, PROT_READ | PROT_WRITE)) {
 			/* could not allocate memory */
-			errno = EINVAL;
+			errno = ENOMEM;
 			return NULL;
 		}
 
+		memclr((void*) node->base, 1 << index);
 		return (void*) node->base;
 	}
 }
@@ -96,34 +90,31 @@ void *aalloc(size_t size, size_t align) {
 size_t msize(void *ptr) {
 	struct __heap_node *node;
 	uintptr_t base = (uintptr_t) ptr;
+	size_t size;
 
-	mutex_spin(&_mutex); {
-		node = _get_by_addr(base);
-	} mutex_free(&_mutex);
+	mutex_spin(&_mutex);
+	node = _get_by_addr(base);
+	size = (node) ? (1 << node->size) : 0;
+	mutex_free(&_mutex);
 
-	if (node) {
-		return (1 << node->size);
-	}
-	else {
-		return 0;
-	}
+	return size;
 }
 
 void free(void *ptr) {
 	struct __heap_node *node;
 	uintptr_t base = (uintptr_t) ptr;
 
-	mutex_spin(&_mutex); {
-		node = _get_by_addr(base);
+	mutex_spin(&_mutex);
+	node = _get_by_addr(base);
 
+	if (node) {
+		_add_to_list(node);
 
-		if (node) {
-			if (1 << node->size >= PAGESZ) {
-				page_free((void*) node->base, 1 << node->size);
-			}
-			_add_to_list(node);
+		if (node->size >= 12) {
+			page_free((void*) node->base, 1 << node->size);
 		}
-	} mutex_free(&_mutex);
+	}
+	mutex_free(&_mutex);
 }
 
 /****************************************************************************
@@ -185,15 +176,15 @@ static struct __heap_node *_find_node(uint8_t index) {
 
 	if (!_tree) {
 		_tree = __new_heap_node();
-		_tree->base   = HEAP_START;
-		_tree->size   = ilog2(HEAP_MXBRK - HEAP_START);
+		_tree->base = HEAP_START;
+		_tree->size = ilog2(HEAP_MXBRK - HEAP_START);
 
 		_add_to_list(_tree);
 	}
 
-	node = _get_from_list(index);
+	node = _list[index];
 	if (node) {
-		_del_from_list(node);
+		_list[index] = NULL; //= node->next;
 		return node;
 	}
 	else {
@@ -203,11 +194,15 @@ static struct __heap_node *_find_node(uint8_t index) {
 		}
 		else {
 			node->left = __new_heap_node();
+			node->left->left   = NULL;
+			node->left->right  = NULL;
 			node->left->parent = node;
 			node->left->base   = node->base;
 			node->left->size   = index;
 
 			node->right = __new_heap_node();
+			node->right->left   = NULL;
+			node->right->right  = NULL;
 			node->right->parent = node;
 			node->right->base   = node->base + (1 << index);
 			node->right->size   = index;
@@ -220,51 +215,6 @@ static struct __heap_node *_find_node(uint8_t index) {
 }
 
 /*****************************************************************************
- * _get_from_list
- *
- * Returns the first block in the free list with index <index>. Returns null
- * on failure. This function is not thread-safe.
- */
-
-static struct __heap_node *_get_from_list(uint8_t index) {
-	struct __heap_node *node;
-
-	node = _list[index];
-
-	if (!node) {
-		return NULL;
-	}
-	else {
-		_del_from_list(node);
-		return node;
-	}
-}
-
-/*****************************************************************************
- * _del_from_list
- *
- * Deletes the block <node> from whatever free list it is in, from any
- * position in that list. This function is not thread-safe.
- */
-
-static void _del_from_list(struct __heap_node *node) {
-	uint8_t index = node->size;
-
-	if (!node->prev) {
-		_list[index] = node->next;
-	}
-	else {
-		node->prev->next = node->next;
-	}
-
-	if (node->next) {
-		node->next->prev = node->prev;
-	}
-
-	node->next = node->prev = NULL;
-}
-
-/*****************************************************************************
  * _add_to_list
  *
  * Adds the block <node> to the proper free list. This function is not
@@ -274,13 +224,7 @@ static void _del_from_list(struct __heap_node *node) {
 static void _add_to_list(struct __heap_node *node) {
 	uint8_t index = node->size;
 
-	node->prev = NULL;
 	node->next = _list[index];
-	
-	if (node->next) {
-		node->next->prev = node;
-	}
-
 	_list[index] = node;
 }
 

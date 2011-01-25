@@ -125,7 +125,7 @@ static char *__format_double_frac(long double value, int flags, int precision) {
 			break;
 		}
 	}
-
+	
 	string[i] = '\0';
 
 	return string;

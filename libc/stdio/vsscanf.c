@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <math.h>
 
 #define TYPE_INT	0x01
 #define TYPE_UINT	0x02
@@ -116,8 +117,8 @@ static char __scan_char(const char **_str, int flags) {
 	return c;
 }
 
-static long double __scan_float(const char **_str, int width, int flags) {
-	return 0.0;
+static long double __scan_float(const char **_str, int flags) {
+	return strtold(*_str, (char**) _str);
 }
 
 static void __scan_space(const char **_str) {
@@ -213,7 +214,7 @@ int vsscanf(const char *str, const char *format, va_list ap) {
 					__scan_uint(&str, width, flags);
 					break;
 				case TYPE_FLOAT:
-					__scan_float(&str, width, flags);
+					__scan_float(&str, flags);
 					break;
 				case TYPE_STR:
 					free(__scan_str(&str, width, flags));
@@ -236,15 +237,15 @@ int vsscanf(const char *str, const char *format, va_list ap) {
 				case TYPE_FLOAT:
 					if (flags & FLAGS_LONG) {
 						lf = va_arg(ap, double*);
-						*lf = __scan_float(&str, width, flags);
+						*lf = __scan_float(&str, flags);
 					}
 					else if (flags & FLAGS_LLONG) {
 						Lf = va_arg(ap, long double*);
-						*Lf = __scan_float(&str, width, flags);
+						*Lf = __scan_float(&str, flags);
 					}
 					else {
 						f = va_arg(ap, float*);
-						*f = __scan_float(&str, width, flags);
+						*f = __scan_float(&str, flags);
 					}
 					break;
 				case TYPE_STR:

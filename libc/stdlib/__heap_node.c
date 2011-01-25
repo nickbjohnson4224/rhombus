@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -27,20 +27,19 @@ static bool _mutex 					= false;
 struct __heap_node *__new_heap_node(void) {
 	struct __heap_node *node;
 
-	mutex_spin(&_mutex); {
-		if (_stack) {
-			node   = _stack;
-			_stack = node->next;
-		}
-		else {
-			node = (void*) _brk;
-			_brk += sizeof(struct __heap_node);
+	mutex_spin(&_mutex);
+	if (_stack) {
+		node   = _stack;
+		_stack = node->next;
+	}
+	else {
+		node = (void*) _brk;
+		_brk += sizeof(struct __heap_node);
 
-			page_anon(node, sizeof(struct __heap_node), PROT_READ | PROT_WRITE);
-		}
-	} mutex_free(&_mutex);
+		page_anon(node, sizeof(struct __heap_node), PROT_READ | PROT_WRITE);
+	}
+	mutex_free(&_mutex);
 
-	memclr(node, sizeof(struct __heap_node));
 	return node;
 }
 

@@ -112,7 +112,7 @@ int setenv(const char *name, const char *value) {
 		sprintf(new, "%s=%s", name, value);
 		*strchr(new, '=') = '\0';
 		environ[i] = new;
-		free(old);
+		if (old) free(old);
 	}
 	else {
 		free(environ[i]);

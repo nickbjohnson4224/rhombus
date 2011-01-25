@@ -99,7 +99,7 @@ int main() {
 	/* Initrd */
 	initrd_init();
 	io_link("/dev/initrd", RP_CONS(getpid(), 0));
-	
+
 	/* Root filesystem (tarfs) */
 	argv[0] = "tarfs";
 	argv[1] = "/dev/initrd";

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,6 +18,64 @@
 #include <ctype.h>
 #include <math.h>
 
+static long double __scan_float_uint(const char **_str, int flags) {
+	long double value;
+
+	value = 0;
+	while (isdigit(**_str)) {
+		value *= 10;
+		value += (**_str - '0');
+		(*_str)++;
+	}
+
+	return value;
+}
+
+static long double __scan_float_int(const char **_str, int flags) {
+
+	if (**_str == '-') {
+		(*_str)++;
+		return -__scan_float_uint(_str, flags);
+	}
+	else if (**_str == '+') {
+		(*_str)++;
+		return __scan_float_uint(_str, flags);
+	}
+	else {
+		return __scan_float_uint(_str, flags);
+	}
+}
+
+static long double __scan_float(const char **_str, int flags) {
+	long double i_part;
+	long double f_part;
+	long double e_part;
+	long double f_exp;
+
+	i_part = __scan_float_int(_str, flags);
+
+	if (**_str == '.') {
+		(*_str)++;
+		f_part = __scan_float_uint(_str, flags);
+	}
+	else {
+		f_part = 0.0;
+	}
+
+	if (**_str == 'e' || **_str == 'E') {
+		(*_str)++;
+		e_part = __scan_float_int(_str, flags);
+	}
+	else {
+		e_part = 0.0;
+	}
+
+	f_exp = ceill(log10l(f_part));
+	if (f_exp < 1) f_exp = 1.0;
+
+	return (i_part + f_part / powl(10, f_exp)) * powl(10, e_part);
+}
+
 /****************************************************************************
  * strtold
  *
@@ -25,25 +83,13 @@
  */
 
 long double strtold(const char *nptr, char **endptr) {
-	long double sum;
-	int i;
+	long double value;
 
-	return 0.0;
-
-	for (sum = 0, i = 0; nptr[i] && isdigit(nptr[i]); i++) {
-		sum *= 10;
-		sum += __digit(nptr[i], 10);
-	}
-
-//	if (nptr[i] == '.') {
-//		for (j = 1; nptr[i] && isdigit(nptr[i]); i++, j++) {
-//			sum += __digit(nptr[i], 10) * powl(10, -j);
-//		}
-//	}
+	value = __scan_float(&nptr, 0);
 
 	if (endptr) {
-		*endptr = (char*) &nptr[i];
+		*endptr = (char*) nptr;
 	}
 
-	return sum;
-}
+	return value;
+} 

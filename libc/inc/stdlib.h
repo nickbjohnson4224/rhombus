@@ -24,12 +24,12 @@
 
 struct __heap_node {
 	struct __heap_node *next;
-	struct __heap_node *prev;
 
 	struct __heap_node *parent;
 	struct __heap_node *left;
 	struct __heap_node *right;
 
+	uintptr_t status;
 	uintptr_t base;
 	uintptr_t size;
 };

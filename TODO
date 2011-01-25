@@ -15,7 +15,8 @@ For 0.8 Alpha:
 + fill in math function stubs
 + test math functions
 + finish printf
-- finish scanf
++ finish scanf
+- fix I/O memory leak
 - group manager
 - proper terminal driver
 - foreground/background processes?

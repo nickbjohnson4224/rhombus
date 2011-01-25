@@ -77,7 +77,6 @@ void _init() {
 	pack = __pack_load(PACK_KEY_ARG, &length);
 	if (pack) {
 		argv = loadarg(pack);
-		free(pack);
 		for (argc = 0; argv[argc]; argc++);
 		setenv("NAME", argv[0]);
 	}

@@ -40,7 +40,7 @@ struct msg *rp_send(uint64_t rp, uint8_t port, struct mp_basic *msg) {
 	old_handler = when(PORT_REPLY, NULL);
 	
 	/* reject bad messages */
-	if (!msg || msize(msg) < msg->length) {
+	if (!msg) {
 		return NULL;
 	}
 
