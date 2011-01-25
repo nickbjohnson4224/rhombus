@@ -279,7 +279,7 @@ struct vfs_obj *wmanager_cons(int type) {
 		fobj->acl   = acl_set_default(fobj->acl, FS_PERM_READ | FS_PERM_WRITE);
 		break;
 	}
-
+	
 	return fobj;
 }
 
@@ -287,6 +287,7 @@ struct vfs_obj *wmanager_cons(int type) {
 int main(int argc, char **argv) {
 	struct vfs_obj *root;
 	FILE *vga;
+	char buffer[16];
 
 	stdout = stderr = fopen("/dev/serial", "w");
 
@@ -314,7 +315,25 @@ int main(int argc, char **argv) {
 	io_cons("/sys/wmanager/windows", FOBJ_DIR);
 
 	vga = fopen("/dev/vga0", "r");
-	fscanf(vga, "%i %i", &screen_width, &screen_height);
+
+	//fscanf(vga, "%i %i", &screen_width, &screen_height);
+	//
+	// XXX: this is broken not because fscanf changed but because
+	// it is not suitable for /dev/vga0 to act as one file when
+	// written to but another file when read from. At the moment,
+	// the problem is that the libc thinks /dev/vga0 is a stream
+	// device, so when it reads from it in pieces (like in fscanf),
+	// it keeps reading from offset 0, which causes the same values
+	// to be read twice. I'm adding a quick fix to make it work like
+	// it used to, but the problem is still there. Find another way
+	// of notifying wmanager of the size of /dev/vga0's framebuffer,
+	// preferably by making another device file or by using other
+	// protocols.
+	//
+
+	fgets(buffer, 16, vga);
+	sscanf(buffer, "%i %i", &screen_width, &screen_height);
+
 	fclose(vga);
 	screen = malloc(screen_width * screen_height * 3);
 	vgafd = io_find("/dev/vga0");
