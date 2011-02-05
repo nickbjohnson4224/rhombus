@@ -25,40 +25,40 @@
  *
  * Gives the name of the entry of number <entry> in the directory <dir>.
  * Returns a copy of that string on success, NULL on failure.
+ *
+ * protocol:
+ *   port: PORT_LIST
+ *
+ *   request:
+ *     uint32_t entry
+ *
+ *   reply:
+ *     char name[]
  */
 
 char *fs_list(uint64_t dir, int entry) {
-	struct mp_fs *command;
-	char *ret;
+	struct msg *msg;
+	char *name;
 
-	command = malloc(sizeof(struct mp_fs));
-	command->op = FS_LIST;
-	command->v0 = entry;
-	command->v1 = 0;
-	
-	command = fs_send(dir, command);
-	if (!command) {
-		errno = EBADMSG;
+	msg = aalloc(sizeof(struct msg) + sizeof(uint32_t), PAGESZ);
+	msg->source = RP_CONS(getpid(), 0);
+	msg->target = dir;
+	msg->length = sizeof(uint32_t);
+	msg->port   = PORT_LIST;
+	msg->arch   = ARCH_NAT;
+
+	((uint32_t*) msg->data)[0] = entry;
+
+	if (msend(msg)) return 0;
+	msg = mwait(PORT_REPLY, dir);
+
+	if (msg->length == 0) {
+		free(msg);
 		return NULL;
 	}
 
-	/* check for errors */
-	if (command->op == FS_ERR) {
-		switch (command->v0) {
-		case ERR_NULL: errno = 0; break;
-		case ERR_FILE: errno = ENOENT; break;
-		case ERR_DENY: errno = EACCES; break;
-		case ERR_FUNC: errno = ENOSYS; break;
-		case ERR_TYPE: errno = ENOTDIR; break;
-		case ERR_FULL: errno = EUNK; break;
-		}
+	name = strdup((const char*) msg->data);
 
-		free(command);
-		return NULL;
-	}
-	
-	command->null0 = '\0';
-	ret = strdup(command->s0);
-	free(command);
-	return ret;
+	free(msg);
+	return name;
 }

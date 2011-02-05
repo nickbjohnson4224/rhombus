@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,39 +16,37 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <natio.h>
+#include <proc.h>
 #include <abi.h>
 #include <ipc.h>
 
-/****************************************************************************
- * msend
- *
- * Sends the message <msg> to the target <target> at port <port>. Returns 
- * zero on success, nonzero on error. The message <msg> is freed on success.
- */
+int msend(struct msg *msg) {
+	uint8_t  port;
+	uint32_t count;
+	uint32_t target_pid;
+	int err;
 
-int msend(uint8_t port, uint32_t target, struct msg *msg) {
-	uint32_t err;
-
-	if (!msg) {
-		err = _send(0, 0, port, target);
-	}
-	else {
-		err = _send((uintptr_t) msg->packet, msg->count, port, target);
-	}
-
-	if (err) {
+	/* check message and alignment */
+	if (!msg || ((uintptr_t) msg % PAGESZ)) {
 		return 1;
 	}
-	else {
 
-		if (msg) {
-			if (msg->packet) {
-				free(msg->packet);
-			}
-	
-			free(msg);
-		}
-
-		return 0;
+	/* check source PID (do not send lies) */
+	if (RP_PID(msg->source) != getpid()) {
+		return 1;
 	}
+
+	/* extract data */
+	port = msg->port;
+	target_pid = RP_PID(msg->target);
+	count = msg->length + sizeof(struct msg);
+
+	/* calculate page count */
+	count = (count % PAGESZ) ? (count / PAGESZ) + 1 : count / PAGESZ;
+
+	err = _send((uintptr_t) msg, count, port, target_pid);
+	free(msg);
+
+	return err;
 }

@@ -24,25 +24,47 @@
  * __perm_wrapper
  *
  * Performs the requested actions of a FS_PERM command.
+ *
+ * protocol:
+ *   port: PORT_PERM
+ *
+ *   request:
+ *     uint32_t user
+ *
+ *   reply:
+ *     uint8_t perm
  */
 
-void __perm_wrapper(struct mp_fs *cmd) {
+void __perm_wrapper(struct msg *msg) {
 	struct vfs_obj *fobj;
+	uint32_t user;
+	uint8_t perm;
+
+	/* check request */
+	if (msg->length != sizeof(uint32_t)) {
+		merror(msg);
+		return;
+	}
+
+	/* extract data */
+	user = ((uint32_t*) msg->data)[0];
 	
 	/* look up the requested object */
-	fobj = vfs_get_index(cmd->index);
+	fobj = vfs_get_index(RP_INDEX(msg->target));
 
 	if (fobj) {
 		mutex_spin(&fobj->mutex);
 
 		/* return the permissions of the object for user <cmd->v0> */	
-		cmd->v0 = acl_get(fobj->acl, cmd->v0);
+		perm = acl_get(fobj->acl, user);
 
 		mutex_free(&fobj->mutex);
 	}
 	else {
-		/* return ERR_FILE on failure to find object */
-		cmd->op = FS_ERR;
-		cmd->v0 = ERR_FILE;
+		perm = 0;
 	}
+
+	msg->length = 1;
+	msg->data[0] = perm;
+	mreply(msg);
 }

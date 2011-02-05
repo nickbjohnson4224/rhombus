@@ -28,40 +28,41 @@
  * file will have to be manually copied. Returns a pointer to the new 
  * filsystem object (which may be the same as the old filesystem object) on 
  * success, NULL on failure.
+ *
+ * protocol:
+ *   port: PORT_MOVE
+ *
+ *   request:
+ *     uint64_t fobj
+ *     char name[]
+ *
+ *   reply:
+ *     uint64_t fobj
  */
 
 uint64_t fs_move(uint64_t dir, const char *name, uint64_t fobj) {
-	struct mp_fs *command;
-	uint64_t ret;
+	struct msg *msg;
 
-	command = malloc(sizeof(struct mp_fs));
-	command->op = FS_MOVE;
-	command->v0 = fobj;
-	command->v1 = 0;
-	strlcpy(command->s0, name, 4000);
-	
-	command = fs_send(dir, command);
-	if (!command) {
-		errno = EBADMSG;
+	msg = aalloc(sizeof(struct msg) + sizeof(uint64_t) + strlen(name) + 1, PAGESZ);
+	msg->source = RP_CONS(getpid(), 0);
+	msg->target = dir;
+	msg->length = sizeof(uint64_t) + strlen(name) + 1;
+	msg->port   = PORT_MOVE;
+	msg->arch   = ARCH_NAT;
+
+	((uint64_t*) msg->data)[0] = fobj;
+	strcpy((char*) &msg->data[8], name);
+
+	if (msend(msg)) return 0;
+	msg = mwait(PORT_REPLY, dir);
+
+	if (msg->length < sizeof(uint64_t)) {
+		free(msg);
 		return 0;
 	}
 
-	/* check for errors */
-	if (command->op == FS_ERR) {
-		switch (command->v0) {
-		case ERR_NULL: errno = EUNK; break;
-		case ERR_FILE: errno = ENOENT; break;
-		case ERR_DENY: errno = EACCES; break;
-		case ERR_FUNC: errno = ENOSYS; break;
-		case ERR_TYPE: errno = ENOTDIR; break;
-		case ERR_FULL: errno = ENOSPC; break;
-		}
+	fobj = ((uint64_t*) msg->data)[0];
 
-		free(command);
-		return 0;
-	}
-	
-	ret = command->v0;
-	free(command);
-	return ret;
+	free(msg);
+	return fobj;
 }

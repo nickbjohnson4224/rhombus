@@ -72,9 +72,9 @@ int main(int argc, char **argv) {
 	struct vfs_obj *root;
 
 	root        = calloc(sizeof(struct vfs_obj), 1);
-	root->type  = FOBJ_FILE;
+	root->type  = RP_TYPE_FILE;
 	root->size  = 0;
-	root->acl   = acl_set_default(root->acl, FS_PERM_READ | FS_PERM_WRITE);
+	root->acl   = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
 	vfs_set_index(0, root);
 
 	vmem = valloc(0x20000);
@@ -86,13 +86,13 @@ int main(int argc, char **argv) {
 
 	/* set up driver interface */
 	di_wrap_read (vga_read);
-	di_wrap_sync(vga_sync);
-	di_wrap_mmap(vga_mmap);
+	di_wrap_sync (vga_sync);
+	di_wrap_share(vga_mmap);
 	vfs_wrap_init();
 
 	/* register the driver as /dev/vga0 */
 	io_link("/dev/vga0", RP_CONS(getpid(), 0));
-	msend(PORT_CHILD, getppid(), NULL);
+	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 	_done();
 
 	return 0;

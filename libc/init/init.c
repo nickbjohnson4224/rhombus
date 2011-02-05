@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -27,14 +27,17 @@
 #include <abi.h>
 
 /****************************************************************************
- * reject
+ * reject/ignore
  *
- * Action to be taken on the reception of an unwanted event.
+ * Actions to be taken on the reception of an unwanted event.
  */
 
 static void reject(struct msg *msg) {
+	merror(msg);
+}
 
-	msend(PORT_REPLY, msg->source, msg);
+static void ignore(struct msg *msg) {
+	free(msg);
 }
 
 /****************************************************************************
@@ -46,6 +49,7 @@ static void reject(struct msg *msg) {
 
 void _init() {
 	extern int main(int argc, char **argv);
+	extern void _on_event(void);
 	char **argv, *pack;
 	size_t length;
 	int argc;
@@ -63,15 +67,28 @@ void _init() {
 
 	/* set up signals */
 	__sig_init();
+	when(PORT_CHILD, NULL);
 
 	/* set up I/O handlers */
-	when(PORT_FS,	 reject);
-	when(PORT_SYNC,	 reject);
-	when(PORT_RESET, reject);
+	when(PORT_REPLY, NULL);
 	when(PORT_READ,  reject);
 	when(PORT_WRITE, reject);
-	when(PORT_MMAP,  reject);
-	when(PORT_CMD,   reject);
+	when(PORT_SYNC,	 reject);
+	when(PORT_RESET, reject);
+	when(PORT_SHARE, reject);
+	when(PORT_RCALL, reject);
+	when(PORT_EVENT, ignore);
+
+	when(PORT_FIND,  reject);
+	when(PORT_CONS,  reject);
+	when(PORT_MOVE,  reject);
+	when(PORT_REMV,  reject);
+	when(PORT_LINK,  reject);
+	when(PORT_LIST,  reject);
+	when(PORT_SIZE,  reject);
+	when(PORT_TYPE,  reject);
+	when(PORT_PERM,  reject);
+	when(PORT_AUTH,  reject);
 
 	/* unpack argument list */
 	pack = __pack_load(PACK_KEY_ARG, &length);

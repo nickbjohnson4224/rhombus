@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,37 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <natio.h>
-#include <errno.h>
+#include <ipc.h>
 
-/*****************************************************************************
- * fs_touch
- *
- * Creates a new file at path <path> if one does not exist. Returns zero on 
- * success, nonzero on failure.
- */
-
-int fs_touch(const char *path) {
-	uint64_t dir, file;
-	char *str;
-
-	if (fs_find(0, path)) {
-		return 0;
-	}
-
-	str = path_parent(path);
-	if (!str) return 1;
-	dir = fs_find(0, str);
-	if (!dir) return 1;
-	free(str);
-
-	str = path_name(path);
-	if (!str) return 1;
-	file = fs_cons(dir, str, FOBJ_FILE);
-	if (!file) return 1;
-	free(str);
-
-	return 0;
+int merror(struct msg *msg) {
+	msg->length = 0;
+	return mreply(msg);
 }

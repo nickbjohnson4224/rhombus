@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,8 +15,9 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
+#include <stdlib.h>
 #include <natio.h>
+#include <proc.h>
 #include <ipc.h>
 
 /****************************************************************************
@@ -26,10 +27,18 @@
  */
 
 int reset(uint64_t file) {
+	struct msg *msg;
 
-	if (fs_size(file) == 0) {
-		return 1;
-	}
+	msg = aalloc(sizeof(struct msg), PAGESZ);
+	msg->source = RP_CONS(getpid(), 0);
+	msg->target = file;
+	msg->length = 0;
+	msg->port   = PORT_RESET;
+	msg->arch   = ARCH_NAT;
 
-	return io_send(file, NULL, NULL, 0, 0, PORT_RESET);
-}
+	if (msend(msg)) return 1;
+	msg = mwait(PORT_REPLY, file);
+
+	free(msg);
+	return 0;
+}	

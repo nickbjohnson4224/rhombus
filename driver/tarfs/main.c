@@ -129,8 +129,8 @@ int main(int argc, char **argv) {
 
 	/* create root directory */
 	root = calloc(sizeof(struct vfs_obj), 1);
-	root->type = FOBJ_DIR;
-	root->acl = acl_set_default(root->acl, FS_PERM_READ);
+	root->type = RP_TYPE_DIR;
+	root->acl = acl_set_default(root->acl, PERM_READ);
 	vfs_set_index(0, root);
 
 	/* allocate buffer space for header block */
@@ -152,9 +152,9 @@ int main(int argc, char **argv) {
 			/* add directory to VFS */
 			block->filename[strlen(block->filename) - 1] = 0;
 			file        = calloc(sizeof(struct vfs_obj), 1);
-			file->type  = FOBJ_DIR;
+			file->type  = RP_TYPE_DIR;
 			file->index = n;
-			file->acl   = acl_set_default(file->acl, FS_PERM_READ);
+			file->acl   = acl_set_default(file->acl, PERM_READ);
 			vfs_add(root, block->filename, file);
 
 		}
@@ -162,11 +162,11 @@ int main(int argc, char **argv) {
 
 			/* add file to VFS */
 			file        = calloc(sizeof(struct vfs_obj), 1);
-			file->type  = FOBJ_FILE;
+			file->type  = RP_TYPE_FILE;
 			file->index = n;
 			file->data  = (uint8_t*) (i + 512);
 			file->size  = getvalue(block->filesize, 12);
-			file->acl   = acl_set_default(file->acl, FS_PERM_READ);
+			file->acl   = acl_set_default(file->acl, PERM_READ);
 			vfs_add(root, block->filename, file);
 
 		}
@@ -183,7 +183,7 @@ int main(int argc, char **argv) {
 	vfs_wrap_init();
 
 	/* daemonize */
-	msend(PORT_CHILD, getppid(), NULL);
+	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 	_done();
 
 	return EXIT_SUCCESS;

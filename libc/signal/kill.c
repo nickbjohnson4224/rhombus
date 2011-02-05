@@ -16,6 +16,7 @@
 
 #include <stdlib.h>
 #include <signal.h>
+#include <natio.h>
 #include <proc.h>
 #include <ipc.h>
 
@@ -26,10 +27,5 @@
  */
 
 int kill(uint32_t pid, int signum) {
-	struct msg *msg;
-
-	msg = malloc(sizeof(struct msg));
-	msg->packet = NULL;
-	msg->count  = 0;
-	return msend(signum, pid, msg);
+	return msendb(RP_CONS(pid, 0), signum);
 }

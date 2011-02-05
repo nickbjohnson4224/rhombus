@@ -30,19 +30,19 @@ int di_wrap_write(size_t   (*di_write)(struct vfs_obj *file, uint8_t *buffer, si
 int di_wrap_reset(int      (*di_reset)(struct vfs_obj *file));
 int di_wrap_sync (int      (*di_sync) (struct vfs_obj *file));
 int di_wrap_size (uint64_t (*di_size) (struct vfs_obj *file));
-int di_wrap_mmap (int      (*di_mmap) (struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off));
+int di_wrap_share(int      (*di_share)(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off));
 
 void __read_wrapper (struct msg *msg);
 void __write_wrapper(struct msg *msg);
 void __sync_wrapper (struct msg *msg);
 void __reset_wrapper(struct msg *msg);
-void __mmap_wrapper (struct msg *msg);
+void __share_wrapper(struct msg *msg);
 
 extern size_t   (*_di_read) (struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off);
 extern size_t   (*_di_write)(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off);
 extern int      (*_di_reset)(struct vfs_obj *file);
 extern int      (*_di_sync) (struct vfs_obj *file);
 extern uint64_t (*_di_size) (struct vfs_obj *file);
-extern int      (*_di_mmap) (struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off);
+extern int      (*_di_share)(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off);
 
 #endif/*DRIVER_IO_H*/

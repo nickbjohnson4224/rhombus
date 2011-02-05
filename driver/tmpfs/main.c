@@ -29,19 +29,19 @@ struct vfs_obj *tmpfs_cons(int type) {
 	struct vfs_obj *fobj = NULL;
 
 	switch (type) {
-	case FOBJ_FILE:
+	case RP_TYPE_FILE:
 		fobj        = calloc(sizeof(struct vfs_obj), 1);
-		fobj->type  = FOBJ_FILE;
+		fobj->type  = RP_TYPE_FILE;
 		fobj->size  = 0;
 		fobj->data  = NULL;
 		fobj->index = tmpfs_index_top++;
-		fobj->acl   = acl_set_default(fobj->acl, FS_PERM_READ | FS_PERM_WRITE);
+		fobj->acl   = acl_set_default(fobj->acl, PERM_READ | PERM_WRITE);
 		break;
-	case FOBJ_DIR:
+	case RP_TYPE_DIR:
 		fobj        = calloc(sizeof(struct vfs_obj), 1);
-		fobj->type  = FOBJ_DIR;
+		fobj->type  = RP_TYPE_DIR;
 		fobj->index = tmpfs_index_top++;
-		fobj->acl   = acl_set_default(fobj->acl, FS_PERM_READ | FS_PERM_WRITE);
+		fobj->acl   = acl_set_default(fobj->acl, PERM_READ | PERM_WRITE);
 		fobj->link  = 0;
 		break;
 	}
@@ -117,8 +117,8 @@ int main(int argc, char **argv) {
 	struct vfs_obj *root;
 
 	root = calloc(sizeof(struct vfs_obj), 1);
-	root->type = FOBJ_DIR;
-	root->acl = acl_set_default(root->acl, FS_PERM_READ | FS_PERM_WRITE);
+	root->type = RP_TYPE_DIR;
+	root->acl = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
 	vfs_set_index(0, root);
 
 	/* set interface */
@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
 	vfs_wrap_init();
 
 	/* daemonize */
-	msend(PORT_CHILD, getppid(), NULL);
+	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 	_done();
 
 	return 0;

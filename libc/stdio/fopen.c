@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -42,7 +42,7 @@ FILE *fopen(const char *path, const char *mode) {
 	fd = io_find(path);
 
 	/* check if the object is a directory or null */
-	if (fd && fs_type(fd) == FOBJ_DIR) {
+	if (fd && (fs_type(fd) & RP_TYPE_FILE) == 0) {
 		errno = EISDIR;
 		return NULL;
 	}
@@ -51,7 +51,7 @@ FILE *fopen(const char *path, const char *mode) {
 
 		/* create the file */
 		if (mode[0] == 'w' || mode[0] == 'a') {
-			if (io_cons(path, FOBJ_FILE)) {
+			if (io_cons(path, RP_TYPE_FILE)) {
 				return NULL;
 			}
 		}
@@ -65,7 +65,7 @@ FILE *fopen(const char *path, const char *mode) {
 
 	/* check read permissions */
 	if (mode[0] == 'r' || mode[1] == '+') {
-		if ((perm & FS_PERM_READ) == 0) {
+		if ((perm & PERM_READ) == 0) {
 			errno = EACCES;
 			return NULL;
 		}
@@ -73,7 +73,7 @@ FILE *fopen(const char *path, const char *mode) {
 
 	/* check write permissions */
 	if (mode[0] == 'w' || mode[0] == 'a' || mode[1] == '+') {
-		if ((perm & FS_PERM_WRITE) == 0) {
+		if ((perm & PERM_WRITE) == 0) {
 			errno = EACCES;
 			return NULL;
 		}

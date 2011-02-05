@@ -23,26 +23,45 @@
  * __move_wrapper
  *
  * Performs the requested actions of a FS_MOVE command.
+ *
+ * protocol:
+ *   port: PORT_MOVE
+ *
+ *   request:
+ *     uint64_t fobj
+ *     char name[]
+ *
+ *   reply:
+ *     uint64_t fobj
  */
 
-void __move_wrapper(struct mp_fs *cmd) {
-	struct vfs_obj *dir, *obj;	
+void __move_wrapper(struct msg *msg) {
+	struct vfs_obj *dir, *obj;
+	uint64_t fobj;
+	const char *name;
+
+	/* check message */
+	if (msg->length < sizeof(uint64_t) + 1) {
+		merror(msg);
+		return;
+	}
+
+	/* extract data */
+	fobj = ((uint64_t*) msg->data)[0];
+	name = (const char*) &msg->data[8];
 
 	/* make sure the request is within the driver */
-	if (RP_PID(cmd->v0) != getpid()) {
-		cmd->op = FS_ERR;
-		cmd->v0 = ERR_FILE;
+	if (RP_PID(fobj) != getpid()) {
+		merror(msg);
 		return;
 	}
 
 	/* get the requested object and new parent directory */
-	dir = vfs_get_index(cmd->index);
-	obj = vfs_get_index(RP_INDEX(cmd->v0));
+	dir = vfs_get_index(RP_INDEX(msg->target));
+	obj = vfs_get_index(RP_INDEX(fobj));
 
 	if (!dir || !obj) {
-		/* return ERR_FILE on failure to find object or directory */
-		cmd->op = FS_ERR;
-		cmd->v0 = ERR_FILE;
+		merror(msg);
 		return;
 	}
 
@@ -50,13 +69,12 @@ void __move_wrapper(struct mp_fs *cmd) {
 	mutex_spin(&obj->mutex);
 
 	/* check all permissions */
-	if (((acl_get(dir->acl, gettuser()) & FS_PERM_WRITE) == 0) || 
-		((acl_get(obj->mother->acl, gettuser()) & FS_PERM_WRITE) == 0)) {
-		cmd->op = FS_ERR;
-		cmd->v0 = ERR_DENY;
-
+	if (((acl_get(dir->acl, gettuser()) & PERM_WRITE) == 0) || 
+		((acl_get(obj->mother->acl, gettuser()) & PERM_WRITE) == 0)) {
 		mutex_free(&dir->mutex);
 		mutex_free(&obj->mutex);
+
+		merror(msg);
 		return;
 	}
 
@@ -66,12 +84,12 @@ void __move_wrapper(struct mp_fs *cmd) {
 	vfs_dir_pull(obj);
 
 	/* add object to new directory with name <cmd->s0> */
-	vfs_dir_push(dir, obj, cmd->s0);
+	vfs_dir_push(dir, obj, name);
 
 	mutex_free(&obj->mutex);
 
 	/* return pointer to moved object on success */
-	cmd->v0   = getpid();
-	cmd->v0 <<= 32;
-	cmd->v0  |= obj->index;
+	msg->length = sizeof(uint64_t);
+	((uint64_t*) msg->data)[0] = RP_CONS(getpid(), obj->index);
+	mreply(msg);
 }

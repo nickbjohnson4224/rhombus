@@ -29,33 +29,25 @@
 
 void __sync_wrapper(struct msg *msg) {
 	struct vfs_obj *file;
-	struct mp_basic *cmd;
-
-	if (!msg->packet) {
-		error_reply(msg, 1);
-		return;
-	}
-
-	cmd = msg->packet;
 
 	if (!_di_sync) {
-		error_reply(msg, 1);
+		merror(msg);
 		return;
 	}
 
-	file = vfs_get_index(cmd->index);
+	file = vfs_get_index(RP_INDEX(msg->target));
 
-	if (!file || (file->type != FOBJ_FILE)) {
-		error_reply(msg, 1);
+	if (!file || !(file->type & RP_TYPE_FILE)) {
+		merror(msg);
 		return;
 	}
 
-	if (!(acl_get(file->acl, gettuser()) & FS_PERM_WRITE)) {
-		error_reply(msg, 1);
+	if (!(acl_get(file->acl, gettuser()) & PERM_WRITE)) {
+		merror(msg);
 		return;
 	}
 
 	_di_sync(file);
 
-	msend(PORT_REPLY, msg->source, msg);
+	merror(msg); // errors are the same as valid replies
 }

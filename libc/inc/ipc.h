@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,12 +17,14 @@
 #ifndef FLUX_IPC_H
 #define FLUX_IPC_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <natio.h>
 #include <arch.h>
 
 /* port numbers ************************************************************/
 
+// kernel events and signals
 #define PORT_QUIT	0
 #define PORT_TERM	1
 #define PORT_ABORT	2
@@ -40,64 +42,63 @@
 #define PORT_USER1	14
 #define PORT_USER2	15
 
+// I/O and similar
 #define PORT_REPLY	16
 #define PORT_READ	17
 #define PORT_WRITE	18
 #define PORT_SYNC	19
 #define PORT_RESET	20
-#define PORT_FS		21
-#define PORT_MMAP	22
+#define PORT_SHARE	21
+#define PORT_RCALL	22
 #define PORT_EVENT	23
-#define PORT_CMD	24
 
-void _on_event(void);
+// filesystem
+#define PORT_FIND	32
+#define PORT_CONS	33
+#define PORT_MOVE	34
+#define PORT_REMV	35
+#define PORT_LINK	36
+#define PORT_LIST	37
+#define PORT_SIZE	38
+#define PORT_TYPE	39
+#define PORT_PERM	40
+#define PORT_AUTH	41
 
-/* queueing ****************************************************************/
+/* message structure ********************************************************/
 
 struct msg {
-	uint32_t port;
-	uint32_t source;
+	uint64_t source; // resource pointer of source
+	uint64_t target; // resource pointer of target
+	uint32_t length; // length of _data_ (not whole message)
+	uint8_t  port;   // port (to be) sent to
+	uint8_t  arch;   // architecture (i.e. byte order)
+	uint16_t padding;
+	uint8_t  data[]; // contained data
+} __attribute__((packed));
 
-	uint32_t count;
-	void    *packet;
+#define ARCH_LEND	0
+#define ARCH_BEND	1
+#define ARCH_NAT	ARCH_LEND
 
-	struct msg *next;
-	struct msg *prev;
-};
+/* queueing *****************************************************************/
 
-extern struct msg msg_queue[256];
-extern bool     m_msg_queue[256];
+int         mqueue_push(struct msg *msg);
+struct msg *mqueue_pull(uint8_t port, uint64_t source);
 
-void mstash(struct msg *msg);
+/* sending and recieving ****************************************************/
 
-/* msend *******************************************************************/
+int         msend(struct msg *msg);
+struct msg *mwait(uint8_t port, uint64_t source);
 
-int msend (uint8_t port, uint32_t target, struct msg *msg);
+/* high level send functions ************************************************/
 
-/* mrecv family - asynchronous *********************************************/
+int mreply(struct msg *msg);
+int merror(struct msg *msg);
+int msendb(uint64_t target, uint8_t port);
+int msendv(uint64_t target, uint8_t port, void *data, size_t length);
 
-struct msg *mrecv (uint8_t port);
-struct msg *mrecvs(uint8_t port, uint32_t source);
+/* event handlers ***********************************************************/
 
-/* mwait family - synchronous **********************************************/
-
-struct msg *mwait  (uint8_t port);
-struct msg *mwaits (uint8_t port, uint32_t source);
-struct msg *mwaitt (uint8_t port, uint32_t timeout);
-struct msg *mwaitst(uint8_t port, uint32_t source, uint32_t timeout);
-
-/* mdump family ************************************************************/
-
-void mdump (uint8_t port);
-void mdumps(uint8_t port, uint32_t source);
-
-/* events ******************************************************************/
-
-typedef void (*event_t)(struct msg *msg);
-
-event_t when(uint8_t port, event_t handler);
-
-extern event_t event_handler[256];
-extern bool  m_event_handler;
+void when(uint8_t port, void (*handler)(struct msg *msg));
 
 #endif/*FLUX_IPC_H*/

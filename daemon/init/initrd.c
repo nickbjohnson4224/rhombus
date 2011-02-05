@@ -50,9 +50,10 @@ void initrd_init(void) {
 	struct vfs_obj *root;
 
 	root = calloc(sizeof(struct vfs_obj), 1);
-	root->type = FOBJ_FILE;
+	root->type = RP_TYPE_FILE;
 	root->data = (void*) BOOT_IMAGE;
 	root->size = tar_size(root->data);
+	root->acl  = acl_set_default(root->acl, PERM_READ);
 	vfs_set_index(0, root);
 
 	di_wrap_read(initrd_read);

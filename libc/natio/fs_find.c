@@ -25,45 +25,75 @@
  *
  * Finds the filesystem object with the given path <path> from <root> if it 
  * exists. If it does not exist, this function returns 0.
+ *
+ * protocol:
+ *   port: PORT_FIND
+ *
+ *   request:
+ *     char link
+ *     char path[]
+ *
+ *   reply:
+ *     uint64_t rp
+ *     uint32_t err
+ *
+ *   errors:
+ *     0 - none
+ *     1 - not found
+ *     2 - permission denied
+ *     3 - not implemented
  */
 
 uint64_t fs_find(uint64_t root, const char *path) {
-	struct mp_fs *command;
-	uint64_t ret;
+	struct msg *msg;
+	uint64_t rp;
+	uint32_t err;
 	char *path_s;
 
+	if (!root) {
+		root = fs_root;
+	}
+
 	path_s = path_simplify(path);
-
-	command = malloc(sizeof(struct mp_fs));
-	command->op = FS_FIND;
-	command->v0 = 0;
-	command->v1 = 0;
-	strlcpy(command->s0, path_s, 4000);
-
+	if (!path_s) {
+		return 0;
+	}
+	
+	msg = aalloc(sizeof(struct msg) + 1 + strlen(path_s) + 1, PAGESZ);
+	msg->source = RP_CONS(getpid(), 0);
+	msg->target = root;
+	msg->length = strlen(path_s) + 2;
+	msg->port   = PORT_FIND;
+	msg->arch   = ARCH_NAT;
+	msg->data[0] = 0;
+	strcpy((char*) &msg->data[1], path_s);
 	free(path_s);
 
-	command = fs_send(root, command);
-	if (!command) {
-		errno = EBADMSG;
+	if (msend(msg)) {
+		errno = ENOSYS;
+		return 0;
+	}
+	msg = mwait(PORT_REPLY, root);
+
+	if (msg->length < sizeof(uint64_t) + sizeof(uint32_t)) {
+		free(msg);
 		return 0;
 	}
 
-	/* check for errors */
-	if (command->op == FS_ERR) {
-		switch (command->v0) {
-		case ERR_NULL: errno = EUNK; break;
-		case ERR_FILE: errno = ENOENT; break;
-		case ERR_DENY: errno = EACCES; break;
-		case ERR_FUNC: errno = ENOSYS; break;
-		case ERR_TYPE: errno = EUNK; break;
-		case ERR_FULL: errno = EUNK; break;
+	rp  = ((uint64_t*) msg->data)[0];
+	err = ((uint32_t*) msg->data)[2];
+
+	free(msg);
+
+	if (err) {	
+		switch (err) {
+		case 1:  errno = ENOENT; break;
+		case 2:  errno = EACCES; break;
+		case 3:  errno = ENOSYS; break;
+		default: errno = EUNK;   break;
 		}
-
-		free(command);
 		return 0;
 	}
 
-	ret = command->v0;
-	free(command);
-	return ret;
+	return rp;
 }

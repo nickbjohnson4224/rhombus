@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,84 +15,19 @@
  */
 
 #include <stdlib.h>
-#include <stdbool.h>
-#include <mutex.h>
 #include <proc.h>
 #include <ipc.h>
 
-/****************************************************************************
- * _mwaitm
- *
- * Waits until a matching message is in the message queue. Returns the found
- * message, which may be NULL if the packet is empty. Used internally by the
- * wait* family of functions.
- */
-
-static struct msg *_mwaitm(uint8_t port, uint32_t source, uint32_t timeout) {
+struct msg *mwait(uint8_t port, uint64_t source) {
 	struct msg *msg;
-	event_t old_event;
+	
+	while (1) {
+		msg = mqueue_pull(port, source);
 
-	old_event = when(port, NULL);
-
-	mutex_spin(&m_msg_queue[port]);
-	timeout++;
-
-	do {
-		msg = msg_queue[port].next;
-
-		while (msg) {
-			if (!source || source == msg->source) {
-				break;
-			}
-
-			msg = msg->next;
-		}
-
-		if (msg) {
-			if (msg->next) msg->next->prev = msg->prev;
-			if (msg->prev) msg->prev->next = msg->next;
-			break;
-		}
+		if (msg) break;
 
 		sleep();
-		if (timeout) timeout--;
-	} while (timeout != 1);
-
-	mutex_free(&m_msg_queue[port]);
-
-	when(port, old_event);
+	}
 
 	return msg;
-}
-
-/****************************************************************************
- * mwait
- */
-
-struct msg *mwait(uint8_t port) {
-	return _mwaitm(port, 0, 0);
-}
-
-/****************************************************************************
- * mwaits
- */
-
-struct msg *mwaits(uint8_t port, uint32_t source) {
-	return _mwaitm(port, source, 0);
-}
-
-/****************************************************************************
- * mwaitt
- */
-
-struct msg *mwaitt(uint8_t port, uint32_t timeout) {
-	return _mwaitm(port, 0, timeout);
-}
-
-/****************************************************************************
- * mwaitst
- */
-
-struct msg *mwaitst(uint8_t port, uint32_t source, uint32_t timeout) {
-	return _mwaitm(port, source, timeout);
 }

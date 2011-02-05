@@ -51,7 +51,7 @@ static uint64_t start(struct tar_file *file, char const **argv) {
 
 	setenv("NAME", "init");
 
-	mwaits(PORT_CHILD, pid);
+	mwait(PORT_CHILD, RP_CONS(pid, 0));
 
 	return RP_CONS(pid, 0);
 }
@@ -75,11 +75,11 @@ int main() {
 	argv[1] = NULL;
 	file = tar_find(boot_image, "sbin/tmpfs");
 	fs_root = start(file, argv);
-	io_cons("/dev", FOBJ_DIR);
-	io_cons("/sys", FOBJ_DIR);
+	io_cons("/dev", RP_TYPE_DIR);
+	io_cons("/sys", RP_TYPE_DIR);
 
 	/* Logfile */
-	io_cons("/dev/stderr", FOBJ_FILE);
+	io_cons("/dev/stderr", RP_TYPE_FILE);
 
 	/* Init control file */
 	io_link("/sys/init", RP_CONS(getpid(), 1));
@@ -159,7 +159,7 @@ int main() {
 
 	setenv("NAME", "init");
 	
-	mwaits(PORT_CHILD, 0);
+	mwait(PORT_CHILD, 0);
 
 	printf("INIT PANIC: system daemon died\n");
 	for(;;);

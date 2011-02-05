@@ -15,6 +15,7 @@
  */
 
 #include <stdlib.h>
+#include <natio.h>
 #include <mutex.h>
 #include <proc.h>
 #include <ipc.h>
@@ -30,33 +31,45 @@
 
 void __read_wrapper(struct msg *msg) {
 	struct vfs_obj *file;
-	struct mp_io *cmd;
+	uint64_t offset;
+	uint32_t size;
+	struct msg *reply;
 
-	cmd = io_recv(msg);
-
-	if (!cmd) {
-		error_reply(msg, 1);
+	if (msg->length != sizeof(uint64_t) + sizeof(uint32_t)) {
+		merror(msg);
 		return;
 	}
 
 	if (!_di_read) {
-		error_reply(msg, 1);
+		merror(msg);
 		return;
 	}
 
-	file = vfs_get_index(cmd->index);
+	file = vfs_get_index(RP_INDEX(msg->target));
 
-	if (!file || (file->type != FOBJ_FILE)) {
-		error_reply(msg, 1);
+	if (!file || !(file->type & RP_TYPE_FILE)) {
+		merror(msg);
 		return;
 	}
 
-	if (!(acl_get(file->acl, gettuser()) & FS_PERM_READ)) {
-		error_reply(msg, 1);
+	if (!(acl_get(file->acl, gettuser()) & PERM_READ)) {
+		merror(msg);
 		return;
 	}
 	
-	cmd->size = _di_read(file, cmd->data, cmd->size, cmd->offset);
+	offset = ((uint64_t*) msg->data)[0];
+	size   = ((uint32_t*) msg->data)[2];
+	
+	reply = aalloc(sizeof(struct msg) + size, PAGESZ);
+	reply->source = msg->target;
+	reply->target = msg->source;
+	reply->length = size;
+	reply->port   = PORT_REPLY;
+	reply->arch   = ARCH_NAT;
 
-	msend(PORT_REPLY, msg->source, msg);
+	free(msg);
+
+	reply->length = _di_read(file, reply->data, size, offset);
+
+	msend(reply);
 }

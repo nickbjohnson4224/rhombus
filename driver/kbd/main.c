@@ -63,9 +63,9 @@ int main(int argc, char **argv) {
 	struct vfs_obj *root;
 
 	root        = calloc(sizeof(struct vfs_obj), 1);
-	root->type  = FOBJ_FILE;
+	root->type  = RP_TYPE_FILE;
 	root->size  = 0;
-	root->acl   = acl_set_default(root->acl, FS_PERM_READ);
+	root->acl   = acl_set_default(root->acl, PERM_READ);
 	vfs_set_index(0, root);
 
 	/* set up interface */
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
 	di_wrap_irq (1, kbd_irq);
 	vfs_wrap_init();
 
-	msend(PORT_CHILD, getppid(), NULL);
+	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 	_done();
 
 	return 0;

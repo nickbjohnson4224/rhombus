@@ -24,37 +24,40 @@
  *
  * Sets the link at <link> to point to the filesystem object <fobj>. Returns 
  * zero on success, nonzero on failure.
+ *
+ * protocol:
+ *   port: PORT_LINK
+ *
+ *   request:
+ *     uint64_t rp
+ *
+ *   reply:
+ *     uint8_t err
  */
 
 int fs_link(uint64_t link, uint64_t fobj) {
-	struct mp_fs *command;
+	struct msg *msg;
+	int err;
 
-	command = malloc(sizeof(struct mp_fs));
-	command->op = FS_LINK;
-	command->v0 = fobj;
-	command->v1 = 0;
-	
-	command = fs_send(link, command);
-	if (!command) {
-		errno = EBADMSG;
-		return 1;
-	}
-	
-	/* check for errors */
-	if (command->op == FS_ERR) {
-		switch (command->v0) {
-		case ERR_NULL: errno = EUNK; break;
-		case ERR_FILE: errno = ENOENT; break;
-		case ERR_DENY: errno = EACCES; break;
-		case ERR_FUNC: errno = ENOSYS; break;
-		case ERR_TYPE: errno = ENOTDIR; break;
-		case ERR_FULL: errno = EUNK; break;
-		}
+	msg = aalloc(sizeof(struct msg) + sizeof(uint64_t), PAGESZ);
+	msg->source = RP_CONS(getpid(), 0);
+	msg->target = link;
+	msg->length = sizeof(uint64_t);
+	msg->port   = PORT_LINK;
+	msg->arch   = ARCH_NAT;
 
-		free(command);
+	((uint64_t*) msg->data)[0] = fobj;
+
+	if (msend(msg)) return 0;
+	msg = mwait(PORT_REPLY, link);
+
+	if (msg->length < sizeof(uint8_t)) {
+		free(msg);
 		return 1;
 	}
 
-	free(command);
-	return 0;
+	err = msg->data[0];
+
+	free(msg);
+	return err;
 }

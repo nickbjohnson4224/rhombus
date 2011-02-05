@@ -23,29 +23,35 @@
  * __remv_wrapper
  *
  * Performs the requested actions of a FS_REMV command.
+ *
+ * protocol:
+ *   port: PORT_REMV
+ *
+ *   request:
+ *   
+ *   reply:
+ *     uint8_t err;
  */
 
-void __remv_wrapper(struct mp_fs *cmd) {
+void __remv_wrapper(struct msg *msg) {
 	struct vfs_obj *fobj;
 	
 	/* get the requested object */
-	fobj = vfs_get_index(cmd->index);
+	fobj = vfs_get_index(RP_INDEX(msg->target));
 
 	if (fobj) {
 		mutex_spin(&fobj->mutex);
 
 		/* check all permissions */
-		if ((acl_get(fobj->acl, gettuser()) & FS_PERM_WRITE) == 0 ||
-			(acl_get(fobj->mother->acl, gettuser() & FS_PERM_WRITE) == 0)) {
-			cmd->op = FS_ERR;
-			cmd->v0 = ERR_DENY;
+		if ((acl_get(fobj->acl, gettuser()) & PERM_WRITE) == 0 ||
+			(acl_get(fobj->mother->acl, gettuser() & PERM_WRITE) == 0)) {
+			merror(msg);
 			return;
 		}
 
 		/* check if directory is empty */
-		if (fobj->type == FOBJ_DIR && fobj->daughter) {
-			cmd->op = FS_ERR;
-			cmd->v0 = ERR_FULL;
+		if (fobj->type & RP_TYPE_DIR && fobj->daughter) {
+			merror(msg);
 			return;
 		}
 
@@ -66,7 +72,10 @@ void __remv_wrapper(struct mp_fs *cmd) {
 	}
 	else {
 		/* return ERR_FILE on failure to find object */
-		cmd->op = FS_ERR;
-		cmd->v0 = ERR_FILE;
+		merror(msg);
 	}
+
+	msg->length = 1;
+	msg->data[0] = 0;
+	mreply(msg);
 }

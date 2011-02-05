@@ -16,8 +16,9 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
+#include <stdlib.h>
 #include <natio.h>
+#include <proc.h>
 #include <ipc.h>
 
 /****************************************************************************
@@ -29,5 +30,18 @@
  */
 
 int sync(uint64_t file) {
-	return io_send(file, NULL, NULL, 0, 0, PORT_SYNC);
+	struct msg *msg;
+
+	msg = aalloc(sizeof(struct msg), PAGESZ);
+	msg->source = RP_CONS(getpid(), 0);
+	msg->target = file;
+	msg->length = 0;
+	msg->port   = PORT_SYNC;
+	msg->arch   = ARCH_NAT;
+
+	if (msend(msg)) return 1;
+	msg = mwait(PORT_REPLY, file);
+
+	free(msg);
+	return 0;
 }

@@ -20,7 +20,10 @@
 void *__pack_load(uint32_t key, size_t *size) {
 	size_t i;
 
-	page_anon(__pack_vector, PAGESZ, PROT_READ | PROT_WRITE);
+	if (!phys(__pack_vector)) {
+		page_anon(__pack_vector, PAGESZ, PROT_READ | PROT_WRITE);
+		__pack_vector[0].key = 0;
+	}
 
 	for (i = 0; __pack_vector[i].key; i++) {
 		if (__pack_vector[i].key == key) {

@@ -50,7 +50,7 @@ uint64_t vfs_find(struct vfs_obj *root, const char *path_str, bool nolink) {
 			}
 		}
 
-		if (fobj->type != FOBJ_DIR) {
+		if ((fobj->type & RP_TYPE_DIR) == 0) {
 			free(name);
 			return 0;
 		}
@@ -61,7 +61,7 @@ uint64_t vfs_find(struct vfs_obj *root, const char *path_str, bool nolink) {
 				return fs_find(fobj->link, path_tail(path));
 			}
 
-			if ((acl_get(fobj->acl, gettuser()) & FS_PERM_READ) == 0) {
+			if ((acl_get(fobj->acl, gettuser()) & PERM_READ) == 0) {
 				return 0;
 			}
 

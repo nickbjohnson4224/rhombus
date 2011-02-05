@@ -24,32 +24,28 @@
  * __type_wrapper
  *
  * Performs the requested actions of a FS_TYPE command.
+ *
+ * protocol:
+ *   port: PORT_TYPE
+ *
+ *   request:
+ *
+ *   reply:
+ *     uint8_t type
  */
 
-void __type_wrapper(struct mp_fs *cmd) {
-	struct vfs_obj *fobj;
-	
-	/* get the requested object */
-	fobj = vfs_get_index(cmd->index);
+void __type_wrapper(struct msg *msg) {
+	struct vfs_obj *file;
 
-	if (fobj) {
-		mutex_spin(&fobj->mutex);
-		
-		/* check permissions */
-		if ((acl_get(fobj->acl, gettuser()) & FS_PERM_READ) == 0) {
-			cmd->op = FS_ERR;
-			cmd->v0 = ERR_DENY;
-		}
-		else {
-			/* return the type of the object */
-			cmd->v0 = fobj->type;
-		}
+	/* find file node */
+	file = vfs_get_index(RP_INDEX(msg->target));
 
-		mutex_free(&fobj->mutex);
+	if (!file) {
+		merror(msg);
+		return;
 	}
-	else {
-		/* return ERR_FILE on failure to find object */
-		cmd->op = FS_ERR;
-		cmd->v0 = ERR_FILE;
-	}
+
+	msg->length = 1;
+	msg->data[0] = file->type;
+	mreply(msg);
 }

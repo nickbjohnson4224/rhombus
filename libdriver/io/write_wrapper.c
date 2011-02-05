@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -31,34 +31,34 @@
 
 void __write_wrapper(struct msg *msg) {
 	struct vfs_obj *file;
-	struct mp_io *cmd;
+	uint64_t offset;
 
-	cmd = io_recv(msg);
-
-	if (!cmd) {
-		error_reply(msg, 1);
+	if (msg->length < sizeof(uint64_t)) {
+		merror(msg);
 		return;
 	}
 
 	if (!_di_write) {
-		error_reply(msg, 1);
+		merror(msg);
 		return;
 	}
 
-	file = vfs_get_index(cmd->index);
+	file = vfs_get_index(RP_INDEX(msg->target));
 
-	if (!file || !(file->type & FOBJ_FILE)) {
-		error_reply(msg, 1);
+	if (!file || !(file->type & RP_TYPE_FILE)) {
+		merror(msg);
 		return;
 	}
 
-	if (!(acl_get(file->acl, gettuser()) & FS_PERM_WRITE)) {
-		error_reply(msg, 1);
+	if (!(acl_get(file->acl, gettuser()) & PERM_WRITE)) {
+		merror(msg);
 		return;
 	}
+	
+	offset = ((uint64_t*) msg->data)[0];
 
-	cmd->size   = _di_write(file, cmd->data, cmd->size, cmd->offset);
-	cmd->length = sizeof(struct mp_io);
+	((uint32_t*) msg->data)[0] = _di_write(file, &msg->data[8], msg->length - 8, offset);
+	msg->length = sizeof(uint32_t);
 
-	msend(PORT_REPLY, msg->source, msg);
+	mreply(msg);
 }

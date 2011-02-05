@@ -25,39 +25,37 @@
  * Returns the file size of <file>. If this value is zero, the file may not
  * exist, be the wrong type, or be a character device. fs_type can be used to 
  * differentiate between these cases.
+ *
+ * protocol:
+ *   port: PORT_SIZE
+ *
+ *   request:
+ *
+ *   reply:
+ *     uint64_t size
  */
 
 uint64_t fs_size(uint64_t file) {
-	struct mp_fs *command;
-	uint64_t ret;
+	struct msg *msg;
+	uint64_t size;
 
-	command = malloc(sizeof(struct mp_fs));
-	command->op = FS_SIZE;
-	command->v0 = 0;
-	command->v1 = 0;
-	
-	command = fs_send(file, command);
-	if (!command) {
-		errno = EBADMSG;
+	msg = aalloc(sizeof(struct msg), PAGESZ);
+	msg->source = RP_CONS(getpid(), 0);
+	msg->target = file;
+	msg->length = 0;
+	msg->port   = PORT_SIZE;
+	msg->arch   = ARCH_NAT;
+
+	if (msend(msg)) return 0;
+	msg = mwait(PORT_REPLY, file);
+
+	if (msg->length < sizeof(uint64_t)) {
+		free(msg);
 		return 0;
 	}
 
-	/* check for errors */
-	if (command->op == FS_ERR) {
-		switch (command->v0) {
-		case ERR_NULL: errno = EUNK; break;
-		case ERR_FILE: errno = ENOENT; break;
-		case ERR_DENY: errno = EACCES; break;
-		case ERR_FUNC: errno = ENOSYS; break;
-		case ERR_TYPE: errno = EISDIR; break;
-		case ERR_FULL: errno = EUNK; break;
-		}
+	size = ((uint64_t*) msg->data)[0];
 
-		free(command);
-		return 0;
-	}
-
-	ret = command->v0;
-	free(command);
-	return ret;
+	free(msg);
+	return size;
 }

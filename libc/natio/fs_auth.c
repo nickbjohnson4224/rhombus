@@ -25,37 +25,42 @@
  *
  * Sets the permissions of the filesystem object <fobj> to <perm> for user
  * <user>. Returns zero on success, nonzero on error.
+ *
+ * protocol:
+ *   port: PORT_AUTH
+ *
+ *   request:
+ *     uint32_t user
+ *     uint8_t perm
+ *
+ *   reply:
+ *     uint8_t ret
  */
 
 int fs_auth(uint64_t fobj, uint32_t user, uint8_t perm) {
-	struct mp_fs *command;
+	struct msg *msg;
+	int err;
 
-	command = malloc(sizeof(struct mp_fs));
-	command->op = FS_AUTH;
-	command->v0 = user;
-	command->v1 = perm;
-	
-	command = fs_send(fobj, command);
-	if (!command) {
-		errno = EBADMSG;
+	msg = aalloc(sizeof(struct msg) + sizeof(uint32_t) + sizeof(uint8_t), PAGESZ);
+	msg->source = RP_CONS(getpid(), 0);
+	msg->target = fobj;
+	msg->length = sizeof(uint32_t) + sizeof(uint8_t);
+	msg->port   = PORT_AUTH;
+	msg->arch   = ARCH_NAT;
+
+	((uint32_t*) msg->data)[0] = user;
+	msg->data[4] = perm;
+
+	if (msend(msg)) return 0;
+	msg = mwait(PORT_REPLY, fobj);
+
+	if (msg->length < sizeof(uint8_t)) {
+		free(msg);
 		return 1;
 	}
 
-	/* check for errors */
-	if (command->op == FS_ERR) {
-		switch (command->v0) {
-		case ERR_NULL: errno = EUNK; break;
-		case ERR_FILE: errno = ENOENT; break;
-		case ERR_DENY: errno = EACCES; break;
-		case ERR_FUNC: errno = ENOSYS; break;
-		case ERR_TYPE: errno = EUNK; break;
-		case ERR_FULL: errno = ENOSPC; break;
-		}
+	err = msg->data[0];
 
-		free(command);
-		return 1;
-	}
-	
-	free(command);
-	return 0;
+	free(msg);
+	return err;
 }

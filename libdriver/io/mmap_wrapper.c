@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,36 +18,44 @@
 #include <mutex.h>
 #include <natio.h>
 #include <proc.h>
+#include <page.h>
 #include <ipc.h>
 
 #include <driver/vfs.h>
 #include <driver/io.h>
 
-void __mmap_wrapper(struct msg *msg) {
+void __share_wrapper(struct msg *msg) {
 	struct vfs_obj *file;
-	struct mp_io *cmd;
+	uint64_t offset;
+	uint8_t err;
+	void *pages;
 
-	cmd = io_recv(msg);
-
-	if (!cmd) {
-		error_reply(msg, 1);
+	/* check request */
+	if (msg->length < PAGESZ - sizeof(struct msg)) {
+		merror(msg);
 		return;
 	}
 
-	if (!_di_mmap) {
-		error_reply(msg, 1);
+	if (!_di_share) {
+		merror(msg);
 		return;
 	}
 
-	file = vfs_get_index(cmd->index);
+	file = vfs_get_index(RP_INDEX(msg->target));
 
-	if (!file || (file->type != FOBJ_FILE)) {
-		error_reply(msg, 1);
+	if (!file) {
+		merror(msg);
+		return;
 	}
 
-	_di_mmap(file, (void*) ((uintptr_t) cmd + PAGESZ), cmd->size, cmd->offset);
+	/* extract data */
+	offset = ((uint64_t*) msg->data)[0];
+	pages = aalloc(msg->length - PAGESZ + sizeof(struct msg), PAGESZ);
+	page_self(&msg->data[PAGESZ - sizeof(struct msg)], pages, msg->length - PAGESZ + sizeof(struct msg));
 
-	if (cmd->type != MP_TYPE_ASYNC) {
-		msend(PORT_REPLY, msg->source, msg);
-	}
+	err = _di_share(file, pages, msg->length - PAGESZ + sizeof(struct msg), offset);
+
+	msg->data[0] = err;
+	msg->length = 1;
+	mreply(msg);
 }

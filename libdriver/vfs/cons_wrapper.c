@@ -24,54 +24,74 @@
  * __cons_wrapper
  *
  * Performs the requested actions of a FS_CONS command.
+ *
+ * protocol:
+ *   port: PORT_CONS
+ *
+ *   request:
+ *     uint32_t type
+ *     char name[]
+ *
+ *   reply:
+ *     uint64_t rp
  */
 
-void __cons_wrapper(struct mp_fs *cmd) {
+void __cons_wrapper(struct msg *msg) {
 	struct vfs_obj *dir, *new_fobj;
+	int type;
+	uint64_t rp;
+	const char *name;
 
-	/* make sure the active driver can construct new objects */
-	if (!_vfs_cons) {
-		cmd->op = FS_ERR;
-		cmd->v0 = ERR_FUNC;
+	/* check request */
+	if (msg->length < sizeof(uint32_t)) {
+		merror(msg);
 		return;
 	}
 
+	/* make sure the active driver can construct new objects */
+	if (!_vfs_cons) {
+		merror(msg);
+		return;
+	}
+
+	/* extract data */
+	type = ((uint32_t*) msg->data)[0];
+	name = (const char*) &msg->data[4];
+
 	/* get the requested parent directory */
-	dir = vfs_get_index(cmd->index);
+	dir = vfs_get_index(RP_INDEX(msg->target));
 
 	if (dir) {
 		mutex_spin(&dir->mutex);
 
 		/* check permissions */
-		if ((acl_get(dir->acl, gettuser()) & FS_PERM_WRITE) == 0) {
-			cmd->op = FS_ERR;
-			cmd->v0 = ERR_DENY;
-			return;
-		}
-
-		/* construct new object */
-		new_fobj = _vfs_cons(cmd->v0);
-
-		if (new_fobj) {
-			/* add new object to parent directory */
-			vfs_dir_push(dir, new_fobj, cmd->s0);
-
-			/* return pointer to new object on success */
-			cmd->v0   = getpid();
-			cmd->v0 <<= 32;
-			cmd->v0  |= new_fobj->index;
+		if ((acl_get(dir->acl, gettuser()) & PERM_WRITE) == 0) {
+			rp = 0;
 		}
 		else {
-			/* return ERR_NULL on failure to create file */
-			cmd->op = FS_ERR;
-			cmd->v0 = ERR_NULL;
+
+			/* construct new object */
+			new_fobj = _vfs_cons(type);
+
+			if (new_fobj) {
+				/* add new object to parent directory */
+				vfs_dir_push(dir, new_fobj, name);
+
+				/* return pointer to new object on success */
+				rp = RP_CONS(getpid(), new_fobj->index);
+			}
+			else {
+				rp = 0;
+			}
 		}
 
 		mutex_free(&dir->mutex);
 	}
 	else {
-		/* return ERR_FILE on failure to find directory */
-		cmd->op = FS_ERR;
-		cmd->v0 = ERR_FILE;
+		rp = 0;
 	}
+
+	msg->length = sizeof(uint64_t);
+	((uint64_t*) msg->data)[0] = rp;
+	mreply(msg);
 }

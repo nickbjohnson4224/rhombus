@@ -54,7 +54,7 @@ int main() {
 		if (!strcmp(argv[0], "cd")) {
 			path = path_simplify(argv[1]);
 
-			if (path && fs_type(fs_find(0, path)) == FOBJ_DIR) {
+			if (path && fs_type(fs_find(0, path)) & RP_TYPE_DIR) {
 				setenv("PWD", path);
 			}
 			else {
@@ -76,7 +76,7 @@ int main() {
 				abort();
 			}
 		}
-		mwaits(PORT_CHILD, pid);
+		mwait(PORT_CHILD, RP_CONS(pid, 0));
 	}
 
 	return 0;

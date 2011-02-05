@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <mutex.h>
+#include <natio.h>
 #include <proc.h>
 #include <ipc.h>
 
@@ -27,13 +28,7 @@
  */
 
 static void _sigwrap(struct msg *msg) {
-	
-	if (msg->packet) {
-		free(msg->packet);
-	}
-
-	__raise(msg->source, msg->port);
-
+	__raise(RP_PID(msg->source), msg->port);
 	free(msg);
 }
 

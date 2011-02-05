@@ -23,39 +23,65 @@
  * __link_wrapper
  *
  * Performs the requested actions of a FS_LINK command.
+ *
+ * protocol:
+ *   port: PORT_LINK
+ *
+ *   request:
+ *     uint64_t rp
+ *
+ *   reply:
+ *     uint8_t err
  */
 
-void __link_wrapper(struct mp_fs *cmd) {
+void __link_wrapper(struct msg *msg) {
 	struct vfs_obj *dir;
-	
+	uint64_t rp;
+	uint8_t err = 0;
+
+	/* check request */
+	if (msg->length != sizeof(uint64_t)) {
+		merror(msg);
+		return;
+	}
+
+	/* extract data */
+	rp = ((uint64_t*) msg->data)[0];
+
 	/* get the requested directory */
-	dir = vfs_get_index(cmd->index);
+	dir = vfs_get_index(RP_INDEX(msg->target));
 
 	if (dir) {
 		mutex_spin(&dir->mutex);
 
 		/* check type of object */
-		if (dir->type != FOBJ_DIR) {
-			cmd->op = FS_ERR;
-			cmd->v0 = ERR_TYPE;
-			return;
+		if ((dir->type & RP_TYPE_DIR) == 0) {
+			err = 1;
 		}
 
 		/* check all permissions */
-		if ((acl_get(dir->acl, gettuser() & FS_PERM_WRITE) == 0)) {
-			cmd->op = FS_ERR;
-			cmd->v0 = ERR_DENY;
-			return;
+		else if ((acl_get(dir->acl, gettuser() & PERM_WRITE) == 0)) {
+			err = 1;
 		}
-	
-		/* set link location */
-		dir->link = cmd->v0;
+
+		else {
+			/* set link location */
+			dir->link = rp;
+		}
 
 		mutex_free(&dir->mutex);
 	}
 	else {
 		/* return ERR_FILE on failure to find directory */
-		cmd->op = FS_ERR;
-		cmd->v0 = ERR_FILE;
+		err = 1;
+	}
+
+	if (err) {
+		merror(msg);
+	}
+	else {
+		msg->length = 1;
+		msg->data[0] = 0;
+		mreply(msg);
 	}
 }

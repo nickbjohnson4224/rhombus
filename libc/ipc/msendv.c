@@ -1,5 +1,4 @@
 /*
- * Copyright (C) 2011 Jaagup Repan
  * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
@@ -15,25 +14,25 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
-#include <natio.h>
-#include <ipc.h>
 #include <stdlib.h>
-#include <page.h>
+#include <string.h>
+#include <stdint.h>
+#include <proc.h>
+#include <ipc.h>
 
-int mmap(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot) {
-	struct mp_io *cmd;
+int msendv(uint64_t target, uint8_t port, void *data, size_t length) {
+	struct msg *msg;
 
-	cmd = aalloc(PAGESZ + size, PAGESZ);
-	cmd->length   = PAGESZ + size;
-	cmd->size     = size;
-	cmd->offset   = offset;
-	cmd->protocol = MP_PROT_IO;
+	msg = aalloc(sizeof(struct msg) + length, PAGESZ);
+	msg->source = RP_CONS(getpid(), 0);
+	msg->target = target;
+	msg->length = length;
+	msg->port   = port;
+	msg->arch   = ARCH_NAT;
 
-	/* map sending buffer into message */
-	page_self(buf, (void*) ((uintptr_t) cmd + PAGESZ), size);
-	page_prot((void*) ((uintptr_t) cmd + PAGESZ), size, prot);
+	if (data) {
+		memcpy(msg->data, data, length);
+	}
 
-	return rp_asend(rp, PORT_MMAP, (struct mp_basic*) cmd);
+	return msend(msg);
 }

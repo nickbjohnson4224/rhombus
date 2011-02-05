@@ -26,11 +26,11 @@ uint64_t wm_create_bitmap(uint8_t *address, size_t size) {
 	uint64_t fd;
 
 	sprintf(name, "/sys/wmanager/bitmaps/%i-%i", getpid(), next_name++);
-	fd = io_cons(name, FOBJ_FILE);
+	fd = io_cons(name, RP_TYPE_FILE);
 	if (!fd) {
 		return 0;
 	}
-	if (mmap(fd, address, size, 0, PROT_READ) != 0) {
+	if (share(fd, address, size, 0, PROT_READ) != 0) {
 		return 0;
 	}
 	return fd;	
@@ -46,7 +46,7 @@ uint64_t wm_create_window(size_t width, size_t height) {
 	uint64_t fd;
 
 	sprintf(name, "/sys/wmanager/windows/%i-%i", getpid(), next_name++);
-	fd = io_cons(name, FOBJ_FILE);
+	fd = io_cons(name, RP_TYPE_FILE);
 	if (!fd) {
 		return 0;
 	}

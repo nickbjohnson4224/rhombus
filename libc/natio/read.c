@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,8 +15,10 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
 #include <natio.h>
+#include <proc.h>
 #include <ipc.h>
 
 /****************************************************************************
@@ -24,8 +26,39 @@
  *
  * Read <size> bytes into <buf> from offset <offset> in file <file>. Returns 
  * the number of bytes read.
+ *
+ * protocol:
+ *   port: PORT_READ
+ *
+ *   request:
+ *     uint64_t offset
+ *     uint32_t size
+ *
+ *   reply:
+ *     uint8_t data[]
  */
 
 size_t read(uint64_t file, void *buf, size_t size, uint64_t offset) {
-	return io_send(file, buf, NULL, size, offset, PORT_READ);
+	struct msg *msg;
+
+	msg = aalloc(sizeof(struct msg) + sizeof(uint64_t) + sizeof(uint32_t), PAGESZ);
+	msg->source = RP_CONS(getpid(), 0);
+	msg->target = file;
+	msg->length = sizeof(uint64_t) + sizeof(uint32_t);
+	msg->port   = PORT_READ;
+	msg->arch   = ARCH_NAT;
+	((uint64_t*) msg->data)[0] = offset;
+	((uint32_t*) msg->data)[2] = size;
+
+	if (msend(msg)) return 0;
+	msg = mwait(PORT_REPLY, file);
+
+	if (size > msg->length) {
+		size = msg->length;
+	}
+
+	if (size) memcpy(buf, msg->data, size);
+
+	free(msg);
+	return size;
 }

@@ -92,7 +92,7 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 
 	/* initialize debugging output */
 	debug_init();
-	debug_printf("Flux Operating System Kernel v0.6a\n");
+	debug_printf("Flux Operating System Kernel v0.7a\n");
 
 	/* check multiboot header */
 	if (mboot_magic != 0x2BADB002) {

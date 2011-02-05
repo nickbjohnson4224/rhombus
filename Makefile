@@ -18,7 +18,7 @@ AS := nasm
 PP := cpp
 
 CFLAGS	:= -pipe -Wall -Werror -Wextra -pedantic -std=c99
-CFLAGS	+= -Wpointer-arith -Wcast-align -Wwrite-strings
+CFLAGS	+= -Wpointer-arith -Wwrite-strings
 CFLAGS	+= -Wno-unused-parameter -Wno-unused-function
 CFLAGS  += -mno-mmx
 CFLAGS	+= -O3 -fomit-frame-pointer

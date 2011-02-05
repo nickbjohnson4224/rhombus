@@ -25,39 +25,40 @@
  *
  * Returns the filesystem permissions of the filesystem object <fobj> that
  * apply to the user <user>. Returns zero on error.
+ *
+ * protocol:
+ *   port: PORT_PERM
+ *
+ *   request:
+ *     uint32_t user
+ *
+ *   reply:
+ *     uint8_t perm
  */
 
 uint8_t fs_perm(uint64_t fobj, uint32_t user) {
-	struct mp_fs *command;
-	uint8_t ret;
+	struct msg *msg;
+	int err;
 
-	command = malloc(sizeof(struct mp_fs));
-	command->op = FS_PERM;
-	command->v0 = user;
-	command->v1 = 0;
-	
-	command = fs_send(fobj, command);
-	if (!command) {
-		errno = EBADMSG;
-		return 0;
+	msg = aalloc(sizeof(struct msg) + sizeof(uint32_t), PAGESZ);
+	msg->source = RP_CONS(getpid(), 0);
+	msg->target = fobj;
+	msg->length = sizeof(uint32_t);
+	msg->port   = PORT_PERM;
+	msg->arch   = ARCH_NAT;
+
+	((uint32_t*) msg->data)[0] = user;
+
+	if (msend(msg)) return 0;
+	msg = mwait(PORT_REPLY, fobj);
+
+	if (msg->length < sizeof(uint8_t)) {
+		free(msg);
+		return 1;
 	}
 
-	/* check for errors */
-	if (command->op == FS_ERR) {
-		switch (command->v0) {
-		case ERR_NULL: errno = EUNK; break;
-		case ERR_FILE: errno = ENOENT; break;
-		case ERR_DENY: errno = EACCES; break;
-		case ERR_FUNC: errno = ENOSYS; break;
-		case ERR_TYPE: errno = EUNK; break;
-		case ERR_FULL: errno = EUNK; break;
-		}
+	err = msg->data[0];
 
-		free(command);
-		return 0;
-	}
-
-	ret = command->v0;
-	free(command);
-	return ret;
+	free(msg);
+	return err;
 }

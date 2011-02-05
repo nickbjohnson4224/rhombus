@@ -26,7 +26,7 @@ size_t   (*_di_write)(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64
 int      (*_di_reset)(struct vfs_obj *file);
 int      (*_di_sync) (struct vfs_obj *file);
 uint64_t (*_di_size) (struct vfs_obj *file);
-int      (*_di_mmap) (struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off);
+int      (*_di_share)(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off);
 
 /* wrapper registering functions ********************************************/
 
@@ -59,8 +59,8 @@ int di_wrap_size(uint64_t (*di_size)(struct vfs_obj *file)) {
 	return 0;
 }
 
-int di_wrap_mmap(int (*di_mmap)(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off)) {
-	when(PORT_MMAP, __mmap_wrapper);
-	_di_mmap = di_mmap;
+int di_wrap_share(int (*di_share)(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off)) {
+	when(PORT_SHARE, __share_wrapper);
+	_di_share = di_share;
 	return 0;
 }

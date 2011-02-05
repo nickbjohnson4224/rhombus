@@ -82,22 +82,19 @@ int vfs_wrap_cons(struct vfs_obj *(*vfs_cons)(int type));
 int vfs_wrap_push(int (*vfs_push)(struct vfs_obj *obj));
 int vfs_wrap_pull(int (*vfs_pull)(struct vfs_obj *obj));
 int vfs_wrap_free(int (*vfs_free)(struct vfs_obj *obj));
-int vfs_wrap_cmd (uint8_t op, void (*vfs_cmd)(struct mp_fs *cmd));
 
 int vfs_wrap_init(void);
 
-void __vfs_wrapper (struct msg *msg);
-void __find_wrapper(struct mp_fs *cmd);
-void __lfnd_wrapper(struct mp_fs *cmd);
-void __cons_wrapper(struct mp_fs *cmd);
-void __move_wrapper(struct mp_fs *cmd);
-void __remv_wrapper(struct mp_fs *cmd);
-void __link_wrapper(struct mp_fs *cmd);
-void __list_wrapper(struct mp_fs *cmd);
-void __size_wrapper(struct mp_fs *cmd);
-void __type_wrapper(struct mp_fs *cmd);
-void __perm_wrapper(struct mp_fs *cmd);
-void __auth_wrapper(struct mp_fs *cmd);
+void __find_wrapper(struct msg *msg);
+void __cons_wrapper(struct msg *msg);
+void __move_wrapper(struct msg *msg);
+void __remv_wrapper(struct msg *msg);
+void __link_wrapper(struct msg *msg);
+void __list_wrapper(struct msg *msg);
+void __size_wrapper(struct msg *msg);
+void __type_wrapper(struct msg *msg);
+void __perm_wrapper(struct msg *msg);
+void __auth_wrapper(struct msg *msg);
 
 extern struct vfs_obj *(*_vfs_cons)(int type);
 extern int             (*_vfs_push)(struct vfs_obj *obj);

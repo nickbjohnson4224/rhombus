@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	if (fs_type(dir) != FOBJ_DIR) {
+	if (fs_type(dir) != RP_TYPE_DIR) {
 		errno = ENOTDIR;
 		fprintf(stderr, "%s: %s: ", argv[0], path_parent(path));
 		perror(NULL);
@@ -81,10 +81,10 @@ int main(int argc, char **argv) {
 	
 	switch (type) {
 	case 'f': /* construct file */
-		fobj = fs_cons(dir, path_name(path), FOBJ_FILE);
+		fobj = fs_cons(dir, path_name(path), RP_TYPE_FILE);
 		break;
 	case 'd': /* construct directory */
-		fobj = fs_cons(dir, path_name(path), FOBJ_DIR);
+		fobj = fs_cons(dir, path_name(path), RP_TYPE_DIR);
 		break;
 	default:
 		fobj = 0;

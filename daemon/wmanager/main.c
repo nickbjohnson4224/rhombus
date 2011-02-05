@@ -268,15 +268,15 @@ struct vfs_obj *wmanager_cons(int type) {
 	struct vfs_obj *fobj = NULL;
 
 	switch (type) {
-	case FOBJ_FILE:
-	case FOBJ_DIR:
+	case RP_TYPE_FILE:
+	case RP_TYPE_DIR:
 		fobj        = calloc(sizeof(struct vfs_obj), 1);
 		fobj->type  = type;
 		fobj->size  = 0;
 		fobj->link  = 0;
 		fobj->data  = NULL;
 		fobj->index = next_index++;
-		fobj->acl   = acl_set_default(fobj->acl, FS_PERM_READ | FS_PERM_WRITE);
+		fobj->acl   = acl_set_default(fobj->acl, PERM_READ | PERM_WRITE);
 		break;
 	}
 	
@@ -294,15 +294,15 @@ int main(int argc, char **argv) {
 	if (fork() < 0) {
 		exec("/sbin/vga");
 	}
-	mwaits(PORT_CHILD, 0);
+	mwait(PORT_CHILD, 0);
 
 	root        = calloc(sizeof(struct vfs_obj), 1);
-	root->type  = FOBJ_DIR;
+	root->type  = RP_TYPE_DIR;
 	root->size  = 0;
-	root->acl   = acl_set_default(root->acl, FS_PERM_READ | FS_PERM_WRITE);
+	root->acl   = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
 	vfs_set_index(0, root);
 
-	di_wrap_mmap(wmanager_mmap);
+	di_wrap_share(wmanager_mmap);
 	di_wrap_write(wmanager_write);
 	di_wrap_sync(wmanager_sync);
 	vfs_wrap_cons(wmanager_cons);
@@ -311,8 +311,8 @@ int main(int argc, char **argv) {
 	vfs_wrap_init();
 
 	io_link("/sys/wmanager", RP_CONS(getpid(), 0));
-	io_cons("/sys/wmanager/bitmaps", FOBJ_DIR);
-	io_cons("/sys/wmanager/windows", FOBJ_DIR);
+	io_cons("/sys/wmanager/bitmaps", RP_TYPE_DIR);
+	io_cons("/sys/wmanager/windows", RP_TYPE_DIR);
 
 	vga = fopen("/dev/vga0", "r");
 
@@ -337,7 +337,7 @@ int main(int argc, char **argv) {
 	fclose(vga);
 	screen = malloc(screen_width * screen_height * 3);
 	vgafd = io_find("/dev/vga0");
-	mmap(vgafd, screen, screen_width * screen_height * 3, 0, PROT_READ);
+	share(vgafd, screen, screen_width * screen_height * 3, 0, PROT_READ);
 
 	if (fork() < 0) {
 		exec("/bin/testapp");

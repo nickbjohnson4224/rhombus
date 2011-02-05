@@ -23,39 +23,37 @@
  * fs_size
  *
  * Returns the file type of <file> on success, zero on error.
+ *
+ * protocol:
+ *   port: PORT_TYPE
+ *
+ *   request:
+ *
+ *   reply:
+ *     uint8_t type
  */
 
 int fs_type(uint64_t fobj) {
-	struct mp_fs *command;
-	int ret;
+	struct msg *msg;
+	int type;
 
-	command = malloc(sizeof(struct mp_fs));
-	command->op = FS_TYPE;
-	command->v0 = 0;
-	command->v1 = 0;
-	
-	command = fs_send(fobj, command);
-	if (!command) {
-		errno = EBADMSG;
+	msg = aalloc(sizeof(struct msg), PAGESZ);
+	msg->source = RP_CONS(getpid(), 0);
+	msg->target = fobj;
+	msg->length = 0;
+	msg->port   = PORT_TYPE;
+	msg->arch   = ARCH_NAT;
+
+	if (msend(msg)) return 0;
+	msg = mwait(PORT_REPLY, fobj);
+
+	if (msg->length < sizeof(uint8_t)) {
+		free(msg);
 		return 0;
 	}
 
-	/* check for errors */
-	if (command->op == FS_ERR) {
-		switch (command->v0) {
-		case ERR_NULL: errno = EUNK; break;
-		case ERR_FILE: errno = ENOENT; break;
-		case ERR_DENY: errno = EACCES; break;
-		case ERR_FUNC: errno = ENOSYS; break;
-		case ERR_TYPE: errno = EUNK; break;
-		case ERR_FULL: errno = EUNK; break;
-		}
+	type = msg->data[0];
 
-		free(command);
-		return 0;
-	}
-
-	ret = command->v0;
-	free(command);
-	return ret;
+	free(msg);
+	return type;
 }
