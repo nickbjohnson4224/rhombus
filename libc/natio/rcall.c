@@ -18,59 +18,49 @@
 #include <string.h>
 #include <natio.h>
 #include <proc.h>
-#include <page.h>
 #include <ipc.h>
 
 /*****************************************************************************
- * share
+ * rcall
  *
- * Share pages of memory with another process. The pages are shared with the
- * page permissions <prot>. This call also has an <offset>, which may be used
- * at the driver's discretion to make share act like read or write. Returns
- * zero on success, nonzero on error.
+ * Generic remote procedure call protocol. Sends a string to the given
+ * resource, and recieves a string in return. This function can be used to
+ * implement any sort of ad-hoc textual protocol, and is a cover-all for any
+ * things that cannot be done with the standard I/O and filesystem routines.
+ * Returns an empty string on error.
  *
  * protocol:
- *   port: PORT_SHARE
+ *   port: PORT_RCALL
  *
  *   request:
- *     uint64_t offset
- *     ... (to align to PAGESZ)
- *     uint8_t pages[]
+ *     char args[]
  *
  *   reply:
- *     uint8_t err;
+ *     char rets[]
  */
 
-int share(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot) {
+char *rcall(uint64_t rp, const char *args) {
 	struct msg *msg;
-	int err;
+	char *rets;
 
-	/* check alignment */
-	if ((uintptr_t) buf % PAGESZ) {
-		return 1;
-	}
-
-	msg = aalloc(PAGESZ + size, PAGESZ);
+	msg = aalloc(sizeof(struct msg) + strlen(args) + 1, PAGESZ);
 	msg->source = RP_CONS(getpid(), 0);
 	msg->target = rp;
-	msg->length = PAGESZ - sizeof(struct msg) + size;
-	msg->port   = PORT_SHARE;
+	msg->length = strlen(args) + 1;
+	msg->port   = PORT_RCALL;
 	msg->arch   = ARCH_NAT;
-	((uint64_t*) msg->data)[0] = offset;
+	strcpy((char*) msg->data, args);
 
-	page_self(buf, &msg->data[PAGESZ - sizeof(struct msg)], size);
-	page_prot(&msg->data[PAGESZ - sizeof(struct msg)], size, prot);
-
-	if (msend(msg)) return 1;
+	if (msend(msg)) return strdup("");
 	msg = mwait(PORT_REPLY, rp);
-	
-	if (msg->length != 1) {
-		err = 1;
+
+	if (msg->length) {
+		rets = strdup((char*) msg->data);
 	}
 	else {
-		err = msg->data[0];
+		rets = strdup("");
 	}
 
 	free(msg);
-	return err;
+	return rets;
 }

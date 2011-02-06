@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,6 +15,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <mutex.h>
 #include <natio.h>
 #include <proc.h>
@@ -24,51 +25,54 @@
 #include <driver/io.h>
 
 /*****************************************************************************
- * __write_wrapper
- *
- * Handles and redirects write requests to the current active driver.
+ * __rcall_wrapper
  *
  * protocol:
- *   port: PORT_WRITE
+ *   port: PORT_RCALL
  *
  *   request:
- *     uint64_t offset
- *     uint8_t data[]
+ *     char args[]
  *
  *   reply:
- *     uint32_t size
+ *     char rets[]
  */
 
-void __write_wrapper(struct msg *msg) {
+void __rcall_wrapper(struct msg *msg) {
 	struct vfs_obj *file;
-	uint64_t offset;
+	struct msg *reply;
+	char *args;
+	char *rets;
 
-	if (msg->length < sizeof(uint64_t)) {
-		merror(msg);
-		return;
-	}
-
-	if (!_di_write) {
+	if (!_di_rcall) {
 		merror(msg);
 		return;
 	}
 
 	file = vfs_get_index(RP_INDEX(msg->target));
 
-	if (!file || !(file->type & RP_TYPE_FILE)) {
+	if (!file) {
 		merror(msg);
 		return;
 	}
 
-	if (!(acl_get(file->acl, gettuser()) & PERM_WRITE)) {
+	args = (char*) msg->data;
+
+	rets = _di_rcall(file, args);
+
+	if (!rets) {
 		merror(msg);
 		return;
 	}
-	
-	offset = ((uint64_t*) msg->data)[0];
 
-	((uint32_t*) msg->data)[0] = _di_write(file, &msg->data[8], msg->length - 8, offset);
-	msg->length = sizeof(uint32_t);
+	reply = aalloc(sizeof(struct msg) + strlen(rets) + 1, PAGESZ);
+	reply->source = msg->target;
+	reply->target = msg->source;
+	reply->length = strlen(rets) + 1;
+	reply->port   = PORT_REPLY;
+	reply->arch   = ARCH_NAT;
+	strcpy((char*) msg->data, rets);
+	free(rets);
 
-	mreply(msg);
+	free(msg);
+	msend(reply);
 }

@@ -30,6 +30,17 @@
 uint8_t *vmem;
 uint8_t *screen;
 
+char *vga_rcall(struct vfs_obj *file, const char *args) {
+	char *rets = NULL;
+	
+	if (!strcmp(args, "dim")) {
+		rets = malloc(16);
+		sprintf(rets, "%i %i", mode->width, mode->height);
+	}
+
+	return rets;
+}
+
 size_t vga_read(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	char data[16];
 

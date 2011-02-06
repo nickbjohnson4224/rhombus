@@ -27,6 +27,7 @@ int      (*_di_reset)(struct vfs_obj *file);
 int      (*_di_sync) (struct vfs_obj *file);
 uint64_t (*_di_size) (struct vfs_obj *file);
 int      (*_di_share)(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off);
+char *   (*_di_rcall)(struct vfs_obj *file, const char *args);
 
 /* wrapper registering functions ********************************************/
 
@@ -62,5 +63,11 @@ int di_wrap_size(uint64_t (*di_size)(struct vfs_obj *file)) {
 int di_wrap_share(int (*di_share)(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off)) {
 	when(PORT_SHARE, __share_wrapper);
 	_di_share = di_share;
+	return 0;
+}
+
+int di_wrap_rcall(char* (*di_rcall)(struct vfs_obj *file, const char *args)) {
+	when(PORT_RCALL, __rcall_wrapper);
+	_di_rcall = di_rcall;
 	return 0;
 }

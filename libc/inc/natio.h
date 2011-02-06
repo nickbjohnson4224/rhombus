@@ -40,7 +40,7 @@ size_t   write(uint64_t rp, void *buf, size_t size, uint64_t offset);
 int      sync (uint64_t rp);
 int      reset(uint64_t rp);
 int      share(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot);
-int      rcall(uint64_t rp, char *buf, size_t size, const char *args);
+char    *rcall(uint64_t rp, const char *args);
 int      event(uint64_t rp, uint32_t id, uint32_t value);
 
 uint64_t io_find(const char *name);

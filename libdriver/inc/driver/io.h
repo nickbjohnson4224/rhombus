@@ -31,12 +31,14 @@ int di_wrap_reset(int      (*di_reset)(struct vfs_obj *file));
 int di_wrap_sync (int      (*di_sync) (struct vfs_obj *file));
 int di_wrap_size (uint64_t (*di_size) (struct vfs_obj *file));
 int di_wrap_share(int      (*di_share)(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off));
+int di_wrap_rcall(char *   (*di_rcall)(struct vfs_obj *file, const char *args));
 
 void __read_wrapper (struct msg *msg);
 void __write_wrapper(struct msg *msg);
 void __sync_wrapper (struct msg *msg);
 void __reset_wrapper(struct msg *msg);
 void __share_wrapper(struct msg *msg);
+void __rcall_wrapper(struct msg *msg);
 
 extern size_t   (*_di_read) (struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off);
 extern size_t   (*_di_write)(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off);
@@ -44,5 +46,6 @@ extern int      (*_di_reset)(struct vfs_obj *file);
 extern int      (*_di_sync) (struct vfs_obj *file);
 extern uint64_t (*_di_size) (struct vfs_obj *file);
 extern int      (*_di_share)(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off);
+extern char    *(*_di_rcall)(struct vfs_obj *file, const char *args);
 
 #endif/*DRIVER_IO_H*/
