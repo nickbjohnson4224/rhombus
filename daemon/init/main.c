@@ -85,15 +85,14 @@ int main() {
 	io_link("/sys/init", RP_CONS(getpid(), 1));
 
 	/* Terminal Driver */
-	argv[0] = "term";
+	argv[0] = "tty";
 	argv[1] = NULL;
-	file = tar_find(boot_image, "sbin/term");
+	file = tar_find(boot_image, "sbin/tty");
 	temp = start(file, argv);
-	io_link("/dev/term", temp);
-	io_link("/dev/stdout", temp);
+	io_link("/dev/tty", temp);
 
 	/* Splash */
-	stderr = stdout = fopen("/dev/stdout", "w");
+	stdin = stderr = stdout = fopen("/dev/tty", "w");
 	printf(splash);
 
 	/* Initrd */
@@ -119,15 +118,6 @@ int main() {
 	argv[1] = NULL;	
 	file = tar_find(boot_image, "sbin/tmpfs");
 	io_link("/tmp", start(file, argv));
-
-	/* Keyboard Driver */
-	argv[0] = "kbd";
-	file = tar_find(boot_image, "sbin/kbd");
-	io_link("/dev/kbd", start(file, argv));
-	io_link("/dev/stdin", io_find("/dev/kbd"));
-
-	/* Stdin */
-	stdin = fopen("/dev/stdin", "r");
 
 	/* Time Driver */
 	argv[0] = "time";
