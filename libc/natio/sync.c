@@ -33,6 +33,7 @@ int sync(uint64_t file) {
 	struct msg *msg;
 
 	msg = aalloc(sizeof(struct msg), PAGESZ);
+	if (!msg) return 1;
 	msg->source = RP_CONS(getpid(), 0);
 	msg->target = file;
 	msg->length = 0;

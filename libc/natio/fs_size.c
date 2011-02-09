@@ -40,6 +40,7 @@ uint64_t fs_size(uint64_t file) {
 	uint64_t size;
 
 	msg = aalloc(sizeof(struct msg), PAGESZ);
+	if (!msg) return 0;
 	msg->source = RP_CONS(getpid(), 0);
 	msg->target = file;
 	msg->length = 0;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -22,6 +22,7 @@ char *strdup(const char *s) {
 	char *d;
 
 	d = malloc(sizeof(char) * (strlen(s) + 1));
+	if (!d) return NULL;
 	strcpy(d, s);
 
 	return d;

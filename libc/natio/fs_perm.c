@@ -41,6 +41,7 @@ uint8_t fs_perm(uint64_t fobj, uint32_t user) {
 	int err;
 
 	msg = aalloc(sizeof(struct msg) + sizeof(uint32_t), PAGESZ);
+	if (!msg) return 0;
 	msg->source = RP_CONS(getpid(), 0);
 	msg->target = fobj;
 	msg->length = sizeof(uint32_t);

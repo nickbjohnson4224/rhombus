@@ -44,7 +44,14 @@ void on_event(size_t count, uint32_t port, uint32_t source) {
 	if (count) {
 		/* recieve message */
 		msg = aalloc(count * PAGESZ, PAGESZ);
-		page_pack(msg, count * PAGESZ, PROT_READ | PROT_WRITE);
+		if (!msg) {
+			return;
+		}
+
+		if (page_pack(msg, count * PAGESZ, PROT_READ | PROT_WRITE) || !phys(msg)) {
+			free(msg);
+			goto synthesize;
+		}
 
 		/* check message contents */
 		if (RP_PID(msg->source) != source) {
@@ -58,8 +65,12 @@ void on_event(size_t count, uint32_t port, uint32_t source) {
 		}
 	}
 	else {
+		synthesize:
+
 		/* synthesize message */
 		msg = aalloc(sizeof(struct msg), PAGESZ);
+		if (!msg) return;
+
 		msg->source = RP_CONS(source, 0);
 		msg->target = RP_CONS(getpid(), 0);
 		msg->length = 0;
@@ -67,16 +78,22 @@ void on_event(size_t count, uint32_t port, uint32_t source) {
 		msg->arch   = ARCH_NAT;
 	}
 
+	if (!msg || !phys(msg)) {
+		return;
+	}
+
 	mutex_spin(&m_event_handler);
 	
 	if (event_handler[port]) {
+		mutex_free(&m_event_handler);
 		event_handler[port](msg);
 	}
 	else {
-		mqueue_push(msg);
+		mutex_free(&m_event_handler);
+		if (mqueue_push(msg)) {
+			free(msg);
+		}
 	}
-
-	mutex_free(&m_event_handler);
 }
 
 /****************************************************************************

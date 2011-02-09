@@ -23,6 +23,7 @@ int msendb(uint64_t target, uint8_t port) {
 	struct msg *msg;
 
 	msg = aalloc(sizeof(struct msg), PAGESZ);
+	if (!msg) return 1;
 	msg->source = RP_CONS(getpid(), 0);
 	msg->target = target;
 	msg->length = 0;

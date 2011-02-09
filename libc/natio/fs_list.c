@@ -41,6 +41,7 @@ char *fs_list(uint64_t dir, int entry) {
 	char *name;
 
 	msg = aalloc(sizeof(struct msg) + sizeof(uint32_t), PAGESZ);
+	if (!msg) return NULL;
 	msg->source = RP_CONS(getpid(), 0);
 	msg->target = dir;
 	msg->length = sizeof(uint32_t);
@@ -49,7 +50,7 @@ char *fs_list(uint64_t dir, int entry) {
 
 	((uint32_t*) msg->data)[0] = entry;
 
-	if (msend(msg)) return 0;
+	if (msend(msg)) return NULL;
 	msg = mwait(PORT_REPLY, dir);
 
 	if (msg->length == 0) {

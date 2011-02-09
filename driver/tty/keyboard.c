@@ -73,6 +73,11 @@ void tty_buffer(char c) {
 
 	if (!tty->buffer) {
 		tty->buffer = malloc(256);
+		
+		if (!tty->buffer) {
+			abort();
+		}
+
 		tty->buffer_size = 256;
 		tty->buffer_top = 0;
 	}

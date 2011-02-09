@@ -16,6 +16,7 @@
 
 #include <stdint.h>
 #include <abi.h>
+#include <arch.h>
 #include <proc.h>
 
 /****************************************************************************
@@ -26,5 +27,8 @@
  */
 
 uint32_t gettid(void) {
-	return _gpid(GPID_THREAD);
+
+	return ((gettls() - SSPACE) / 0x400000);
+
+//	return _gpid(GPID_THREAD);
 }

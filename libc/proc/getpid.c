@@ -24,6 +24,17 @@
  * Returns the unique PID number of the current process.
  */
 
+static uint32_t pid_cache = 0;
+
+void resetpid(void) {
+	pid_cache = _gpid(GPID_SELF);
+}
+
 uint32_t getpid(void) {
-	return _gpid(GPID_SELF);
+
+	if (pid_cache == 0) {
+		resetpid();
+	}
+	
+	return pid_cache;
 }

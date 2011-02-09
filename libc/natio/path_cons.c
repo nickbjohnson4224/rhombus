@@ -28,6 +28,7 @@ struct path *path_cons(const char *path) {
 	struct path *new;
 
 	new = malloc(sizeof(struct path));
+	if (!new) return NULL;
 
 	new->str = path;
 	new->pos = path;

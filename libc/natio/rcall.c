@@ -27,7 +27,7 @@
  * resource, and recieves a string in return. This function can be used to
  * implement any sort of ad-hoc textual protocol, and is a cover-all for any
  * things that cannot be done with the standard I/O and filesystem routines.
- * Returns an empty string on error.
+ * Returns NULL on error or empty return string.
  *
  * protocol:
  *   port: PORT_RCALL
@@ -44,6 +44,7 @@ char *rcall(uint64_t rp, const char *args) {
 	char *rets;
 
 	msg = aalloc(sizeof(struct msg) + strlen(args) + 1, PAGESZ);
+	if (!msg) return NULL;
 	msg->source = RP_CONS(getpid(), 0);
 	msg->target = rp;
 	msg->length = strlen(args) + 1;
@@ -51,14 +52,14 @@ char *rcall(uint64_t rp, const char *args) {
 	msg->arch   = ARCH_NAT;
 	strcpy((char*) msg->data, args);
 
-	if (msend(msg)) return strdup("");
+	if (msend(msg)) return NULL;
 	msg = mwait(PORT_REPLY, rp);
 
 	if (msg->length) {
 		rets = strdup((char*) msg->data);
 	}
 	else {
-		rets = strdup("");
+		rets = NULL;
 	}
 
 	free(msg);

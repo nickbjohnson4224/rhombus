@@ -42,6 +42,7 @@ uint64_t fs_cons(uint64_t dir, const char *name, int type) {
 	uint64_t rp;
 
 	msg = aalloc(sizeof(struct msg) + sizeof(uint32_t) + strlen(name) + 1, PAGESZ);
+	if (!msg) return 0;
 	msg->source = RP_CONS(getpid(), 0);
 	msg->target = dir;
 	msg->length = sizeof(uint32_t) + strlen(name) + 1;

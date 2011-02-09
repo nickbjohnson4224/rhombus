@@ -60,6 +60,7 @@ uint64_t fs_find(uint64_t root, const char *path) {
 	}
 	
 	msg = aalloc(sizeof(struct msg) + 1 + strlen(path_s) + 1, PAGESZ);
+	if (!msg) return 0;
 	msg->source = RP_CONS(getpid(), 0);
 	msg->target = root;
 	msg->length = strlen(path_s) + 2;

@@ -30,7 +30,7 @@ char *path_next(struct path *path) {
 	char *token, *end;
 
 	/* check for problems */
-	if (!path->pos) {
+	if (!path || !path->pos) {
 		return NULL;
 	}
 

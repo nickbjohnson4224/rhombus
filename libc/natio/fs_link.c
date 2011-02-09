@@ -40,6 +40,7 @@ int fs_link(uint64_t link, uint64_t fobj) {
 	int err;
 
 	msg = aalloc(sizeof(struct msg) + sizeof(uint64_t), PAGESZ);
+	if (!msg) return 1;
 	msg->source = RP_CONS(getpid(), 0);
 	msg->target = link;
 	msg->length = sizeof(uint64_t);
@@ -48,7 +49,7 @@ int fs_link(uint64_t link, uint64_t fobj) {
 
 	((uint64_t*) msg->data)[0] = fobj;
 
-	if (msend(msg)) return 0;
+	if (msend(msg)) return 1;
 	msg = mwait(PORT_REPLY, link);
 
 	if (msg->length < sizeof(uint8_t)) {

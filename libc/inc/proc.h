@@ -26,7 +26,7 @@
 
 /* process management ******************************************************/
 
-#define fork _fork		/* Spawn new process */
+int fork(void);		/* Spawn new process */
 
 /* thread management *******************************************************/
 
@@ -46,6 +46,8 @@ uint64_t getptime(void); /* process time */
 uint64_t getttime(void); /* thread time */
 
 /* PIDs ********************************************************************/
+
+void      resetpid(void);
 
 uint32_t  getpid (void);
 uint32_t  getppid(void);

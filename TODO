@@ -17,24 +17,24 @@ For 0.8 Alpha:
 + finish printf
 + finish scanf
 + fix I/O memory leak
-- group manager
+x group manager
 - proper terminal driver
-- foreground/background processes?
+x foreground/background processes?
 - signals from terminal (esp. ctrl-C)
 - curses port
 
 For 0.9 Alpha:
 
 - write fenv.h, tgmath.h
-- dynamic linking
-- drivers as shared libraries?
+x dynamic linking
+x drivers as shared libraries?
 - device manager (PCI)
 - ATA/ATAPI driver
 - filesystem drivers (iso9660, ext2)
 
 For 0.10 Alpha:
 
-- password manager
+- process manager
 - clean up as much as possible
 - full libc documentation
 - full kernel documentation
@@ -43,11 +43,14 @@ For 0.10 Alpha:
 
 For 0.11 Beta:
 
-- networking stack
 - text editor
 - installer
 
 For 0.12 Beta:
+
+- networking stack
+
+For 0.13 Beta:
 
 - graphics stack
 

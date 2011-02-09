@@ -16,6 +16,7 @@
 
 #include <stdint.h>
 #include <abi.h>
+#include <arch.h>
 #include <proc.h>
 
 /****************************************************************************
@@ -30,5 +31,7 @@
  */
 
 uint32_t gettls(void) {
-	return _gpid(GPID_TLS);
+	int x;
+
+	return ((uint32_t) &x) & ~(0x3FFFFF);
 }

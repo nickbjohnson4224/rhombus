@@ -39,13 +39,14 @@ int fs_remove(uint64_t fobj) {
 	int err;
 
 	msg = aalloc(sizeof(struct msg), PAGESZ);
+	if (!msg) return 1;
 	msg->source = RP_CONS(getpid(), 0);
 	msg->target = fobj;
 	msg->length = 0;
 	msg->port   = PORT_AUTH;
 	msg->arch   = ARCH_NAT;
 
-	if (msend(msg)) return 0;
+	if (msend(msg)) return 1;
 	msg = mwait(PORT_REPLY, fobj);
 
 	if (msg->length < sizeof(uint8_t)) {

@@ -51,13 +51,17 @@ int mqueue_push(struct msg *msg) {
 	mutex_spin(&mqueue[msg->port].mutex);
 
 	node = malloc(sizeof(struct mqueue_msg));
+
+	if (!node) {
+		return 1;
+	}
 	
 	node->next = NULL;
 	node->prev = mqueue[msg->port].back;
 	node->msg  = msg;
 
 	if (!mqueue[msg->port].front) mqueue[msg->port].front = node;
-	if (mqueue[msg->port].back)   mqueue[msg->port].back->next = node;
+	if (mqueue[msg->port].back)   mqueue[msg->port].back->prev = node;
 	mqueue[msg->port].back = node;
 
 	mutex_free(&mqueue[msg->port].mutex);

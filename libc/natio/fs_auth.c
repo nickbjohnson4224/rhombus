@@ -42,6 +42,7 @@ int fs_auth(uint64_t fobj, uint32_t user, uint8_t perm) {
 	int err;
 
 	msg = aalloc(sizeof(struct msg) + sizeof(uint32_t) + sizeof(uint8_t), PAGESZ);
+	if (!msg) return 1;
 	msg->source = RP_CONS(getpid(), 0);
 	msg->target = fobj;
 	msg->length = sizeof(uint32_t) + sizeof(uint8_t);
@@ -51,7 +52,7 @@ int fs_auth(uint64_t fobj, uint32_t user, uint8_t perm) {
 	((uint32_t*) msg->data)[0] = user;
 	msg->data[4] = perm;
 
-	if (msend(msg)) return 0;
+	if (msend(msg)) return 1;
 	msg = mwait(PORT_REPLY, fobj);
 
 	if (msg->length < sizeof(uint8_t)) {

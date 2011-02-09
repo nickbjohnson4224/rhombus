@@ -44,6 +44,7 @@ uint64_t fs_move(uint64_t dir, const char *name, uint64_t fobj) {
 	struct msg *msg;
 
 	msg = aalloc(sizeof(struct msg) + sizeof(uint64_t) + strlen(name) + 1, PAGESZ);
+	if (!msg) return 0;
 	msg->source = RP_CONS(getpid(), 0);
 	msg->target = dir;
 	msg->length = sizeof(uint64_t) + strlen(name) + 1;
