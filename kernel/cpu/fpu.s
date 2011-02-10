@@ -1,4 +1,4 @@
-; Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+; Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
 ; 
 ; Permission to use, copy, modify, and distribute this software for any
 ; purpose with or without fee is hereby granted, provided that the above
@@ -39,6 +39,11 @@ cpu_init_fpu:
 	and eax, 0xFFFFFFFB	; clear EM
 	or eax,  0x00000022 ; set MP, NS
 	mov cr0, eax
+
+	; initialize SSE
+	mov eax, cr4
+	or eax,  0x00000600 ; set OSFXR, OSXMMEXCPT
+	mov cr4, eax
 
 .nofpu:
 	pop ebx

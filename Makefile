@@ -20,7 +20,6 @@ PP := cpp
 CFLAGS	:= -pipe -Wall -Werror -Wextra -pedantic -std=c99
 CFLAGS	+= -Wpointer-arith -Wwrite-strings
 CFLAGS	+= -Wno-unused-parameter -Wno-unused-function
-CFLAGS  += -mno-mmx
 CFLAGS	+= -O3 -fomit-frame-pointer
 CFLAGS	+= -ffreestanding -I$(BUILDDIR)/inc
 LDFLAGS := -L$(BUILDDIR)/lib -T$(BUILDDIR)/inc/link.ld -static
