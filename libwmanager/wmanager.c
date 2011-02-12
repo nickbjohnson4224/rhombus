@@ -59,14 +59,14 @@ uint64_t wm_create_window(size_t width, size_t height) {
 
 int wm_set_size(uint64_t window, size_t width, size_t height) {
 	char buf[16];
-	sprintf(buf, "%i %i", width, height);
-	return write(window, buf, strlen(buf) + 1, 0) == strlen(buf) + 1 ? 0 : -1;
+	sprintf(buf, "s %i %i", width, height);
+	return rcall(window, buf) ? 0 : -1;
 }
 
 int	wm_set_bitmap(uint64_t window, uint64_t bitmap) {
 	char buf[16];
-	sprintf(buf, "%i", bitmap);
-	return write(window, buf, strlen(buf) + 1, 1) == strlen(buf) + 1 ? 0 : -1;
+	sprintf(buf, "b %i", bitmap);
+	return rcall(window, buf) ? 0 : -1;
 }
 
 int wm_update(uint64_t window) {

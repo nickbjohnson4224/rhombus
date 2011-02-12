@@ -76,7 +76,7 @@ struct window_t {
 	uint32_t id;
 	size_t x, y;
 	size_t width, height;
-	uint8_t bitmap;
+	uint32_t bitmap;
 	struct window_t *prev, *next;
 };
 struct bitmap_t {
@@ -140,34 +140,48 @@ int wmanager_push(struct vfs_obj *file) {
 	return 0;
 }
 
-size_t wmanager_write(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+char *wmanager_rcall(struct vfs_obj *file, const char *args) {
 	struct window_t *window = find_window(file->index);
 
 	if (!window) {
-		return -1;
+		return NULL;
 	}
 
-	if (offset == 0) { // size
-		sscanf((char*) buffer, "%i %i", &window->width, &window->height);
+	if (strlen(args) <= 1) {
+		return NULL;
 	}
 
-	else  if (offset == 1) { //bitmap
+	if (args[0] == 's') { // size
+		size_t width, height;
+		if (sscanf(args + 2, "%i %i", &width, &height) != 2) {
+			return NULL;
+		}
+		if (find_bitmap(window->bitmap) && find_bitmap(window->bitmap)->size != width * height * 4) {
+			return NULL;
+		}
+		window->width = width;
+		window->height = height;
+	}
+
+	else  if (args[0] == 'b') { //bitmap
 		uint32_t bitmap;
-		sscanf((char*) buffer, "%i", &bitmap);
+		if (sscanf(args + 2, "%i", &bitmap) != 1) {
+			return NULL;
+		}
 		if (!find_bitmap(bitmap)) {
-			return -1;
+			return NULL;
 		}
 		if (find_bitmap(bitmap)->size != window->width * window->height * 4) {
-			return -1;
+			return NULL;
 		}
 		window->bitmap = bitmap;
 	}
 
 	else {
-		return -1;
+		return NULL;
 	}
 
-	return size;
+	return "ok";
 }
 
 int wmanager_pull(struct vfs_obj *file) {
@@ -286,8 +300,7 @@ struct vfs_obj *wmanager_cons(int type) {
 //todo: owner control
 int main(int argc, char **argv) {
 	struct vfs_obj *root;
-	FILE *vga;
-	char buffer[16];
+	char *buffer;
 
 	stdout = stderr = fopen("/dev/serial", "w");
 
@@ -303,7 +316,7 @@ int main(int argc, char **argv) {
 	vfs_set_index(0, root);
 
 	di_wrap_share(wmanager_mmap);
-	di_wrap_write(wmanager_write);
+	di_wrap_rcall(wmanager_rcall);
 	di_wrap_sync(wmanager_sync);
 	vfs_wrap_cons(wmanager_cons);
 	vfs_wrap_push(wmanager_push);
@@ -314,29 +327,10 @@ int main(int argc, char **argv) {
 	io_cons("/sys/wmanager/bitmaps", RP_TYPE_DIR);
 	io_cons("/sys/wmanager/windows", RP_TYPE_DIR);
 
-	vga = fopen("/dev/vga0", "r");
-
-	//fscanf(vga, "%i %i", &screen_width, &screen_height);
-	//
-	// XXX: this is broken not because fscanf changed but because
-	// it is not suitable for /dev/vga0 to act as one file when
-	// written to but another file when read from. At the moment,
-	// the problem is that the libc thinks /dev/vga0 is a stream
-	// device, so when it reads from it in pieces (like in fscanf),
-	// it keeps reading from offset 0, which causes the same values
-	// to be read twice. I'm adding a quick fix to make it work like
-	// it used to, but the problem is still there. Find another way
-	// of notifying wmanager of the size of /dev/vga0's framebuffer,
-	// preferably by making another device file or by using other
-	// protocols.
-	//
-
-	fgets(buffer, 16, vga);
-	sscanf(buffer, "%i %i", &screen_width, &screen_height);
-
-	fclose(vga);
-	screen = malloc(screen_width * screen_height * 3);
 	vgafd = io_find("/dev/vga0");
+	buffer = rcall(vgafd, "dim");
+	sscanf(buffer, "%i %i", &screen_width, &screen_height);
+	screen = malloc(screen_width * screen_height * 3);
 	share(vgafd, screen, screen_width * screen_height * 3, 0, PROT_READ);
 
 	if (fork() < 0) {

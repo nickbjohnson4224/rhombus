@@ -258,6 +258,7 @@ int vsscanf(const char *str, const char *format, va_list ap) {
 					break;
 				}
 			}
+			count++;
 		}
 		else {
 			if (*str == *format) {
@@ -269,7 +270,6 @@ int vsscanf(const char *str, const char *format, va_list ap) {
 			}
 		}
 
-		count++;
 		format++;
 	}
 

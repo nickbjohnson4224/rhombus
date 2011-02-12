@@ -377,6 +377,7 @@ int vfscanf(FILE *stream, const char *format, va_list ap) {
 					break;
 				}
 			}
+			count++;
 		}
 		else {
 			if (getc(stream) == *format) {
@@ -387,7 +388,6 @@ int vfscanf(FILE *stream, const char *format, va_list ap) {
 			}
 		}
 
-		count++;
 		format++;
 	}
 

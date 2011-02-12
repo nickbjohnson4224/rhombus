@@ -70,7 +70,7 @@ void __rcall_wrapper(struct msg *msg) {
 	reply->length = strlen(rets) + 1;
 	reply->port   = PORT_REPLY;
 	reply->arch   = ARCH_NAT;
-	strcpy((char*) msg->data, rets);
+	strcpy((char*) reply->data, rets);
 	free(rets);
 
 	free(msg);

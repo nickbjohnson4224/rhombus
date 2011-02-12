@@ -41,20 +41,6 @@ char *vga_rcall(struct vfs_obj *file, const char *args) {
 	return rets;
 }
 
-size_t vga_read(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
-	char data[16];
-
-	sprintf(data, "%i %i", mode->width, mode->height);
-
-	size_t length = strlen(data) - offset;
-	if (length > size) {
-		length = size;
-	}
-
-	memcpy(buffer, data + offset, length);
-	return length;
-}
-
 int vga_sync(struct vfs_obj *file) {
 	if (!screen) {
 		return -1;
@@ -96,9 +82,9 @@ int main(int argc, char **argv) {
 	mode->fill(0, 0, mode->width, mode->height, 0);
 
 	/* set up driver interface */
-	di_wrap_read (vga_read);
 	di_wrap_sync (vga_sync);
 	di_wrap_share(vga_mmap);
+	di_wrap_rcall(vga_rcall);
 	vfs_wrap_init();
 
 	/* register the driver as /dev/vga0 */
