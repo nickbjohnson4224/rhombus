@@ -181,7 +181,7 @@ char *wmanager_rcall(struct vfs_obj *file, const char *args) {
 		return NULL;
 	}
 
-	return "ok";
+	return strdup("ok");
 }
 
 int wmanager_pull(struct vfs_obj *file) {
