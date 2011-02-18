@@ -44,46 +44,7 @@ static struct goban *playout(struct goban *goban, int moves) {
 
 	return temp;
 }
-/****************************************************************************
- * ilog2
- *
- * Returns the ceiling of the base 2 logarithm of the given integer. Uses a 
- * unrolled version of the algorithm detailed at 
- * <http://graphics.stanford.edu/~seander/bithacks.html#IntegerLog>.
- */
 
-static uint8_t ilog2(uintptr_t n) {
-	register uint8_t r = 0;
-	uintptr_t orig_n = n;
-
-	if (n &   0xFFFF0000) {
-		n >>= 0x10;
-		r |=  0x10;
-	}
-	if (n &   0xFF00) {
-		n >>= 0x08;
-		r |=  0x08;
-	}
-	if (n &   0xF0) {
-		n >>= 0x04;
-		r |=  0x04;
-	}
-	if (n &   0xC) {
-		n >>= 0x02;
-		r |=  0x02;
-	}
-	if (n &   0x2) {
-		n >>= 0x01;
-		r |=  0x01;
-	}
-
-	if (((uintptr_t) 1 << r) == orig_n) {
-		return r;
-	}
-	else {
-		return r + 1;
-	}
-}
 int main(int argc, char **argv) {
 	struct goban *goban;
 	int x, y, color, move;

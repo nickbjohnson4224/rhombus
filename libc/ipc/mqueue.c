@@ -43,12 +43,15 @@ static struct mqueue mqueue[256];
 
 int mqueue_push(struct msg *msg) {
 	struct mqueue_msg *node;
+	uint8_t port;
 
 	if (!msg) {
 		return 1;
 	}
 
-	mutex_spin(&mqueue[msg->port].mutex);
+	port = msg->port;
+
+	mutex_spin(&mqueue[port].mutex);
 
 	node = malloc(sizeof(struct mqueue_msg));
 
@@ -57,14 +60,14 @@ int mqueue_push(struct msg *msg) {
 	}
 	
 	node->next = NULL;
-	node->prev = mqueue[msg->port].back;
+	node->prev = mqueue[port].back;
 	node->msg  = msg;
 
-	if (!mqueue[msg->port].front) mqueue[msg->port].front = node;
-	if (mqueue[msg->port].back)   mqueue[msg->port].back->prev = node;
-	mqueue[msg->port].back = node;
+	if (!mqueue[port].front) mqueue[port].front = node;
+	if (mqueue[port].back)   mqueue[port].back->next = node;
+	mqueue[port].back = node;
 
-	mutex_free(&mqueue[msg->port].mutex);
+	mutex_free(&mqueue[port].mutex);
 
 	return 0;
 }

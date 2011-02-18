@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include <natio.h>
 #include <proc.h>
+#include <page.h>
 #include <abi.h>
 #include <ipc.h>
 

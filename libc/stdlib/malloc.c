@@ -28,8 +28,8 @@ static bool _mutex 		= false;
 
 static void                _add_to_list  (struct __heap_node *node);
 static struct __heap_node *_get_by_addr  (uintptr_t addr);
-static struct __heap_node *_find_node    (uint8_t index);
-static uint8_t             ilog2         (uintptr_t n);
+static struct __heap_node *_find_node    (uintptr_t index);
+static uintptr_t            ilog2        (uintptr_t n);
 
 /*****************************************************************************
  * aalloc
@@ -63,7 +63,7 @@ void *aalloc(size_t size, size_t align) {
 
 void *malloc(size_t size) {
 	struct __heap_node *node;
-	uint8_t index;
+	uintptr_t index;
 
 	index = ilog2(size);
 
@@ -82,7 +82,6 @@ void *malloc(size_t size) {
 			return NULL;
 		}
 
-		memclr((void*) node->base, 1 << index);
 		return (void*) node->base;
 	}
 }
@@ -94,7 +93,7 @@ size_t msize(void *ptr) {
 
 	mutex_spin(&_mutex);
 	node = _get_by_addr(base);
-	size = (node) ? (1 << node->size) : 0;
+	size = (node) ? ((size_t) 1 << node->size) : 0;
 	mutex_free(&_mutex);
 
 	return size;
@@ -110,10 +109,15 @@ void free(void *ptr) {
 	if (node) {
 		_add_to_list(node);
 
-		if (node->size >= 12) {
-			page_free((void*) node->base, 1 << node->size);
-		}
+//		if (node->size >= 12) {
+//			page_free((void*) node->base, (size_t) 1 << node->size);
+//		}
 	}
+	else {
+		printf("invalid free of %x at %x\n", ptr, ((int*) &ptr)[2]);
+		abort();
+	}
+
 	mutex_free(&_mutex);
 }
 
@@ -125,8 +129,8 @@ void free(void *ptr) {
  * <http://graphics.stanford.edu/~seander/bithacks.html#IntegerLog>.
  */
 
-static uint8_t ilog2(uintptr_t n) {
-	register uint8_t r = 0;
+static uintptr_t ilog2(uintptr_t n) {
+	register uintptr_t r = 0;
 	uintptr_t orig_n = n;
 
 	if (n &   0xFFFF0000) {
@@ -167,7 +171,7 @@ static uint8_t ilog2(uintptr_t n) {
  * Returns null on out of memory error.
  */
 
-static struct __heap_node *_find_node(uint8_t index) {
+static struct __heap_node *_find_node(uintptr_t index) {
 	struct __heap_node *node;
 
 	if (index >= 32) {
@@ -184,7 +188,7 @@ static struct __heap_node *_find_node(uint8_t index) {
 
 	node = _list[index];
 	if (node) {
-		_list[index] = NULL; //= node->next;
+		_list[index] = node->next;
 		return node;
 	}
 	else {
@@ -222,7 +226,7 @@ static struct __heap_node *_find_node(uint8_t index) {
  */
 
 static void _add_to_list(struct __heap_node *node) {
-	uint8_t index = node->size;
+	uintptr_t index = node->size;
 
 	node->next = _list[index];
 	_list[index] = node;

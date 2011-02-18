@@ -27,7 +27,7 @@ int test_heap(void) {
 		+ test_malloc()
 //		+ test_aalloc()
 		+ test_realloc()
-//		+ test_heap_torture()
+		+ test_heap_torture()
 	;
 }
 
@@ -143,6 +143,30 @@ int test_realloc(void) {
 	if (strcmp(block, value)) return 1;
 	else printf(".");
 
+	printf(" passed.\n");
+
+	return 0;
+}
+
+int test_heap_torture(void) {
+	void *value[300];
+	int i, j;
+
+	printf("\ttorture");
+
+	printf(" start: %x", value[0] = malloc(128));
+	free(value[0]);
+
+	for (i = 0; i < 1000; i++) {
+		for (j = 0; j < 300; j++) {
+			value[j] = malloc(j);
+		}
+		for (j = 0; j < 300; j++) {
+			free(value[j]);
+		}
+	}
+
+	printf(" end: %x", value[0] = malloc(128));
 	printf(" passed.\n");
 
 	return 0;

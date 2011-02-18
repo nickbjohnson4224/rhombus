@@ -90,9 +90,7 @@ void on_event(size_t count, uint32_t port, uint32_t source) {
 	}
 	else {
 		mutex_free(&m_event_handler);
-		if (mqueue_push(msg)) {
-			free(msg);
-		}
+		mqueue_push(msg);
 	}
 }
 
