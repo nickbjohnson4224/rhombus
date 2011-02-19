@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -36,6 +36,8 @@
 #define SYSCALL_TIME	0x4D
 #define SYSCALL_USER	0x4E
 #define SYSCALL_AUTH	0x4F
+#define SYSCALL_PGRP	0x50
+#define SYSCALL_KILL	0x51
 
 struct thread *syscall_send(struct thread *image);
 struct thread *syscall_done(struct thread *image);
@@ -53,5 +55,7 @@ struct thread *syscall_gpid(struct thread *image);
 struct thread *syscall_time(struct thread *image);
 struct thread *syscall_user(struct thread *image);
 struct thread *syscall_auth(struct thread *image);
+struct thread *syscall_pgrp(struct thread *image);
+struct thread *syscall_kill(struct thread *image);
 
 #endif/*KERNEL_SYSCALL_H*/

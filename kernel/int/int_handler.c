@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -124,7 +124,8 @@ extern void
 	int64(void), int65(void), int66(void), int67(void), 
 	int68(void), int69(void), int70(void), int71(void),
 	int72(void), int73(void), int74(void), int75(void), 
-	int76(void), int77(void), int78(void), int79(void);
+	int76(void), int77(void), int78(void), int79(void),
+	int80(void), int81(void);
 
 /*****************************************************************************
  * idt_raw
@@ -153,7 +154,7 @@ static int_raw_handler_t idt_raw[256] = {
 	/* system calls */
 	int64, 	int65, 	int66, 	int67, 	int68, 	int69, 	int70, 	int71, 
 	int72, 	int73, 	int74, 	int75, 	int76, 	int77, 	int78, 	int79, 
-	NULL,	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
+	int80,	int81, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
 	NULL, 	NULL, 	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
 };
 

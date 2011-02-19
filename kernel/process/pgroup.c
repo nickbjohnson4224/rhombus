@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,21 +14,28 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef KERNEL_TYPES_H
-#define KERNEL_TYPES_H
+#include <stdbool.h>
+#include <process.h>
+#include <string.h>
+#include <space.h>
 
-#include <stdint.h>
-#include <stddef.h>
+static bool pgroup_allocator[256];
 
-typedef uint32_t reg_t;
-typedef uint32_t pid_t;
-typedef uint32_t tid_t;
-typedef uint32_t uid_t;
-typedef uint32_t gid_t;
-typedef uint8_t  portid_t;
-typedef uint8_t  intid_t;
-typedef uint8_t  irqid_t;
-typedef uint32_t frame_t;
-typedef uint32_t space_t;
+gid_t pgroup_alloc(void) {
+	int i;
 
-#endif/*KERNEL_TYPES_H*/
+	for (i = 1; i < 256; i++) {
+		if (pgroup_allocator[i] == false) {
+			pgroup_allocator[i] = true;
+			return i;
+		}
+	}
+
+	return 0;
+}
+
+int pgroup_move(gid_t group, struct process *proc) {
+	proc->group = group;
+
+	return 0;
+}

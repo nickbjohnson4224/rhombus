@@ -88,6 +88,8 @@ INTN	76	; gpid
 INTN	77	; time
 INTN	78	; user
 INTN	79	; auth
+INTN	80	; pgrp
+INTN	81	; kill
 
 extern int_handler
 extern fpu_save

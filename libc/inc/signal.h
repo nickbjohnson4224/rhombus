@@ -66,6 +66,6 @@ void __sig_ignore (int signum);
 int raise(int signum);
 int __raise(int caller, int signum);
 
-int kill(uint32_t pid, int signum);
+int kill(int pid, int signum);
 
 #endif/*SIGNAL_H*/

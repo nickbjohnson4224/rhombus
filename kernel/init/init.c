@@ -176,6 +176,8 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	int_set_handler(SYSCALL_TIME, syscall_time);
 	int_set_handler(SYSCALL_USER, syscall_user);
 	int_set_handler(SYSCALL_AUTH, syscall_auth);
+	int_set_handler(SYSCALL_PGRP, syscall_pgrp);
+	int_set_handler(SYSCALL_KILL, syscall_kill);
 
 	/* register fault handlers */
 	int_set_handler(FAULT_DE, fault_float);

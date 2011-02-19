@@ -113,10 +113,10 @@ void free(void *ptr) {
 //			page_free((void*) node->base, (size_t) 1 << node->size);
 //		}
 	}
-	else {
-		printf("invalid free of %x at %x\n", ptr, ((int*) &ptr)[2]);
-		abort();
-	}
+//	else {
+//		printf("invalid free of %x at %x\n", ptr, ((int*) &ptr)[2]);
+//		abort();
+//	}
 
 	mutex_free(&_mutex);
 }

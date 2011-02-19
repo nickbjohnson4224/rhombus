@@ -63,4 +63,10 @@ int      setuser (uint32_t pid, uint32_t user);
 int      setcuser(uint32_t user);
 int      settuser(uint32_t user);
 
+/* process groups **********************************************************/
+
+int      setpgid(uint32_t pid, int gid);
+int      getpgid(uint32_t pid);
+int      getpgrp(void);
+
 #endif/*PROC_H*/

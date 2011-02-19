@@ -26,6 +26,6 @@
  * Sends a signal to any process. Returns 0 on success, nonzero on error.
  */
 
-int kill(uint32_t pid, int signum) {
-	return msendb(RP_CONS(pid, 0), signum);
+int kill(int pid, int signum) {
+	return _kill(pid, signum);
 }

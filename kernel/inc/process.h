@@ -38,6 +38,7 @@ struct process {
 	uint64_t tick;
 	pid_t    pid;
 	uid_t    user;
+	gid_t    group;
 	intid_t  rirq;
 
 	struct process *parent;
@@ -60,5 +61,10 @@ void            process_freeze(struct process *proc);
 void            process_thaw  (struct process *proc);
 void            process_touch (pid_t pid);
 void            process_switch(struct process *proc);
+
+/* process group operations ************************************************/
+
+gid_t pgroup_alloc(void);
+int   pgroup_move (gid_t group, struct process *proc);
 
 #endif/*KERNEL_PROCESS_H*/

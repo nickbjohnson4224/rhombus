@@ -17,24 +17,23 @@ For 0.8 Alpha:
 + finish printf
 + finish scanf
 + fix I/O memory leak
-x group manager
++ process groups
++ broadcast messages
 - proper terminal driver
-x foreground/background processes?
 - signals from terminal (esp. ctrl-C)
 - curses port
 
 For 0.9 Alpha:
 
 - write fenv.h, tgmath.h
-x dynamic linking
-x drivers as shared libraries?
+- dynamic linking
 - device manager (PCI)
 - ATA/ATAPI driver
 - filesystem drivers (iso9660, ext2)
 
 For 0.10 Alpha:
 
-- process manager
+- finalize all core APIs
 - clean up as much as possible
 - full libc documentation
 - full kernel documentation
@@ -43,22 +42,26 @@ For 0.10 Alpha:
 
 For 0.11 Beta:
 
-- text editor
+- text editor (port vim?)
 - installer
+- real hardware testing
 
 For 0.12 Beta:
 
-- networking stack
+- C++ support
+- POSIX compatibility layer
+- self-hosting toolchain
 
 For 0.13 Beta:
 
+- networking stack
 - graphics stack
+
+For 0.14 Beta:
+
+- multiprocessor support
 
 For later:
 
 - port UDI
-- kernel SMP
 - ports to other architectures
-- C compiler
-- C++ support
-- LLVM integration

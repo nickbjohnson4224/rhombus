@@ -38,16 +38,23 @@ uint32_t	_gpid(uint32_t selector);
 uint64_t	_time(uint32_t selector);
 uint32_t	_user(uint32_t pid);
 int			_auth(uint32_t pid, uint32_t user);
+int         _pgrp(uint32_t gid, uint32_t action, uint32_t target);
+int         _kill(uint32_t target, uint8_t signal);
 
 #define GPID_SELF	0
 #define GPID_PARENT	1
 #define GPID_THREAD	2
 #define GPID_TLS	3
+#define GPID_USER	4
+#define GPID_GROUP	5
 
 #define TIME_KERNEL	0
 #define TIME_CPU	1
 #define TIME_PROC	2
 #define TIME_THREAD	3
 #define TIME_FREQ	4
+
+#define PGRP_SET	0
+#define PGRP_NEW	1
 
 #endif/*ABI_H*/
