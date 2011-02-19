@@ -64,4 +64,9 @@ void tty_switch(int n);
 void tty_buffer(char c);
 char tty_getch (void);
 
+#define META_SHIFT	0x100
+#define META_ALT	0x200
+#define META_CTRL	0x400
+#define META_WIN	0x800
+
 #endif/*TTY_H*/

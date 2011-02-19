@@ -20,7 +20,7 @@ For 0.8 Alpha:
 + process groups
 + broadcast messages
 - proper terminal driver
-- signals from terminal (esp. ctrl-C)
++ signals from terminal (esp. ctrl-C)
 - curses port
 
 For 0.9 Alpha:

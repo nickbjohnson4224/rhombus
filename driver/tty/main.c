@@ -14,8 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <string.h>
 #include <stdlib.h>
 #include <driver.h>
+#include <signal.h>
 #include <mutex.h>
 #include <proc.h>
 #include <page.h>
@@ -69,13 +71,31 @@ void tty_irq(struct msg *msg) {
 	}
 	else {
 		c = (shift) ? keymap[scan + 58] : keymap[scan];
-		tty_buffer(c);
+
+		if (c == 'C') {
+			kill(-getpid(), SIGINT);
+			tty_buffer('\n');
+		}
+		else {
+			tty_buffer(c);
+		}
 
 		if (tty->mode & MODE_ECHO) {
 			tty_print(c);
 			tty_flip();
 		}
 	}
+}
+
+char *tty_rcall(struct vfs_obj *file, const char *args) {
+	char buffer[10];
+	
+	if (!strcmp(args, "getfg")) {
+		sprintf(buffer, "%d", getpid());
+		return strdup(buffer);
+	}
+	
+	return NULL;
 }
 
 int main(int argc, char **argv) {
@@ -92,6 +112,7 @@ int main(int argc, char **argv) {
 	di_wrap_read (tty_read);
 	di_wrap_irq  (1, tty_irq);
 	di_wrap_write(tty_write);
+	di_wrap_rcall(tty_rcall);
 	vfs_wrap_init();
 
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);

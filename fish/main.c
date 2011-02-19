@@ -27,10 +27,15 @@ int main() {
 	char buffer[100];
 	size_t i, n;
 	int pid;
+	int fg_gid;
 	char *argv[100];
 	char *path;
 
 	setenv("PWD", "/");
+
+	path = rcall(stdin->fd, "getfg");
+	sscanf(path, "%i", &fg_gid);
+	free(path);
 
 	while (1) {
 		printf(getenv("PWD"));
@@ -65,6 +70,8 @@ int main() {
 
 		pid = fork();
 		if (pid < 0) {
+			setpgid(getpid(), fg_gid);
+
 			if (execv(argv[0], (char const **) argv)) {
 				if (errno == ENOENT) {
 					fprintf(stderr, "%s: %s: command not found\n", getenv("NAME"), argv[0]);
