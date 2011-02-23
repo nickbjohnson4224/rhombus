@@ -44,10 +44,4 @@ struct msg {
 	uint32_t *frame;	
 };
 
-struct packet {
-	portid_t port;
-	uint32_t frame;
-	pid_t    source;
-};
-
 #endif/*KERNEL_IPC_H*/

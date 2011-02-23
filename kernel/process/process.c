@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -83,11 +83,12 @@ struct process *process_clone(struct process *parent, struct thread *active) {
 
 	/* copy parent thread */
 	if (active) {
+		heap_free(new_thread->fxdata, 512);
 		memcpy(new_thread, active, sizeof(struct thread));
+		new_thread->fxdata = heap_alloc(512);
 
 		/* copy parent FPU/SSE state */
 		if (active->fxdata) {
-			new_thread->fxdata = heap_alloc(512);
 			memcpy(new_thread->fxdata, active->fxdata, 512);
 		}
 	}

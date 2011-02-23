@@ -82,6 +82,8 @@ void schedule_remove(struct thread *thread) {
 				schedule_queue.in = temp;
 			}
 
+			thread->next = NULL;
+
 			break;
 		}
 	}

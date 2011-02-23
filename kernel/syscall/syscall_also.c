@@ -44,7 +44,6 @@ struct thread *syscall_also(struct thread *image) {
 	new_image->useresp = new_image->stack + SEGSZ;
 	new_image->proc    = image->proc;
 	new_image->eip     = function;
-	new_image->fxdata  = NULL;
 	new_image->user    = image->user;
 
 	/* insert new thread into scheduler */

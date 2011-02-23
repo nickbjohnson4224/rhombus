@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -30,7 +30,12 @@
  */
 
 struct thread *thread_alloc(void) {
-	return heap_alloc(sizeof(struct thread));
+	struct thread *thread;
+
+	thread = heap_alloc(sizeof(struct thread));
+	thread->fxdata = heap_alloc(512);
+
+	return thread;
 }
 
 /****************************************************************************
@@ -79,7 +84,6 @@ struct thread *thread_send(struct thread *image, pid_t target, portid_t port, st
 	new_image->useresp = new_image->stack + SEGSZ;
 	new_image->proc    = p_targ;
 	new_image->eip     = p_targ->entry;
-	new_image->fxdata  = NULL;
 
 	/* set up registers in new thread */
 	new_image->ecx     = (msg) ? msg->count : 0;
@@ -105,6 +109,12 @@ struct thread *thread_send(struct thread *image, pid_t target, portid_t port, st
 
 void thread_free(struct thread *thread) {
 	uintptr_t i;
+
+	/* free FPU/SSE data */
+	if (thread->fxdata) {
+		heap_free(thread->fxdata, 512);
+		thread->fxdata = NULL;
+	}
 
 	/* remove thread from scheduler */
 	schedule_remove(thread);
@@ -226,11 +236,7 @@ struct thread *thread_switch(struct thread *old, struct thread *new) {
 	}
 
 	/* save FPU state */
-	if (old) {
-		if (!old->fxdata) {
-			old->fxdata = heap_alloc(512);
-		}
-
+	if (old && old->fxdata) {
 		fpu_save(old->fxdata);
 	}
 	
