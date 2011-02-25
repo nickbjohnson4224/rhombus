@@ -116,7 +116,7 @@ int wmanager_sync(uint64_t source, struct vfs_obj *file) {
 	return 0;
 }
 
-struct vfs_obj *wmanager_cons(int type) {
+struct vfs_obj *wmanager_cons(uint64_t source, int type) {
 	static int next_index = 1;
 	struct vfs_obj *fobj = NULL;
 
@@ -136,7 +136,7 @@ struct vfs_obj *wmanager_cons(int type) {
 	return fobj;
 }
 
-int wmanager_push(struct vfs_obj *file) {
+int wmanager_push(uint64_t source, struct vfs_obj *file) {
 	if (file->index == bitmaps_dir || file->index == windows_dir) {
 		return 0;
 	}
@@ -152,7 +152,7 @@ int wmanager_push(struct vfs_obj *file) {
 	return -1;
 }
 
-int wmanager_pull(struct vfs_obj *file) {
+int wmanager_pull(uint64_t source, struct vfs_obj *file) {
 	if (file->mother->index == windows_dir) {
 		return remove_window(file->index);
 	}

@@ -30,7 +30,7 @@
  * returns zero on success; returns nonzero on error.
  */
 
-int vfs_dir_push(struct vfs_obj *dir, struct vfs_obj *obj, const char *name) {
+int vfs_dir_push(uint64_t source, struct vfs_obj *dir, struct vfs_obj *obj, const char *name) {
 	struct vfs_obj *sister;
 
 	if (!(dir && obj && name)) {
@@ -86,7 +86,7 @@ int vfs_dir_push(struct vfs_obj *dir, struct vfs_obj *obj, const char *name) {
 	vfs_set_index(obj->index, obj);
 
 	if (_vfs_push) {
-		return _vfs_push(obj);
+		return _vfs_push(source, obj);
 	}
 	else {
 		return 0;
@@ -101,7 +101,7 @@ int vfs_dir_push(struct vfs_obj *dir, struct vfs_obj *obj, const char *name) {
  * on error.
  */
 
-int vfs_dir_pull(struct vfs_obj *obj) {
+int vfs_dir_pull(uint64_t source, struct vfs_obj *obj) {
 
 	if (!obj) {
 		return 1;
@@ -129,7 +129,7 @@ int vfs_dir_pull(struct vfs_obj *obj) {
 	}
 
 	if (_vfs_pull) {
-		return _vfs_pull(obj);
+		return _vfs_pull(source, obj);
 	}
 	else {
 		return 0;

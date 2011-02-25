@@ -81,10 +81,16 @@ void __move_wrapper(struct msg *msg) {
 	mutex_free(&dir->mutex);
 
 	/* remove object from its directory */
-	vfs_dir_pull(obj);
+	if (vfs_dir_pull(msg->source, obj)) {
+		merror(msg);
+		return;
+	}
 
 	/* add object to new directory with name <cmd->s0> */
-	vfs_dir_push(dir, obj, name);
+	if (vfs_dir_push(msg->source, dir, obj, name)) {
+		merror(msg);
+		return;
+	}
 
 	mutex_free(&obj->mutex);
 

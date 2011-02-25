@@ -21,29 +21,29 @@
 
 /* wrapper function pointers ************************************************/
 
-struct vfs_obj *(*_vfs_cons)(int type);
-int             (*_vfs_push)(struct vfs_obj *obj);
-int             (*_vfs_pull)(struct vfs_obj *obj);
-int             (*_vfs_free)(struct vfs_obj *obj);
+struct vfs_obj *(*_vfs_cons)(uint64_t source, int type);
+int             (*_vfs_push)(uint64_t source, struct vfs_obj *obj);
+int             (*_vfs_pull)(uint64_t source, struct vfs_obj *obj);
+int             (*_vfs_free)(uint64_t source, struct vfs_obj *obj);
 
 /* wrapper registering functions ********************************************/
 
-int vfs_wrap_cons(struct vfs_obj *(*vfs_cons)(int type)) {
+int vfs_wrap_cons(struct vfs_obj *(*vfs_cons)(uint64_t source, int type)) {
 	_vfs_cons = vfs_cons;
 	return 0;
 }
 
-int vfs_wrap_push(int (*vfs_push)(struct vfs_obj *obj)) {
+int vfs_wrap_push(int (*vfs_push)(uint64_t source, struct vfs_obj *obj)) {
 	_vfs_push = vfs_push;
 	return 0;
 }
 
-int vfs_wrap_pull(int (*vfs_pull)(struct vfs_obj *obj)) {
+int vfs_wrap_pull(int (*vfs_pull)(uint64_t source, struct vfs_obj *obj)) {
 	_vfs_pull = vfs_pull;
 	return 0;
 }
 
-int vfs_wrap_free(int (*vfs_free)(struct vfs_obj *obj)) {
+int vfs_wrap_free(int (*vfs_free)(uint64_t source, struct vfs_obj *obj)) {
 	_vfs_free = vfs_free;
 	return 0;
 }

@@ -71,11 +71,11 @@ void __cons_wrapper(struct msg *msg) {
 		else {
 
 			/* construct new object */
-			new_fobj = _vfs_cons(type);
+			new_fobj = _vfs_cons(msg->source, type);
 
 			if (new_fobj) {
 				/* add new object to parent directory */
-				vfs_dir_push(dir, new_fobj, name);
+				vfs_dir_push(msg->source, dir, new_fobj, name);
 
 				/* return pointer to new object on success */
 				rp = RP_CONS(getpid(), new_fobj->index);

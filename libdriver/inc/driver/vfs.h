@@ -73,15 +73,15 @@ uint64_t vfs_find(struct vfs_obj *root, const char *path, bool nolink);
 int      vfs_add (struct vfs_obj *root, const char *path, struct vfs_obj *obj);
 
 int vfs_dir_list(struct vfs_obj *dir, int entry, char *buffer, size_t size);
-int vfs_dir_push(struct vfs_obj *dir, struct vfs_obj *obj, const char *name);
-int vfs_dir_pull(struct vfs_obj *obj);
+int vfs_dir_push(uint64_t source, struct vfs_obj *dir, struct vfs_obj *obj, const char *name);
+int vfs_dir_pull(uint64_t source, struct vfs_obj *obj);
 
 /* virtual filesystem request wrapper ***************************************/
 
-int vfs_wrap_cons(struct vfs_obj *(*vfs_cons)(int type));
-int vfs_wrap_push(int (*vfs_push)(struct vfs_obj *obj));
-int vfs_wrap_pull(int (*vfs_pull)(struct vfs_obj *obj));
-int vfs_wrap_free(int (*vfs_free)(struct vfs_obj *obj));
+int vfs_wrap_cons(struct vfs_obj *(*vfs_cons)(uint64_t source, int type));
+int vfs_wrap_push(int (*vfs_push)(uint64_t source, struct vfs_obj *obj));
+int vfs_wrap_pull(int (*vfs_pull)(uint64_t source, struct vfs_obj *obj));
+int vfs_wrap_free(int (*vfs_free)(uint64_t source, struct vfs_obj *obj));
 
 int vfs_wrap_init(void);
 
@@ -96,9 +96,9 @@ void __type_wrapper(struct msg *msg);
 void __perm_wrapper(struct msg *msg);
 void __auth_wrapper(struct msg *msg);
 
-extern struct vfs_obj *(*_vfs_cons)(int type);
-extern int             (*_vfs_push)(struct vfs_obj *obj);
-extern int             (*_vfs_pull)(struct vfs_obj *obj);
-extern int             (*_vfs_free)(struct vfs_obj *obj);
+extern struct vfs_obj *(*_vfs_cons)(uint64_t source, int type);
+extern int             (*_vfs_push)(uint64_t source, struct vfs_obj *obj);
+extern int             (*_vfs_pull)(uint64_t source, struct vfs_obj *obj);
+extern int             (*_vfs_free)(uint64_t source, struct vfs_obj *obj);
 
 #endif/*DRIVER_VFS_H*/

@@ -25,7 +25,7 @@
 
 uint8_t tmpfs_index_top = 1;
 
-struct vfs_obj *tmpfs_cons(int type) {
+struct vfs_obj *tmpfs_cons(uint64_t source, int type) {
 	struct vfs_obj *fobj = NULL;
 
 	switch (type) {
@@ -49,7 +49,7 @@ struct vfs_obj *tmpfs_cons(int type) {
 	return fobj;
 }
 
-int tmpfs_free(struct vfs_obj *obj) {
+int tmpfs_free(uint64_t source, struct vfs_obj *obj) {
 
 	acl_free(obj->acl);
 

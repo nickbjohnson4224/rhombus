@@ -55,7 +55,7 @@ int vfs_add(struct vfs_obj *root, const char *path, struct vfs_obj *obj) {
 
 	/* push object into parent directory */
 	path1 = path_name(path);
-	vfs_dir_push(dir, obj, path1);
+	vfs_dir_push(RP_CONS(getpid(), 0), dir, obj, path1);
 	free(path1);
 
 	return 0;

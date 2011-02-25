@@ -56,11 +56,15 @@ void __remv_wrapper(struct msg *msg) {
 		}
 
 		/* remove the object from its directory */
-		vfs_dir_pull(fobj);
+		vfs_dir_pull(msg->source, fobj);
 
 		if (_vfs_free) {
 			/* allow the driver to free the object */
-			_vfs_free(fobj);
+			if (_vfs_free(msg->source, fobj)) {
+				mutex_free(&fobj->mutex);
+				merror(msg);
+				return;
+			}
 		}
 		else {
 			/* free the object, assuming data is not allocated */
