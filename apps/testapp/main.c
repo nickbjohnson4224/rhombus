@@ -29,7 +29,7 @@ const size_t size = width * height * 4;
 uint8_t *bitmap;
 uint64_t bID, wID;
 
-char* testapp_rcall(struct vfs_obj *file, const char *args) {
+char* testapp_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 	printf("%s\n", args);
 	return NULL;
 }

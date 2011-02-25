@@ -19,8 +19,10 @@ For 0.8 Alpha:
 + fix I/O memory leak
 + process groups
 + broadcast messages
-- proper terminal driver
 + signals from terminal (esp. ctrl-C)
+- standardize graphics API
+- standardize input API
+- proper terminal driver
 - curses port
 
 For 0.9 Alpha:

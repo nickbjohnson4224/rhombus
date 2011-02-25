@@ -28,7 +28,7 @@ void char_write(char c) {
 	   char_write('\r');
 }
 
-size_t serial_write(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+size_t serial_write(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	mutex_spin(&file->mutex);
 
 	for (size_t i = 0; i < size; i++) {

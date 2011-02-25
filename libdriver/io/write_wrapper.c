@@ -67,7 +67,7 @@ void __write_wrapper(struct msg *msg) {
 	
 	offset = ((uint64_t*) msg->data)[0];
 
-	((uint32_t*) msg->data)[0] = _di_write(file, &msg->data[8], msg->length - 8, offset);
+	((uint32_t*) msg->data)[0] = _di_write(msg->source, file, &msg->data[8], msg->length - 8, offset);
 	msg->length = sizeof(uint32_t);
 
 	mreply(msg);

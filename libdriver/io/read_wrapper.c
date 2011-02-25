@@ -69,7 +69,7 @@ void __read_wrapper(struct msg *msg) {
 
 	free(msg);
 
-	reply->length = _di_read(file, reply->data, size, offset);
+	reply->length = _di_read(msg->source, file, reply->data, size, offset);
 
 	msend(reply);
 }

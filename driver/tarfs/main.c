@@ -67,7 +67,7 @@ static uintptr_t getvalue(char *field, size_t size) {
 	return sum;
 }
 
-size_t tarfs_read(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+size_t tarfs_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	uint32_t user;
 	
 	if (!file->data) {

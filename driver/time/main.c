@@ -26,7 +26,7 @@
 
 static bool m_time = false;
 
-size_t time_read(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+size_t time_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	char *data;
 
 	if (size > 20) {

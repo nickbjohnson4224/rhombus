@@ -24,7 +24,7 @@
 
 #include "tty.h"
 
-size_t tty_write(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+size_t tty_write(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	size_t i;
 
 	for (i = 0; i < size; i++) {
@@ -36,7 +36,7 @@ size_t tty_write(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t of
 	return size;
 }
 
-size_t tty_read(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+size_t tty_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	size_t i;
 
 	for (i = 0; i < size; i++) {
@@ -87,7 +87,7 @@ void tty_irq(struct msg *msg) {
 	}
 }
 
-char *tty_rcall(struct vfs_obj *file, const char *args) {
+char *tty_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 	char buffer[10];
 	
 	if (!strcmp(args, "getfg")) {

@@ -27,7 +27,7 @@
 #include "initrd.h"
 #include "inc/tar.h"
 
-size_t initrd_read(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+size_t initrd_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 
 	if (!file->data) {
 		return 0;

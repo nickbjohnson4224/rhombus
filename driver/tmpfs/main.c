@@ -62,7 +62,7 @@ int tmpfs_free(struct vfs_obj *obj) {
 	return 0;
 }
 
-size_t tmpfs_read(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+size_t tmpfs_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	
 	if (!file->data) {
 		return 0;
@@ -81,7 +81,7 @@ size_t tmpfs_read(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t o
 	return size;
 }
 
-size_t tmpfs_write(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+size_t tmpfs_write(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	
 	if (offset + size >= file->size) {
 		file->data = realloc(file->data, offset + size);
@@ -93,7 +93,7 @@ size_t tmpfs_write(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t 
 	return size;
 }
 
-int tmpfs_reset(struct vfs_obj *file) {
+int tmpfs_reset(uint64_t source, struct vfs_obj *file) {
 	
 	if (file->data) {
 		free(file->data);

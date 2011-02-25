@@ -57,7 +57,7 @@ void __rcall_wrapper(struct msg *msg) {
 
 	args = (char*) msg->data;
 
-	rets = _di_rcall(file, args);
+	rets = _di_rcall(msg->source, file, args);
 
 	if (!rets) {
 		merror(msg);

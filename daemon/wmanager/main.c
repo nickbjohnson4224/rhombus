@@ -38,7 +38,7 @@ void forward_message(const char *msg) {
 	}
 }
 
-char *wmanager_rcall(struct vfs_obj *file, const char *args) {
+char *wmanager_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 	if (strlen(args) <= 1) {
 		return NULL;
 	}
@@ -97,14 +97,14 @@ char *wmanager_rcall(struct vfs_obj *file, const char *args) {
 	return strdup("ok");
 }
 
-int wmanager_share(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off) {
+int wmanager_share(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off) {
 	if (off != 0) {
 		return -1;
 	}
 	return set_bitmap(file->index, buffer, size);
 }
 
-int wmanager_sync(struct vfs_obj *file) {
+int wmanager_sync(uint64_t source, struct vfs_obj *file) {
 	memset(screen, 0, screen_width * screen_height * 3);
 	struct window_t *window = windows;
 	while (window) {

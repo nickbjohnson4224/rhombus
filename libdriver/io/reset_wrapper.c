@@ -49,7 +49,7 @@ void __reset_wrapper(struct msg *msg) {
 		return;
 	}
 
-	_di_reset(file);
+	_di_reset(msg->source, file);
 
 	merror(msg); // errors are the same as valid replies
 }

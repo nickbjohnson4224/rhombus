@@ -47,7 +47,7 @@ void __sync_wrapper(struct msg *msg) {
 		return;
 	}
 
-	_di_sync(file);
+	_di_sync(msg->source, file);
 
 	merror(msg); // errors are the same as valid replies
 }

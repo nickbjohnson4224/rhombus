@@ -33,7 +33,7 @@ void command(uint8_t byte) {
 	while (inb(0x60) != 0xfa); // ACK
 }
 
-char *mouse_rcall(struct vfs_obj *file, const char *args) {
+char *mouse_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 	uint32_t pid;
 	if (sscanf(args, "%i", &pid) != 1) {
 		return NULL;

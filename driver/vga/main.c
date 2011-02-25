@@ -30,7 +30,7 @@
 uint8_t *vmem;
 uint8_t *screen;
 
-char *vga_rcall(struct vfs_obj *file, const char *args) {
+char *vga_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 	char *rets = NULL;
 	
 	if (!strcmp(args, "dim")) {
@@ -41,7 +41,7 @@ char *vga_rcall(struct vfs_obj *file, const char *args) {
 	return rets;
 }
 
-int vga_sync(struct vfs_obj *file) {
+int vga_sync(uint64_t source, struct vfs_obj *file) {
 	if (!screen) {
 		return -1;
 	}
@@ -54,7 +54,7 @@ int vga_sync(struct vfs_obj *file) {
 	return 0;
 }
 
-int vga_mmap(struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off) {
+int vga_mmap(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off) {
 	if (size != mode->width * mode->height * 3) {
 		return -1;
 	}

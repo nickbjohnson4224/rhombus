@@ -53,7 +53,7 @@ void __share_wrapper(struct msg *msg) {
 	pages = aalloc(msg->length - PAGESZ + sizeof(struct msg), PAGESZ);
 	page_self(&msg->data[PAGESZ - sizeof(struct msg)], pages, msg->length - PAGESZ + sizeof(struct msg));
 
-	err = _di_share(file, pages, msg->length - PAGESZ + sizeof(struct msg), offset);
+	err = _di_share(msg->source, file, pages, msg->length - PAGESZ + sizeof(struct msg), offset);
 
 	msg->data[0] = err;
 	msg->length = 1;
