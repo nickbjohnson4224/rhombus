@@ -41,7 +41,10 @@ int      sync (uint64_t rp);
 int      reset(uint64_t rp);
 int      share(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot);
 char    *rcall(uint64_t rp, const char *args);
-int      event(uint64_t rp, uint32_t id, uint32_t value);
+int      event(uint64_t rp, uint64_t value);
+
+int      event_register  (uint64_t rp, void (*handler)(uint64_t source, uint64_t value));
+int      event_deregister(uint64_t rp);
 
 uint64_t io_find(const char *name);
 uint64_t io_cons(const char *name, int type);
