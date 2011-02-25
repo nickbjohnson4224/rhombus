@@ -31,7 +31,8 @@ int add_window(uint32_t id) {
 	window = malloc(sizeof(struct window_t));
 	window->id = id;
 	window->x = window->y = 0;
-	window->width = window->height = window->bitmap = 0;
+	window->width = window->height = 0;
+	window->bitmap = NULL;
 	window->next = window->prev = NULL;
 
 	LIST_ADD(window)
@@ -50,10 +51,8 @@ int remove_window(uint32_t id) {
 
 void draw_window(struct window_t *window) {
 	/* content */
-	struct bitmap_t *bitmap;
-	LIST_FIND(bitmap, bitmap, item->id == window->bitmap)
-	if (bitmap && bitmap->size >= window->width * window->height * 4) {
-		blit_bitmap(bitmap->address, window->x, window->y, window->width, window->height);
+	if (window->bitmap) {
+		blit_bitmap(window->bitmap, window->x, window->y, window->width, window->height);
 	}
 		
 	/* decorations */
@@ -91,40 +90,44 @@ void draw_window(struct window_t *window) {
 
 int set_window_size(uint32_t id, size_t width, size_t height) {
 	struct window_t *window;
-	struct bitmap_t *bitmap;
 
 	LIST_FIND(window, window, item->id == id)
 	if (!window) {
 		return -1;
 	}
 
-	LIST_FIND(bitmap, bitmap, item->id == window->bitmap)
-	if (bitmap && bitmap->size != width * height * 4) {
-		return -1;
-	}
-
+	window->bitmap = NULL;
 	window->width = width;
 	window->height = height;
 	return 0;
 }
 
-int set_window_bitmap(uint32_t id, uint32_t bitmap_id) { 
+int set_window_bitmap(uint32_t id, uint8_t *address, size_t size) {
 	struct window_t *window;
-	struct bitmap_t *bitmap;
-
 	LIST_FIND(window, window, item->id == id)
 	if (!window) {
 		return -1;
 	}
-
-	LIST_FIND(bitmap, bitmap, item->id == bitmap_id)
-	if (!bitmap) {
+	if (window->bitmap) {
 		return -1;
 	}
-	if (bitmap->size != window->width * window->height * 4) {
+	if (size != window->height * window->width * 4) {
 		return -1;
 	}
-
-	window->bitmap = bitmap_id;
+	window->bitmap = address;
 	return 0;
+}
+
+void blit_bitmap(const uint8_t *bitmap, int tox, int toy, size_t width, size_t height) {
+	for (size_t x = tox >= 0 ? tox : 0; x < tox + width && x < screen_width; x++) {
+		for (size_t y = toy >= 0 ? toy : 0; y < toy + height && y < screen_height; y++) {
+			size_t screen_index = (x + y * screen_width) * 3;
+			size_t bitmap_index = ((x - tox) + (y - toy) * width) * 4;
+			double alpha = bitmap[bitmap_index + 3] / 255.0;
+			for (int c = 0; c < 3; c++) {
+				screen[screen_index + c] = (1 - alpha) * screen[screen_index + c] +
+					alpha * bitmap[bitmap_index + c];
+			}
+		}
+	}
 }

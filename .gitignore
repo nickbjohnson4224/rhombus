@@ -5,6 +5,7 @@
 *.swo
 *.iso
 *.patch
+*.rej
 /inc
 /run/cd
 /run/boot.tar

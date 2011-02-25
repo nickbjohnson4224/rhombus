@@ -23,21 +23,13 @@ struct window_t {
 	uint32_t id;
 	int x, y;
 	size_t width, height;
-	uint32_t bitmap;
+	uint8_t *bitmap;
 	struct window_t *prev, *next;
-};
-
-struct bitmap_t {
-	uint32_t id;
-	const uint8_t *address;
-	size_t size;
-	struct bitmap_t *prev, *next;
 };
 
 extern uint64_t vgafd;
 extern uint8_t *screen;
 extern size_t screen_width, screen_height;
-extern struct bitmap_t *bitmaps;
 extern struct window_t *windows;
 extern struct window_t *active_window;
 
@@ -45,11 +37,7 @@ int add_window(uint32_t id);
 int remove_window(uint32_t id); 
 void draw_window(struct window_t *window);
 int set_window_size(uint32_t id, size_t width, size_t height);
-int set_window_bitmap(uint32_t id, uint32_t bitmap_id);
-
-int add_bitmap(uint32_t id);
-int remove_bitmap(uint32_t id);
-int set_bitmap(uint32_t id, uint8_t *address, size_t size);
+int set_window_bitmap(uint32_t id, uint8_t *address, size_t size);
 void blit_bitmap(const uint8_t *bitmap, int tox, int toy, size_t width, size_t height);
 
 void mouse_move(int dx, int dy);

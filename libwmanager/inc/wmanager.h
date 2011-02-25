@@ -19,12 +19,9 @@
 
 #include <stdint.h>
 
-uint64_t wm_create_bitmap(uint8_t *address, size_t size);
-int      wm_destroy_bitmap(uint64_t bitmap);
-
 uint64_t wm_create_window(size_t width, size_t height);
 int      wm_set_size(uint64_t window, size_t width, size_t height);
-int	     wm_set_bitmap(uint64_t window, uint64_t bitmap);
+int	     wm_set_bitmap(uint64_t window, uint8_t *bitmap, size_t size);
 int      wm_update(uint64_t window);
 int      wm_destroy_window(uint64_t window);
 

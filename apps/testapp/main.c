@@ -27,7 +27,7 @@ const size_t width = 256;
 const size_t height = 30;
 const size_t size = width * height * 4;
 uint8_t *bitmap;
-uint64_t bID, wID;
+uint64_t wID;
 
 char* testapp_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 	printf("%s\n", args);
@@ -65,9 +65,8 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	bID = wm_create_bitmap(bitmap, size);
 	wID = wm_create_window(width, height);
-	wm_set_bitmap(wID, bID);
+	wm_set_bitmap(wID, bitmap, size);
 	while (1) {
 		for (int alpha = 0; alpha <= 0xff; alpha += 0x10) {
 			draw(alpha);
@@ -78,6 +77,6 @@ int main(int argc, char **argv) {
 	}
 
 	wm_destroy_window(wID);
-	wm_destroy_bitmap(bID);
+	free(bitmap);
 	return 0;
 }

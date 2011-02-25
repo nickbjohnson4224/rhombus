@@ -24,7 +24,6 @@
 #include <page.h>
 #include "list.h"
 
-const uint32_t bitmaps_dir = 1, windows_dir = 2;
 uint64_t vgafd;
 uint8_t *screen;
 size_t screen_width, screen_height;
@@ -78,30 +77,17 @@ char *wmanager_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 		if (set_window_size(file->index, width, height) != 0) {
 			return NULL;
 		}
+		return strdup("ok");
 	}
 
-	else  if (args[0] == 'b') { //bitmap
-		uint32_t bitmap;
-		if (sscanf(args + 2, "%i", &bitmap) != 1) {
-			return NULL;
-		}
-		if (set_window_bitmap(file->index, bitmap) != 0) {
-			return NULL;
-		}
-	}
-
-	else {
-		return NULL;
-	}
-
-	return strdup("ok");
+	return NULL;
 }
 
 int wmanager_share(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off) {
 	if (off != 0) {
 		return -1;
 	}
-	return set_bitmap(file->index, buffer, size);
+	return set_window_bitmap(file->index, buffer, size);
 }
 
 int wmanager_sync(uint64_t source, struct vfs_obj *file) {
@@ -122,7 +108,6 @@ struct vfs_obj *wmanager_cons(uint64_t source, int type) {
 
 	switch (type) {
 	case RP_TYPE_FILE:
-	case RP_TYPE_DIR:
 		fobj        = calloc(sizeof(struct vfs_obj), 1);
 		fobj->type  = type;
 		fobj->size  = 0;
@@ -137,31 +122,11 @@ struct vfs_obj *wmanager_cons(uint64_t source, int type) {
 }
 
 int wmanager_push(uint64_t source, struct vfs_obj *file) {
-	if (file->index == bitmaps_dir || file->index == windows_dir) {
-		return 0;
-	}
-
-	if (file->mother->index == windows_dir) {
-		return add_window(file->index);
-	}
-
-	if (file->mother->index == bitmaps_dir) {
-		return add_bitmap(file->index);
-	}
-
-	return -1;
+	return add_window(file->index);
 }
 
 int wmanager_pull(uint64_t source, struct vfs_obj *file) {
-	if (file->mother->index == windows_dir) {
-		return remove_window(file->index);
-	}
-
-	else if (file->mother->index == bitmaps_dir) {
-		return remove_bitmap(file->index);
-	}
-
-	return -1;
+	return remove_window(file->index);
 }
 
 //todo: owner control
@@ -191,8 +156,6 @@ int main(int argc, char **argv) {
 	vfs_wrap_init();
 
 	io_link("/sys/wmanager", RP_CONS(getpid(), 0));
-	io_cons("/sys/wmanager/bitmaps", RP_TYPE_DIR);
-	io_cons("/sys/wmanager/windows", RP_TYPE_DIR);
 
 	vgafd = io_find("/dev/vga0");
 	sscanf(rcall(vgafd, "dim"), "%i %i", &screen_width, &screen_height);
@@ -210,7 +173,6 @@ int main(int argc, char **argv) {
 	_done();
 
 	free(screen);
-	LIST_FREE(bitmap)
 	LIST_FREE(window)
 	return 0;
 }
