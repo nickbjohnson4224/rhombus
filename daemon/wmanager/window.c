@@ -60,13 +60,13 @@ void draw_window(struct window_t *window) {
 			(x < (window->x + window->width + 1)) && (x < screen_width); x++) {
 		if (window->y >= 1) {
 			for (int c = 0; c < 3; c++) {
-				screen[(x + (window->y - 1) * screen_width) * 3 + c] =
+				screen[(x + (window->y - 1) * screen_width) * 4 + c] =
 					(window == active_window && c != 2) ? 0 : 0xff;
 			}
 		}
 		if (window->y + window->height < screen_height) {
 			for (int c = 0; c < 3; c++) {
-				screen[(x + (window->y + window->height) * screen_width) * 3 + c] =
+				screen[(x + (window->y + window->height) * screen_width) * 4 + c] =
 					(window == active_window && c != 2) ? 0 : 0xff;
 			}
 		}
@@ -75,13 +75,13 @@ void draw_window(struct window_t *window) {
 			(y < (window->y + window->height)) && (y < screen_height); y++) {
 		if (window->x >= 1) {
 			for (int c = 0; c < 3; c++) {
-				screen[(window->x - 1 + y * screen_width) * 3 + c] =
+				screen[(window->x - 1 + y * screen_width) * 4 + c] =
 					(window == active_window && c != 2) ? 0 : 0xff;
 			}
 		}
 		if (window->x + window->width < screen_width) {
 			for (int c = 0; c < 3; c++) {
-				screen[(window->x + window->width + y * screen_width) * 3 + c] =
+				screen[(window->x + window->width + y * screen_width) * 4 + c] =
 					(window == active_window && c != 2) ? 0 : 0xff;
 			}
 		}
@@ -121,7 +121,7 @@ int set_window_bitmap(uint32_t id, uint8_t *address, size_t size) {
 void blit_bitmap(const uint8_t *bitmap, int tox, int toy, size_t width, size_t height) {
 	for (size_t x = tox >= 0 ? tox : 0; x < tox + width && x < screen_width; x++) {
 		for (size_t y = toy >= 0 ? toy : 0; y < toy + height && y < screen_height; y++) {
-			size_t screen_index = (x + y * screen_width) * 3;
+			size_t screen_index = (x + y * screen_width) * 4;
 			size_t bitmap_index = ((x - tox) + (y - toy) * width) * 4;
 			double alpha = bitmap[bitmap_index + 3] / 255.0;
 			for (int c = 0; c < 3; c++) {

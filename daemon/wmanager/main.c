@@ -64,7 +64,7 @@ int wmanager_share(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_
 }
 
 int wmanager_sync(uint64_t source, struct vfs_obj *file) {
-	memset(screen, 0, screen_width * screen_height * 3);
+	memset(screen, 0, screen_width * screen_height * 4);
 	struct window_t *window;
 	for (window = windows; window; window = window->next) {
 		draw_window(window);
@@ -143,10 +143,10 @@ int main(int argc, char **argv) {
 	io_link("/sys/wmanager", RP_CONS(getpid(), 0));
 
 	vgafd = io_find("/dev/vga0");
-	sscanf(rcall(vgafd, "dim"), "%i %i", &screen_width, &screen_height);
-	screen = malloc(screen_width * screen_height * 3);
-	memset(screen, 0, screen_width * screen_height * 3);
-	share(vgafd, screen, screen_width * screen_height * 3, 0, PROT_READ);
+	sscanf(rcall(vgafd, "getmode"), "%i %i", &screen_width, &screen_height);
+	screen = malloc(screen_width * screen_height * 4);
+	memset(screen, 0, screen_width * screen_height * 4);
+	share(vgafd, screen, screen_width * screen_height * 4, 0, PROT_READ);
 
 	event_register(io_find("/dev/mouse"), wmanager_event);
 

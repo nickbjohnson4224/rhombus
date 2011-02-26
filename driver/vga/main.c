@@ -32,37 +32,87 @@ uint8_t *screen;
 
 char *vga_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 	char *rets = NULL;
-	
-	if (!strcmp(args, "dim")) {
-		rets = malloc(16);
-		sprintf(rets, "%i %i", mode->width, mode->height);
+
+	if (!strcmp(args, "getmode")) {
+		rets = strdup("320 200 32");
+	}
+	else if (!strcmp(args, "listmodes")) {
+		rets = strdup("320:200:32");
+	}
+	else if (!strcmp(args, "unshare")) {
+		page_free(screen, mode->width * mode->height * 4);
+		free(screen);
+		screen = valloc(0x20000);
+		rets = strdup("T");
 	}
 
 	return rets;
 }
 
 int vga_sync(uint64_t source, struct vfs_obj *file) {
+	uint32_t pixel;
+	size_t i;
+
 	if (!screen) {
 		return -1;
 	}
+
 	mutex_spin(&file->mutex);
-	for (size_t i = 0; i < mode->width * mode->height; i++) {
-		uint32_t pixel = (screen[i * 3] << 16) | (screen[i * 3 + 1] << 8) | screen[i * 3 + 2];
+	for (i = 0; i < mode->width * mode->height; i++) {
+		pixel = (screen[i * 4] << 16) | (screen[i * 4 + 1] << 8) | screen[i * 4 + 2];
 		mode->plot(i % mode->width, i / mode->width, pixel);
 	}
 	mutex_free(&file->mutex);
+
 	return 0;
 }
 
-int vga_mmap(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off) {
-	if (size != mode->width * mode->height * 3) {
+int vga_share(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off) {
+
+	if (size != mode->width * mode->height * 4) {
 		return -1;
 	}
 	if (off != 0) {
 		return -1;
 	}
+
+	if (screen) {
+		page_free(screen, mode->width * mode->height * 4);
+		free(screen);
+		screen = NULL;
+	}
+
 	screen = buffer;
+
 	return 0;
+}
+
+size_t vga_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off) {
+	size_t i;
+
+	if (size > mode->width * mode->height * 4 - off) {
+		size = mode->width * mode->height * 4 - off;
+	}
+
+	for (i = 0; i < size; i++) {
+		buffer[i] = screen[i + off];
+	}
+
+	return size;
+}
+
+size_t vga_write(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off) {
+	size_t i;
+
+	if (size > mode->width * mode->height * 4 - off) {
+		size = mode->width * mode->height * 4 - off;
+	}
+
+	for (i = 0; i < size; i++) {
+		screen[i + off] = buffer[i];
+	}
+
+	return size;
 }
 
 int main(int argc, char **argv) {
@@ -74,7 +124,8 @@ int main(int argc, char **argv) {
 	root->acl   = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
 	vfs_set_index(0, root);
 
-	vmem = valloc(0x20000);
+	vmem   = valloc(0x20000);
+	screen = valloc(0x20000);
 	page_phys(vmem, 0x20000, PROT_READ | PROT_WRITE, 0xA0000);
 
 	vga_set_mode(MODE_320x200x256);
@@ -83,8 +134,10 @@ int main(int argc, char **argv) {
 
 	/* set up driver interface */
 	di_wrap_sync (vga_sync);
-	di_wrap_share(vga_mmap);
+	di_wrap_share(vga_share);
 	di_wrap_rcall(vga_rcall);
+	di_wrap_read (vga_read);
+	di_wrap_write(vga_write);
 	vfs_wrap_init();
 
 	/* register the driver as /dev/vga0 */
