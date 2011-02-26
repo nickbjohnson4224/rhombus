@@ -19,7 +19,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-uint64_t rp;
+struct register_t
+{
+	uint64_t rp;
+	struct register_t *next;
+};
+
+struct register_t *regs;
 
 void wait_signal() {
 	while (inb(0x64) & 0x2);
@@ -34,23 +40,56 @@ void command(uint8_t byte) {
 }
 
 char *mouse_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
-	uint32_t pid;
-	if (sscanf(args, "%i", &pid) != 1) {
-		return NULL;
+	struct register_t *reg, *prev = NULL;
+
+	if (strcmp(args, "register") == 0) {
+		for (reg = regs; reg; reg = reg->next) {
+			if (reg->rp == source) {
+				// avoid duplicates
+				return strdup("");
+			}
+		}
+
+		reg = malloc(sizeof(struct register_t));
+		if (!reg) {
+			return strdup("");
+		}
+		reg->rp = source;
+		reg->next = regs;
+		regs = reg;
+		return strdup("T");
 	}
-	rp = RP_CONS(pid, 0);
-	return strdup("ok");
+
+	if (strcmp(args, "deregister") == 0) {
+		for (reg = regs; reg; reg = reg->next) {
+			if (reg->rp == source) {
+				if (prev) {
+					prev->next = reg->next;
+				}
+				else {
+					regs->next = reg->next;
+				}
+				free(reg);
+				return strdup("T");
+			}
+			prev = reg;
+		}
+		return strdup("");
+	}
+
+	return NULL;
 }
 
 int main()
 {
 	struct vfs_obj *root;
-	uint8_t bytes[3] = { 0, 0, 0 };
+	struct register_t *reg;
+	uint8_t bytes[3];
 	size_t curbyte = 0;
-	char buffer[32];
 	bool first;
 	int buttons = 0, prevbuttons = 0;
-	int dx = 0, dy = 0;
+	int clicked, released;
+	int16_t dx = 0, dy = 0;
 
 	command(0xa8);  // enable aux. PS2
 	command(0xf6);  // load default config
@@ -72,22 +111,25 @@ int main()
 	while (1) {
 		first = true;
 		while ((inb(0x64) & 0x21) != 0x21) {
-			if (rp && first) {
-				int clicked  =  buttons & ~prevbuttons;
-				int released = ~buttons &  prevbuttons;
+			if (first) {
+				clicked  =  buttons & ~prevbuttons;
+				released = ~buttons &  prevbuttons;
 				if (dx || dy) {
-					sprintf(buffer, "m %i %i", dx, dy);
-					dx = dy = 0;
-					rcall(rp, buffer);
+					for (reg = regs; reg; reg = reg->next) {
+						event(reg->rp, 0x1LL << 62 | (dx << 16) & 0xffff0000 | dy & 0xffff);
+					}
 				}
 				if (clicked) {
-					sprintf(buffer, "c %i", clicked);
-					rcall(rp, buffer);
+					for (reg = regs; reg; reg = reg->next) {
+						event(reg->rp, 0x2LL << 62 | clicked);
+					}
 				}
 				if (released) {
-					sprintf(buffer, "r %i", released);
-					rcall(rp, buffer);
+					for (reg = regs; reg; reg = reg->next) {
+						event(reg->rp, 0x3LL << 62 | released);
+					}
 				}
+				dx = dy = 0;
 				prevbuttons = buttons;
 			}
 			first = false;

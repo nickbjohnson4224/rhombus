@@ -29,7 +29,7 @@ int mousex, mousey;
 int mouseclickx, mouseclicky;
 int mousebuttons;
 
-void mouse_move(int dx, int dy) {
+void mouse_move(int16_t dx, int16_t dy) {
 	mousex += dx;
 	mousey += dy;
 
@@ -52,7 +52,7 @@ void mouse_move(int dx, int dy) {
 	}
 
 	draw_cursor();
-	sync(vgafd);
+//	sync(vgafd); //fixme: causes freeze
 }
 
 void mouse_click(int buttons) {

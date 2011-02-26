@@ -40,7 +40,7 @@ int set_window_size(uint32_t id, size_t width, size_t height);
 int set_window_bitmap(uint32_t id, uint8_t *address, size_t size);
 void blit_bitmap(const uint8_t *bitmap, int tox, int toy, size_t width, size_t height);
 
-void mouse_move(int dx, int dy);
+void mouse_move(int16_t dx, int16_t dy);
 void mouse_click(int buttons);
 void mouse_release(int buttons);
 void draw_cursor();

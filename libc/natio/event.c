@@ -72,6 +72,7 @@ int event_register (uint64_t rp, void (*handler)(uint64_t source, uint64_t value
 	reply = rcall(rp, "register");
 
 	if (!strcmp(reply, "T")) {
+		when(PORT_EVENT, _event_wrapper);
 		_event_handler = handler;
 		free(reply);
 		return 0;

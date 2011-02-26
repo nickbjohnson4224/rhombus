@@ -42,33 +42,6 @@ char *wmanager_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 		return NULL;
 	}
 
-	if (args[0] == 'm') { // mouse move
-		int dx, dy;
-		if (sscanf(args + 2, "%i %i", &dx, &dy) == 2) {
-			mouse_move(dx, dy);
-			forward_message(args);
-		}
-		return NULL; // mouse driver doesn't check return value
-	}
-
-	if (args[0] == 'c') { // mouse click
-		int buttons;
-		if (sscanf(args + 2, "%i", &buttons) == 1) {
-			mouse_click(buttons);
-			forward_message(args);
-		}
-		return NULL;
-	}
-
-	if (args[0] == 'r') { // mouse release
-		int buttons;
-		if (sscanf(args + 2, "%i", &buttons) == 1) {
-			mouse_release(buttons);
-			forward_message(args);
-		}
-		return NULL;
-	}
-
 	if (args[0] == 's') { // size
 		size_t width, height;
 		if (sscanf(args + 2, "%i %i", &width, &height) != 2) {
@@ -92,10 +65,9 @@ int wmanager_share(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_
 
 int wmanager_sync(uint64_t source, struct vfs_obj *file) {
 	memset(screen, 0, screen_width * screen_height * 3);
-	struct window_t *window = windows;
-	while (window) {
+	struct window_t *window;
+	for (window = windows; window; window = window->next) {
 		draw_window(window);
-		window = window->next;
 	}
 	draw_cursor();
 	sync(vgafd);
@@ -129,10 +101,23 @@ int wmanager_pull(uint64_t source, struct vfs_obj *file) {
 	return remove_window(file->index);
 }
 
+void wmanager_event(uint64_t source, uint64_t event) {
+	int type = event >> 62;
+	event &= ~(0x3LL << 62);
+	if (type == 0x1) { 
+		mouse_move((event >> 16) & 0xffff, event & 0xffff);
+	}
+	if (type == 0x2) {
+		mouse_click(event);
+	}
+	if (type == 0x3) {
+		mouse_release(event);
+	}
+}
+
 //todo: owner control
 int main(int argc, char **argv) {
 	struct vfs_obj *root;
-	char buffer[32];
 
 	stdout = stderr = fopen("/dev/serial", "w");
 
@@ -163,8 +148,7 @@ int main(int argc, char **argv) {
 	memset(screen, 0, screen_width * screen_height * 3);
 	share(vgafd, screen, screen_width * screen_height * 3, 0, PROT_READ);
 
-	sprintf(buffer, "%u", getpid());
-	rcall(io_find("/dev/mouse"), buffer);
+	event_register(io_find("/dev/mouse"), wmanager_event);
 
 	if (fork() < 0) {
 		exec("/bin/testapp");
