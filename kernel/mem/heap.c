@@ -79,6 +79,8 @@ void *heap_alloc(size_t size) {
 	block = heap_bucket[bucket];
 	heap_bucket[bucket] = block->next;
 
+	memclr(block, sizeof(uintptr_t) * (1 << i));
+
 	return block;
 }
 

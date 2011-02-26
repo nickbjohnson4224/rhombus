@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -28,25 +28,20 @@
 
 int remove(const char *path) {
 	uint64_t file;
-	int err;
-	char *path1;
 
-	path1 = path_simplify(path);
-
-	if (!path1) {
-		errno = ENOMEM;
-		return 1;
-	}
-
-	file = fs_find(0, path1);
-
-	free(path1);
+	file = io_find(path);
 
 	if (file) {
-		err = fs_remove(file);
-		return err;
+		if (fs_remove(file)) {
+			errno = EPERM;
+			return 1;
+		}
+		else {
+			return 0;
+		}
 	}
 	else {
+		errno = ENOENT;
 		return 1;
 	}
 }

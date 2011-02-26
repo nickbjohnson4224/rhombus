@@ -45,6 +45,7 @@ void __auth_wrapper(struct msg *msg) {
 	/* check message */
 	if (msg->length != sizeof(uint32_t) + sizeof(uint8_t)) {
 		merror(msg);
+		return;
 	}
 
 	/* get data */

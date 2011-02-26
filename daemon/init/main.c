@@ -142,6 +142,7 @@ int main() {
 
 	/* Flux Init Shell */
 	argv[0] = "fish";
+	argv[1] = NULL;
 	file = tar_find(boot_image, "bin/fish");
 	if (!file) {
 		printf("critical error: no init shell found\n");
