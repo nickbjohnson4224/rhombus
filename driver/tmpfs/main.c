@@ -82,7 +82,7 @@ size_t tmpfs_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t
 }
 
 size_t tmpfs_write(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
-	
+
 	if (offset + size >= file->size) {
 		file->data = realloc(file->data, offset + size);
 		file->size = offset + size;

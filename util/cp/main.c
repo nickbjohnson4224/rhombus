@@ -51,11 +51,11 @@ int main(int argc, char **argv) {
 			break;
 		}
 		size = fwrite(buffer, sizeof(char), size, dest);
-/*		if (!size) {
+		if (!size) {
 			printf("error writing to %s: ", argv[2]);
 			perror(NULL);
 			return EXIT_FAILURE;
-		} */
+		}
 	}
 
 	return EXIT_SUCCESS;

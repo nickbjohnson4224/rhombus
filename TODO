@@ -21,12 +21,15 @@ For 0.8 Alpha:
 + broadcast messages
 + signals from terminal (esp. ctrl-C)
 - standardize graphics API
-- standardize input API
-- proper terminal driver
-- curses port
++ standardize input API
+- bugfixes
 
 For 0.9 Alpha:
 
+- vm86 support
+- VESA video driver
+- proper terminal driver
+- curses port
 - write fenv.h, tgmath.h
 - dynamic linking
 - device manager (PCI)
