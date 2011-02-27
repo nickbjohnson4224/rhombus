@@ -16,7 +16,6 @@
 
 #include "wmanager.h"
 #include <natio.h>
-#include "list.h"
 
 const size_t cursor_width = 3, cursor_height = 3;
 const uint8_t cursor_bitmap[3 * 3 * 4] = {
@@ -30,6 +29,8 @@ int mouseclickx, mouseclicky;
 int mousebuttons;
 
 void mouse_move(int16_t dx, int16_t dy) {
+	struct window_t *window;
+
 	mousex += dx;
 	mousey += dy;
 
@@ -39,9 +40,13 @@ void mouse_move(int16_t dx, int16_t dy) {
 	if (mousey >= (int) screen_height) mousey = screen_height - 1;
 
 	if (!mousebuttons) { // activate window
-		LIST_FIND(window, active_window,
-				item->x <= mousex && mousex <= item->x + (int) item->width &&
-				item->y <= mousey && mousey <= item->y + (int) item->height)
+		active_window = NULL;
+		for (window = windows; window; window = window->next) {
+			if (window->x <= mousex && mousex <= window->x + (int) window->width &&
+				window->y <= mousey && mousey <= window->y + (int) window->height) {
+				active_window = window;
+			}
+		}
 	}
 
 	if (active_window && (mousebuttons & 1)) { // move window

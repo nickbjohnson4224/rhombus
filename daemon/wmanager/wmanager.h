@@ -21,10 +21,11 @@
 
 struct window_t {
 	uint32_t id;
+	uint32_t owner;
 	int x, y;
 	size_t width, height;
 	uint8_t *bitmap;
-	struct window_t *prev, *next;
+	struct window_t *next;
 };
 
 extern uint64_t vgafd;
@@ -33,11 +34,11 @@ extern size_t screen_width, screen_height;
 extern struct window_t *windows;
 extern struct window_t *active_window;
 
-int add_window(uint32_t id);
-int remove_window(uint32_t id); 
+int add_window(uint32_t id, uint32_t owner);
+int remove_window(uint32_t id, uint32_t owner);
 void draw_window(struct window_t *window);
-int set_window_size(uint32_t id, size_t width, size_t height);
-int set_window_bitmap(uint32_t id, uint8_t *address, size_t size);
+int set_window_size(uint32_t id, uint32_t owner, size_t width, size_t height);
+int set_window_bitmap(uint32_t id, uint32_t owner, uint8_t *address, size_t size);
 void blit_bitmap(const uint8_t *bitmap, int tox, int toy, size_t width, size_t height);
 
 void mouse_move(int16_t dx, int16_t dy);

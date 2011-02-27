@@ -39,7 +39,7 @@ uint64_t wm_create_window(size_t width, size_t height) {
 
 int wm_set_size(uint64_t window, size_t width, size_t height) {
 	char buf[16];
-	sprintf(buf, "s %i %i", width, height);
+	sprintf(buf, "setmode %i %i 32", width, height);
 	return rcall(window, buf) ? 0 : -1;
 }
 

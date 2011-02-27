@@ -22,35 +22,26 @@
 #include <exec.h>
 #include <proc.h>
 #include <page.h>
-#include "list.h"
+//#include "list.h"
 
 uint64_t vgafd;
 uint8_t *screen;
 size_t screen_width, screen_height;
 
-void forward_message(const char *msg) {
-	if (active_window) {
-		struct vfs_obj *window_file = vfs_get_index(active_window->id);
-		uint32_t pid;
-		sscanf(window_file->name, "%i", &pid);
-		rcall(RP_CONS(pid, 0), msg);
-	}
-}
-
 char *wmanager_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
-	if (strlen(args) <= 1) {
-		return NULL;
+	if (strncmp(args, "setmode ", 8) == 0) {
+		size_t width, height;
+		if (sscanf(args + 8, "%i %i", &width, &height) != 2) {
+			return strdup("");
+		}
+		if (set_window_size(file->index, RP_PID(source), width, height) != 0) {
+			return strdup("");
+		}
+		return strdup("T");
 	}
 
-	if (args[0] == 's') { // size
-		size_t width, height;
-		if (sscanf(args + 2, "%i %i", &width, &height) != 2) {
-			return NULL;
-		}
-		if (set_window_size(file->index, width, height) != 0) {
-			return NULL;
-		}
-		return strdup("ok");
+	if (strcmp(args, "register") == 0) {
+		return strdup("T");
 	}
 
 	return NULL;
@@ -60,7 +51,7 @@ int wmanager_share(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_
 	if (off != 0) {
 		return -1;
 	}
-	return set_window_bitmap(file->index, buffer, size);
+	return set_window_bitmap(file->index, RP_PID(source), buffer, size);
 }
 
 int wmanager_sync(uint64_t source, struct vfs_obj *file) {
@@ -94,28 +85,32 @@ struct vfs_obj *wmanager_cons(uint64_t source, int type) {
 }
 
 int wmanager_push(uint64_t source, struct vfs_obj *file) {
-	return add_window(file->index);
+	return add_window(file->index, RP_PID(source));
 }
 
 int wmanager_pull(uint64_t source, struct vfs_obj *file) {
-	return remove_window(file->index);
+	return remove_window(file->index, RP_PID(source));
 }
 
-void wmanager_event(uint64_t source, uint64_t event) {
-	int type = event >> 62;
-	event &= ~(0x3LL << 62);
+void wmanager_event(uint64_t source, uint64_t value) {
+	int type = value >> 62;
+	int data = value & ~(0x3LL << 62);
+
 	if (type == 0x1) { 
-		mouse_move((event >> 16) & 0xffff, event & 0xffff);
+		mouse_move((data >> 16) & 0xffff, data & 0xffff);
 	}
 	if (type == 0x2) {
-		mouse_click(event);
+		mouse_click(data & ~(0x3LL << 62));
 	}
 	if (type == 0x3) {
-		mouse_release(event);
+		mouse_release(data);
+	}
+
+	if (active_window) {
+		event(RP_CONS(active_window->owner, 0), value);
 	}
 }
 
-//todo: owner control
 int main(int argc, char **argv) {
 	struct vfs_obj *root;
 
@@ -123,6 +118,10 @@ int main(int argc, char **argv) {
 
 	if (fork() < 0) {
 		exec("/sbin/vga");
+	}
+	mwait(PORT_CHILD, 0);
+	if (fork() < 0) {
+		exec("/sbin/mouse");
 	}
 	mwait(PORT_CHILD, 0);
 
@@ -156,7 +155,5 @@ int main(int argc, char **argv) {
 
 	_done();
 
-	free(screen);
-	LIST_FREE(window)
 	return 0;
 }

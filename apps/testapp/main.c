@@ -21,7 +21,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <natio.h>
-#include <driver.h>
 
 const size_t width = 256;
 const size_t height = 30;
@@ -29,9 +28,8 @@ const size_t size = width * height * 4;
 uint8_t *bitmap;
 uint64_t wID;
 
-char* testapp_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
-	printf("%s\n", args);
-	return NULL;
+void testapp_event(uint64_t source, uint64_t event) {
+	printf("testapp event\n");
 }
 
 void draw(uint8_t alpha) {
@@ -42,16 +40,7 @@ void draw(uint8_t alpha) {
 }
 
 int main(int argc, char **argv) {
-	struct vfs_obj *root;
-
-	root        = calloc(sizeof(struct vfs_obj), 1);
-	root->type  = RP_TYPE_DIR;
-	root->size  = 0;
-	root->acl   = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
-	vfs_set_index(0, root);
-
-	di_wrap_rcall(testapp_rcall);
-	vfs_wrap_init();
+	event_register(io_find("/sys/wmanager"), testapp_event);
 
 	bitmap = malloc(size);
 	memset(bitmap, 0, size);

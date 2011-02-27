@@ -4,7 +4,7 @@ SOURCES += $(BUILDDIR)/lib/c0.o
 SUBDIR	:= apps/testapp
 TARGET	:= testapp
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -ldriver -lwmanager -lc -T$(BUILDDIR)/inc/link.ld
+LDFLAGS += -lwmanager -lc -T$(BUILDDIR)/inc/link.ld
 ASFLAGS := -felf
 
 all: $(TARGET)

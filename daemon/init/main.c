@@ -131,12 +131,6 @@ int main() {
 	file = tar_find(boot_image, "sbin/serial");
 	io_link("/dev/serial", start(file, argv));
 
-	/* Mouse Driver */
-	argv[0] = "mouse";
-	argv[1] = NULL;
-	file = tar_find(boot_image, "sbin/mouse");
-	io_link("/dev/mouse", start(file, argv));
-
 	/* Path */
 	setenv("PATH", "/bin");
 

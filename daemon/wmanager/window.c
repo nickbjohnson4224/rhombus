@@ -16,37 +16,64 @@
 
 #include "wmanager.h"
 #include <stdlib.h>
-#include "list.h"
 
 struct window_t *windows;
 struct window_t *active_window;
 
-int add_window(uint32_t id) {
+// if owner == 0, then any owner matches
+struct window_t *find_window(uint32_t id, uint32_t owner) {
 	struct window_t *window;
-	LIST_FIND(window, window, item->id == id)
-	if (window) {
+	for (window = windows; window; window = window->next) {
+		if (window->id == id && (owner == 0 || window->owner == owner)) {
+			return window;
+		}
+	}
+	return NULL;
+}
+
+int add_window(uint32_t id, uint32_t owner) {
+	struct window_t *list;
+	struct window_t *window;
+
+	if (find_window(id, 0)) {
 		return -1;
 	}
 
 	window = malloc(sizeof(struct window_t));
 	window->id = id;
+	window->owner = owner;
 	window->x = window->y = 0;
 	window->width = window->height = 0;
 	window->bitmap = NULL;
-	window->next = window->prev = NULL;
+	window->next = NULL;
 
-	LIST_ADD(window)
+	if (windows) {
+		for (list = windows; list->next; list = list->next);
+		list->next = window;
+	}
+	else {
+		windows = window;
+	}
+
 	return 0;
 }
 
-int remove_window(uint32_t id) {
-	struct window_t *window;
-	LIST_FIND(window, window, item->id == id)
-	if (!window) {
-		return -1;
+int remove_window(uint32_t id, uint32_t owner) {
+	struct window_t *window, *prev = NULL;
+	for (window = windows; window; window = window->next) {
+		if (window->id == id && window->owner == owner) {
+			if (prev) {
+				prev->next = window->next;
+			}
+			else {
+				windows = window->next;
+			}
+			free(window);
+			return 0;
+		}
+		prev = window;
 	}
-	LIST_REMOVE(window)
-	return 0;
+	return -1;
 }
 
 void draw_window(struct window_t *window) {
@@ -88,10 +115,8 @@ void draw_window(struct window_t *window) {
 	}
 }
 
-int set_window_size(uint32_t id, size_t width, size_t height) {
-	struct window_t *window;
-
-	LIST_FIND(window, window, item->id == id)
+int set_window_size(uint32_t id, uint32_t owner, size_t width, size_t height) {
+	struct window_t *window = find_window(id, owner);
 	if (!window) {
 		return -1;
 	}
@@ -102,9 +127,8 @@ int set_window_size(uint32_t id, size_t width, size_t height) {
 	return 0;
 }
 
-int set_window_bitmap(uint32_t id, uint8_t *address, size_t size) {
-	struct window_t *window;
-	LIST_FIND(window, window, item->id == id)
+int set_window_bitmap(uint32_t id, uint32_t owner, uint8_t *address, size_t size) {
+	struct window_t *window = find_window(id, owner);
 	if (!window) {
 		return -1;
 	}

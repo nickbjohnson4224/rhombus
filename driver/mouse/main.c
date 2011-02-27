@@ -36,7 +36,7 @@ void command(uint8_t byte) {
 	outb(0x64, 0xd4);
 	wait_signal();
 	outb(0x60, byte);
-	while (inb(0x60) != 0xfa); // ACK
+	while ((inb(0x64) & 0x21) == 0x21 && inb(0x60) != 0xfa); // ACK
 }
 
 char *mouse_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
@@ -106,6 +106,7 @@ int main()
 	di_wrap_rcall(mouse_rcall);
 	vfs_wrap_init();
 
+	io_link("/dev/mouse", RP_CONS(getpid(), 0));
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 
 	while (1) {
