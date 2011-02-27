@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,13 +14,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef DRIVER_H
-#define DRIVER_H
-
-#include <driver/vfs.h>
-#include <driver/io.h>
-#include <driver/ports.h>
-#include <driver/irq.h>
 #include <driver/vm86.h>
+#include <string.h>
+#include <page.h>
 
-#endif/*DRIVER_H*/
+int vm86_setup(void) {
+	return page_phys((void*) 0, 0x100000, PROT_READ | PROT_WRITE | PROT_EXEC, 0);
+}
+
+int vm86_exec(void *code, size_t size) {
+	if (vm86_setup()) return 1;
+	memcpy((void*) 0x7C00, code, size);
+	return __vm86(0x00007C00, 0x00007C00);
+}

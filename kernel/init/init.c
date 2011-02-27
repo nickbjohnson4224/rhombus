@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -109,7 +109,7 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	mem_map_count = mboot->mmap_length / sizeof(struct memory_map);
 
 	for (i = 0; i < mem_map_count; i++) {
-		if (mem_map[i].type == 1) {
+		if (mem_map[i].type == 1 && mem_map[i].base_addr_low <= 0x100000) {
 			for (addr = 0; addr < mem_map[i].length_low; addr += PAGESZ) {
 				frame_add(mem_map[i].base_addr_low + addr);
 			}
@@ -178,6 +178,7 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	int_set_handler(SYSCALL_AUTH, syscall_auth);
 	int_set_handler(SYSCALL_PGRP, syscall_pgrp);
 	int_set_handler(SYSCALL_KILL, syscall_kill);
+	int_set_handler(SYSCALL_VM86, syscall_vm86);
 
 	/* register fault handlers */
 	int_set_handler(FAULT_DE, fault_float);
@@ -193,7 +194,7 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	int_set_handler(FAULT_TS, fault_generic);
 	int_set_handler(FAULT_NP, fault_generic);
 	int_set_handler(FAULT_SS, fault_generic);
-	int_set_handler(FAULT_GP, fault_generic);
+	int_set_handler(FAULT_GP, fault_gpf);
 	int_set_handler(FAULT_PF, fault_page);
 	int_set_handler(FAULT_MF, fault_float);
 	int_set_handler(FAULT_AC, fault_generic);

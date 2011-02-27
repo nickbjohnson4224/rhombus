@@ -38,6 +38,7 @@
 #define SYSCALL_AUTH	0x4F
 #define SYSCALL_PGRP	0x50
 #define SYSCALL_KILL	0x51
+#define SYSCALL_VM86	0x52
 
 struct thread *syscall_send(struct thread *image);
 struct thread *syscall_done(struct thread *image);
@@ -57,5 +58,6 @@ struct thread *syscall_user(struct thread *image);
 struct thread *syscall_auth(struct thread *image);
 struct thread *syscall_pgrp(struct thread *image);
 struct thread *syscall_kill(struct thread *image);
+struct thread *syscall_vm86(struct thread *image);
 
 #endif/*KERNEL_SYSCALL_H*/

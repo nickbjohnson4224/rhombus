@@ -22,7 +22,6 @@
 #include <exec.h>
 #include <proc.h>
 #include <page.h>
-//#include "list.h"
 
 uint64_t vgafd;
 uint8_t *screen;

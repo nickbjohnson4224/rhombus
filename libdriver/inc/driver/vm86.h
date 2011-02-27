@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,13 +14,23 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef DRIVER_H
-#define DRIVER_H
+#ifndef DRIVER_VM86_H
+#define DRIVER_VM86_H
 
-#include <driver/vfs.h>
-#include <driver/io.h>
-#include <driver/ports.h>
-#include <driver/irq.h>
-#include <driver/vm86.h>
+#include <stdint.h>
+#include <stddef.h>
 
-#endif/*DRIVER_H*/
+#define VM86_SP	0x7C00
+#define VM86_SS	0x0000
+#define VM86_IP 0x7C00
+#define VM86_CS 0x0000
+
+int __vm86(uint32_t ipcs, uint32_t spss);
+
+// identity maps all of lower memory at 0x00000 through 0x100000
+int vm86_setup(void);
+
+// loads code at 0x7C00 with a stack at 0x7C00 (calls vm86_setup if needed)
+int vm86_exec (void *code, size_t size);
+
+#endif/*DRIVER_VM86_H*/

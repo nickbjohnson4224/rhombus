@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -47,7 +47,18 @@ struct thread {
 	uint32_t eflags;
 	uint32_t useresp;
 	uint32_t ss;
-	uint32_t kernel_stack;
+
+	uint32_t vm86_es;
+	uint32_t vm86_ds;
+	uint32_t vm86_fs;
+	uint32_t vm86_gs;
+	uint32_t vm86_start;
+	uint32_t vm86_active;
+	uint32_t vm86_if;
+	uint32_t vm86_saved_eip;
+	uint32_t vm86_saved_esp;
+	uint32_t vm86_saved_eflags;
+
 	uint32_t *fxdata;
 	
 	/* message packet */

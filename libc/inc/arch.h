@@ -31,7 +31,7 @@
 /* address space layout ***********************************************/
 
 #if ARCH == X86
-	#define EXEC_START	0x00010000
+	#define EXEC_START	0x00100000
 	#define HEAP_START	0x10000000
 	#define HEAP_MXBRK	0x30000000
 	#define HEAP2_START	0x60000000

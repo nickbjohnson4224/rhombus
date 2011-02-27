@@ -82,12 +82,20 @@ struct thread *int_handler(struct thread *image) {
 		}
 	}
 
-	/* set IOPL=3 if root, IOPL=0 if other user */
-	if (image->user == 0) {
+	/* set IOPL=3 if root, IOPL=0 if other user or vm86 */
+	if ((image->user == 0) && (image->vm86_active == 0)) {
 		image->eflags |= 0x3000;
 	}
 	else {
 		image->eflags &= ~0x3000;
+	}
+
+	/* set or unset VM86 flag */
+	if (image->vm86_active) {
+		image->eflags |= 0x20000;
+	}
+	else {
+		image->eflags &= ~0x20000;
 	}
 
 	image->eflags |= 0x200;
@@ -125,7 +133,7 @@ extern void
 	int68(void), int69(void), int70(void), int71(void),
 	int72(void), int73(void), int74(void), int75(void), 
 	int76(void), int77(void), int78(void), int79(void),
-	int80(void), int81(void);
+	int80(void), int81(void), int82(void);
 
 /*****************************************************************************
  * idt_raw
@@ -154,7 +162,7 @@ static int_raw_handler_t idt_raw[256] = {
 	/* system calls */
 	int64, 	int65, 	int66, 	int67, 	int68, 	int69, 	int70, 	int71, 
 	int72, 	int73, 	int74, 	int75, 	int76, 	int77, 	int78, 	int79, 
-	int80,	int81, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
+	int80,	int81, 	int82, 	NULL, 	NULL, 	NULL, 	NULL, 	NULL, 
 	NULL, 	NULL, 	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
 };
 

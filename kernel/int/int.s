@@ -90,6 +90,7 @@ INTN	78	; user
 INTN	79	; auth
 INTN	80	; pgrp
 INTN	81	; kill
+INTN	82	; vm86
 
 extern int_handler
 extern fpu_save

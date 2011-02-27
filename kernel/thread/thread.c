@@ -247,7 +247,12 @@ struct thread *thread_switch(struct thread *old, struct thread *new) {
 
 	/* switch interrupt stacks */
 	if (new && (old != new)) {
-		set_int_stack(&new->kernel_stack);
+		if (new->vm86_active) {
+			set_int_stack(&new->vm86_start);
+		}
+		else {
+			set_int_stack(&new->vm86_es);
+		}
 	}
 
 	/* load FPU state */
