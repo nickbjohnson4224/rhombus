@@ -20,7 +20,7 @@
 #include <space.h>
 #include <cpu.h>
 
-static int vm86_monitor_gpf(struct thread *);
+int vm86_monitor_gpf(struct thread *);
 
 /*****************************************************************************
  * fault_gpf
@@ -62,16 +62,18 @@ struct thread *fault_gpf(struct thread *image) {
 	return thread_send(image, image->proc->pid, PORT_ILL, NULL);
 }
 
-static int vm86_monitor_gpf(struct thread *image) {
+int vm86_monitor_gpf(struct thread *image) {
 	uint16_t *stack;
 	uint16_t *ivt;
 	uint8_t  *ip;
 	bool     o32, a32;
 
-	ip    = (void*) ((uint16_t) image->eip + (uint16_t) (image->cs << 4));
+	ip    = (void*) ((uint16_t) image->eip + (image->cs << 4));
 	ivt   = (void*) 0;
-	stack = (void*) ((uint16_t) image->esp + (uint16_t) (image->ss << 4));
+	stack = (void*) ((uint16_t) image->useresp + (image->ss << 4));
 	o32 = a32 = false;
+
+	debug_printf("monitor %x %x\n", *ip, ip);
 
 	while (1) switch (*ip) {
 	case 0x66: /* O32 */
@@ -86,13 +88,13 @@ static int vm86_monitor_gpf(struct thread *image) {
 		break;
 	case 0x9C: /* PUSHF */
 		if (o32) {
-			image->esp = (uint16_t) (image->esp - 4);
+			image->useresp = (uint16_t) (image->useresp - 4);
 			stack -= 2;
 			stack[0] = image->eflags;
 			stack[1] = image->eflags >> 16;
 		}
 		else {
-			image->esp = (uint16_t) (image->esp - 2);
+			image->useresp = (uint16_t) (image->useresp - 2);
 			stack--;
 			stack[0] = image->eflags;
 		}
@@ -106,8 +108,8 @@ static int vm86_monitor_gpf(struct thread *image) {
 		image->eflags = 0x20200 | (stack[0] & 0x0DFF);
 		image->vm86_if = (stack[0] & 0x200) ? 1 : 0;
 
-		if (o32) image->esp = (uint16_t) (image->esp + 4);
-		else     image->esp = (uint16_t) (image->esp + 2);
+		if (o32) image->useresp = (uint16_t) (image->useresp + 4);
+		else     image->useresp = (uint16_t) (image->useresp + 2);
 
 		image->eip = (uint16_t) (image->eip + 1);
 		return 0;
@@ -117,7 +119,7 @@ static int vm86_monitor_gpf(struct thread *image) {
 		}
 
 		stack -= 3;
-		image->esp = (uint16_t) (image->esp - 6);
+		image->useresp = (uint16_t) (image->useresp - 6);
 		stack[0] = image->eip + 2;
 		stack[1] = image->cs;
 		stack[2] = image->eflags;
@@ -127,13 +129,16 @@ static int vm86_monitor_gpf(struct thread *image) {
 
 		image->eip = ivt[ip[1] * 2 + 0];
 		image->cs  = ivt[ip[1] * 2 + 1];
+
+		debug_printf("int %x -> %x:%x\n", ip[1], image->cs, image->eip);
+
 		return 0;
 	case 0xCF: /* IRET */
 		image->eip     = stack[0];
 		image->cs      = stack[1];
 		image->eflags  = stack[2] | 0x20200;
 		image->vm86_if = (stack[2] & 0x200) ? 1 : 0;
-		image->esp     = (uint16_t) (image->esp + 6);
+		image->useresp = (uint16_t) (image->useresp + 6);
 		return 0;
 	case 0xFA: /* CLI */
 		image->vm86_if = 0;
@@ -144,7 +149,7 @@ static int vm86_monitor_gpf(struct thread *image) {
 		image->eip = (uint16_t) (image->eip + 1);
 		return 0;
 	default:
-		debug_printf("vm86 unhandled opcode: %x\n", *ip);
+		debug_printf("vm86 unhandled opcode: %x at %x\n", *ip, ip);
 		debug_panic("illegal instruction");
 
 		return 2;
