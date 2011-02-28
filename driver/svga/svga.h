@@ -33,9 +33,9 @@ struct vbe_ctrlinfo {
 	uint32_t product_rev;
 	uint16_t reserved;
 	uint16_t oem_data;
-};
+} __attribute__((packed));
 
-extern struct vbe_ctrlinfo *svga_controller;
+extern volatile struct vbe_ctrlinfo *svga_ctrl;
 int vbe_readctrl(void);
 
 struct vbe_modeinfo {
@@ -47,7 +47,7 @@ struct vbe_modeinfo {
 	uint16_t seg_a;
 	uint16_t seg_b;
 	uint32_t func_ptr;
-	uint32_t scan_bytes;
+	uint16_t scan_bytes;
 
 	// VBE 1.2+
 	uint16_t xres;
@@ -91,9 +91,24 @@ struct vbe_modeinfo {
 	uint8_t  lin_resvd_size;
 	uint8_t  lin_resvd_off;
 	uint32_t max_pixel_clock;
-};
+} __attribute__((packed));
 
-extern struct vbe_modeinfo **svga_modev;
+extern volatile struct vbe_modeinfo *svga_mode;
 int vbe_readmode(uint16_t mode);
+
+struct vbe_ctrcinfo {
+	uint16_t horiz_total;
+	uint16_t horiz_start;
+	uint16_t horiz_end;
+	uint16_t vert_total;
+	uint16_t vert_start;
+	uint16_t vert_end;
+	uint8_t  flags;
+	uint32_t pixel_clock;
+	uint16_t refresh;
+} __attribute__((packed));
+
+extern volatile struct vbe_crtcinfo *svga_crtc;
+int vbe_setmode(uint8_t mode, uint8_t flags);
 
 #endif/*SVGA_H*/

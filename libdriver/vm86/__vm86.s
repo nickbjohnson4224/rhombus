@@ -19,8 +19,18 @@ section .text
 global __vm86:function __vm86.end-__vm86
 
 __vm86:
-	mov ecx, [esp+4]
-	mov edx, [esp+8]
+	push ebx
+	push esi
+	push edi
+	push ebp
+
+	mov ecx, [esp+20]
+	mov edx, [esp+24]
 	int 0x52
+
+	pop ebp
+	pop edi
+	pop esi
+	pop ebx
 	ret
 .end:

@@ -68,12 +68,10 @@ int vm86_monitor_gpf(struct thread *image) {
 	uint8_t  *ip;
 	bool     o32, a32;
 
-	ip    = (void*) ((uint16_t) image->eip + (image->cs << 4));
+	ip    = (void*) (image->eip + (image->cs << 4));
 	ivt   = (void*) 0;
-	stack = (void*) ((uint16_t) image->useresp + (image->ss << 4));
+	stack = (void*) (image->useresp + (image->ss << 4));
 	o32 = a32 = false;
-
-	debug_printf("monitor %x %x\n", *ip, ip);
 
 	while (1) switch (*ip) {
 	case 0x66: /* O32 */
@@ -126,11 +124,9 @@ int vm86_monitor_gpf(struct thread *image) {
 
 		if (image->vm86_if) stack[2] |= 0x200;
 		else stack[2] &= ~0x200;
-
-		image->eip = ivt[ip[1] * 2 + 0];
-		image->cs  = ivt[ip[1] * 2 + 1];
-
-		debug_printf("int %x -> %x:%x\n", ip[1], image->cs, image->eip);
+	
+		image->eip = ivt[(ip[1] * 2) + 0];
+		image->cs  = ivt[(ip[1] * 2) + 1];
 
 		return 0;
 	case 0xCF: /* IRET */

@@ -24,5 +24,9 @@ $(TARGET): $(SOURCES)
 	echo " CC	" $(SUBDIR)/$<
 	@ $(CC) $(CFLAGS) -c $< -o $@
 
+fault/fault_gpf.o: fault/fault_gpf.c
+	echo " CC	" $(SUBDIR)/$<
+	@ $(CC) $(CFLAGS) -O0 -c $< -o $@
+
 clean:
 	@ rm $(TARGET) $(SOURCES)

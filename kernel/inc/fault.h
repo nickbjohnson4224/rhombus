@@ -46,5 +46,6 @@ struct thread *fault_float  (struct thread *image);
 struct thread *fault_double (struct thread *image);
 struct thread *fault_nomath (struct thread *image);
 struct thread *fault_gpf    (struct thread *image);
+struct thread *fault_ignore (struct thread *image);
 
 #endif/*KERNEL_FAULT_H*/
