@@ -20,7 +20,6 @@
 #include <stddef.h>
 #include <natio.h>
 #include <stdio.h>
-#include <mutex.h>
 #include <ipc.h>
 
 extern struct driver tmpfs_driver;

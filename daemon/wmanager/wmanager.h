@@ -19,9 +19,15 @@
 
 #include <stdint.h>
 
+enum window_flags {
+	LISTEN_EVENTS = 0x1,
+	CONSTANT_SIZE = 0x2
+};
+
 struct window_t {
 	uint32_t id;
 	uint32_t owner;
+	int flags;
 	int x, y;
 	size_t width, height;
 	uint8_t *bitmap;
@@ -34,11 +40,12 @@ extern size_t screen_width, screen_height;
 extern struct window_t *windows;
 extern struct window_t *active_window;
 
+struct window_t *find_window(uint32_t id, uint32_t owner);
 int add_window(uint32_t id, uint32_t owner);
 int remove_window(uint32_t id, uint32_t owner);
 void draw_window(struct window_t *window);
-int set_window_size(uint32_t id, uint32_t owner, size_t width, size_t height);
-int set_window_bitmap(uint32_t id, uint32_t owner, uint8_t *address, size_t size);
+
+void update_screen();
 void blit_bitmap(const uint8_t *bitmap, int tox, int toy, size_t width, size_t height);
 
 void mouse_move(int16_t dx, int16_t dy);

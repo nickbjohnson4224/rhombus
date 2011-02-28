@@ -40,9 +40,11 @@ char *vga_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 		rets = strdup("320:200:32");
 	}
 	else if (!strcmp(args, "unshare")) {
+		mutex_spin(&file->mutex);
 		page_free(screen, mode->width * mode->height * 4);
 		free(screen);
 		screen = valloc(0x20000);
+		mutex_free(&file->mutex);
 		rets = strdup("T");
 	}
 
@@ -76,6 +78,8 @@ int vga_share(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t siz
 		return -1;
 	}
 
+	mutex_spin(&file->mutex);
+
 	if (screen) {
 		page_free(screen, mode->width * mode->height * 4);
 		free(screen);
@@ -84,11 +88,15 @@ int vga_share(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t siz
 
 	screen = buffer;
 
+	mutex_free(&file->mutex);
+
 	return 0;
 }
 
 size_t vga_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off) {
 	size_t i;
+
+	mutex_spin(&file->mutex);
 
 	if (size > mode->width * mode->height * 4 - off) {
 		size = mode->width * mode->height * 4 - off;
@@ -98,11 +106,15 @@ size_t vga_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t s
 		buffer[i] = screen[i + off];
 	}
 
+	mutex_free(&file->mutex);
+
 	return size;
 }
 
 size_t vga_write(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off) {
 	size_t i;
+
+	mutex_spin(&file->mutex);
 
 	if (size > mode->width * mode->height * 4 - off) {
 		size = mode->width * mode->height * 4 - off;
@@ -111,6 +123,8 @@ size_t vga_write(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t 
 	for (i = 0; i < size; i++) {
 		screen[i + off] = buffer[i];
 	}
+
+	mutex_free(&file->mutex);
 
 	return size;
 }

@@ -16,6 +16,7 @@
 
 #include "wmanager.h"
 #include <natio.h>
+#include <page.h>
 
 const size_t cursor_width = 3, cursor_height = 3;
 const uint8_t cursor_bitmap[3 * 3 * 4] = {
@@ -39,7 +40,8 @@ void mouse_move(int16_t dx, int16_t dy) {
 	if (mousex >= (int) screen_width) mousex = screen_width - 1;
 	if (mousey >= (int) screen_height) mousey = screen_height - 1;
 
-	if (!mousebuttons) { // activate window
+	if (!mousebuttons) {
+		// activate window
 		active_window = NULL;
 		for (window = windows; window; window = window->next) {
 			if (window->x <= mousex && mousex <= window->x + (int) window->width &&
@@ -49,15 +51,30 @@ void mouse_move(int16_t dx, int16_t dy) {
 		}
 	}
 
-	if (active_window && (mousebuttons & 1)) { // move window
-		active_window->x += mousex - mouseclickx;
-		active_window->y += mousey - mouseclicky;
+	if (active_window) {
+		if (mousebuttons & 1) {
+			// move window
+			active_window->x += mousex - mouseclickx;
+			active_window->y += mousey - mouseclicky;
+		}
+		else if ((mousebuttons & 2) && !(active_window->flags & CONSTANT_SIZE)) {
+			// resize window
+//			page_free(window->bitmap, window->width * window->height * 4);
+//			window->bitmap = NULL;
+			active_window->width += mousex - mouseclickx;
+			active_window->height += mousey - mouseclicky;
+			mousex = active_window->x + active_window->width;
+			mousey = active_window->y + active_window->height;
+//			if (active_window->flags & LISTEN_EVENTS) {
+//				event(RP_CONS(active_window->owner, 0), window->width << 16 | window->height);
+//			}
+		}
 		mouseclickx = mousex;
 		mouseclicky = mousey;
 	}
 
 	draw_cursor();
-//	sync(vgafd); //fixme: causes freeze
+//	sync(vgafd); //fixme: causes slowness
 }
 
 void mouse_click(int buttons) {

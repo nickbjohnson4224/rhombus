@@ -18,6 +18,7 @@
 #include <proc.h>
 #include <stdlib.h>
 #include <string.h>
+#include <mutex.h>
 
 struct register_t
 {
@@ -43,9 +44,11 @@ char *mouse_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 	struct register_t *reg, *prev = NULL;
 
 	if (strcmp(args, "register") == 0) {
+		mutex_spin(&file->mutex);
 		for (reg = regs; reg; reg = reg->next) {
 			if (reg->rp == source) {
 				// avoid duplicates
+				mutex_free(&file->mutex);
 				return strdup("");
 			}
 		}
@@ -57,11 +60,13 @@ char *mouse_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 		reg->rp = source;
 		reg->next = regs;
 		regs = reg;
+		mutex_free(&file->mutex);
 		return strdup("T");
 	}
 
 	if (strcmp(args, "deregister") == 0) {
-		for (reg = regs; reg; reg = reg->next) {
+		mutex_spin(&file->mutex);
+		for (reg = regs; reg; reg = reg->next, prev = reg) {
 			if (reg->rp == source) {
 				if (prev) {
 					prev->next = reg->next;
@@ -70,10 +75,11 @@ char *mouse_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 					regs->next = reg->next;
 				}
 				free(reg);
+				mutex_free(&file->mutex);
 				return strdup("T");
 			}
-			prev = reg;
 		}
+		mutex_free(&file->mutex);
 		return strdup("");
 	}
 

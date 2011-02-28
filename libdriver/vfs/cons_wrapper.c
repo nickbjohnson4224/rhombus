@@ -62,8 +62,6 @@ void __cons_wrapper(struct msg *msg) {
 	dir = vfs_get_index(RP_INDEX(msg->target));
 
 	if (dir) {
-		mutex_spin(&dir->mutex);
-
 		/* check permissions */
 		if ((acl_get(dir->acl, gettuser()) & PERM_WRITE) == 0) {
 			rp = 0;
@@ -84,8 +82,6 @@ void __cons_wrapper(struct msg *msg) {
 				rp = 0;
 			}
 		}
-
-		mutex_free(&dir->mutex);
 	}
 	else {
 		rp = 0;

@@ -60,7 +60,7 @@ size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 		size = 1;
 	}
 
-	mutex_spin(&stream->mutex);
+	mutex_free(&stream->mutex);
 
 	return (ret / size);
 }

@@ -22,14 +22,31 @@
 #include <stdio.h>
 #include <natio.h>
 
-const size_t width = 256;
-const size_t height = 30;
-const size_t size = width * height * 4;
+size_t size;
 uint8_t *bitmap;
 uint64_t wID;
 
-void testapp_event(uint64_t source, uint64_t event) {
-	printf("testapp event\n");
+void resize(size_t width, size_t height) {
+	size = width * height * 4;
+	bitmap = realloc(bitmap, size);
+	for (size_t i = 0; i <= width; i++)	{
+		for (size_t line = 0; line < 3; line++) {
+			for (size_t j = 0; j < height / 3; j++) {
+				for (size_t c = 0; c < 3; c++) {
+					bitmap[(i + (10 * line + j) * width) * 4 + c] = line == c ? i : 0;
+				}
+			}
+		}
+	}
+	wm_set_bitmap(wID, bitmap, size);
+}
+
+void testapp_event(uint64_t source, uint64_t value) {
+	int type = value >> 62;
+	int data = value & ~(0x3LL << 62);
+	if (type == 0x0) { // resize
+		resize(data >> 16, data & 0xffff);
+	}
 }
 
 void draw(uint8_t alpha) {
@@ -40,22 +57,10 @@ void draw(uint8_t alpha) {
 }
 
 int main(int argc, char **argv) {
-	event_register(io_find("/sys/wmanager"), testapp_event);
+	wID = wm_create_window(256, 30);
+	event_register(wID, testapp_event);
+	resize(256, 30);
 
-	bitmap = malloc(size);
-	memset(bitmap, 0, size);
-	for (size_t i = 0; i <= 0xff; i++)	{
-		for (size_t line = 0; line < 3; line++) {
-			for (size_t j = 0; j < 10; j++) {
-				for (size_t c = 0; c < 3; c++) {
-					bitmap[(i + (10 * line + j) * width) * 4 + c] = line == c ? i : 0;
-				}
-			}
-		}
-	}
-
-	wID = wm_create_window(width, height);
-	wm_set_bitmap(wID, bitmap, size);
 	while (1) {
 		for (int alpha = 0; alpha <= 0xff; alpha += 0x10) {
 			draw(alpha);

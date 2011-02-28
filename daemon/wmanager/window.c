@@ -42,6 +42,7 @@ int add_window(uint32_t id, uint32_t owner) {
 	window = malloc(sizeof(struct window_t));
 	window->id = id;
 	window->owner = owner;
+	window->flags = 0;
 	window->x = window->y = 0;
 	window->width = window->height = 0;
 	window->bitmap = NULL;
@@ -60,7 +61,7 @@ int add_window(uint32_t id, uint32_t owner) {
 
 int remove_window(uint32_t id, uint32_t owner) {
 	struct window_t *window, *prev = NULL;
-	for (window = windows; window; window = window->next) {
+	for (window = windows; window; window = window->next, prev = window) {
 		if (window->id == id && window->owner == owner) {
 			if (prev) {
 				prev->next = window->next;
@@ -71,7 +72,6 @@ int remove_window(uint32_t id, uint32_t owner) {
 			free(window);
 			return 0;
 		}
-		prev = window;
 	}
 	return -1;
 }
@@ -110,47 +110,6 @@ void draw_window(struct window_t *window) {
 			for (int c = 0; c < 3; c++) {
 				screen[(window->x + window->width + y * screen_width) * 4 + c] =
 					(window == active_window && c != 2) ? 0 : 0xff;
-			}
-		}
-	}
-}
-
-int set_window_size(uint32_t id, uint32_t owner, size_t width, size_t height) {
-	struct window_t *window = find_window(id, owner);
-	if (!window) {
-		return -1;
-	}
-
-	window->bitmap = NULL;
-	window->width = width;
-	window->height = height;
-	return 0;
-}
-
-int set_window_bitmap(uint32_t id, uint32_t owner, uint8_t *address, size_t size) {
-	struct window_t *window = find_window(id, owner);
-	if (!window) {
-		return -1;
-	}
-	if (window->bitmap) {
-		return -1;
-	}
-	if (size != window->height * window->width * 4) {
-		return -1;
-	}
-	window->bitmap = address;
-	return 0;
-}
-
-void blit_bitmap(const uint8_t *bitmap, int tox, int toy, size_t width, size_t height) {
-	for (size_t x = tox >= 0 ? tox : 0; x < tox + width && x < screen_width; x++) {
-		for (size_t y = toy >= 0 ? toy : 0; y < toy + height && y < screen_height; y++) {
-			size_t screen_index = (x + y * screen_width) * 4;
-			size_t bitmap_index = ((x - tox) + (y - toy) * width) * 4;
-			double alpha = bitmap[bitmap_index + 3] / 255.0;
-			for (int c = 0; c < 3; c++) {
-				screen[screen_index + c] = (1 - alpha) * screen[screen_index + c] +
-					alpha * bitmap[bitmap_index + c];
 			}
 		}
 	}

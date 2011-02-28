@@ -24,22 +24,67 @@
 #include <page.h>
 
 uint64_t vgafd;
-uint8_t *screen;
-size_t screen_width, screen_height;
 
 char *wmanager_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
+	struct window_t *window;
+	size_t width, height;
+	int flags;
+	char buffer[16];
+
+	if (strcmp(args, "listmodes") == 0) {
+		return strdup("any");
+	}
+	if (strcmp(args, "syncrect") == 0) {
+		update_screen();
+		return strdup("T");
+	}
+
+	window = find_window(file->index, RP_PID(source));
+	if (!window) {
+		return strdup("");
+	}
+
 	if (strncmp(args, "setmode ", 8) == 0) {
-		size_t width, height;
 		if (sscanf(args + 8, "%i %i", &width, &height) != 2) {
 			return strdup("");
 		}
-		if (set_window_size(file->index, RP_PID(source), width, height) != 0) {
+		page_free(window->bitmap, window->width * window->height * 4);
+		window->bitmap = NULL;
+		window->width = width;
+		window->height = height;
+		return strdup("T");
+	}
+	if (strcmp(args, "getmode") == 0) {
+		sprintf(buffer, "%i %i 32", window->width, window->height);
+		return strdup(buffer);
+	}
+	if (strcmp(args, "unshare") == 0) {
+		if (!window->bitmap) {
 			return strdup("");
 		}
+		page_free(window->bitmap, window->width * window->height * 4);
+		window->bitmap = NULL;
 		return strdup("T");
 	}
 
 	if (strcmp(args, "register") == 0) {
+		window->flags |= LISTEN_EVENTS;
+		return strdup("T");
+	}
+	if (strcmp(args, "deregister") == 0) {
+		window->flags &= ~LISTEN_EVENTS;
+		return strdup("T");
+	}
+
+	if (strcmp(args, "getwindowflags") == 0) {
+		sprintf(buffer, "%i", window->flags);
+		return strdup(buffer);
+	}
+	if (strncmp(args, "setwindowflags ", 15) == 0) {
+		if (sscanf(args + 15, "%i", &flags) != 1) {
+			return strdup("");
+		}
+		window->flags = flags;
 		return strdup("T");
 	}
 
@@ -47,20 +92,25 @@ char *wmanager_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 }
 
 int wmanager_share(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off) {
+	struct window_t *window = find_window(file->index, RP_PID(source));
 	if (off != 0) {
 		return -1;
 	}
-	return set_window_bitmap(file->index, RP_PID(source), buffer, size);
+	if (!window) {
+		return -1;
+	}
+	if (size != window->width * window->height * 4) {
+		return -1;
+	}
+	if (window->bitmap) {
+		page_free(window->bitmap, window->width * window->height * 4);
+	}
+	window->bitmap = buffer;
+	return 0;
 }
 
 int wmanager_sync(uint64_t source, struct vfs_obj *file) {
-	memset(screen, 0, screen_width * screen_height * 4);
-	struct window_t *window;
-	for (window = windows; window; window = window->next) {
-		draw_window(window);
-	}
-	draw_cursor();
-	sync(vgafd);
+	update_screen();
 	return 0;
 }
 
@@ -105,7 +155,7 @@ void wmanager_event(uint64_t source, uint64_t value) {
 		mouse_release(data);
 	}
 
-	if (active_window) {
+	if (active_window && (active_window->flags & LISTEN_EVENTS)) {
 		event(RP_CONS(active_window->owner, 0), value);
 	}
 }
