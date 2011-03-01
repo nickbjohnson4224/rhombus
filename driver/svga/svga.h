@@ -19,6 +19,8 @@
 
 #include <stdint.h>
 
+/* VESA BIOS extensions driver **********************************************/
+
 struct vbe_ctrlinfo {
 	char     signature[4];
 	uint16_t version;
@@ -34,9 +36,6 @@ struct vbe_ctrlinfo {
 	uint16_t reserved;
 	uint16_t oem_data;
 } __attribute__((packed));
-
-extern volatile struct vbe_ctrlinfo *svga_ctrl;
-int vbe_readctrl(void);
 
 struct vbe_modeinfo {
 	uint16_t attributes;
@@ -64,7 +63,7 @@ struct vbe_modeinfo {
 
 	// direct color
 	uint8_t  red_size;
-	uint8_t  res_off;
+	uint8_t  red_off;
 	uint8_t  green_size;
 	uint8_t  green_off;
 	uint8_t  blue_size;
@@ -93,9 +92,6 @@ struct vbe_modeinfo {
 	uint32_t max_pixel_clock;
 } __attribute__((packed));
 
-extern volatile struct vbe_modeinfo *svga_mode;
-int vbe_readmode(uint16_t mode);
-
 struct vbe_ctrcinfo {
 	uint16_t horiz_total;
 	uint16_t horiz_start;
@@ -108,7 +104,61 @@ struct vbe_ctrcinfo {
 	uint16_t refresh;
 } __attribute__((packed));
 
-extern volatile struct vbe_crtcinfo *svga_crtc;
-int vbe_setmode(uint8_t mode, uint8_t flags);
+#define FIXPTR(ptr) ((ptr) = ((ptr & 0xFFFF) | (ptr >> 12)))
+
+extern struct vbe_crtcinfo *svga_crtc;
+extern struct vbe_ctrlinfo *svga_ctrl;
+extern struct vbe_modeinfo *svga_mode;
+
+int vbe_readctrl(void);
+int vbe_readmode(uint16_t mode);
+int vbe_setmode (uint16_t mode, uint8_t flags);
+int vbe_setbank (uint8_t window, uint16_t bank);
+
+int vbe_cmd(uint8_t num, uint16_t bx, uint16_t cx, uint16_t dx, uint32_t esdi);
+
+/* SVGA driver **************************************************************/
+
+extern struct svga {
+	int mode; // 0 - banked, 1 - linear
+
+	// linear mode
+	uint8_t *linear;
+	uint32_t linear_size;
+
+	// banked mode
+	uint8_t *window0;
+	uint8_t *window1;
+	uint32_t window_size;
+
+	// resolution
+	uint16_t w;  // width
+	uint16_t h;  // height
+	uint16_t d;  // depth
+	uint16_t p;  // pitch
+	uint16_t pw; // pixel width
+
+	// color information
+	uint8_t  r_size;
+	uint8_t  r_shft;
+	uint8_t  g_size;
+	uint8_t  g_shft;
+	uint8_t  b_size;
+	uint8_t  b_shft;
+} svga;
+
+extern struct svga_mode {
+	uint16_t vesa_mode;
+	uint16_t w;
+	uint16_t h;
+	uint16_t d;
+} *modelist;
+extern int modelist_count;
+
+int svga_init     (void); 
+int svga_find_mode(int width, int height, int depth);
+int svga_set_mode (int mode);
+int svga_flip     (uint32_t *buffer);
+int svga_fliprect (uint32_t *buffer, int x, int y, int w, int h);
 
 #endif/*SVGA_H*/
