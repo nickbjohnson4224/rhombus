@@ -76,37 +76,37 @@ int remove_window(uint32_t id, uint32_t owner) {
 	return -1;
 }
 
-void draw_window(struct window_t *window) {
+void draw_window(struct window_t *window, int x1, int y1, int x2, int y2) {
 	/* content */
 	if (window->bitmap) {
-		blit_bitmap(window->bitmap, window->x, window->y, window->width, window->height);
+		blit_bitmap(window->bitmap, window->x, window->y, window->width, window->height, x1, y1, x2, y2);
 	}
 		
 	/* decorations */
-	for (size_t x = window->x >= 1 ? window->x - 1 : 0;
-			(x < (window->x + window->width + 1)) && (x < screen_width); x++) {
-		if (window->y >= 1) {
+	for (size_t x = window->x > x1 ? window->x - 1 : x1;
+			(x < (window->x + window->width + 1)) && (x < (size_t) x2); x++) {
+		if (window->y > y1) {
 			for (int c = 0; c < 3; c++) {
 				screen[(x + (window->y - 1) * screen_width) * 4 + c] =
 					(window == active_window && c != 2) ? 0 : 0xff;
 			}
 		}
-		if (window->y + window->height < screen_height) {
+		if (window->y + window->height < (size_t) y2) {
 			for (int c = 0; c < 3; c++) {
 				screen[(x + (window->y + window->height) * screen_width) * 4 + c] =
 					(window == active_window && c != 2) ? 0 : 0xff;
 			}
 		}
 	}
-	for (size_t y = window->y >= 0 ? window->y : 0;
-			(y < (window->y + window->height)) && (y < screen_height); y++) {
-		if (window->x >= 1) {
+	for (size_t y = window->y >= y1 ? window->y : y1;
+			(y < (window->y + window->height)) && (y < (size_t) y2); y++) {
+		if (window->x > x1) {
 			for (int c = 0; c < 3; c++) {
 				screen[(window->x - 1 + y * screen_width) * 4 + c] =
 					(window == active_window && c != 2) ? 0 : 0xff;
 			}
 		}
-		if (window->x + window->width < screen_width) {
+		if (window->x + window->width < (size_t) x2) {
 			for (int c = 0; c < 3; c++) {
 				screen[(window->x + window->width + y * screen_width) * 4 + c] =
 					(window == active_window && c != 2) ? 0 : 0xff;

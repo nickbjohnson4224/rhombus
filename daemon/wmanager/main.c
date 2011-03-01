@@ -28,15 +28,11 @@ uint64_t vgafd;
 char *wmanager_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 	struct window_t *window;
 	size_t width, height;
-	int flags;
+	int flags, x, y;
 	char buffer[16];
 
 	if (strcmp(args, "listmodes") == 0) {
 		return strdup("any");
-	}
-	if (strcmp(args, "syncrect") == 0) {
-		update_screen();
-		return strdup("T");
 	}
 
 	window = find_window(file->index, RP_PID(source));
@@ -57,6 +53,13 @@ char *wmanager_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 	if (strcmp(args, "getmode") == 0) {
 		sprintf(buffer, "%i %i 32", window->width, window->height);
 		return strdup(buffer);
+	}
+	if (strncmp(args, "syncrect ", 9) == 0) {
+		if (sscanf(args + 9, "%i %i %i %i", &x, &y, &width, &height) != 4) {
+			return strdup("");
+		}
+		update_screen(window->x + x, window->y + y, window->x + x + width, window->y + y + height);
+		return strdup("T");
 	}
 	if (strcmp(args, "unshare") == 0) {
 		if (!window->bitmap) {
@@ -110,7 +113,11 @@ int wmanager_share(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_
 }
 
 int wmanager_sync(uint64_t source, struct vfs_obj *file) {
-	update_screen();
+	struct window_t *window = find_window(file->index, RP_PID(source));
+	if (!window) {
+		return -1;
+	}
+	update_screen(window->x - 1, window->y - 1, window->x + window->width + 1, window->y + window->height + 1);
 	return 0;
 }
 

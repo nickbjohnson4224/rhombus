@@ -30,8 +30,22 @@
 uint8_t *vmem;
 uint8_t *screen;
 
+void update(int x1, int y1, int x2, int y2) {
+	uint32_t pixel;
+	int i;
+
+	for (int x = x1; x < x2; x++) {
+		for (int y = y1; y < y2; y++) {
+			i = x + y * mode->width;
+			pixel = (screen[i * 4] << 16) | (screen[i * 4 + 1] << 8) | screen[i * 4 + 2];
+			mode->plot(x, y, pixel);
+		}
+	}
+}
+
 char *vga_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 	char *rets = NULL;
+	int x, y, width, height;
 
 	if (!strcmp(args, "getmode")) {
 		rets = strdup("320 200 32");
@@ -47,23 +61,26 @@ char *vga_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 		mutex_free(&file->mutex);
 		rets = strdup("T");
 	}
+	else if (!strncmp(args, "syncrect ", 9)) {
+		if (sscanf(args + 9, "%i %i %i %i", &x, &y, &width, &height) == 4) {
+			update(x, y, x + width, y + height);
+			rets = strdup("T");
+		}
+		else {
+			rets = strdup("");
+		}
+	}
 
 	return rets;
 }
 
 int vga_sync(uint64_t source, struct vfs_obj *file) {
-	uint32_t pixel;
-	size_t i;
-
 	if (!screen) {
 		return -1;
 	}
 
 	mutex_spin(&file->mutex);
-	for (i = 0; i < mode->width * mode->height; i++) {
-		pixel = (screen[i * 4] << 16) | (screen[i * 4 + 1] << 8) | screen[i * 4 + 2];
-		mode->plot(i % mode->width, i / mode->width, pixel);
-	}
+	update(0, 0, mode->width, mode->height);
 	mutex_free(&file->mutex);
 
 	return 0;

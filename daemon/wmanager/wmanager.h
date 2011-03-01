@@ -43,14 +43,14 @@ extern struct window_t *active_window;
 struct window_t *find_window(uint32_t id, uint32_t owner);
 int add_window(uint32_t id, uint32_t owner);
 int remove_window(uint32_t id, uint32_t owner);
-void draw_window(struct window_t *window);
+void draw_window(struct window_t *window, int x1, int y1, int x2, int y2);
 
-void update_screen();
-void blit_bitmap(const uint8_t *bitmap, int tox, int toy, size_t width, size_t height);
+void update_screen(int x1, int y1, int x2, int y2);
+void blit_bitmap(const uint8_t *bitmap, int tox, int toy, size_t width, size_t height, int x1, int y1, int x2, int y2);
 
 void mouse_move(int16_t dx, int16_t dy);
 void mouse_click(int buttons);
 void mouse_release(int buttons);
-void draw_cursor();
+void draw_cursor(int x1, int y1, int x2, int y2);
 
 #endif

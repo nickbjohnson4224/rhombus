@@ -33,7 +33,7 @@ void resize(size_t width, size_t height) {
 		for (size_t line = 0; line < 3; line++) {
 			for (size_t j = 0; j < height / 3; j++) {
 				for (size_t c = 0; c < 3; c++) {
-					bitmap[(i + (10 * line + j) * width) * 4 + c] = line == c ? i : 0;
+					bitmap[(i + ((height / 3) * line + j) * width) * 4 + c] = line == c ? (255.0 / width * i) : 0;
 				}
 			}
 		}
@@ -62,10 +62,10 @@ int main(int argc, char **argv) {
 	resize(256, 30);
 
 	while (1) {
-		for (int alpha = 0; alpha <= 0xff; alpha += 0x10) {
+		for (int alpha = 0; alpha <= 0xff; alpha++) {
 			draw(alpha);
 		}
-		for (int alpha = 0xfe; alpha >= 0; alpha -= 0x10) {
+		for (int alpha = 0xfe; alpha >= 0; alpha--) {
 			draw(alpha);
 		}
 	}
