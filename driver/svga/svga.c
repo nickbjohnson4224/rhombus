@@ -157,9 +157,9 @@ static int svga_putpixel(int x, int y, uint32_t pixel) {
 
 	index = (x * svga.pw) + (y * svga.p);
 
-	r = pixel >> 16;
+	r = pixel >> 0;
 	g = pixel >> 8;
-	b = pixel >> 0;
+	b = pixel >> 16;
 
 	r >>= (8 - svga.r_size);
 	g >>= (8 - svga.g_size);
@@ -193,12 +193,12 @@ int svga_flip(uint32_t *buffer) {
 int svga_fliprect(uint32_t *buffer, int x, int y, int w, int h) {
 	int x1, y1;
 
-	if (x < 0 || y < 0 || x + w > svga.w || y + h > svga.h) {
+	if ((x < 0) || (y < 0) || (x + w > svga.w) || (y + h > svga.h)) {
 		return 1;
 	}
 
-	for (y1 = y; y1 < y + h; y++) {
-		for (x1 = x; x1 < x + w; x++) {
+	for (y1 = y; y1 < y + h; y1++) {
+		for (x1 = x; x1 < x + w; x1++) {
 			svga_putpixel(x1, y1, buffer[x1 + y1 * svga.w]);
 		}
 	}

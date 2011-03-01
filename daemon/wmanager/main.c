@@ -173,7 +173,7 @@ int main(int argc, char **argv) {
 	stdout = stderr = fopen("/dev/serial", "w");
 
 	if (fork() < 0) {
-		exec("/sbin/vga");
+		exec("/sbin/svga");
 	}
 	mwait(PORT_CHILD, 0);
 	if (fork() < 0) {
@@ -197,7 +197,7 @@ int main(int argc, char **argv) {
 
 	io_link("/sys/wmanager", RP_CONS(getpid(), 0));
 
-	vgafd = io_find("/dev/vga0");
+	vgafd = io_find("/dev/svga0");
 	sscanf(rcall(vgafd, "getmode"), "%i %i", &screen_width, &screen_height);
 	screen = malloc(screen_width * screen_height * 4);
 	memset(screen, 0, screen_width * screen_height * 4);

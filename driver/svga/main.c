@@ -80,7 +80,9 @@ char *svga_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 }
 
 int svga_sync(uint64_t source, struct vfs_obj *file) {
-	
+
+	printf("svga_sync\n");
+
 	if (!buffer) {
 		return -1;
 	}
@@ -93,7 +95,7 @@ int svga_sync(uint64_t source, struct vfs_obj *file) {
 }
 
 int svga_share(uint64_t source, struct vfs_obj *file, uint8_t *_buffer, size_t size, uint64_t off) {
-	
+
 	if (size != svga.w * svga.h * 4) {
 		return -1;
 	}
@@ -161,6 +163,7 @@ int main(int argc, char **argv) {
 	root->type = RP_TYPE_FILE;
 	root->size = 0;
 	root->acl  = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
+	vfs_set_index(0, root);
 
 	svga_init();
 
@@ -175,8 +178,7 @@ int main(int argc, char **argv) {
 	}
 
 	svga_set_mode(svga_find_mode(640, 480, 24));
-	buffer = calloc(svga.w * svga.h * 4, 1);
-	svga_flip(buffer);
+	buffer = malloc(svga.w * svga.h * 4);
 
 	/* set up driver interface */
 	di_wrap_sync (svga_sync);
