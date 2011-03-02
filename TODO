@@ -23,47 +23,60 @@ For 0.8 Alpha:
 + standardize graphics API
 + standardize input API
 + vm86 support
-- VESA video driver
++ VESA video driver
 - proper terminal driver
+- freetype port?
 - curses port
+- process manager (for top, pkill)
 
 For 0.9 Alpha:
 
+- non-recursive VFS find
+- simplify VFS security
+- file locking
+- driver interface revision
 - write fenv.h, tgmath.h
+- copy-on-write
 - dynamic linking
 - device manager (PCI)
 - ATA/ATAPI driver
-- filesystem drivers (iso9660, ext2)
+- USB driver
+- iso9660 driver
+- ext2 driver
+- FAT32 driver
 
 For 0.10 Alpha:
 
-- finalize all core APIs
-- clean up as much as possible
-- full libc documentation
-- full kernel documentation
+- finalize native I/O API
+- finalize driver API
+- libc documentation
+- kernel documentation
 - driver writing manual
 - user manual
-
-For 0.11 Beta:
-
 - text editor (port vim?)
+- finalize core utilities
 - installer
-- real hardware testing
-
-For 0.12 Beta:
-
 - C++ support
 - POSIX compatibility layer
 - self-hosting toolchain
+- installer
+- real hardware testing
 
-For 0.13 Beta:
+For 1.0 Beta:
 
+- window manager
+- window manager API finalized
+- GUI toolkit
+- GUI and window manager documentation
+- port SDL, Cairo
 - networking stack
-- graphics stack
-
-For 0.14 Beta:
-
+- native networking API
+- POSIX socket API
+- networking documentation
+- network card drivers
+- web browser (port Links, WebKit?)
 - multiprocessor support
+- ACPI driver
 
 For later:
 
