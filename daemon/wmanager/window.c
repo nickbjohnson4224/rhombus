@@ -63,6 +63,9 @@ int remove_window(uint32_t id, uint32_t owner) {
 	struct window_t *window, *prev = NULL;
 	for (window = windows; window; window = window->next, prev = window) {
 		if (window->id == id && window->owner == owner) {
+			if (window == active_window) {
+				active_window = NULL;
+			}
 			if (prev) {
 				prev->next = window->next;
 			}

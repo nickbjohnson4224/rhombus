@@ -30,15 +30,22 @@ int mousex, mousey;
 int mousebuttons;
 
 void mouse_move(int16_t dx, int16_t dy) {
+	struct window_t *prev_active = active_window;
 	struct window_t *window;
+	int x, y, width, height;
+
+	if (mousex + dx < 0) dx = -mousex;
+	if (mousey + dy < 0) dy = -mousey;
+	if (mousex + dx >= (int) screen_width) dx = screen_width - mousex - 1;
+	if (mousey + dy >= (int) screen_height) dy = screen_height - mousey - 1;
 
 	mousex += dx;
 	mousey += dy;
 
-	if (mousex < 0) mousex = 0;
-	if (mousey < 0) mousey = 0;
-	if (mousex >= (int) screen_width) mousex = screen_width - 1;
-	if (mousey >= (int) screen_height) mousey = screen_height - 1;
+	x = mousex;
+	y = mousey;
+	width = cursor_width;
+	height = cursor_height;
 
 	if (!mousebuttons) {
 		// activate window
@@ -49,6 +56,18 @@ void mouse_move(int16_t dx, int16_t dy) {
 				active_window = window;
 			}
 		}
+		if (prev_active != active_window) {
+			// update decorations
+			if (prev_active) {
+				update_screen(prev_active->x - 1, prev_active->y - 1, prev_active->x + prev_active->width + 1, prev_active->y + prev_active->height + 1);
+			}
+			if (active_window) {
+				x = active_window->x - 1;
+				y = active_window->y - 1;
+				width = active_window->width + 1 + cursor_width;
+				height = active_window->height + 1 + cursor_height;
+			}
+		}
 	}
 
 	if (active_window) {
@@ -56,6 +75,10 @@ void mouse_move(int16_t dx, int16_t dy) {
 			// move window
 			active_window->x += dx;
 			active_window->y += dy;
+			x = active_window->x - 1;
+			y = active_window->y - 1;
+			width = active_window->width + 1 + cursor_width;
+			height = active_window->height + 1 + cursor_height;
 		}
 		else if ((mousebuttons & 2) && !(active_window->flags & CONSTANT_SIZE)) {
 			// resize window
@@ -69,13 +92,17 @@ void mouse_move(int16_t dx, int16_t dy) {
 			}
 			mousex = active_window->x + active_window->width;
 			mousey = active_window->y + active_window->height;
+			x = active_window->x - 1;
+			y = active_window->y - 1;
+			width = active_window->width + 1 + cursor_width;
+			height = active_window->height + 1 + cursor_height;
 			if (active_window->flags & LISTEN_EVENTS) {
 				event(RP_CONS(active_window->owner, 0), active_window->width << 16 | active_window->height);
 			}
 		}
 	}
 	
-	update_screen(mousex - (dx > 0 ? dx : 0), mousey - (dy > 0 ? dy : 0), mousex + cursor_width + abs(dx), mousey + cursor_height + abs(dy));
+	update_screen(x - (dx > 0 ? dx : 0), y - (dy > 0 ? dy : 0), x + width + abs(dx), y + height + abs(dy));
 }
 
 void mouse_click(int buttons) {
