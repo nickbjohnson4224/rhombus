@@ -32,8 +32,6 @@
 
 #define RP_TYPE_FILE 	0x01
 #define RP_TYPE_DIR		0x02
-#define RP_TYPE_PORT	0x04
-#define RP_TYPE_SET		0x08
 
 size_t   read (uint64_t rp, void *buf, size_t size, uint64_t offset);
 size_t   write(uint64_t rp, void *buf, size_t size, uint64_t offset);
@@ -69,13 +67,6 @@ int      fs_auth  (uint64_t rp, uint32_t user, uint8_t perm);
 #define PERM_READ	0x01
 #define PERM_WRITE	0x02
 #define PERM_ALTER	0x04
-
-#define FERR_NULL	0x00
-#define FERR_FILE	0x01
-#define FERR_DENY	0x02
-#define FERR_FUNC	0x03
-#define FERR_TYPE	0x04
-#define FERR_FULL	0x05
 
 /* path manipulation *******************************************************/
 

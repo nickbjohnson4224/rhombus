@@ -81,8 +81,6 @@ char *svga_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 
 int svga_sync(uint64_t source, struct vfs_obj *file) {
 
-	printf("svga_sync\n");
-
 	if (!buffer) {
 		return -1;
 	}
