@@ -22,6 +22,7 @@
 #include <exec.h>
 #include <proc.h>
 #include <page.h>
+#include <mutex.h>
 
 uint64_t vgafd;
 
@@ -44,10 +45,12 @@ char *wmanager_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 		if (sscanf(args + 8, "%i %i", &width, &height) != 2) {
 			return strdup("");
 		}
+		mutex_spin(&window->mutex);
 		page_free(window->bitmap, window->width * window->height * 4);
 		window->bitmap = NULL;
 		window->width = width;
 		window->height = height;
+		mutex_free(&window->mutex);
 		return strdup("T");
 	}
 	if (strcmp(args, "getmode") == 0) {
@@ -65,8 +68,10 @@ char *wmanager_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 		if (!window->bitmap) {
 			return strdup("");
 		}
+		mutex_spin(&window->mutex);
 		page_free(window->bitmap, window->width * window->height * 4);
 		window->bitmap = NULL;
+		mutex_free(&window->mutex);
 		return strdup("T");
 	}
 
@@ -105,10 +110,12 @@ int wmanager_share(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_
 	if (size != window->width * window->height * 4) {
 		return -1;
 	}
+	mutex_spin(&window->mutex);
 	if (window->bitmap) {
 		page_free(window->bitmap, window->width * window->height * 4);
 	}
 	window->bitmap = buffer;
+	mutex_free(&window->mutex);
 	return 0;
 }
 

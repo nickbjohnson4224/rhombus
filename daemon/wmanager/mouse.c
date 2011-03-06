@@ -18,6 +18,7 @@
 #include <natio.h>
 #include <page.h>
 #include <stdlib.h>
+#include <mutex.h>
 
 const size_t cursor_width = 3, cursor_height = 3;
 const uint8_t cursor_bitmap[3 * 3 * 4] = {
@@ -56,11 +57,13 @@ void mouse_move(int16_t dx, int16_t dy) {
 				active_window = window;
 			}
 		}
+
 		if (prev_active != active_window) {
 			// update decorations
 			if (prev_active) {
 				update_screen(prev_active->x - 1, prev_active->y - 1, prev_active->x + prev_active->width + 1, prev_active->y + prev_active->height + 1);
 			}
+
 			if (active_window) {
 				x = active_window->x - 1;
 				y = active_window->y - 1;
@@ -73,29 +76,42 @@ void mouse_move(int16_t dx, int16_t dy) {
 	if (active_window) {
 		if (mousebuttons & 1) {
 			// move window
+			mutex_spin(&active_window->mutex);
+
 			active_window->x += dx;
 			active_window->y += dy;
+
 			x = active_window->x - 1;
 			y = active_window->y - 1;
 			width = active_window->width + 1 + cursor_width;
 			height = active_window->height + 1 + cursor_height;
+
+			mutex_free(&active_window->mutex);
 		}
 		else if ((mousebuttons & 2) && !(active_window->flags & CONSTANT_SIZE)) {
 			// resize window
+			mutex_spin(&active_window->mutex);
+
 			page_free(active_window->bitmap, active_window->width * active_window->height * 4);
 			active_window->bitmap = NULL;
+
 			if (mousex > active_window->x + 10) {
 				active_window->width += dx;
 			}
 			if (mousey > active_window->y + 10) {
 				active_window->height += dy;
 			}
+
 			mousex = active_window->x + active_window->width;
 			mousey = active_window->y + active_window->height;
+
 			x = active_window->x - 1;
 			y = active_window->y - 1;
 			width = active_window->width + 1 + cursor_width;
 			height = active_window->height + 1 + cursor_height;
+
+			mutex_free(&active_window->mutex);
+
 			if (active_window->flags & LISTEN_EVENTS) {
 				event(RP_CONS(active_window->owner, 0), active_window->width << 16 | active_window->height);
 			}

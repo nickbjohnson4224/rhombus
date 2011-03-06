@@ -21,14 +21,18 @@
 #include <string.h>
 #include <stdio.h>
 #include <natio.h>
+#include <mutex.h>
 
 size_t size;
 uint8_t *bitmap;
 uint64_t wID;
+bool mutex;
 
 void resize(size_t width, size_t height) {
+	mutex_spin(&mutex);
 	size = width * height * 4;
 	bitmap = realloc(bitmap, size);
+	wm_set_bitmap(wID, bitmap, size);
 	for (size_t i = 0; i <= width; i++)	{
 		for (size_t line = 0; line < 3; line++) {
 			for (size_t j = 0; j < height / 3; j++) {
@@ -38,21 +42,23 @@ void resize(size_t width, size_t height) {
 			}
 		}
 	}
-	wm_set_bitmap(wID, bitmap, size);
+	mutex_free(&mutex);
 }
 
 void testapp_event(uint64_t source, uint64_t value) {
 	int type = value >> 62;
 	int data = value & ~(0x3LL << 62);
-	if (type == 0x0) { // resize
+	if (type == 0x0) {
 		resize(data >> 16, data & 0xffff);
 	}
 }
 
 void draw(uint8_t alpha) {
+	mutex_spin(&mutex);
 	for (size_t i = 3; i <= size; i += 4)	{
 		bitmap[i] = alpha;
 	}
+	mutex_free(&mutex);
 	wm_update(wID);
 }
 

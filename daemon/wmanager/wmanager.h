@@ -18,6 +18,7 @@
 #define WMANAGER_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 enum window_flags {
 	LISTEN_EVENTS = 0x1,
@@ -31,6 +32,7 @@ struct window_t {
 	int x, y;
 	size_t width, height;
 	uint8_t *bitmap;
+	bool mutex;
 	struct window_t *next;
 };
 

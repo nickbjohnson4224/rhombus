@@ -16,6 +16,7 @@
 
 #include "wmanager.h"
 #include <stdlib.h>
+#include <mutex.h>
 
 struct window_t *windows;
 struct window_t *active_window;
@@ -46,6 +47,7 @@ int add_window(uint32_t id, uint32_t owner) {
 	window->x = window->y = 0;
 	window->width = window->height = 0;
 	window->bitmap = NULL;
+	window->mutex = false;
 	window->next = NULL;
 
 	if (windows) {
@@ -80,6 +82,8 @@ int remove_window(uint32_t id, uint32_t owner) {
 }
 
 void draw_window(struct window_t *window, int x1, int y1, int x2, int y2) {
+	mutex_spin(&window->mutex);
+
 	/* content */
 	if (window->bitmap) {
 		blit_bitmap(window->bitmap, window->x, window->y, window->width, window->height, x1, y1, x2, y2);
@@ -116,4 +120,6 @@ void draw_window(struct window_t *window, int x1, int y1, int x2, int y2) {
 			}
 		}
 	}
+
+	mutex_free(&window->mutex);
 }
