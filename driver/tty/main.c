@@ -19,6 +19,7 @@
 #include <driver.h>
 #include <signal.h>
 #include <mutex.h>
+#include <ctype.h>
 #include <proc.h>
 #include <page.h>
 
@@ -50,40 +51,42 @@ size_t tty_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t s
 	return i;
 }
 
-void tty_irq(struct msg *msg) {
-	const char keymap[] ="\
-\0\0331234567890-=\b\tqwertyuiop[]\n\0asdfghjkl;\'`\0\\zxcvbnm,./\0*\0 \
-\0\033!@#$%^&*()_+\b\0QWERTYUIOP{}\n\0ASDFGHJKL:\"~\0|ZXCVBNM<>?\0*\0 ";
-
-	static bool shift = false;
-	uint8_t scan;
+void tty_event(uint64_t source, uint64_t value) {
 	char c;
+	static bool ctrl = false;
 
-	scan = inb(0x60);
-
-	if (scan & 0x80) {
-		if (keymap[scan & 0x7F] == '\0') {
-			shift = false;
+	if (value & 0x00400000) {
+		if (value == 0x00C00001) {
+			ctrl = false;
 		}
+		return;
 	}
-	else if (keymap[scan & 0x7F] == '\0') {
-		shift = true;
+
+	if (value & 0x00800000) {
+		if (value == 0x00800001) {
+			ctrl = true;
+		}
+		return;
 	}
-	else {
-		c = (shift) ? keymap[scan + 58] : keymap[scan];
 
-		if (c == 'C') {
-			kill(-getpid(), SIGINT);
-			tty_buffer('\n');
-		}
-		else {
-			tty_buffer(c);
-		}
+	c = value;
 
-		if (tty->mode & MODE_ECHO) {
-			tty_print(c);
-			tty_flip();
-		}
+	if (tolower(c) == 'c' && ctrl) {
+		kill(-getpid(), SIGINT);
+
+		tty_print('^');
+		tty_print('C');
+
+		tty_print('\n');
+		tty_buffer('\n');
+		return;
+	}
+
+	tty_buffer(c);
+
+	if (isprint(c) && tty->mode & MODE_ECHO) {
+		tty_print(c);
+		tty_flip();
 	}
 }
 
@@ -100,6 +103,7 @@ char *tty_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 
 int main(int argc, char **argv) {
 	struct vfs_obj *root;
+	uint64_t kbd;
 	
 	root = calloc(sizeof(struct vfs_obj), 1);
 	root->type = RP_TYPE_FILE;
@@ -109,8 +113,10 @@ int main(int argc, char **argv) {
 
 	tty_init();
 
+	kbd = io_find("/dev/kbd");
+	event_register(kbd, tty_event);
+
 	di_wrap_read (tty_read);
-	di_wrap_irq  (1, tty_irq);
 	di_wrap_write(tty_write);
 	di_wrap_rcall(tty_rcall);
 	vfs_wrap_init();

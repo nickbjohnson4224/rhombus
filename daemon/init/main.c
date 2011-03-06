@@ -85,6 +85,12 @@ int main() {
 	/* Init control file */
 	io_link("/sys/init", RP_CONS(getpid(), 1));
 
+	/* Keyboard Driver */
+	argv[0] = "kbd";
+	argv[1] = NULL;
+	file = tar_find(boot_image, "sbin/kbd");
+	temp = start(file, argv);
+
 	/* Terminal Driver */
 	argv[0] = "tty";
 	argv[1] = NULL;
