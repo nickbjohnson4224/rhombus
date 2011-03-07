@@ -37,18 +37,28 @@ struct process *process_table[MAX_TASKS];
  * sets the field 'pid' in that process structure. Returns null on error.
  */
 
+static pid_t pidlist[MAX_TASKS];
+static int pidlist_setup = 0;
+static int pidlist_top = 0;
+static int pidlist_bot = 0;
+
 struct process *process_alloc(void) {
 	uintptr_t i;
+	pid_t pid;
 
-	for (i = 0; i < MAX_TASKS; i++) {
-		if (process_table[i] == NULL) {
-			break;
+	if (pidlist_setup == 0) {
+		for (i = 0; i < MAX_TASKS; i++) {
+			pidlist[i] = i;
 		}
+		pidlist_setup = 1;
 	}
 
-	process_table[i] = heap_alloc(sizeof(struct process));
-	process_table[i]->pid = i;
-	return process_table[i];
+	pid = pidlist[pidlist_top];
+	pidlist_top = (pidlist_top + 1) % MAX_TASKS;
+
+	process_table[pid] = heap_alloc(sizeof(struct process));
+	process_table[pid]->pid = pid;
+	return process_table[pid];
 }
 
 /****************************************************************************
@@ -111,6 +121,10 @@ struct process *process_clone(struct process *parent, struct thread *active) {
 
 void process_free(struct process *proc) {
 	process_table[proc->pid] = NULL;
+
+	pidlist[pidlist_bot] = proc->pid;
+	pidlist_bot = (pidlist_bot + 1) % MAX_TASKS;
+
 	heap_free(proc, sizeof(struct process));
 }
 
