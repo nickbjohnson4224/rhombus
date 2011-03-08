@@ -24,7 +24,8 @@
 #include <page.h>
 #include <mutex.h>
 
-uint64_t vgafd;
+uint64_t vgafd, mousefd, kbdfd;
+bool winkey;
 
 char *wmanager_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 	struct window_t *window;
@@ -158,15 +159,20 @@ int wmanager_pull(uint64_t source, struct vfs_obj *file) {
 void wmanager_event(uint64_t source, uint64_t value) {
 	int type = value >> 62;
 	int data = value & ~(0x3LL << 62);
+	bool released;
 
-	if (type == 0x1) { 
+	if (type == 0x0 && source == kbdfd) { // keyboard
+		released = data & 0x00400000 ? true : false;
+		data &= ~0x00400000;
+		if (data == 0x00800004) {
+			winkey = !released;
+		}
+	}
+	if (type == 0x1 && source == mousefd) { 
 		mouse_move((data >> 16) & 0xffff, data & 0xffff);
 	}
-	if (type == 0x2) {
-		mouse_click(data & ~(0x3LL << 62));
-	}
-	if (type == 0x3) {
-		mouse_release(data);
+	if (type == 0x2 && source == mousefd) {
+		mouse_buttons(data & ~(0x3LL << 62));
 	}
 
 	if (active_window && (active_window->flags & LISTEN_EVENTS)) {
@@ -210,7 +216,10 @@ int main(int argc, char **argv) {
 	memset(screen, 0, screen_width * screen_height * 4);
 	share(vgafd, screen, screen_width * screen_height * 4, 0, PROT_READ);
 
-	event_register(io_find("/dev/mouse"), wmanager_event);
+	mousefd = io_find("/dev/mouse");
+	kbdfd = io_find("/dev/kbd");
+	event_register(mousefd, wmanager_event);
+	event_register(kbdfd, wmanager_event);
 
 	if (fork() < 0) {
 		exec("/bin/testapp");

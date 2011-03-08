@@ -29,6 +29,7 @@ const uint8_t cursor_bitmap[3 * 3 * 4] = {
 
 int mousex, mousey;
 int mousebuttons;
+bool alreadymoving;
 
 void mouse_move(int16_t dx, int16_t dy) {
 	struct window_t *prev_active = active_window;
@@ -73,7 +74,8 @@ void mouse_move(int16_t dx, int16_t dy) {
 		}
 	}
 
-	if (active_window) {
+	if (active_window && (winkey || alreadymoving)) {
+		alreadymoving = true;
 		if (mousebuttons & 1) {
 			// move window
 			mutex_spin(&active_window->mutex);
@@ -113,7 +115,7 @@ void mouse_move(int16_t dx, int16_t dy) {
 			mutex_free(&active_window->mutex);
 
 			if (active_window->flags & LISTEN_EVENTS) {
-				event(RP_CONS(active_window->owner, 0), active_window->width << 16 | active_window->height);
+				event(RP_CONS(active_window->owner, 0), 0x3LL << 62 | active_window->width << 16 | active_window->height);
 			}
 		}
 	}
@@ -121,12 +123,12 @@ void mouse_move(int16_t dx, int16_t dy) {
 	update_screen(x - (dx > 0 ? dx : 0), y - (dy > 0 ? dy : 0), x + width + abs(dx), y + height + abs(dy));
 }
 
-void mouse_click(int buttons) {
-	mousebuttons |= buttons;
-}
-
-void mouse_release(int buttons) {
-	mousebuttons &= ~buttons;
+void mouse_buttons(int buttons) {
+	if (~buttons & mousebuttons) {
+		// release buttons
+		alreadymoving = false;
+	}
+	mousebuttons = buttons;
 }
 
 void draw_cursor(int x1, int y1, int x2, int y2) {

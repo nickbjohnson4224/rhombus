@@ -48,7 +48,7 @@ void resize(size_t width, size_t height) {
 void testapp_event(uint64_t source, uint64_t value) {
 	int type = value >> 62;
 	int data = value & ~(0x3LL << 62);
-	if (type == 0x0) {
+	if (type == 0x3) {
 		resize(data >> 16, data & 0xffff);
 	}
 }

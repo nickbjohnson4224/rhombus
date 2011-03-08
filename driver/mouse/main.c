@@ -94,7 +94,6 @@ int main()
 	size_t curbyte = 0;
 	bool first;
 	int buttons = 0, prevbuttons = 0;
-	int clicked, released;
 	int16_t dx = 0, dy = 0;
 
 	command(0xa8);  // enable aux. PS2
@@ -119,25 +118,18 @@ int main()
 		first = true;
 		while ((inb(0x64) & 0x21) != 0x21) {
 			if (first) {
-				clicked  =  buttons & ~prevbuttons;
-				released = ~buttons &  prevbuttons;
 				if (dx || dy) {
 					for (reg = regs; reg; reg = reg->next) {
 						event(reg->rp, 0x1LL << 62 | (dx << 16) & 0xffff0000 | dy & 0xffff);
 					}
+					dx = dy = 0;
 				}
-				if (clicked) {
+				if (buttons != prevbuttons) {
 					for (reg = regs; reg; reg = reg->next) {
-						event(reg->rp, 0x2LL << 62 | clicked);
+						event(reg->rp, 0x2LL << 62 | buttons);
 					}
+					prevbuttons = buttons;
 				}
-				if (released) {
-					for (reg = regs; reg; reg = reg->next) {
-						event(reg->rp, 0x3LL << 62 | released);
-					}
-				}
-				dx = dy = 0;
-				prevbuttons = buttons;
 			}
 			first = false;
 		}

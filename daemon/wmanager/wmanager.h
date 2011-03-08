@@ -41,6 +41,7 @@ extern uint8_t *screen;
 extern size_t screen_width, screen_height;
 extern struct window_t *windows;
 extern struct window_t *active_window;
+extern bool winkey;
 
 struct window_t *find_window(uint32_t id, uint32_t owner);
 int add_window(uint32_t id, uint32_t owner);
@@ -51,8 +52,7 @@ void update_screen(int x1, int y1, int x2, int y2);
 void blit_bitmap(const uint8_t *bitmap, int tox, int toy, size_t width, size_t height, int x1, int y1, int x2, int y2);
 
 void mouse_move(int16_t dx, int16_t dy);
-void mouse_click(int buttons);
-void mouse_release(int buttons);
+void mouse_buttons(int buttons);
 void draw_cursor(int x1, int y1, int x2, int y2);
 
 #endif
