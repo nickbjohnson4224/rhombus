@@ -58,6 +58,7 @@ struct tty {
 
 void tty_init  (void);
 void tty_print (char c);
+void tty_clear (void);
 void tty_flip  (void);
 void tty_switch(int n);
 

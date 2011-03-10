@@ -98,6 +98,11 @@ char *tty_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 		return strdup(buffer);
 	}
 	
+	if (!strcmp(args, "clear")) {
+		tty_clear();
+		tty->cursor = 0x0000;
+	}
+	
 	return NULL;
 }
 

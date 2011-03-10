@@ -53,6 +53,13 @@ void tty_init(void) {
 
 	tty_switch(0);
 
+	tty_clear();
+}
+
+void tty_clear(void)
+{
+	int i;
+	
 	for (i = 0; i < tty->width * tty->height; i++) {
 		tty->screen[i] = real_screen[i] = fake_screen[i] = 0x0F20;
 	}
