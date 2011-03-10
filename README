@@ -5,8 +5,8 @@ Introduction
 
 What is Flux?
 
-Flux is a hobby operating system project designed and written by me (Nick
-Johnson), since some time in late 2008. Currently, it consists of a 
+Flux is a hobby operating system project designed and written primarily by me 
+(Nick Johnson), since some time in late 2008. Currently, it consists of a 
 microkernel, a C library, a shell and simple utilities, and a small set of 
 device drivers. It should run on any standard PC hardware with a Pentium
 or better processor, and uses 32 bit protected mode.
@@ -22,32 +22,38 @@ of other interesting bits as well.
 
 How do I use Flux?
 
-At the moment, Flux is not stable enough for use, but it is rapidly 
+At the moment, Flux is not stable enough for real use, but it is rapidly 
 progressing toward that point. It already can run a Lua interpreter, which
 is written in standard C, and all of its source code can be compiled with
-all warning flags and all optimization flags for both GCC and CLang (a feat,
-I hear, which is unfortunately rarely seen in open source projects). The 
-first beta release of Flux should be ready by January 2011. At that point, 
-it should be ready for patches and other contributions.
+all warning flags and all optimization flags for CLang. The first beta 
+release of Flux should be ready by January 2011. At that point, it should be
+ready for patches and other contributions.
 
-Flux is available under the ISC license, which is a simplified BSD license.
+All code in the Flux core (kernel, libc, libdriver, basic drivers) as well 
+as most of the rest of the system uses an OpenBSD-like copyright statement.
 In essence, this means you can freely modify and redistribute Flux, as long
 as you keep the license and copyright information on each of the files that
-contains it. The ISC license is a certified open source license, but you
-can incorporate Flux code into closed source projects if you wish.
+contains it. The OpenBSD license statement is a certified open source license, 
+but you may incorporate Flux code into closed source projects if you wish.
 
 Why the name?
 
-The name Flux originally referred to that acidic stuff in solder used to
-remove oxides from metal: this reflects a planned feature of Flux involving
-shared libraries, and more generally, the idea of reuse and recombination. 
-However, I feel now that it also reflects another goal of the project: 
-change. Flux is built in an extremely flexible fashion, not only because of
-its layered design but also because of its brevity. Every piece of Flux is
-small enough for a single person to completely understand, and if necessary,
-to for a single person to rewrite. Documentation (at release at least) will
-be comprehensive from the largest library down to the smallest function, to
-facilitate those who wish to hack and rewrite.
+The word "flux" has many definitons, but they mostly reflect two ideas:
+fusion and change. 
+
+Flux, much like the original UNIX, strives to give the programmer powerful, 
+general connections with which to combine system components. With UNIX came 
+text pipelines and device files; Flux extends this with a general purpose 
+command system for system daemons, graphics and event pipelines, and 
+pseudo-filesystems that can be presented by any user process.
+
+In addition, Flux strives to allow easy modification, when existing stacks and
+protocols prove insufficient. Flux is built to be rebuilt, to be taken apart 
+and understood, to be a foundation for new ideas. Every core piece of Flux is
+intended to be simple enough for a single person to completely understand, 
+and if necessary, to for a single person to rewrite. Documentation (at release
+at least) will be comprehensive from the largest library down to the smallest 
+function, to aid those who wish to hack.
 
 Build Instructions
 *****************************************************************************
@@ -93,9 +99,9 @@ tested:
 
 Build Instructions:
 
-This system is meant to be built with x86 or x86_64 Linux as a host: it
-may build and test on other Linux platforms, and will probably build on
-any UNIX-like system.
+This system is meant to be built with x86 or x86_64 Linux as a host: it may 
+build and test on other Linux platforms, and will probably build on any 
+UNIX-like system.
 
 To reliably build the system, you should use a cross-compiler. The official 
 set of tools for this is CLang 2.8 and GNU Binutils 2.20 for the "i586-elf" 
@@ -106,13 +112,12 @@ but if in doubt, they should also be installed in the tools directory. The
 build scripts add the tools directory to your PATH, so that toolchain will 
 override the host's.
 
-To make each piece of the operating system, simply type "make 
-<subproject>", or just "make" to make everything. The kernel, init, libc, 
-and at least basic drivers must be built for the system to boot correctly. 
-"make -C <subproject> clean" will remove all object files from the 
-subprojects' directories, and "make clean" will remove all object files. 
-"make image" will make a CD image called flux.iso in the run directory - 
-this requires cdrtools.
+To make each piece of the operating system, simply type "make <subproject>", 
+or just "make" to make everything. The kernel, init, libc, and at least basic 
+drivers must be built for the system to boot correctly. "make -C <subproject> 
+clean" will remove all object files from the subprojects' directories, and 
+"make clean" will remove all object files. "make image" will make a CD image 
+called flux.iso in the run directory - this requires cdrtools.
 
 Test Instructions:
 
