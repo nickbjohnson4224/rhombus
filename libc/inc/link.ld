@@ -14,17 +14,13 @@ SECTIONS {
 	}
 
 	/* read-write sections (data) */
-	. = ALIGN (0x1000);
+/*	. = ALIGN (0x1000); */
 
 	.data : { 
-		_sdata = .;
 		*(.data)
-		_edata = .;
 	}
 
 	.bss : {
-		_sbss = .;
 		*(.bss)
-		_ebss = .;
 	}
 }

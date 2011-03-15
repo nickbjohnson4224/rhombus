@@ -21,14 +21,22 @@
 
 /* font rendering ***********************************************************/
 
-struct fbterm_font {
-	int width, height;
-	uint32_t **bitmap;
+struct fbterm_bitmap_glyph {
+	int width;
+	int height;
+	uint32_t *line;
 };
 
-extern struct fbterm_font *fbterm_font;
+int fbterm_draw_glyph(struct fbterm_bitmap_glyph *glyph, 
+	int x, int y, uint32_t color);
 
-int fbterm_set_font(struct fbterm_font *font);
+struct fbterm_font {
+	int width, height;
+	struct fbterm_bitmap_glyph *glyph;
+	int count;
+};
+
+struct fbterm_font *fbterm_load_font(const char *path);
 
 /* drawing functions ********************************************************/
 
@@ -39,16 +47,18 @@ struct fbterm_char {
 };
 
 extern struct fbterm_screen {
+	struct fbterm_font *font;
 	struct fbterm_char **charv;
 	uint32_t fbcolor;
 	uint32_t bgcolor;
 } fbterm_screen;
 
-int fbterm_setfg(uint32_t color);
-int fbterm_setbg(uint32_t color);
-int fbterm_print(int x, int y, uint32_t c);
-int fbterm_clear(void);
-int fbterm_flip (void);
+int fbterm_setfont(struct fbterm_font *font);
+int fbterm_setfg  (uint32_t color);
+int fbterm_setbg  (uint32_t color);
+int fbterm_print  (int x, int y, uint32_t c);
+int fbterm_clear  (void);
+int fbterm_flip   (void);
 
 /* terminal emulation *******************************************************/
 
@@ -57,8 +67,8 @@ int fbterm_reset(void);
 
 /* line buffering ***********************************************************/
 
-char fbterm_read   (void);
-int  fbterm_buffer (int c);
+char fbterm_read  (void);
+int  fbterm_buffer(int c);
 
 #define MODE_ECHO
 #define MODE_COOK

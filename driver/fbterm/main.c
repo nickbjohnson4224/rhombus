@@ -30,8 +30,8 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	kbd = io_find(argv[2]);
-	fb  = io_find(argv[3]);
+	kbd = io_find(argv[1]);
+	fb  = io_find(argv[2]);
 
 	if (!kbd) {
 		fprintf(stderr, "%s: %s: keyboard not found\n", argv[0], argv[1]);
@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
 	}
 
 	if (!fb) {
-		fprintf(stderr, "%s: %s: graphics device not found\n", argv[0], argv[1]);
+		fprintf(stderr, "%s: %s: graphics device not found\n", argv[0], argv[2]);
 		return 1;
 	}
 
