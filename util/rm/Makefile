@@ -3,7 +3,7 @@ SOURCES += $(BUILDDIR)/lib/c0.o
 SUBDIR	:= util/rm
 TARGET	:= rm
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -lc -T$(BUILDDIR)/inc/link.ld
+LDFLAGS += -lc
 ASFLAGS := -felf
 
 all: $(TARGET)

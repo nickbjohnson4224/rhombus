@@ -3,7 +3,7 @@ SOURCES += $(BUILDDIR)/lib/c0.o
 SUBDIR	:= driver/tmpfs
 TARGET	:= tmpfs
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -ldriver -lc -T$(BUILDDIR)/inc/link.ld
+LDFLAGS += -ldriver -lc
 ASFLAGS := -felf
 
 all: $(TARGET)

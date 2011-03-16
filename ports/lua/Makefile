@@ -6,7 +6,6 @@ CFLAGS  += -Wno-cast-align
 RANLIB  := ranlib
 RM      := rm -f
 LIBS    := $(BUILDDIR)/lib/c0.o -lc
-LDFLAGS += -T$(BUILDDIR)/inc/link.ld
 SUBDIR	:= ports/lua
 
 LUA_A=	liblua.a

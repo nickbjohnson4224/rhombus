@@ -31,7 +31,7 @@ int			_stat(uint32_t tid);
 int			_page(uintptr_t address, size_t count, uint32_t perm, int source, uintptr_t offset); 
 uintptr_t	_phys(uintptr_t address);
 int32_t		_fork(void);
-void		_exit(uint32_t value) __attribute__ ((noreturn));
+void		__exit(uint32_t value) __attribute__ ((noreturn));
 void		_stop(uint32_t tid);
 void		_wake(uint32_t tid);
 uint32_t	_gpid(uint32_t selector);

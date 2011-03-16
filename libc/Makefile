@@ -2,7 +2,6 @@ SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
 SOURCES += $(patsubst %.s,%.o,$(shell find . -mindepth 2 -name "*.s"))
 CNAUGHT := c0.o
 HEADERS := $(shell find . -name "*.h")
-HEADERS += inc/link.ld
 SUBDIR	:= libc
 STATIC	:= libc.a
 SHARED	:= libc.so

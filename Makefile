@@ -21,8 +21,8 @@ CFLAGS	:= -pipe -Wall -Werror -Wextra -pedantic -std=c99
 CFLAGS	+= -Wpointer-arith -Wwrite-strings
 CFLAGS	+= -Wno-unused-parameter -Wno-unused-function
 CFLAGS	+= -O3 -fomit-frame-pointer
-CFLAGS	+= -ffreestanding -I$(BUILDDIR)/inc
-LDFLAGS := -L$(BUILDDIR)/lib -T$(BUILDDIR)/inc/link.ld -static
+CFLAGS	+= -I$(BUILDDIR)/inc -fno-stdlib
+LDFLAGS := -L$(BUILDDIR)/lib
 ARFLAGS := rcs
 PPFLAGS := -x assembler-with-cpp -I$(BUILDDIR)/inc
 
@@ -62,7 +62,7 @@ image:	all
 	@ - mkdir boot/sbin
 	@ - mkdir boot/sys
 	@ cp bin/* boot/bin
-	@ cp lib/* boot/lib
+	@ cp lib/dl.so boot/lib
 	@ cp sbin/* boot/sbin
 
 	@ export BUILDDIR

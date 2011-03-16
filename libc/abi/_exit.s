@@ -1,4 +1,4 @@
-; Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+; Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
 ; 
 ; Permission to use, copy, modify, and distribute this software for any
 ; purpose with or without fee is hereby granted, provided that the above
@@ -16,9 +16,9 @@
 
 section .text
 
-global _exit:function _exit.end-_exit
+global __exit:function __exit.end-__exit
 
-_exit:
+__exit:
 	mov eax, [esp+4]
 	int 0x49
 .end:

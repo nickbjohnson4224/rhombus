@@ -3,7 +3,7 @@ SOURCES += $(BUILDDIR)/lib/c0.o
 TARGET  := kbd
 SUBDIR	:= driver/kbd
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -ldriver -lc -T$(BUILDDIR)/inc/link.ld
+LDFLAGS += -ldriver -lc
 ASFLAGS += -felf
 
 .PHONY: clean install

@@ -19,7 +19,7 @@
 
 static bool leapyear(int year) {
 	year -= 100;
-	return ((year % 4 == 0) && (year % 100 != 0) || (year % 400 == 0));
+	return (((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0));
 }
 
 static int month_limit[] = {

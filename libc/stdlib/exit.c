@@ -38,5 +38,5 @@ void exit(int status) {
 	}
 
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
-	_exit(status);
+	__exit(status);
 } 
