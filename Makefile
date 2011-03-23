@@ -21,7 +21,7 @@ CFLAGS	:= -pipe -Wall -Werror -Wextra -pedantic -std=c99
 CFLAGS	+= -Wpointer-arith -Wwrite-strings
 CFLAGS	+= -Wno-unused-parameter -Wno-unused-function
 CFLAGS	+= -O3 -fomit-frame-pointer
-CFLAGS	+= -I$(BUILDDIR)/inc -fno-stdlib
+CFLAGS	+= -I$(BUILDDIR)/inc -ffreestanding
 LDFLAGS := -L$(BUILDDIR)/lib
 ARFLAGS := rcs
 PPFLAGS := -x assembler-with-cpp -I$(BUILDDIR)/inc

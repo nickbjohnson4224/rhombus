@@ -21,9 +21,8 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <path.h>
 #include <ipc.h>
-
-/* resource pointer macros *************************************************/
 
 #define RP_CONS(pid, idx) ((((uint64_t) (pid)) << 32) | (uint64_t) (idx))
 #define RP_PID(rp) ((rp) >> 32)
@@ -67,32 +66,5 @@ int      fs_auth  (uint64_t rp, uint32_t user, uint8_t perm);
 #define PERM_READ	0x01
 #define PERM_WRITE	0x02
 #define PERM_ALTER	0x04
-
-/* path manipulation *******************************************************/
-
-#define PATH_SEP '/'
-
-struct path {
-	const char *str;
-	const char *pos;
-};
-
-struct path *path_cons(const char *path);
-
-char *path_next(struct path *path);
-char *path_peek(struct path *path);
-int   path_prev(struct path *path);
-
-const char *path_tail(struct path *path);
-
-char *path_parent(const char *path);
-char *path_name  (const char *path);
-
-char *path_simplify(const char *path);
-
-/* file descriptor persisence ***********************************************/
-
-uint64_t fdload(int id);
-int      fdsave(int id, uint64_t fd);
 
 #endif/*NATIO_H*/
