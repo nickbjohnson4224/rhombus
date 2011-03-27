@@ -46,7 +46,7 @@ int draw_cell(struct font *font, struct cell *c, int x, int y) {
 	// construct bitmap
 	bitmap = malloc(sizeof(uint32_t) * glyph->w * glyph->h);
 	for (i = 0; i < glyph->w * glyph->h; i++) {
-		bitmap[i] = (glyph->value[i]) ? COLOR_WHITE : COLOR_BLACK;
+		bitmap[i] = (glyph->value[i]) ? c->fg : c->bg;
 	}
 
 	// blit onto framebuffer

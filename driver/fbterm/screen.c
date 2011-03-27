@@ -16,6 +16,7 @@
 
 #include "fbterm.h"
 
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <graph.h>
@@ -45,14 +46,44 @@ int screen_resize(uint32_t x, uint32_t y) {
 }
 
 int screen_print(int x, int y, uint32_t c) {
+	struct cell *cell;
 
 	if (x < 0 || y < 0 || x >= screen.w || y >= screen.h) {
 		return 1;
 	}
 
-	screen.cell[x + y * screen.w].ch = c;
-	screen.cell[x + y * screen.w].fg = screen.fg;
-	screen.cell[x + y * screen.w].fg = screen.bg;
+	cell = &screen.cell[x + y * screen.w];
+	if (cell->ch != c || cell->fg != screen.fg || cell->bg != screen.bg) {
+		cell->dirty = 1;
+	}
+	
+	cell->ch = c;
+	cell->fg = screen.fg;
+	cell->bg = screen.bg;
+
+	return 0;
+}
+
+int screen_scroll(void) {
+	uint32_t fg, bg;
+	int x, y;
+
+	fg = screen.fg;
+	bg = screen.bg;
+	
+	for (x = 0; x < screen.w; x++) {
+		for (y = 0; y < screen.h - 1; y++) {
+			screen.fg = screen.cell[x + y * screen.w].fg;
+			screen.bg = screen.cell[x + y * screen.w].bg;
+			screen_print(x, y, screen.cell[x + (y + 1) * screen.w].ch);
+		}
+		screen.fg = COLOR_WHITE;
+		screen.bg = COLOR_BLACK;
+		screen_print(x, y, ' ');
+	}
+
+	screen.fg = fg;
+	screen.bg = bg;
 
 	return 0;
 }
@@ -76,8 +107,11 @@ int screen_flip(void) {
 	int i;
 
 	for (i = 0; i < screen.w * screen.h; i++) {
-		draw_cell(screen.font, &screen.cell[i], 
-			(i % screen.w) * screen.font->w, (i / screen.w) * screen.font->h);
+		if (screen.cell[i].dirty) {
+			draw_cell(screen.font, &screen.cell[i], 
+				(i % screen.w) * screen.font->w, (i / screen.w) * screen.font->h);
+			screen.cell[i].dirty = 0;
+		}
 	}
 
 	fb_flip(fb);

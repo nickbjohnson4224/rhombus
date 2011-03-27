@@ -28,7 +28,7 @@ extern struct fb *fb;
 
 struct glyph {
 	int w, h; 		 // width/height of glyph
-	uint8_t value[]; // contents of glyph (alpha channel of foreground)
+	uint8_t value[]; // contents of glyph (alpha channel)
 };
 
 struct font {
@@ -42,6 +42,7 @@ struct cell {
 	uint32_t fg; // foreground color
 	uint32_t bg; // background color
 	uint32_t ch; // code point of character
+	uint32_t dirty;
 };
 
 int draw_cell(struct font *font, struct cell *c, int x, int y);
@@ -61,17 +62,18 @@ extern struct screen {
 
 int screen_resize(uint32_t x, uint32_t y);
 int screen_print (int x, int y, uint32_t c);
+int screen_scroll(void);
 int screen_clear (void);
 int screen_flip  (void);
 
 /* terminal emulation *******************************************************/
 
-int fbterm_print(char c);
+int fbterm_print(uint32_t c);
 int fbterm_reset(void);
 
 /* line buffering ***********************************************************/
 
-char fbterm_read  (void);
+char fbterm_getch (void);
 int  fbterm_buffer(int c);
 
 #define MODE_ECHO

@@ -42,7 +42,7 @@ FILE *fopen(const char *path, const char *mode) {
 	fd = io_find(path);
 
 	/* check if the object is a directory or null */
-	if (fd && (fs_type(fd) & RP_TYPE_FILE) == 0) {
+	if (!fd || ((fs_type(fd) & RP_TYPE_FILE) == 0)) {
 		errno = EISDIR;
 		return NULL;
 	}

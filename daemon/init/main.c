@@ -29,8 +29,7 @@
 #include "initrd.h"
 
 const char *splash ="\
-Flux Operating System 0.7 Alpha\n\
-Written by Nick Johnson\n\
+Rhombus Operating System 0.7 Alpha\n\
 \n";
 
 void panic(const char *message) {
@@ -89,9 +88,6 @@ int main() {
 	io_link("/dev/serial", start(file, argv));
 	stdout = stderr = fopen("/dev/serial", "w");
 
-	/* Init control file */
-	io_link("/sys/init", RP_CONS(getpid(), 1));
-
 	/* Keyboard Driver */
 	argv[0] = "kbd";
 	argv[1] = NULL;
@@ -110,12 +106,14 @@ int main() {
 	argv[2] = "/dev/svga0";
 	argv[3] = NULL;
 	file = tar_find(boot_image, "sbin/fbterm");
-	temp = start(file, argv);
-	io_link("/dev/tty", temp);
+	io_link("/dev/tty", start(file, argv));
 
 	/* Splash */
-	stdin = stdout = fopen("/dev/tty", "w");
+	stdout = stderr = stdin = fopen("/dev/tty", "w");
 	printf(splash);
+
+	/* Init control file */
+	io_link("/sys/init", RP_CONS(getpid(), 1));
 
 	/* Initrd */
 	initrd_init();
@@ -146,7 +144,6 @@ int main() {
 	argv[1] = NULL;
 	file = tar_find(boot_image, "sbin/time");
 	io_link("/dev/time", start(file, argv));
-
 
 	/* Path */
 	setenv("PATH", "/bin");

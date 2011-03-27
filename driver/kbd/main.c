@@ -176,7 +176,7 @@ void kbd_irq(struct msg *msg) {
 		case CAPS: caps  = false; break;
 		case NUML: numlk = false; break;
 		default:
-			printf("release %i %c\n", code, code);
+//			printf("release %i %c\n", code, code);
 			kbd_send_event(code | RELEASE);
 		}
 	}
@@ -186,7 +186,7 @@ void kbd_irq(struct msg *msg) {
 		case CAPS: caps  = true; break;
 		case NUML: numlk = true; break;
 		default:
-			printf("press %i %c\n", code, code);
+//			printf("press %i %c\n", code, code);
 			kbd_send_event(code);
 		}
 	}

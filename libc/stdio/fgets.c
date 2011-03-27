@@ -36,6 +36,7 @@ char *fgets(char *s, int size, FILE *stream) {
 		if (ch == EOF || ch == '\n') break;
 	}
 
+
 	s[i+1] = '\0';
 	return s;
 }

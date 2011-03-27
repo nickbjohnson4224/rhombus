@@ -27,7 +27,6 @@
 #include "tarfs.h"
 
 static FILE *parent = NULL;
-static bool m_parent = false;
 
 /****************************************************************************
  * tar_block
@@ -69,7 +68,7 @@ static uintptr_t getvalue(char *field, size_t size) {
 
 size_t tarfs_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	uint32_t user;
-	
+
 	if (!file->data) {
 		return 0;
 	}
@@ -84,16 +83,12 @@ size_t tarfs_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t
 
 	user = gettuser();
 	settuser(0);
-	
-	mutex_spin(&m_parent);
 
 	fseek(parent, (size_t) file->data + offset, SEEK_SET);
 	fread(buffer, 1, size, parent);
 
-	mutex_free(&m_parent);
-
 	settuser(user);
-	
+
 	return size;
 }
 

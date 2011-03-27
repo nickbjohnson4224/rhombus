@@ -61,9 +61,11 @@ image:	all
 	@ - mkdir boot/lib
 	@ - mkdir boot/sbin
 	@ - mkdir boot/sys
+	@ - mkdir boot/etc
 	@ cp bin/* boot/bin
 	@ cp lib/dl.so boot/lib
 	@ cp sbin/* boot/sbin
+	@ cp etc/* boot/etc
 
 	@ export BUILDDIR
 	@ run/make_image.sh

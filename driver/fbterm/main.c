@@ -19,17 +19,16 @@
 #include <string.h>
 #include <stdlib.h>
 #include <driver.h>
+#include <signal.h>
 #include <stdio.h>
+#include <ctype.h>
 #include <proc.h>
-
 
 size_t fbterm_write(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
 	size_t i;
-	size_t pos;
 
-	pos = offset;
-	for (i = 0; i < size; i++, pos++) {
-		screen_print(buffer[i], pos % screen.w, pos / screen.w);
+	for (i = 0; i < size; i++) {
+		fbterm_print(buffer[i]);
 	}
 
 	screen_flip();
@@ -52,6 +51,59 @@ char *fbterm_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 	return NULL;
 }
 
+size_t fbterm_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+	size_t i;
+
+	for (i = 0; i < size; i++) {
+		buffer[i] = fbterm_getch();
+
+		if (buffer[i] == '\0') {
+			break;
+		}
+	}
+
+	return i;
+}
+
+void fbterm_event(uint64_t source, uint64_t value) {
+	char c;
+	static bool ctrl = false;
+
+	if (value & 0x00400000) {
+		if (value == 0x00C00001) {
+			ctrl = false;
+		}
+		return;
+	}
+
+	if (value & 0x00800000) {
+		if (value == 0x00800001) {
+			ctrl = true;
+		}
+		return;
+	}
+
+	c = value;
+
+	if (tolower(c) == 'c' && ctrl) {
+		kill(-getpid(), SIGINT);
+
+		fbterm_print('^');
+		fbterm_print('C');
+
+		fbterm_print('\n');
+		fbterm_buffer('\n');
+		return;
+	}
+
+	fbterm_buffer(c);
+
+	if (isprint(c)) {
+		fbterm_print(c);
+		screen_flip();
+	}
+}
+
 int main(int argc, char **argv) {
 	struct vfs_obj *root;
 	struct font *font;
@@ -59,7 +111,7 @@ int main(int argc, char **argv) {
 	uint64_t fb_dev;
 
 	if (argc < 3) {
-		fprintf(stderr, "%s: insufficient arguments\n", argv[0]);
+		fprintf(stderr, "%s: insufficient arguments: %d\n", argv[0], argc);
 		return 1;
 	}
 
@@ -80,17 +132,25 @@ int main(int argc, char **argv) {
 	root->type = RP_TYPE_FILE;
 	root->size = 0;
 	root->acl = acl_set_default(root->acl, PERM_WRITE | PERM_READ);
+	vfs_set_index(0, root);
 
+	// set up screen
 	fb = fb_cons(fb_dev);
-
 	font = font_load("builtin");
 	screen.font = font;
-
-	screen_resize(106, 48);
-	screen_print(0, 0, '!');
-	screen_print(1, 0, '!');
-	screen_print(0, 1, '!');
+	screen_resize(100, 48);
 	screen_flip();
+
+	// set up keyboard
+	event_register(kbd_dev, fbterm_event);
+
+	di_wrap_write(fbterm_write);
+	di_wrap_read (fbterm_read);
+	di_wrap_rcall(fbterm_rcall);
+	vfs_wrap_init();
+
+	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
+	_done();
 
 	return 0;
 }
