@@ -24,6 +24,8 @@
 #include <path.h>
 #include <ipc.h>
 
+/* core I/O *****************************************************************/
+
 #define RP_CONS(pid, idx) ((((uint64_t) (pid)) << 32) | (uint64_t) (idx))
 #define RP_PID(rp) ((rp) >> 32)
 #define RP_INDEX(rp) ((rp) & 0xFFFFFFFF)
@@ -40,8 +42,14 @@ int      share(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot);
 char    *rcall(uint64_t rp, const char *args);
 int      event(uint64_t rp, uint64_t value);
 
-int      event_register  (uint64_t rp, void (*handler)(uint64_t source, uint64_t value));
-int      event_deregister(uint64_t rp);
+char    *rcallf(uint64_t rp, const char *fmt, ...);
+
+/* I/O handling *************************************************************/
+
+typedef void (*event_handler)(uint64_t source, uint64_t value);
+int      event_register(uint64_t source, event_handler handler);
+
+/* filesystem operations ****************************************************/
 
 uint64_t io_find(const char *name);
 uint64_t io_cons(const char *name, int type);

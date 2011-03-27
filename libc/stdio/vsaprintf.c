@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,22 +14,44 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdio.h>
+#include <ctype.h>
+#include <stdarg.h>
 #include <string.h>
+#include <stdlib.h>
 
 /****************************************************************************
- * memchr
+ * vsaprintf
  *
- * Scans the first <n> bytes of <s> for byte <c>. Returns a pointer to the
- * found memory position on success, or NULL on error.
+ * Prints a formatted string to an allocated buffer, then returns the
+ * buffer. Returns null on error.
  */
 
-void *memchr(const void *s, uint8_t c, size_t n) {
-	size_t i;
-	uint8_t *src = (uint8_t*) s;
+char *vsaprintf(const char *format, va_list ap) {
+	char *string0;
+	char *string1;
+	int i;
+	char m[2];
+	const char *format_tmp;
 
-	for (i = 0; i < n; i++) {
-		if (src[i] == c) return &src[i];
+	string0 = strdup("");
+	m[1] = '\0';
+
+	for (i = 0; format[i]; i++) {
+		if (format[i] == '%') {
+			format_tmp = &format[i];
+			string1 = string0;
+			string0 = strvcat(string1, __format(&format_tmp, &ap), NULL);
+			free(string1);
+			i = (uintptr_t) format_tmp - (uintptr_t) format;
+		}
+		else {
+			m[0] = format[i];
+			string1 = string0;
+			string0 = strvcat(string1, m);
+			free(string1);
+		}
 	}
-	
-	return NULL;
+
+	return string0;
 }

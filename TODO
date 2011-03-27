@@ -25,11 +25,11 @@ For 0.8 Alpha:
 + vm86 support
 + VESA video driver
 + proper terminal driver
-- curses port
++ add rcallf
+- libc unit testing (framework)
 
 For 0.9 Alpha:
 
-- libc unit testing (framework)
 - driver interface revision
 - non-recursive VFS find
 - simplify VFS security
@@ -44,6 +44,7 @@ For 0.9 Alpha:
 - iso9660 driver
 - ext2 driver
 - FAT32 driver
+- curses port
 
 For 0.10 Alpha:
 

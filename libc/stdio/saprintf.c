@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,22 +14,26 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdio.h>
+#include <ctype.h>
+#include <stdarg.h>
 #include <string.h>
+#include <stdlib.h>
 
 /****************************************************************************
- * memchr
+ * saprintf
  *
- * Scans the first <n> bytes of <s> for byte <c>. Returns a pointer to the
- * found memory position on success, or NULL on error.
+ * Prints a formatted string to an allocated buffer, then returns the
+ * buffer. Returns null on error.
  */
 
-void *memchr(const void *s, uint8_t c, size_t n) {
-	size_t i;
-	uint8_t *src = (uint8_t*) s;
+char *saprintf(const char *format, ...) {
+	va_list ap;
+	char *ret;
 
-	for (i = 0; i < n; i++) {
-		if (src[i] == c) return &src[i];
-	}
-	
-	return NULL;
+	va_start(ap, format);
+	ret = vsaprintf(format, ap);
+	va_end(ap);
+
+	return ret;
 }

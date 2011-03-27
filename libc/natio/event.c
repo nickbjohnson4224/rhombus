@@ -48,7 +48,7 @@ int event(uint64_t rp, uint64_t value) {
 	return msend(msg);
 }
 
-static void (*_event_handler)(uint64_t source, uint64_t value);
+static event_handler _event_handler;
 
 static void _event_wrapper(struct msg *msg) {
 	uint64_t value;
@@ -66,34 +66,33 @@ static void _event_wrapper(struct msg *msg) {
 	_event_handler(msg->source, value);
 }
 
-int event_register (uint64_t rp, void (*handler)(uint64_t source, uint64_t value)) {
+int event_register(uint64_t source, event_handler handler) {
 	char *reply;
 
-	reply = rcall(rp, "register");
+	if (handler) {
+		reply = rcall(source, "register");
 
-	if (!strcmp(reply, "T")) {
-		when(PORT_EVENT, _event_wrapper);
-		_event_handler = handler;
-		free(reply);
-		return 0;
+		if (!strcmp(reply, "T")) {
+			when(PORT_EVENT, _event_wrapper);
+			_event_handler = handler;
+			free(reply);
+			return 0;
+		}
+		else {
+			free(reply);
+			return 1;
+		}
 	}
 	else {
-		free(reply);
-		return 1;
-	}
-}
+		reply = rcall(source, "deregister");
 
-int event_deregister(uint64_t rp) {
-	char *reply;
-
-	reply = rcall(rp, "deregister");
-
-	if (!strcmp(reply, "T")) {
-		free(reply);
-		return 0;
-	}
-	else {
-		free(reply);
-		return 1;
+		if (!strcmp(reply, "T")) {
+			free(reply);
+			return 0;
+		}
+		else {
+			free(reply);
+			return 1;
+		}
 	}
 }

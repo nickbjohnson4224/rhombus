@@ -128,6 +128,9 @@ int vfprintf (FILE *stream, const char *format, va_list ap);
 int sprintf  (char *str, const char *format, ...);
 int vsprintf (char *str, const char *format, va_list ap);
 
+char *saprintf (const char *format, ...);
+char *vsaprintf(const char *format, va_list ap);
+
 int scanf    (const char *format, ...);
 int vscanf   (const char *format, va_list ap);
 int fscanf   (FILE *stream, const char *format, ...);
