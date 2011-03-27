@@ -18,51 +18,55 @@
 #define FBTERM_H
 
 #include <stdint.h>
+#include <graph.h>
+
+/* graphics device **********************************************************/
+
+extern struct fb *fb;
 
 /* font rendering ***********************************************************/
 
-struct fbterm_bitmap_glyph {
-	int width;
-	int height;
-	uint32_t *line;
+struct glyph {
+	int w, h; 		 // width/height of glyph
+	uint8_t value[]; // contents of glyph (alpha channel of foreground)
 };
 
-int fbterm_draw_glyph(struct fbterm_bitmap_glyph *glyph, 
-	int x, int y, uint32_t color);
-
-struct fbterm_font {
-	int width, height;
-	struct fbterm_bitmap_glyph *glyph;
-	int count;
+struct font {
+	int w, h;					// width/height of glyphs (maximum)
+	uint32_t count;				// size of glyph vector
+	struct glyph *def_glyph;	// default glyph
+	struct glyph *glyph[];		// glyphs in order
 };
 
-struct fbterm_font *fbterm_load_font(const char *path);
-
-/* drawing functions ********************************************************/
-
-struct fbterm_char {
-	uint32_t fbcolor;
-	uint32_t bgcolor;
-	uint32_t c;
+struct cell {
+	uint32_t fg; // foreground color
+	uint32_t bg; // background color
+	uint32_t ch; // code point of character
 };
 
-extern struct fbterm_screen {
-	struct fbterm_font *font;
-	struct fbterm_char **charv;
-	uint32_t fbcolor;
-	uint32_t bgcolor;
-} fbterm_screen;
+int draw_cell(struct font *font, struct cell *c, int x, int y);
 
-int fbterm_setfont(struct fbterm_font *font);
-int fbterm_setfg  (uint32_t color);
-int fbterm_setbg  (uint32_t color);
-int fbterm_print  (int x, int y, uint32_t c);
-int fbterm_clear  (void);
-int fbterm_flip   (void);
+struct font *font_load(const char *path);
+
+/* screen contents **********************************************************/
+
+extern struct screen {
+	struct font *font;
+	struct cell *cell;
+	uint32_t fg;
+	uint32_t bg;
+	int w;
+	int h;
+} screen;
+
+int screen_resize(uint32_t x, uint32_t y);
+int screen_print (int x, int y, uint32_t c);
+int screen_clear (void);
+int screen_flip  (void);
 
 /* terminal emulation *******************************************************/
 
-int fbterm_write(char c);
+int fbterm_print(char c);
 int fbterm_reset(void);
 
 /* line buffering ***********************************************************/

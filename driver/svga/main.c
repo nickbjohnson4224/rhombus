@@ -138,12 +138,12 @@ size_t svga_write(uint64_t source, struct vfs_obj *file, uint8_t *_buffer, size_
 
 	mutex_spin(&file->mutex);
 
-	if (size > svga.w * svga.h * 4 - off) {
-		size = svga.w * svga.h * 4 - off;
+	if (size > (svga.w * svga.h * 4 - off)) {
+		size = (svga.w * svga.h * 4 - off);
 	}
 
 	for (i = 0; i < size; i++) {
-		((uint8_t*) buffer)[i + off] = buffer[i];
+		((uint8_t*) buffer)[i + off] = _buffer[i];
 	}
 
 	mutex_free(&file->mutex);

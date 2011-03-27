@@ -26,16 +26,15 @@ For 0.8 Alpha:
 + VESA video driver
 - proper terminal driver
 - curses port
-- process manager (for top, pkill)
-- libc unit testing (framework)
 
 For 0.9 Alpha:
 
+- libc unit testing (framework)
+- driver interface revision
 - non-recursive VFS find
 - simplify VFS security
 - file locking
 - move more functions to rcall (fs_*)
-- driver interface revision
 - merge libdriver and libc
 - write fenv.h, tgmath.h
 - copy-on-write

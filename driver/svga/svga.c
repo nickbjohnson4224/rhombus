@@ -17,6 +17,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <driver.h>
+#include <graph.h>
 #include <page.h>
 #include "svga.h"
 
@@ -157,9 +158,9 @@ static int svga_putpixel(int x, int y, uint32_t pixel) {
 
 	index = (x * svga.pw) + (y * svga.p);
 
-	r = pixel >> 0;
-	g = pixel >> 8;
-	b = pixel >> 16;
+	r = PIX_R(pixel);
+	g = PIX_G(pixel);
+	b = PIX_B(pixel);
 
 	r >>= (8 - svga.r_size);
 	g >>= (8 - svga.g_size);

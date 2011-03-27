@@ -82,6 +82,13 @@ int main() {
 	/* Logfile */
 	io_cons("/dev/stderr", RP_TYPE_FILE);
 
+	/* Serial Driver */
+	argv[0] = "serial";
+	argv[1] = NULL;
+	file = tar_find(boot_image, "sbin/serial");
+	io_link("/dev/serial", start(file, argv));
+	stdout = stderr = fopen("/dev/serial", "w");
+
 	/* Init control file */
 	io_link("/sys/init", RP_CONS(getpid(), 1));
 
@@ -91,15 +98,23 @@ int main() {
 	file = tar_find(boot_image, "sbin/kbd");
 	temp = start(file, argv);
 
-	/* Terminal Driver */
-	argv[0] = "tty";
+	/* Graphics Driver */
+	argv[0] = "svga";
 	argv[1] = NULL;
-	file = tar_find(boot_image, "sbin/tty");
+	file = tar_find(boot_image, "sbin/svga");
+	start(file, argv);
+
+	/* Terminal Driver */
+	argv[0] = "fbterm";
+	argv[1] = "/dev/kbd";
+	argv[2] = "/dev/svga0";
+	argv[3] = NULL;
+	file = tar_find(boot_image, "sbin/fbterm");
 	temp = start(file, argv);
 	io_link("/dev/tty", temp);
 
 	/* Splash */
-	stdin = stderr = stdout = fopen("/dev/tty", "w");
+	stdin = stdout = fopen("/dev/tty", "w");
 	printf(splash);
 
 	/* Initrd */
@@ -132,11 +147,6 @@ int main() {
 	file = tar_find(boot_image, "sbin/time");
 	io_link("/dev/time", start(file, argv));
 
-	/* Serial Driver */
-	argv[0] = "serial";
-	argv[1] = NULL;
-	file = tar_find(boot_image, "sbin/serial");
-	io_link("/dev/serial", start(file, argv));
 
 	/* Path */
 	setenv("PATH", "/bin");
