@@ -27,7 +27,7 @@
  * the dynamic linker
  *
  * These functions belong to the dynamic linker, part of the C library. In
- * Flux, all execution is done completely from userspace: the dynamic linker
+ * Rhombus, all execution is done completely from userspace: the dynamic linker
  * is a key part of this execution cycle. The C library will set up a certain
  * environment for the linker, then load it at address 0xC0000000.
  *

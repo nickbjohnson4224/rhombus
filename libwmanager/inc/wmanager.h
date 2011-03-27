@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef FLUX_WMANAGER_H
-#define FLUX_WMANAGER_H
+#ifndef WMANAGER_H
+#define WMANAGER_H
 
 #include <stdint.h>
 

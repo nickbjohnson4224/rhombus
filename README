@@ -1,123 +1,82 @@
-Flux Operating System v0.7a
+Rhombus Operating System 0.7a
 
 Introduction
 *****************************************************************************
 
-What is Flux?
+What is Rhombus?
 
-Flux is a hobby operating system project designed and written primarily by me 
-(Nick Johnson), since some time in late 2008. Currently, it consists of a 
+Rhombus is a hobby operating system project designed and written primarily by 
+me (Nick Johnson), since some time in late 2008. Currently, it consists of a 
 microkernel, a C library, a shell and simple utilities, and a small set of 
 device drivers. It should run on any standard PC hardware with a Pentium
 or better processor, and uses 32 bit protected mode.
 
-The Flux system is roughly UNIX-like in many areas, but it is mostly its
-own system, and is not POSIX compliant. It has a particularly interesting
-VFS mechanism that allows any process to act as not only a file, but a whole
-mounted file system. It also is very fundamentally event-driven and 
-multithreaded, which is good for driver writing and scalability over 
-multiple processors (or at least it will be, once I get around to adding SMP 
-support :P). It has been a sort of sandbox for my ideas, so there are plenty
-of other interesting bits as well.
+The Rhombus system is roughly UNIX-like in many areas, but it is mostly its
+own system, and is not POSIX compliant (although it may be partially so in
+the future.) It has a particularly interesting VFS mechanism that allows any 
+process to act as not only a file, but a whole mounted file system. It also 
+is very fundamentally event-driven and multithreaded, which is good for 
+driver writing and scalability over multiple processors (or at least it will 
+be, once I get around to adding SMP support :P). It has been a sort of 
+sandbox for my ideas, so there are plenty of other interesting bits as well.
 
-How do I use Flux?
+How do I use Rhombus?
 
-At the moment, Flux is not stable enough for real use, but it is rapidly 
+At the moment, Rhombus is not stable enough for real use, but it is rapidly
 progressing toward that point. It already can run a Lua interpreter, which
 is written in standard C, and all of its source code can be compiled with
-all warning flags and all optimization flags for CLang. The first beta 
-release of Flux should be ready by January 2011. At that point, it should be
+all warning flags and all optimization flags for CLang. The first beta
+release of Rhombus should be ready by June 2011. At that point, it should be
 ready for patches and other contributions.
 
-All code in the Flux core (kernel, libc, libdriver, basic drivers) as well 
+All code in the Rhombus core (kernel, libc, libdriver, basic drivers) as well 
 as most of the rest of the system uses an OpenBSD-like copyright statement.
-In essence, this means you can freely modify and redistribute Flux, as long
+In essence, this means you can freely modify and redistribute Rhombus as long
 as you keep the license and copyright information on each of the files that
 contains it. The OpenBSD license statement is a certified open source license, 
-but you may incorporate Flux code into closed source projects if you wish.
+but you may incorporate Rhombus code into closed source projects if you wish.
 
-Why the name?
+What are the goals of Rhombus?
 
-The word "flux" has many definitons, but they mostly reflect two ideas:
-fusion and change. 
-
-Flux, much like the original UNIX, strives to give the programmer powerful, 
+Rhombus, much like the original UNIX, strives to give the programmer powerful, 
 general connections with which to combine system components. With UNIX came 
-text pipelines and device files; Flux extends this with a general purpose 
-command system for system daemons, graphics and event pipelines, and 
-pseudo-filesystems that can be presented by any user process.
+text pipelines and device files; Rhombus extends this with uniform resource
+addressing, a general purpose command system for system daemons and services,
+graphics and event pipelines, and pseudo-filesystems that can be presented by
+any user process.
 
-In addition, Flux strives to allow easy modification, when existing stacks and
-protocols prove insufficient. Flux is built to be rebuilt, to be taken apart 
-and understood, to be a foundation for new ideas. Every core piece of Flux is
-intended to be simple enough for a single person to completely understand, 
-and if necessary, to for a single person to rewrite. Documentation (at release
-at least) will be comprehensive from the largest library down to the smallest 
-function, to aid those who wish to hack.
+In addition, Rhombus strives to allow easy modification, when existing stacks
+and protocols prove insufficient. Rhombus is built to be rebuilt, to be taken 
+apart and understood, and to be a foundation for new ideas. Every core piece 
+of Rhombus is intended to be simple enough for a single person to completely 
+understand, and if necessary, to for a single person to rewrite.
+Documentation (at release at least) will be comprehensive from the largest 
+library down to the smallest function, to aid those who wish to hack.
 
 Build Instructions
 *****************************************************************************
-
-Toolchain Dependencies:
-
-C99 compliant C compiler
-tested:
-	CLang 2.7
-tested flags:
-	-O0, -O1, -Os, -O2, -O3
-	-fomit-frame-pointer
-	*all* warning flags under -pedantic -c99
-
-The Netwide Assembler (NASM)
-tested:
-	NASM 2.05.01
-	NASM 2.07
-	NASM 2.08
-
-ELF-based linker
-tested:
-	GNU binutils 2.18 for i686-pc-linux-gnu
-	GNU binutils 2.19 for i586-elf
-	GNU binutils 2.20 for i686-pc-linux-gnu
-
-GNU Make or equivalent
-tested: 
-	GNU Make 3.81
-
-*****************************************************************************
-
-Testing Dependencies:
-
-Linux 2.4 or newer with loopback support and cdrtools
-
-QEMU emulator (or other VM - scripts will have to be modified)
-tested:
-	QEMU 0.10.6, i386 emulation level
-	Bochs 2.4.1, i586 emulation level
-
-*****************************************************************************
-
-Build Instructions:
 
 This system is meant to be built with x86 or x86_64 Linux as a host: it may 
 build and test on other Linux platforms, and will probably build on any 
 UNIX-like system.
 
 To reliably build the system, you should use a cross-compiler. The official 
-set of tools for this is CLang 2.8 and GNU Binutils 2.20 for the "i586-elf" 
+set of tools for this is CLang 2.8 and GNU Binutils 2.20 for the "i586-elf"
 target. At least binutils should be installed in <build_directory>/tools/, 
-with at least "ar", "ld", and "ranlib" in <build_directory>/tools/bin/. 
-CLang and NASM from the host system should both work without modification, 
-but if in doubt, they should also be installed in the tools directory. The 
-build scripts add the tools directory to your PATH, so that toolchain will 
-override the host's.
+with at least "ar", "ld", and "ranlib" in <build_directory>/tools/bin/.
+There is a tarball named "binutils-rhombus-*.tbz2" in the tools directory
+that contains modifications to support the i586-pc-rhombus target. To use
+this patched toolchain, configure with --target=i586-pc-rhombus and
+--prefix=<build directory>/tools, and symlink the i586-pc-rhombus-* binaries
+to their standard counterparts in <build directory>/tools/bin. CLang and NASM 
+from the host system should both work without modification, but if in doubt, 
+they should also be installed in the tools directory. The build scripts add 
+the tools directory to your PATH, so that toolchain will override the host's.
 
-To make each piece of the operating system, simply type "make <subproject>", 
-or just "make" to make everything. The kernel, init, libc, and at least basic 
-drivers must be built for the system to boot correctly. "make -C <subproject> 
-clean" will remove all object files from the subprojects' directories, and 
-"make clean" will remove all object files. "make image" will make a CD image 
-called flux.iso in the run directory - this requires cdrtools.
+To make each piece of the operating system, simply type "make <subproject>",
+or just "make" to make everything. "make clean" will remove all object files. 
+"make image" will make a CD image called rhombus.iso in the run directory - 
+this requires cdrtools from the host system.
 
 Test Instructions:
 

@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef FLUX_IPC_H
-#define FLUX_IPC_H
+#ifndef IPC_H
+#define IPC_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -101,4 +101,4 @@ int msendv(uint64_t target, uint8_t port, void *data, size_t length);
 
 void when(uint8_t port, void (*handler)(struct msg *msg));
 
-#endif/*FLUX_IPC_H*/
+#endif/*IPC_H*/

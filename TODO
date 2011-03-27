@@ -24,7 +24,7 @@ For 0.8 Alpha:
 + standardize input API
 + vm86 support
 + VESA video driver
-- proper terminal driver
++ proper terminal driver
 - curses port
 
 For 0.9 Alpha:
