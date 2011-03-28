@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,23 +15,27 @@
  */
 
 #include <string.h>
-#include <stdint.h>
+#include <stdlib.h>
+#include <natio.h>
+#include <graph.h>
+#include <mutex.h>
+#include <page.h>
 
-size_t strspn(const char *s, const char *accept) {
-	uint16_t mask[16];
-	size_t i;
+/*****************************************************************************
+ * fb_getmode
+ *
+ * Store the height and width of the framebuffer in *<ydim> and *<xdim>,
+ * respectively. Returns zero on success, nonzero on error.
+ */
 
-	memclr(mask, sizeof(uint16_t) * 16);
+int fb_getmode(struct fb *fb, int *xdim, int *ydim) {
 	
-	for (i = 0; accept[i]; i++) {
-		mask[(size_t) accept[i] >> 4] |= (1 << ((size_t) accept[i] & 0xF));
+	if (!fb || !xdim || !ydim) {
+		return 1;
 	}
 
-	for (i = 0; s[i]; i++) {
-		if (~mask[(size_t) s[i] >> 4] & (1 << ((size_t) s[i] & 0xF))) {
-			break;
-		}
-	}
+	*xdim = fb->xdim;
+	*ydim = fb->ydim;
 
-	return i;
+	return 0;
 }

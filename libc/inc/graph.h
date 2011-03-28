@@ -92,6 +92,7 @@ void       fb_free(struct fb *fb);
 
 // mode setting
 int        fb_setmode(struct fb *fb, int xdim, int ydim);
+int        fb_getmode(struct fb *fb, int *xdim, int *ydim);
 
 // basic operations
 int        fb_flip(struct fb *fb);

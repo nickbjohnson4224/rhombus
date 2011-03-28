@@ -45,7 +45,7 @@ char *fbterm_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 	}
 
 	if (!strcmp(args, "clear")) {
-		screen_clear();
+		fbterm_clear();
 	}
 
 	return NULL;
@@ -109,6 +109,7 @@ int main(int argc, char **argv) {
 	struct font *font;
 	uint64_t kbd_dev;
 	uint64_t fb_dev;
+	int w, h;
 
 	if (argc < 3) {
 		fprintf(stderr, "%s: insufficient arguments: %d\n", argv[0], argc);
@@ -138,7 +139,8 @@ int main(int argc, char **argv) {
 	fb = fb_cons(fb_dev);
 	font = font_load("builtin");
 	screen.font = font;
-	screen_resize(100, 48);
+	fb_getmode(fb, &w, &h);
+	screen_resize(w / font->w, h / font->h);
 	screen_flip();
 
 	// set up keyboard

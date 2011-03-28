@@ -33,7 +33,7 @@ int fbterm_print(uint32_t c) {
 		break;
 	case '\t':
 		screen_print(cursor % screen.w, cursor / screen.w, ' ');
-		cursor = (cursor + 8) - (cursor % 8);
+		cursor = (cursor + 8) - ((cursor % screen.w) % 8);
 		break;
 	case '\n':
 		screen_print(cursor % screen.w, cursor / screen.w, ' ');
@@ -53,7 +53,7 @@ int fbterm_print(uint32_t c) {
 		break;
 	}
 
-	if (cursor > screen.w * (screen.h - 1)) {
+	if (cursor > screen.w * screen.h - 1) {
 		screen_scroll();
 		cursor -= screen.w;
 		c_base -= screen.w;
@@ -66,6 +66,16 @@ int fbterm_print(uint32_t c) {
 	screen.bg = bg;
 	
 	mutex_free(&mutex);
+
+	return 0;
+}
+
+int fbterm_clear(void) {
+	
+	screen_clear();
+
+	cursor = 0;
+	c_base = 0;
 
 	return 0;
 }

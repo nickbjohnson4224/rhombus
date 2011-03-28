@@ -68,6 +68,7 @@ int screen_flip  (void);
 
 /* terminal emulation *******************************************************/
 
+int fbterm_clear(void);
 int fbterm_print(uint32_t c);
 int fbterm_reset(void);
 

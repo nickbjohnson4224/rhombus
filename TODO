@@ -26,7 +26,9 @@ For 0.8 Alpha:
 + VESA video driver
 + proper terminal driver
 + add rcallf
-- libc unit testing (framework)
+- libc unit testing (string, stdio)
+- merge libdriver and libc
+- start libc documentation
 
 For 0.9 Alpha:
 
@@ -35,7 +37,6 @@ For 0.9 Alpha:
 - simplify VFS security
 - file locking
 - move more functions to rcall (fs_*)
-- merge libdriver and libc
 - write fenv.h, tgmath.h
 - copy-on-write
 - dynamic linking
