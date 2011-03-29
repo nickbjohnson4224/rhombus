@@ -4,7 +4,7 @@ SOURCES += $(BUILDDIR)/lib/c0.o
 SUBDIR	:= apps/calico
 TARGET	:= calico
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -lwmanager -lc
+LDFLAGS += -lc
 ASFLAGS := -felf
 
 all: $(TARGET)

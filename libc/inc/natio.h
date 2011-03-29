@@ -46,8 +46,8 @@ char    *rcallf(uint64_t rp, const char *fmt, ...);
 
 /* I/O handling *************************************************************/
 
-typedef void (*event_handler)(uint64_t source, uint64_t value);
-int      event_register(uint64_t source, event_handler handler);
+typedef void (*event_handler_t)(uint64_t source, uint64_t value);
+int      event_register(uint64_t source, event_handler_t handler);
 
 /* filesystem operations ****************************************************/
 
