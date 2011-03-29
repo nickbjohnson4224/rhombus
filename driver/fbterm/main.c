@@ -69,6 +69,11 @@ void fbterm_event(uint64_t source, uint64_t value) {
 	char c;
 	static bool ctrl = false;
 
+	if (value >> 62) {
+		// not keyboard event
+		return;
+	}
+
 	if (value & 0x00400000) {
 		if (value == 0x00C00001) {
 			ctrl = false;

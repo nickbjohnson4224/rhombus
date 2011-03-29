@@ -188,10 +188,6 @@ int main(int argc, char **argv) {
 	stdout = stderr = fopen("/dev/serial", "w");
 
 	if (fork() < 0) {
-		exec("/sbin/svga");
-	}
-	mwait(PORT_CHILD, 0);
-	if (fork() < 0) {
 		exec("/sbin/mouse");
 	}
 	mwait(PORT_CHILD, 0);
@@ -224,7 +220,7 @@ int main(int argc, char **argv) {
 	event_register(kbdfd, wmanager_event);
 
 	if (fork() < 0) {
-		exec("/bin/testapp");
+		exec("/bin/terminal");
 	}
 
 	_done();
