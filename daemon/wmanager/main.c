@@ -47,8 +47,10 @@ char *wmanager_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 			return strdup("");
 		}
 		mutex_spin(&window->mutex);
-		page_free(window->bitmap, window->width * window->height * 4);
-		window->bitmap = NULL;
+		if (window->bitmap) {
+			page_free(window->bitmap, window->width * window->height * 4);
+			window->bitmap = NULL;
+		}
 		window->width = width;
 		window->height = height;
 		mutex_free(&window->mutex);

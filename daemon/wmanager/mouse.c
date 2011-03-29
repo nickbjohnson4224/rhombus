@@ -94,8 +94,10 @@ void mouse_move(int16_t dx, int16_t dy) {
 			// resize window
 			mutex_spin(&active_window->mutex);
 
-			page_free(active_window->bitmap, active_window->width * active_window->height * 4);
-			active_window->bitmap = NULL;
+			if (active_window->bitmap) {
+				page_free(active_window->bitmap, active_window->width * active_window->height * 4);
+				active_window->bitmap = NULL;
+			}
 
 			if (mousex > active_window->x + 10) {
 				active_window->width += dx;
@@ -115,7 +117,7 @@ void mouse_move(int16_t dx, int16_t dy) {
 			mutex_free(&active_window->mutex);
 
 			if (active_window->flags & LISTEN_EVENTS) {
-				event(RP_CONS(active_window->owner, 0), 0x3LL << 62 | active_window->width << 16 | active_window->height);
+				event(RP_CONS(active_window->owner, 0), 0x3LL << 62 | (active_window->width & 0xffff) << 16 | (active_window->height & 0xffff));
 			}
 		}
 	}
