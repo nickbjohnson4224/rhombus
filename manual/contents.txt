@@ -1,0 +1,116 @@
+Rhombus Operating System Manual
+Table of Contents
+
+0 C Library
+  00 C Standard Functions
+    000 Integer and Floating Point Types
+      0000 Integer Types
+      0001 Integer Constants
+      0002 Floating Point Types
+      0003 Floating Point Constants
+      0004 Floating Point Environment
+    001 String and Character Functions
+      0010 Standard String Functions
+      0011 String Function Extensions
+      0012 Character Classification
+      0013 Wide Characters
+      0014 Localization
+      0015 UTF-8 Support
+    002 Memory Management
+      0020 Dynamic Memory Allocation
+      0021 Alignment
+      0022 Extensions
+    003 Input and Output
+      0030 Constants and Types
+      0031 File Manipulation
+      0032 Basic Input and Output
+      0033 Streams and Buffering
+      0034 Formatted Input and Output
+    004 Floating Point and Math Functions
+      0040 Constants and Types
+      0041 Exponential and Logarithmic Functions
+      0042 Trigonometric Functions
+      0043 Other Functions
+      0044 Complex Arithmetic
+    005 Signals and Errors
+      0050 Error Codes and errno
+      0051 Signals
+      0052 Signal Handling
+      0053 Non-local Jumps
+      0054 Asserions
+    006 Date and Time Functions
+      0060 Constants
+      0061 Time Functions
+      0062 Date Functions
+      0063 Kernel and Process Time
+    007 Searching and Sorting
+      0070 Quicksort
+      0071 Binary Search
+  01 Rhombus C API
+    010 Low Level Memory Management
+      0101 Constants and Layout
+      0102 Permissions and Flags
+      0103 Basic Allocation and Freeing
+      0104 Reading Page Flags
+      0105 Physical Memory Access
+      0106 Shared Memory and COW
+    011 Threads and Processes
+      0110 Types and Constants
+      0111 Processes
+      0112 Users and Groups
+      0113 Threads
+      0114 Mutexes and Synchonization
+    012 Inter-process Communication
+      0120 Message Structure
+      0121 Event Handling
+      0122 Queueing and Waiting
+      0123 Port Numbers
+      0124 Security
+    013 Low Level Input and Output
+      0130 Resource Pointers
+      0131 Reading and Writing
+      0132 Sync and Reset
+      0133 Shared Memory
+    014 File System Functions
+      0140 Finding Files and Directories
+      0141 File Types and Metadata
+      0142 Creating, Deleting, and Moving Files
+      0143 Links
+      0144 Security
+      0145 Error Codes
+    015 Events and RPC
+      0150 rcall and Control Files
+      0151 Events
+    016 Execution and Loading
+      0160 Execution Functions
+      0161 Executable Format
+      0162 Persistent Data
+      0163 Execution Mechanism
+      0164 Dynamic Linking
+  02 Driver API
+    020 External Driver Interface
+      0200 Command Line Interface
+      0201 Device Files
+      0202 Driver Reloading
+    021 Driver Interface Wrapper
+      0210 Read
+      0211 Write
+      0212 Reset
+      0213 Sync
+      0214 Lock
+      0215 Push
+      0216 Pull
+      0217 Cons
+      0218 Free
+    022 Virtual Filesystem Internals
+    023 Security
+    024 Port I/O
+      0240 x86 I/O Space
+      0241 Port Permissions
+      0242 Port Input
+      0243 Port Output
+      0244 Port Delays
+    025 Interrupts 
+    026 Device Detection
+  03 POSIX Extensions
+1 Kernel
