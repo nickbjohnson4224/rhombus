@@ -2,4 +2,4 @@
 
 export BUILDDIR=${PWD}
 
-qemu -cpu qemu32 -cdrom ${BUILDDIR}/run/flux.iso -no-reboot -serial stdio
+qemu -cpu qemu32 -cdrom ${BUILDDIR}/run/rhombus.iso -no-reboot -serial stdio

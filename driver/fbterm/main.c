@@ -115,22 +115,28 @@ int main(int argc, char **argv) {
 	uint64_t kbd_dev;
 	uint64_t fb_dev;
 	int w, h;
+	const char *kbd_path;
+	const char *fb_path;
 
 	if (argc < 3) {
-		fprintf(stderr, "%s: insufficient arguments: %d\n", argv[0], argc);
-		return 1;
+		kbd_path = "/dev/kbd";
+		fb_path = "/dev/svga0";
+	}
+	else {
+		kbd_path = argv[1];
+		fb_path = argv[2];
 	}
 
-	kbd_dev = io_find(argv[1]);
-	fb_dev  = io_find(argv[2]);
+	kbd_dev = io_find(kbd_path);
+	fb_dev  = io_find(fb_path);
 
 	if (!kbd_dev) {
-		fprintf(stderr, "%s: %s: keyboard not found\n", argv[0], argv[1]);
+		fprintf(stderr, "%s: %s: keyboard not found\n", argv[0], kbd_path);
 		return 1;
 	}
 
 	if (!fb_dev) {
-		fprintf(stderr, "%s: %s: graphics device not found\n", argv[0], argv[2]);
+		fprintf(stderr, "%s: %s: graphics device not found\n", argv[0], fb_path);
 		return 1;
 	}
 

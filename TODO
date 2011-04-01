@@ -26,12 +26,12 @@ For 0.8 Alpha:
 + VESA video driver
 + proper terminal driver
 + add rcallf
-- libc unit testing (string, stdio)
-- merge libdriver and libc
++ libc unit testing (string)
 - start libc documentation
 
 For 0.9 Alpha:
 
+- merge libdriver and libc
 - driver interface revision
 - non-recursive VFS find
 - simplify VFS security

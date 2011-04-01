@@ -42,14 +42,10 @@ static uint64_t start(struct tar_file *file, char const **argv) {
 
 	pid = fork();
 
-	setenv("NAME", "unknown");
-
 	if (pid < 0) {
 		execiv(file->start, file->size, argv);
 		for(;;);
 	}
-
-	setenv("NAME", "init");
 
 	mwait(PORT_CHILD, RP_CONS(pid, 0));
 
