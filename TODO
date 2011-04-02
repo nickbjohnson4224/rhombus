@@ -27,7 +27,7 @@ For 0.8 Alpha:
 + proper terminal driver
 + add rcallf
 + libc unit testing (string)
-- start libc documentation
++ start libc documentation
 
 For 0.9 Alpha:
 
@@ -49,6 +49,7 @@ For 0.9 Alpha:
 
 For 0.10 Alpha:
 
+- decent shell (POSIX-compliant)
 - finalize native I/O API
 - finalize driver API
 - libc documentation
@@ -58,7 +59,8 @@ For 0.10 Alpha:
 - text editor (port vim?)
 - finalize core utilities
 - installer
-- POSIX compatibility layer (if necessary for toolchain)
+- 
+- POSIX compatibility
 - self-hosting toolchain
 - installer
 - real hardware testing

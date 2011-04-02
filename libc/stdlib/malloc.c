@@ -22,6 +22,59 @@
 #include <page.h>
 #include <arch.h>
 
+/*
+ * XXX
+ *
+ * This file is a MESS. For something so critical to the functioning of the
+ * libc, it really should be cleaned up and documented. I'm sure there are
+ * many bugs lurking in here that cause major issues in the entire userland.
+ *
+ * Future me (or perhaps other kind soul): fix this please.
+ */
+
+struct __heap_node {
+	struct __heap_node *next;
+
+	struct __heap_node *parent;
+	struct __heap_node *left;
+	struct __heap_node *right;
+
+	uintptr_t status;
+	uintptr_t base;
+	uintptr_t size;
+};
+
+static uintptr_t _brk 				= HEAP2_START;
+static struct __heap_node *_stack 	= NULL;
+static bool _heap_node_mutex 		= false;
+
+static struct __heap_node *__new_heap_node(void) {
+	struct __heap_node *node;
+
+	mutex_spin(&_heap_node_mutex);
+	if (_stack) {
+		node   = _stack;
+		_stack = node->next;
+	}
+	else {
+		node = (void*) _brk;
+		_brk += sizeof(struct __heap_node);
+
+		page_anon(node, sizeof(struct __heap_node), PROT_READ | PROT_WRITE);
+	}
+	mutex_free(&_heap_node_mutex);
+
+	return node;
+}
+
+static void __del_heap_node(struct __heap_node *node) {
+
+	mutex_spin(&_heap_node_mutex); {
+		node->next = _stack;
+		_stack = node;
+	} mutex_free(&_heap_node_mutex);
+}
+
 static struct __heap_node *_tree;
 static struct __heap_node *_list[32];
 static bool _mutex 		= false;
@@ -52,6 +105,15 @@ void *aalloc(size_t size, size_t align) {
 	}
 
 	return malloc(size);
+}
+
+int posix_memalign(void **ptr, size_t align, size_t size) {
+
+	if (!ptr) return 1;
+
+	*ptr = aalloc(size, align);
+
+	return 0;
 }
 
 /*****************************************************************************

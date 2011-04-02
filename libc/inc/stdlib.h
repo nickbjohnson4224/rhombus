@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,23 +20,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* memory management (internal) ********************************************/
-
-struct __heap_node {
-	struct __heap_node *next;
-
-	struct __heap_node *parent;
-	struct __heap_node *left;
-	struct __heap_node *right;
-
-	uintptr_t status;
-	uintptr_t base;
-	uintptr_t size;
-};
-
-struct __heap_node *__new_heap_node(void);
-void                __del_heap_node(struct __heap_node *node);
-
 /* memory management *******************************************************/
 
 void   *calloc(size_t nmemb, size_t size);
@@ -46,6 +29,8 @@ void   *aalloc(size_t size, size_t align);
 size_t msize(void *ptr);
 void   free(void *ptr);
 void   *realloc(void *ptr, size_t size);
+
+int posix_memalign(void **ptr, size_t align, size_t size);
 
 /* type conversion *********************************************************/
 

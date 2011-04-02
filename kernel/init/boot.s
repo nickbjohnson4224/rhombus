@@ -60,7 +60,7 @@ section .data
 
 global gdt
 gdt:
-align 0x1000
+align 4096
 	dd 0x00000000, 0x00000000
 	dd 0x0000FFFF, 0x00CF9A00
 	dd 0x0000FFFF, 0x00CF9200

@@ -29,7 +29,7 @@
 #include "initrd.h"
 
 const char *splash ="\
-Rhombus Operating System 0.7 Alpha\n\
+Rhombus Operating System 0.8 Alpha\n\
 \n";
 
 void panic(const char *message) {

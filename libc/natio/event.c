@@ -48,7 +48,7 @@ int event(uint64_t rp, uint64_t value) {
 	return msend(msg);
 }
 
-static event_handler _event_handler;
+static event_handler_t _event_handler;
 
 static void _event_wrapper(struct msg *msg) {
 	uint64_t value;
@@ -66,7 +66,7 @@ static void _event_wrapper(struct msg *msg) {
 	_event_handler(msg->source, value);
 }
 
-int event_register(uint64_t source, event_handler handler) {
+int event_register(uint64_t source, event_handler_t handler) {
 	char *reply;
 
 	if (handler) {
