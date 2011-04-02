@@ -68,14 +68,16 @@ uint32_t strtoul(const char *nptr, char **endptr, int base);
 
 void    srand(uint32_t seed);
 uint32_t rand(void);
-void  memrand(void *p, size_t n); // XXX - not implemented
+void  memrand(void *p, size_t n);
 
-void *   srands(uint32_t seed); // XXX - not implemented
-uint32_t rands(void *state); // XXX - not implemented
-void  memrands(void *p, size_t n, void *state); // XXX - not implemented
+uint32_t randmod(uint32_t n, uint32_t mod);
+
+void *  srands(uint32_t seed);
+uint32_t rands(void *state);
+void  memrands(void *p, size_t n, void *state);
 
 uint32_t randx(void); // XXX - not implemented
-void memrandx(void *p, size_t n); // XXX - not implemented
+void  memrandx(void *p, size_t n); // XXX - not implemented
 
 /* environment variables and system ****************************************/
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdlib.h>
 #include <string.h>
 #include <mutex.h>
 
@@ -28,12 +29,11 @@
 /****************************************************************************
  * rand_state
  *
- * State of the random number generator. Note: none of these can ever be 0 
- * following correct execution of the generator, so it is assumed that the 
- * generator is not initialized iff the first element is 0.
+ * State of the random number generator.
  */
 
-static uint32_t rand_state[25];
+static uint32_t *rand_state = NULL;
+static bool rand_mutex;
 
 /****************************************************************************
  * rand_regen
@@ -42,21 +42,21 @@ static uint32_t rand_state[25];
  * a new set of random numbers.
  */
 
-static void rand_regen(void) {
+static void rand_regen(uint32_t *state) {
 	size_t i;
 
 	for (i = 0; i < 18; i++) {
-		rand_state[i] = 
-			rand_state[i + 7] ^ 
-			(rand_state[i] >> 1) ^ 
-			((rand_state[i] & 1) ? 0x8EBFD028 : 0);
+		state[i] = 
+			state[i + 7] ^ 
+			(state[i] >> 1) ^ 
+			((state[i] & 1) ? 0x8EBFD028 : 0);
 	}
 
 	for (i = 18; i < 25; i++) {
-		rand_state[i] =
-			rand_state[i - 18] ^
-			(rand_state[i] >> 1) ^
-			((rand_state[i] & 1) ? 0x8EBFD028 : 0);
+		state[i] =
+			state[i - 18] ^
+			(state[i] >> 1) ^
+			((state[i] & 1) ? 0x8EBFD028 : 0);
 	}
 }
 
@@ -92,19 +92,16 @@ static const uint32_t rand_salt[25] = {
  */
 
 void srand(uint32_t seed) {
-	size_t i;
 
-	for (i = 0; i < 25; i++) {
-		seed = seed * 0x41C64E6D + 0x3039;
-		rand_state[i] = seed ^ rand_salt[i];
+	mutex_spin(&rand_mutex);
 
-		/* on the off chance... */
-		if (rand_state[i] == 0) {
-			rand_state[i] = rand_salt[i];
-		}
+	if (rand_state) {
+		free(rand_state);
 	}
 
-	rand_regen();
+	rand_state = srands(seed);
+
+	mutex_free(&rand_mutex);
 }
 
 /****************************************************************************
@@ -119,24 +116,133 @@ void srand(uint32_t seed) {
  */
 
 uint32_t rand(void) {
-	static size_t i = 0;
 	uint32_t value;
 
-	if (rand_state[0] == 0) {
-		srand(1);
+	mutex_spin(&rand_mutex);
+
+	if (!rand_state) rand_state = srands(1);
+	value = rands(rand_state);
+
+	mutex_free(&rand_mutex);
+
+	return value;
+}
+
+/*****************************************************************************
+ * memrand
+ *
+ * Using the random number generator, randomizes the first n bytes of the
+ * memory region pointed to by p. The probability of any bit being 1 in that
+ * region is 1/2 and independent of all other bits.
+ */
+
+void memrand(void *p, size_t n) {
+
+	mutex_spin(&rand_mutex);
+	memrands(p, n, rand_state);
+	mutex_free(&rand_mutex);
+}
+
+/*****************************************************************************
+ * randmod
+ *
+ * Returns a random number in the range from 0 to mod - 1. The result is
+ * guaranteed to be uniformly distributed across its range even for large
+ * moduli, unlike rand() % mod.
+ */
+
+uint32_t randmod(uint32_t n, uint32_t mod) {
+	double value;
+
+	value = n;
+	value /= RAND_MAX;
+	value *= mod;
+
+	return value;
+}
+
+/*****************************************************************************
+ * srands
+ *
+ * Creates a random number generator state in dynamically allocated memory
+ * using the given seed and returns it. The global random number generator is
+ * not affected.
+ */
+
+void *srands(uint32_t seed) {
+	uint32_t *state;
+	size_t i;
+
+	/* allocate state */
+	state = malloc(sizeof(uint32_t) * 26);
+	if (!state) return NULL;
+
+	/* seed allocator */
+	for (i = 0; i < 25; i++) {
+		seed = seed * 0x41C64E6D + 0x3039;
+		state[i] = seed ^ rand_salt[i];
+
+		/* on the off chance... */
+		if (state[i] == 0) {
+			state[i] = rand_salt[i];
+		}
 	}
 
-	if (i == 25) {
-		rand_regen();
-		i = 0;
+	rand_regen(state);
+
+	/* set index to 0 */
+	state[25] = 0;
+
+	return state;
+}
+
+/*****************************************************************************
+ * rands
+ *
+ * Returns a random number in the range 0 to RAND_MAX, using the given random 
+ * number generator state.
+ */
+
+uint32_t rands(void *state) {
+	uint32_t value;
+	uint32_t *state32 = state;
+
+	if (!state) return 0;
+
+	if (state32[25] >= 25) {
+		rand_regen(state);
+		state32[25] = 0;
 	}
 
-	value = rand_state[i];
-	i++;
+	value = state32[state32[25]];
+	state32[25]++;
 
 	value ^= (value << 7)  & 0x2B5B2500;
 	value ^= (value << 15) & 0xDB8B0000;
 	value ^= (value >> 16);
 
 	return value;
+}
+
+/*****************************************************************************
+ * memrands
+ *
+ * Using the given random number generator state, randomizes the first n bytes 
+ * of the memory region pointed to by p. The probability of any bit being 1 in
+ * that region is 1/2 and independent of all other bits.
+ */
+
+void memrands(void *p, size_t n, void *state) {
+	uint8_t *byte = p;
+	uint32_t value;
+	size_t i;
+	
+	for (i = 0; i < n; i++) {
+		if (i % 4 == 0) {
+			value = rands(state);
+		}
+
+		byte[i] = value & 0xFF;
+		value >>= 8;
+	}
 }
