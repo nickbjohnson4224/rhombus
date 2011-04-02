@@ -19,7 +19,7 @@
 #include <mutex.h>
 
 /****************************************************************************
- * TT800S RNG for Flux
+ * TT800S RNG for Rhombus
  *
  * This implementation based on code based on code based on the description 
  * of the TT800 Twisted GFSR RNG in "Twisted GFSR Generators II" by Makoto 
