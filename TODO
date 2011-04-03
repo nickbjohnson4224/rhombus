@@ -1,4 +1,4 @@
-For 0.7 Alpha:
+For 0.7 Alpha: (complete)
 
 + "link" page flag
 + shared library manager
@@ -10,7 +10,7 @@ For 0.7 Alpha:
 + timeouts for I/O
 + driver interface revision
 
-For 0.8 Alpha:
+For 0.8 Alpha: (complete)
 
 + fill in math function stubs
 + test math functions
@@ -35,8 +35,10 @@ For 0.9 Alpha:
 - driver interface revision
 - non-recursive VFS find
 - simplify VFS security
-- file locking
 - move more functions to rcall (fs_*)
+- file locking
+- symlinks
+- hard links
 - write fenv.h, tgmath.h
 - copy-on-write
 - dynamic linking
@@ -49,6 +51,9 @@ For 0.9 Alpha:
 
 For 0.10 Alpha:
 
+- user/password manager
+- login manager
+- pipe driver
 - decent shell (POSIX-compliant)
 - finalize native I/O API
 - finalize driver API
@@ -59,7 +64,6 @@ For 0.10 Alpha:
 - text editor (port vim?)
 - finalize core utilities
 - installer
-- 
 - POSIX compatibility
 - self-hosting toolchain
 - installer
