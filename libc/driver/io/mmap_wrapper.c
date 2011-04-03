@@ -14,36 +14,27 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <driver.h>
 #include <stdlib.h>
-#include <string.h>
 #include <mutex.h>
 #include <natio.h>
 #include <proc.h>
+#include <page.h>
 #include <ipc.h>
 
-#include <driver/vfs.h>
-#include <driver/io.h>
-
-/*****************************************************************************
- * __rcall_wrapper
- *
- * protocol:
- *   port: PORT_RCALL
- *
- *   request:
- *     char args[]
- *
- *   reply:
- *     char rets[]
- */
-
-void __rcall_wrapper(struct msg *msg) {
+void __share_wrapper(struct msg *msg) {
 	struct vfs_obj *file;
-	struct msg *reply;
-	char *args;
-	char *rets;
+	uint64_t offset;
+	uint8_t err;
+	void *pages;
 
-	if (!_di_rcall) {
+	/* check request */
+	if (msg->length < PAGESZ - sizeof(struct msg)) {
+		merror(msg);
+		return;
+	}
+
+	if (!_di_share) {
 		merror(msg);
 		return;
 	}
@@ -55,24 +46,14 @@ void __rcall_wrapper(struct msg *msg) {
 		return;
 	}
 
-	args = (char*) msg->data;
+	/* extract data */
+	offset = ((uint64_t*) msg->data)[0];
+	pages = aalloc(msg->length - PAGESZ + sizeof(struct msg), PAGESZ);
+	page_self(&msg->data[PAGESZ - sizeof(struct msg)], pages, msg->length - PAGESZ + sizeof(struct msg));
 
-	rets = _di_rcall(msg->source, file, args);
+	err = _di_share(msg->source, file, pages, msg->length - PAGESZ + sizeof(struct msg), offset);
 
-	if (!rets) {
-		merror(msg);
-		return;
-	}
-
-	reply = aalloc(sizeof(struct msg) + strlen(rets) + 1, PAGESZ);
-	reply->source = msg->target;
-	reply->target = msg->source;
-	reply->length = strlen(rets) + 1;
-	reply->port   = PORT_REPLY;
-	reply->arch   = ARCH_NAT;
-	strcpy((char*) reply->data, rets);
-	free(rets);
-
-	free(msg);
-	msend(reply);
+	msg->data[0] = err;
+	msg->length = 1;
+	mreply(msg);
 }

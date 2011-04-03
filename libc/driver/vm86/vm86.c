@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
- * Permission to use, copy, modify, and/or distribute this software for any
+ * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  * 
@@ -14,21 +14,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef DRIVER_PORTS_H
-#define DRIVER_PORTS_H
+#include <driver.h>
+#include <string.h>
+#include <page.h>
 
-#include <stdint.h>
+int vm86_setup(void) {
+	return page_phys((void*) 0, 0x100000, PROT_READ | PROT_WRITE | PROT_EXEC, 0);
+}
 
-/* port access **************************************************************/
-
-uint8_t  inb(uint16_t port);
-uint16_t inw(uint16_t port);
-uint32_t ind(uint16_t port);
-
-void outb(uint16_t port, uint8_t value);
-void outw(uint16_t port, uint16_t value);
-void outd(uint16_t port, uint32_t value);
-
-void iodelay(uint32_t usec);
-
-#endif/*DRIVER_PORTS_H*/
+int vm86_exec(void *code, size_t size) {
+	if (vm86_setup()) return 1;
+	memcpy((void*) 0x7C00, code, size);
+	return __vm86(0x00007C00, 0x00007C00);
+}

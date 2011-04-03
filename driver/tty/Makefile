@@ -3,7 +3,7 @@ SOURCES += $(BUILDDIR)/lib/c0.o
 TARGET  := tty
 SUBDIR	:= driver/tty
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -ldriver -lc
+LDFLAGS += -lc
 ASFLAGS += -felf
 
 .PHONY: clean install

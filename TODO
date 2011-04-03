@@ -31,7 +31,7 @@ For 0.8 Alpha: (complete)
 
 For 0.9 Alpha:
 
-- merge libdriver and libc
++ merge libdriver and libc
 - driver interface revision
 - non-recursive VFS find
 - simplify VFS security

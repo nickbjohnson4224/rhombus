@@ -14,11 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <driver.h>
 #include <stdlib.h>
 #include <string.h>
 #include <proc.h>
-
-#include <driver/vfs.h>
 
 /*****************************************************************************
  * vfs_add
