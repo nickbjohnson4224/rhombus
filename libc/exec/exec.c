@@ -58,6 +58,7 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 	if (argv) {
 		argv_pack = packarg(argv);
 		__pack_add(PACK_KEY_ARG, argv_pack, msize(argv_pack));
+		free(argv_pack);
 	}
 
 	/* save environment variables */
