@@ -12,12 +12,12 @@ BIN_DIRS  = kernel fish
 BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS) $(PORTS) $(APPS)
 
 CC := clang -m32
-LD := ld
+LD := ld -melf_i386
 AR := ar
 AS := nasm
 PP := cpp
 
-CFLAGS	:= -pipe -Wall -Werror -Wextra -pedantic -std=c99
+CFLAGS	:= -pipe -Wall -Werror -Wextra -pedantic -std=c99 
 CFLAGS	+= -Wpointer-arith -Wwrite-strings
 CFLAGS	+= -Wno-unused-parameter -Wno-unused-function
 CFLAGS	+= -O3 -fomit-frame-pointer
