@@ -44,7 +44,7 @@ extern struct window_t *active_window;
 extern bool winkey;
 
 struct window_t *find_window(uint32_t id, uint32_t owner);
-int add_window(uint32_t id, uint32_t owner);
+int add_window(uint32_t id);
 int remove_window(uint32_t id, uint32_t owner);
 void draw_window(struct window_t *window, int x1, int y1, int x2, int y2);
 

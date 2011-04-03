@@ -20,10 +20,8 @@
 #include <string.h>
 
 int main(int argc, char **argv) {
-	uint64_t tty;
 	
-	tty = io_find("/dev/tty");
-	rcall(tty, "clear");
+	rcall(stdout->fd, "clear");
 	
 	return 0;
 }

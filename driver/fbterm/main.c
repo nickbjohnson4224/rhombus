@@ -19,6 +19,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <driver.h>
+#include <exec.h>
 #include <signal.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -114,30 +115,43 @@ int main(int argc, char **argv) {
 	struct font *font;
 	uint64_t kbd_dev;
 	uint64_t fb_dev;
+	uint64_t wmanager;
+	char *ret;
 	int w, h;
-	const char *kbd_path;
-	const char *fb_path;
+	int index;
+	int pid;
 
 	if (argc < 3) {
-		kbd_path = "/dev/kbd";
-		fb_path = "/dev/svga0";
+		wmanager = io_find("/sys/wmanager");
+		if (!wmanager) {
+			fprintf(stderr, "%s: couldn't find wmanager\n", argv[0]);
+			return 1;
+		}
+
+		ret = rcall(wmanager, "createwindow");
+		if (!ret || sscanf(ret, "%i", &index) != 1) {
+			fprintf(stderr, "%s: creating window failed\n", argv[0]);
+			return 1;
+		}
+
+		kbd_dev = fb_dev = RP_CONS(RP_PID(wmanager), index);
+		rcall(fb_dev, "setmode 320 240 32");
+		rcall(fb_dev, "setwindowflags 2"); // not resizeable
+		sync(fb_dev);
 	}
 	else {
-		kbd_path = argv[1];
-		fb_path = argv[2];
-	}
+		kbd_dev = io_find(argv[1]);
+		fb_dev  = io_find(argv[2]);
 
-	kbd_dev = io_find(kbd_path);
-	fb_dev  = io_find(fb_path);
+		if (!kbd_dev) {
+			fprintf(stderr, "%s: %s: keyboard not found\n", argv[0], argv[1]);
+			return 1;
+		}
 
-	if (!kbd_dev) {
-		fprintf(stderr, "%s: %s: keyboard not found\n", argv[0], kbd_path);
-		return 1;
-	}
-
-	if (!fb_dev) {
-		fprintf(stderr, "%s: %s: graphics device not found\n", argv[0], fb_path);
-		return 1;
+		if (!fb_dev) {
+			fprintf(stderr, "%s: %s: graphics device not found\n", argv[0], argv[2]);
+			return 1;
+		}
 	}
 
 	root = calloc(sizeof(struct vfs_obj), 1);
@@ -161,6 +175,12 @@ int main(int argc, char **argv) {
 	di_wrap_read (fbterm_read);
 	di_wrap_rcall(fbterm_rcall);
 	vfs_wrap_init();
+
+	pid = fork();
+	if (pid < 0) {
+		stdin = stdout = stderr = fdopen(RP_CONS(-pid, 0), "w");
+		exec("/bin/fish");
+	}
 
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 	_done();

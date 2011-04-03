@@ -26,15 +26,23 @@
 
 uint64_t vgafd, mousefd, kbdfd;
 bool winkey;
+int next_index = 1;
 
 char *wmanager_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 	struct window_t *window;
 	size_t width, height;
 	int flags, x, y;
-	char buffer[16];
+	char buffer[32];
 
 	if (strcmp(args, "listmodes") == 0) {
 		return strdup("any");
+	}
+	if (strcmp(args, "createwindow") == 0) {
+		sprintf(buffer, "/sys/wmanager/%i", next_index);
+		io_cons(buffer, RP_TYPE_FILE);
+		find_window(next_index - 1, 0)->owner = RP_PID(source);
+		sprintf(buffer, "%i", next_index - 1);
+		return strdup(buffer);
 	}
 
 	window = find_window(file->index, RP_PID(source));
@@ -132,8 +140,11 @@ int wmanager_sync(uint64_t source, struct vfs_obj *file) {
 }
 
 struct vfs_obj *wmanager_cons(uint64_t source, int type) {
-	static int next_index = 1;
 	struct vfs_obj *fobj = NULL;
+
+	if (RP_PID(source) != getpid()) {
+		return NULL;
+	}
 
 	switch (type) {
 	case RP_TYPE_FILE:
@@ -151,7 +162,11 @@ struct vfs_obj *wmanager_cons(uint64_t source, int type) {
 }
 
 int wmanager_push(uint64_t source, struct vfs_obj *file) {
-	return add_window(file->index, RP_PID(source));
+	if (RP_PID(source) != getpid()) {
+		return -1;
+	}
+
+	return add_window(file->index);
 }
 
 int wmanager_pull(uint64_t source, struct vfs_obj *file) {
@@ -213,6 +228,7 @@ int main(int argc, char **argv) {
 	screen = malloc(screen_width * screen_height * 4);
 	memset(screen, 0, screen_width * screen_height * 4);
 	share(vgafd, screen, screen_width * screen_height * 4, 0, PROT_READ);
+	sync(vgafd); // clear screen
 
 	mousefd = io_find("/dev/mouse");
 	kbdfd = io_find("/dev/kbd");
@@ -220,7 +236,7 @@ int main(int argc, char **argv) {
 	event_register(kbdfd, wmanager_event);
 
 	if (fork() < 0) {
-		exec("/bin/terminal");
+		exec("/sbin/fbterm");
 	}
 
 	_done();

@@ -96,16 +96,7 @@ int main() {
 	file = tar_find(boot_image, "sbin/svga");
 	start(file, argv);
 
-	/* Terminal Driver */
-	argv[0] = "fbterm";
-	argv[1] = "/dev/kbd";
-	argv[2] = "/dev/svga0";
-	argv[3] = NULL;
-	file = tar_find(boot_image, "sbin/fbterm");
-	io_link("/dev/tty", start(file, argv));
-
 	/* Splash */
-	stdout = stderr = stdin = fopen("/dev/tty", "w");
 	printf(splash);
 
 	/* Init control file */
@@ -144,25 +135,16 @@ int main() {
 	/* Path */
 	setenv("PATH", "/bin");
 
-	/* Flux Init Shell */
-	argv[0] = "fish";
-	argv[1] = NULL;
-	file = tar_find(boot_image, "bin/fish");
-	if (!file) {
-		printf("critical error: no init shell found\n");
-		for(;;);
-	}
-
-	if (fork() < 0) {
-//		setcuser(1);
-		execiv(file->start, file->size, argv);
-	}
+	/* Terminal Driver */
+	argv[0] = "fbterm";
+	argv[1] = "/dev/kbd";
+	argv[2] = "/dev/svga0";
+	argv[3] = NULL;
+	file = tar_find(boot_image, "sbin/fbterm");
+	start(file, argv);
 
 	setenv("NAME", "init");
+	_done();
 	
-	mwait(PORT_CHILD, 0);
-
-	printf("INIT PANIC: system daemon died\n");
-	for(;;);
 	return 0;
 }

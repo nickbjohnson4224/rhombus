@@ -32,7 +32,7 @@ struct window_t *find_window(uint32_t id, uint32_t owner) {
 	return NULL;
 }
 
-int add_window(uint32_t id, uint32_t owner) {
+int add_window(uint32_t id) {
 	struct window_t *list;
 	struct window_t *window;
 
@@ -42,7 +42,7 @@ int add_window(uint32_t id, uint32_t owner) {
 
 	window = malloc(sizeof(struct window_t));
 	window->id = id;
-	window->owner = owner;
+	window->owner = 0;
 	window->flags = 0;
 	window->x = window->y = 0;
 	window->width = window->height = 0;
