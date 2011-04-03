@@ -176,6 +176,7 @@ int main(int argc, char **argv) {
 	di_wrap_rcall(fbterm_rcall);
 	vfs_wrap_init();
 
+	// launch shell
 	pid = fork();
 	if (pid < 0) {
 		stdin = stdout = stderr = fdopen(RP_CONS(-pid, 0), "w");
