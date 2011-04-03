@@ -97,6 +97,5 @@ uint64_t fs_lfind(uint64_t root, const char *path) {
 		return 0;
 	}
 
-	free(msg);
 	return rp;
 }

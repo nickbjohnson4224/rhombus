@@ -168,6 +168,13 @@ void free(void *ptr) {
 	mutex_spin(&_mutex);
 	node = _get_by_addr(base);
 
+	for (struct __heap_node *list = _list[node->size]; list; list = list->next) {
+		if (list->base == base) {
+			fprintf(stderr, "double free (%x)\n", base);
+			abort();
+		}
+	}
+
 	if (node) {
 		_add_to_list(node);
 
@@ -175,10 +182,10 @@ void free(void *ptr) {
 //			page_free((void*) node->base, (size_t) 1 << node->size);
 //		}
 	}
-//	else {
-//		printf("invalid free of %x at %x\n", ptr, ((int*) &ptr)[2]);
-//		abort();
-//	}
+	else {
+		printf("invalid free of %x at %x\n", ptr, ((int*) &ptr)[2]);
+		abort();
+	}
 
 	mutex_free(&_mutex);
 }
