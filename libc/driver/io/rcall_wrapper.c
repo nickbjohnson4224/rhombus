@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,62 +14,63 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <driver.h>
 #include <stdlib.h>
-#include <natio.h>
+#include <string.h>
 #include <mutex.h>
+#include <natio.h>
 #include <proc.h>
 #include <ipc.h>
 
-#include <driver/vfs.h>
-#include <driver/io.h>
-
 /*****************************************************************************
- * __read_wrapper
+ * __rcall_wrapper
  *
- * Handles and redirects read requests to the current active driver.
+ * protocol:
+ *   port: PORT_RCALL
+ *
+ *   request:
+ *     char args[]
+ *
+ *   reply:
+ *     char rets[]
  */
 
-void __read_wrapper(struct msg *msg) {
+void __rcall_wrapper(struct msg *msg) {
 	struct vfs_obj *file;
-	uint64_t offset;
-	uint32_t size;
 	struct msg *reply;
+	char *args;
+	char *rets;
 
-	if (msg->length != sizeof(uint64_t) + sizeof(uint32_t)) {
-		merror(msg);
-		return;
-	}
-
-	if (!_di_read) {
+	if (!_di_rcall) {
 		merror(msg);
 		return;
 	}
 
 	file = vfs_get_index(RP_INDEX(msg->target));
 
-	if (!file || !(file->type & RP_TYPE_FILE)) {
+	if (!file) {
 		merror(msg);
 		return;
 	}
 
-	if (!(acl_get(file->acl, gettuser()) & PERM_READ)) {
+	args = (char*) msg->data;
+
+	rets = _di_rcall(msg->source, file, args);
+
+	if (!rets) {
 		merror(msg);
 		return;
 	}
-	
-	offset = ((uint64_t*) msg->data)[0];
-	size   = ((uint32_t*) msg->data)[2];
-	
-	reply = aalloc(sizeof(struct msg) + size, PAGESZ);
+
+	reply = aalloc(sizeof(struct msg) + strlen(rets) + 1, PAGESZ);
 	reply->source = msg->target;
 	reply->target = msg->source;
-	reply->length = size;
+	reply->length = strlen(rets) + 1;
 	reply->port   = PORT_REPLY;
 	reply->arch   = ARCH_NAT;
+	strcpy((char*) reply->data, rets);
+	free(rets);
 
 	free(msg);
-
-	reply->length = _di_read(msg->source, file, reply->data, size, offset);
-
 	msend(reply);
 }

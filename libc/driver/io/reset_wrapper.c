@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,41 +14,23 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <driver.h>
 #include <stdlib.h>
-#include <mutex.h>
 #include <natio.h>
+#include <mutex.h>
 #include <proc.h>
 #include <ipc.h>
 
-#include <driver/vfs.h>
-#include <driver/io.h>
-
 /*****************************************************************************
- * __write_wrapper
+ * __reset_wrapper
  *
- * Handles and redirects write requests to the current active driver.
- *
- * protocol:
- *   port: PORT_WRITE
- *
- *   request:
- *     uint64_t offset
- *     uint8_t data[]
- *
- *   reply:
- *     uint32_t size
+ * Handles and redirects reset requests to the current active driver.
  */
 
-void __write_wrapper(struct msg *msg) {
+void __reset_wrapper(struct msg *msg) {
 	struct vfs_obj *file;
-	uint64_t offset;
 
-	if (msg->length < sizeof(uint64_t)) {
-		merror(msg);
-		return;
-	}
-
-	if (!_di_write) {
+	if (!_di_reset) {
 		merror(msg);
 		return;
 	}
@@ -64,11 +46,8 @@ void __write_wrapper(struct msg *msg) {
 		merror(msg);
 		return;
 	}
-	
-	offset = ((uint64_t*) msg->data)[0];
 
-	((uint32_t*) msg->data)[0] = _di_write(msg->source, file, &msg->data[8], msg->length - 8, offset);
-	msg->length = sizeof(uint32_t);
+	_di_reset(msg->source, file);
 
-	mreply(msg);
+	merror(msg); // errors are the same as valid replies
 }

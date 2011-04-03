@@ -3,7 +3,7 @@ SOURCES += $(BUILDDIR)/lib/c0.o
 TARGET  := fbterm
 SUBDIR	:= driver/fbterm
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -ldriver -lc
+LDFLAGS += -lc
 ASFLAGS += -felf
 
 .PHONY: clean install
