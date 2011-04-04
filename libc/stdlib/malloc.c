@@ -22,67 +22,16 @@
 #include <page.h>
 #include <arch.h>
 
-/*
- * XXX
- *
- * This file is a MESS. For something so critical to the functioning of the
- * libc, it really should be cleaned up and documented. I'm sure there are
- * many bugs lurking in here that cause major issues in the entire userland.
- *
- * Future me (or perhaps other kind soul): fix this please.
- */
+#include "malloc.h"
 
-struct __heap_node {
-	struct __heap_node *next;
+static struct heap_node *_tree;
+static struct heap_node *_list[32];
+static bool   _mutex;
 
-	struct __heap_node *parent;
-	struct __heap_node *left;
-	struct __heap_node *right;
-
-	uintptr_t status;
-	uintptr_t base;
-	uintptr_t size;
-};
-
-static uintptr_t _brk 				= HEAP2_START;
-static struct __heap_node *_stack 	= NULL;
-static bool _heap_node_mutex 		= false;
-
-static struct __heap_node *__new_heap_node(void) {
-	struct __heap_node *node;
-
-	mutex_spin(&_heap_node_mutex);
-	if (_stack) {
-		node   = _stack;
-		_stack = node->next;
-	}
-	else {
-		node = (void*) _brk;
-		_brk += sizeof(struct __heap_node);
-
-		page_anon(node, sizeof(struct __heap_node), PROT_READ | PROT_WRITE);
-	}
-	mutex_free(&_heap_node_mutex);
-
-	return node;
-}
-
-static void __del_heap_node(struct __heap_node *node) {
-
-	mutex_spin(&_heap_node_mutex); {
-		node->next = _stack;
-		_stack = node;
-	} mutex_free(&_heap_node_mutex);
-}
-
-static struct __heap_node *_tree;
-static struct __heap_node *_list[32];
-static bool _mutex 		= false;
-
-static void                _add_to_list  (struct __heap_node *node);
-static struct __heap_node *_get_by_addr  (uintptr_t addr);
-static struct __heap_node *_find_node    (uintptr_t index);
-static uintptr_t            ilog2        (uintptr_t n);
+static void              _add_to_list  (struct heap_node *node);
+static struct heap_node *_get_by_addr  (uintptr_t addr);
+static struct heap_node *_find_node    (uintptr_t index);
+static uintptr_t          ilog2        (uintptr_t n);
 
 /*****************************************************************************
  * aalloc
@@ -124,7 +73,7 @@ int posix_memalign(void **ptr, size_t align, size_t size) {
  */
 
 void *malloc(size_t size) {
-	struct __heap_node *node;
+	struct heap_node *node;
 	uintptr_t index;
 
 	index = ilog2(size);
@@ -138,6 +87,8 @@ void *malloc(size_t size) {
 		return NULL;
 	}
 	else {
+		node->status = 1;
+
 		if (page_anon((void*) node->base, 1 << index, PROT_READ | PROT_WRITE)) {
 			/* could not allocate memory */
 			errno = ENOMEM;
@@ -148,42 +99,73 @@ void *malloc(size_t size) {
 	}
 }
 
+/*****************************************************************************
+ * msize
+ *
+ * Returns the size of the memory allocated to the given block.
+ */
+
 size_t msize(void *ptr) {
-	struct __heap_node *node;
+	struct heap_node *node;
 	uintptr_t base = (uintptr_t) ptr;
 	size_t size;
 
 	mutex_spin(&_mutex);
+
+	// find matching node
 	node = _get_by_addr(base);
-	size = (node) ? ((size_t) 1 << node->size) : 0;
+
+	if (node && node->status == 1) {
+		// get size of block
+		size = (size_t) 1 << node->size;
+	}
+	else {
+		// block was freed or nonexistent
+		size = 0;
+	}
+
 	mutex_free(&_mutex);
 
 	return size;
 }
 
+/*****************************************************************************
+ * free
+ *
+ * Returns the given pointer to the heap.
+ */
+
 void free(void *ptr) {
-	struct __heap_node *node;
+	struct heap_node *node;
 	uintptr_t base = (uintptr_t) ptr;
 
 	mutex_spin(&_mutex);
 	node = _get_by_addr(base);
 
-	for (struct __heap_node *list = _list[node->size]; list; list = list->next) {
-		if (list->base == base) {
+	if (node) {
+
+		// check for double frees
+		if (node->status == 0) {
+			mutex_free(&_mutex);
 			fprintf(stderr, "double free (%x)\n", base);
 			abort();
 		}
-	}
 
-	if (node) {
+		// mark as freed
+		node->status = 0;
+
+		// return node to heap
 		_add_to_list(node);
 
+		// free memory
 		if (node->size >= 12) {
 			page_free((void*) node->base, (size_t) 1 << node->size);
 		}
 	}
 	else {
-		printf("invalid free of %x at %x\n", ptr, ((int*) &ptr)[2]);
+		// node not found (i.e. pointer was not from heap)
+		mutex_free(&_mutex);
+		fprintf(stderr, "invalid free of %x at %x\n", ptr, ((int*) &ptr)[2]);
 		abort();
 	}
 
@@ -240,48 +222,59 @@ static uintptr_t ilog2(uintptr_t n) {
  * Returns null on out of memory error.
  */
 
-static struct __heap_node *_find_node(uintptr_t index) {
-	struct __heap_node *node;
+static struct heap_node *_find_node(uintptr_t index) {
+	struct heap_node *node;
 
 	if (index >= 32) {
 		return NULL;
 	}
 
 	if (!_tree) {
-		_tree = __new_heap_node();
+		// construct new tree (only happens on first allocation)
+		_tree = new_heap_node();
 		_tree->base = HEAP_START;
-		_tree->size = ilog2(HEAP_MXBRK - HEAP_START);
+		_tree->size = ilog2(HEAP_END - HEAP_START);
+		_tree->status = 0;
 
 		_add_to_list(_tree);
 	}
 
 	node = _list[index];
 	if (node) {
+		// adequate node exists: remove from list and return
 		_list[index] = node->next;
 		return node;
 	}
 	else {
+		// allocate larger node
 		node = _find_node(index + 1);
 		if (!node) {
+			// could not allocate larger node: heap must be OOM
 			return NULL;
 		}
 		else {
-			node->left = __new_heap_node();
+			// construct new left node
+			node->left = new_heap_node();
 			node->left->left   = NULL;
 			node->left->right  = NULL;
 			node->left->parent = node;
 			node->left->base   = node->base;
 			node->left->size   = index;
+			node->left->status = 0;
 
-			node->right = __new_heap_node();
+			// construct new right node
+			node->right = new_heap_node();
 			node->right->left   = NULL;
 			node->right->right  = NULL;
 			node->right->parent = node;
 			node->right->base   = node->base + (1 << index);
 			node->right->size   = index;
+			node->right->status = 0;
 			
+			// save right node for later use
 			_add_to_list(node->right);
 
+			// return left node
 			return node->left;
 		}
 	}
@@ -294,11 +287,9 @@ static struct __heap_node *_find_node(uintptr_t index) {
  * thread-safe.
  */
 
-static void _add_to_list(struct __heap_node *node) {
-	uintptr_t index = node->size;
-
-	node->next = _list[index];
-	_list[index] = node;
+static void _add_to_list(struct heap_node *node) {
+	node->next = _list[node->size];
+	_list[node->size] = node;
 }
 
 /*****************************************************************************
@@ -309,16 +300,18 @@ static void _add_to_list(struct __heap_node *node) {
  * thread-safe.
  */
 
-static struct __heap_node *_get_by_addr(uintptr_t addr) {
-	struct __heap_node *root;
+static struct heap_node *_get_by_addr(uintptr_t addr) {
+	struct heap_node *root;
 
 	root = _tree;
 
 	while (root) {
 		if (root->left && root->right) {
+			// not a leaf: choose child by address
 			root = (addr < root->right->base) ? root->left : root->right;
 		}
 		else {
+			// leaf: return if match
 			return (addr == root->base) ? root : NULL;
 		}
 	}
