@@ -178,9 +178,9 @@ void free(void *ptr) {
 	if (node) {
 		_add_to_list(node);
 
-//		if (node->size >= 12) {
-//			page_free((void*) node->base, (size_t) 1 << node->size);
-//		}
+		if (node->size >= 12) {
+			page_free((void*) node->base, (size_t) 1 << node->size);
+		}
 	}
 	else {
 		printf("invalid free of %x at %x\n", ptr, ((int*) &ptr)[2]);

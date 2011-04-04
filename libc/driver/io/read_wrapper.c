@@ -30,6 +30,7 @@
 void __read_wrapper(struct msg *msg) {
 	struct vfs_obj *file;
 	uint64_t offset;
+	uint64_t source;
 	uint32_t size;
 	struct msg *reply;
 
@@ -65,9 +66,10 @@ void __read_wrapper(struct msg *msg) {
 	reply->port   = PORT_REPLY;
 	reply->arch   = ARCH_NAT;
 
+	source = msg->source;
 	free(msg);
 
-	reply->length = _di_read(msg->source, file, reply->data, size, offset);
+	reply->length = _di_read(source, file, reply->data, size, offset);
 
 	msend(reply);
 }
