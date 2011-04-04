@@ -128,7 +128,6 @@ size_t msize(void *ptr) {
 
 void free(void *ptr) {
 	struct heap_node *node;
-	struct heap_node *parent;
 	uintptr_t base = (uintptr_t) ptr;
 
 	mutex_spin(&_mutex);
@@ -148,33 +147,6 @@ void free(void *ptr) {
 
 		// return node to heap
 		_add_to_list(node);
-
-		// check if merge is possible
-		parent = node->parent;
-		if (parent && parent->left && parent->right) {
-			if (parent->left->status == 0 && parent->right->status == 0) {
-				// can merge: free child nodes and add parent to list
-				
-/*				// free right node
-				if (parent->right->prev) parent->right->prev->next = parent->right->next;
-				else _list[parent->right->size] = parent->right->next;
-				if (parent->right->next) parent->right->next->prev = parent->right->prev;
-				del_heap_node(parent->right);
-				parent->right = NULL; 
-
-				// free left node
-				if (parent->left->prev) parent->left->prev->next = parent->left->next;
-				else _list[parent->left->size] = parent->left->next;
-				if (parent->left->next) parent->left->next->prev = parent->left->prev;
-				del_heap_node(parent->left);
-				parent->left = NULL;
-
-				// add parent to free list
-				parent->status = 0;
-				_add_to_list(parent);
-				node = parent; */
-			}
-		}
 
 		// free memory
 		if (node->size >= 12) {
