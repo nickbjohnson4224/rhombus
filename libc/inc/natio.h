@@ -34,20 +34,23 @@
 #define RP_TYPE_FILE 	0x01
 #define RP_TYPE_DIR		0x02
 
-size_t   read (uint64_t rp, void *buf, size_t size, uint64_t offset);
-size_t   write(uint64_t rp, void *buf, size_t size, uint64_t offset);
-int      sync (uint64_t rp);
-int      reset(uint64_t rp);
-int      share(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot);
-char    *rcall(uint64_t rp, const char *args);
-int      event(uint64_t rp, uint64_t value);
+size_t read (uint64_t rp, void *buf, size_t size, uint64_t offset);
+size_t write(uint64_t rp, void *buf, size_t size, uint64_t offset);
+int    sync (uint64_t rp);
+int    reset(uint64_t rp);
+int    share(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot);
+char  *rcall(uint64_t rp, const char *args);
+int    event(uint64_t rp, uint64_t value);
 
-char    *rcallf(uint64_t rp, const char *fmt, ...);
+char  *rcallf(uint64_t rp, const char *fmt, ...);
 
 /* I/O handling *************************************************************/
 
 typedef void (*event_handler_t)(uint64_t source, uint64_t value);
-int      event_register(uint64_t source, event_handler_t handler);
+int event_register(uint64_t source, event_handler_t handler);
+
+typedef char *(rcall_t)(uint64_t src, uint32_t index, int argc, char **argv);
+int rcall_register(const char *call, rcall_t handler);
 
 /* filesystem operations ****************************************************/
 
