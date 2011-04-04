@@ -234,6 +234,7 @@ static struct heap_node *_find_node(uintptr_t index) {
 	if (node) {
 		// adequate node exists: remove from list and return
 		_list[index] = node->next;
+		if (_list[index]) _list[index]->prev = NULL;
 		return node;
 	}
 	else {
@@ -280,6 +281,8 @@ static struct heap_node *_find_node(uintptr_t index) {
 
 static void _add_to_list(struct heap_node *node) {
 	node->next = _list[node->size];
+	node->prev = NULL;
+	if (_list[node->size]) _list[node->size]->prev = node;
 	_list[node->size] = node;
 }
 

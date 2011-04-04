@@ -42,6 +42,7 @@
 
 struct heap_node {
 	struct heap_node *next;
+	struct heap_node *prev;
 
 	struct heap_node *parent;
 	struct heap_node *left;
@@ -50,7 +51,6 @@ struct heap_node {
 	uintptr_t status; // 1 if allocated, 0 if free
 	uintptr_t base;   // base address
 	uintptr_t size;   // base 2 logarithm of size in bytes
-	uintptr_t padding;
 };
 
 struct heap_node *new_heap_node(void);
