@@ -56,15 +56,6 @@ void *aalloc(size_t size, size_t align) {
 	return malloc(size);
 }
 
-int posix_memalign(void **ptr, size_t align, size_t size) {
-
-	if (!ptr) return 1;
-
-	*ptr = aalloc(size, align);
-
-	return 0;
-}
-
 /*****************************************************************************
  * malloc
  *
