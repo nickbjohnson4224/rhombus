@@ -61,7 +61,7 @@ build and test on other Linux platforms, and will probably build on any
 UNIX-like system.
 
 To reliably build the system, you should use a cross-compiler. Instructions
-for how to do so may be found here:
+for how to install a cross-compiler for Rhombus are found here:
 https://github.com/nickbjohnson4224/rhombus/wiki/Environment-setup
 
 To build the system, type "make". To create a CD image from the built system,
