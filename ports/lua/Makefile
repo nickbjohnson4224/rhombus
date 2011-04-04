@@ -3,7 +3,7 @@
 # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
 
 CFLAGS  += -Wno-cast-align
-RANLIB  := ranlib
+RANLIB  := i586-pc-rhombus-ranlib
 RM      := rm -f
 LIBS    := $(BUILDDIR)/lib/c0.o -lc
 SUBDIR	:= ports/lua

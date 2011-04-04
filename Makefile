@@ -12,8 +12,8 @@ BIN_DIRS  = kernel fish
 BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS) $(PORTS) $(APPS)
 
 CC := clang -m32
-LD := ld
-AR := ar
+LD := i586-pc-rhombus-ld
+AR := i586-pc-rhombus-ar
 AS := nasm
 PP := cpp
 
