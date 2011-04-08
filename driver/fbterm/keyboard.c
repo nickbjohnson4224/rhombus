@@ -40,7 +40,7 @@ static bool mutex;
 void _push_line(char *l) {
 	struct line *line;
 	
-	line = calloc(sizeof(struct line), 0);
+	line = calloc(sizeof(struct line), 1);
 	line->data = l;
 
 	mutex_spin(&mutex);
