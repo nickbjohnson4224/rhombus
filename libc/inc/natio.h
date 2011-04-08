@@ -31,8 +31,10 @@
 #define RP_INDEX(rp) ((rp) & 0xFFFFFFFF)
 #define RP_NULL ((uint64_t) 0)
 
-#define RP_TYPE_FILE 	0x01
-#define RP_TYPE_DIR		0x02
+#define RP_TYPE_FILE  0x01
+#define RP_TYPE_DIR	  0x02
+#define RP_TYPE_SLINK 0x04
+#define RP_TYPE_PLINK 0x08
 
 size_t read (uint64_t rp, void *buf, size_t size, uint64_t offset);
 size_t write(uint64_t rp, void *buf, size_t size, uint64_t offset);
