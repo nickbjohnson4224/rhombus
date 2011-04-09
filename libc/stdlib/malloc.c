@@ -153,10 +153,13 @@ void free(void *ptr) {
 			page_free((void*) node->base, (size_t) 1 << node->size);
 		}
 	}
-	else {
+	else if (base) {
+		// apparently, it is fine to free a NULL pointer in C; 
+		// don't emit errors on NULL frees.
+
 		// node not found (i.e. pointer was not from heap)
 		mutex_free(&_mutex);
-		fprintf(stderr, "invalid free of %x at %x\n", ptr, ((int*) &ptr)[2]);
+		fprintf(stderr, "invalid free (%x)\n", base);
 		abort();
 	}
 
