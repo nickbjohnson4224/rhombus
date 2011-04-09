@@ -63,6 +63,8 @@ size_t strcspn(const char *, const char *);
 char  *strtok  (char *, const char *);
 char  *strtok_r(char *, const char *, char **);
 
+char **strparse(const char *, const char *);
+
 const char *strerror(int);
 
 /* string locales ***********************************************************/

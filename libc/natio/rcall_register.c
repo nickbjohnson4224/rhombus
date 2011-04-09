@@ -76,10 +76,33 @@ void _rcall_handler(struct msg *msg) {
 	rcall_t handler;
 	int argc;
 	char **argv;
-	char *saveptr;
 
 	// parse arguments
 	args = (char*) msg->data;
-	argv = 
+	argv = strparse(args, " ");
+	for (argc = 0; argv[argc]; argv++);
 
-	handler = (rcall_t) sp_dict_get(rcall_default, 
+	handler = (rcall_t) sp_dict_get(rcall_default, argv[0]);
+
+	if (!handler) {
+		return;
+	}
+
+	rets = handler(msg->source, RP_INDEX(msg->target), argc, argv);
+
+	for (argc = 0; argv[argc]; argv++) {
+		free(argv[argc]);
+	}
+
+	reply = aalloc(sizeof(struct msg) + strlen(rets) + 1, PAGESZ);
+	reply->source = msg->target;
+	reply->target = msg->source;
+	reply->length = strlen(rets) + 1;
+	reply->port   = PORT_REPLY;
+	reply->arch   = ARCH_NAT;
+	strcpy((char*) reply->data, rets);
+	free(rets);
+
+	free(msg);
+	msend(reply);
+}
