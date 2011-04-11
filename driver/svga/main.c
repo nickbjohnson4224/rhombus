@@ -25,13 +25,65 @@
 
 #include "svga.h"
 
+struct register_t {
+	uint64_t rp;
+	struct register_t *next;
+} *regs;
+
 uint32_t *buffer;
 char *modesstr;
 
+void svga_send_resize_event(uint16_t width, uint16_t height) {
+	struct register_t *reg;
+
+	for (reg = regs; reg; reg = reg->next) {
+		event(reg->rp, 0x3LL << 62 | width << 16 | height);
+	}
+}
+
 char *svga_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
+	struct register_t *reg, *prev = NULL;
 	char *rets = NULL;
 	int x, y, d, w, h;
 	int mode;
+
+	if (!strcmp(args, "register")) {
+		mutex_spin(&file->mutex);
+		for (reg = regs; reg; reg = reg->next) {
+			if (reg->rp == source) {
+				mutex_free(&file->mutex);
+				return strdup("");
+			}
+		}
+
+		reg = malloc(sizeof(struct register_t));
+		if (!reg) {
+			return strdup("");
+		}
+		reg->rp = source;
+		reg->next = regs;
+		regs = reg;
+		mutex_free(&file->mutex);
+		return strdup("T");
+	}
+	if (!strcmp(args, "deregister")) {
+		mutex_spin(&file->mutex);
+		for (reg = regs; reg; reg = reg->next, prev = reg) {
+			if (reg->rp == source) {
+				if (prev) {
+					prev->next = reg->next;
+				}
+				else {
+					regs = reg->next;
+				}
+				free(reg);
+				mutex_free(&file->mutex);
+				return strdup("T");
+			}
+		}
+		mutex_free(&file->mutex);
+		return strdup("");
+	}
 
 	if (!strcmp(args, "getmode")) {
 		rets = malloc(16);

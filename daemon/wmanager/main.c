@@ -54,14 +54,12 @@ char *wmanager_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 		if (sscanf(args + 8, "%i %i", &width, &height) != 2) {
 			return strdup("");
 		}
-		mutex_spin(&window->mutex);
-		if (window->bitmap) {
-			page_free(window->bitmap, window->width * window->height * 4);
-			window->bitmap = NULL;
+		resize_window(window, window->width, window->height, false);
+		if (!(window->flags & CONSTANT_SIZE) && !(window->flags & FLOATING)) {
+			// window must be CONSTNAT_SIZE or FLOATING for resizing to make sense
+			window->flags |= FLOATING;
+			update_tiling();
 		}
-		window->width = width;
-		window->height = height;
-		mutex_free(&window->mutex);
 		return strdup("T");
 	}
 	if (strcmp(args, "getmode") == 0) {
@@ -191,6 +189,10 @@ void wmanager_event(uint64_t source, uint64_t value) {
 	if (type == 0x2 && source == mousefd) {
 		mouse_buttons(data & ~(0x3LL << 62));
 	}
+	if (type == 0x3 && source == vgafd) {
+		resize_screen((data >> 16) & 0xffff, data & 0xffff);
+		return; // don't forward
+	}
 
 	if (active_window && (active_window->flags & LISTEN_EVENTS)) {
 		event(RP_CONS(active_window->owner, 0), value);
@@ -199,6 +201,7 @@ void wmanager_event(uint64_t source, uint64_t value) {
 
 int main(int argc, char **argv) {
 	struct vfs_obj *root;
+	size_t width, height;
 
 	stdout = stderr = fopen("/dev/serial", "w");
 
@@ -224,16 +227,14 @@ int main(int argc, char **argv) {
 	io_link("/sys/wmanager", RP_CONS(getpid(), 0));
 
 	vgafd = io_find("/dev/svga0");
-	sscanf(rcall(vgafd, "getmode"), "%i %i", &screen_width, &screen_height);
-	screen = malloc(screen_width * screen_height * 4);
-	memset(screen, 0, screen_width * screen_height * 4);
-	share(vgafd, screen, screen_width * screen_height * 4, 0, PROT_READ);
-	sync(vgafd); // clear screen
+	sscanf(rcall(vgafd, "getmode"), "%i %i", &width, &height);
+	resize_screen(width, height);
 
 	mousefd = io_find("/dev/mouse");
 	kbdfd = io_find("/dev/kbd");
 	event_register(mousefd, wmanager_event);
 	event_register(kbdfd, wmanager_event);
+	event_register(vgafd, wmanager_event);
 
 	if (fork() < 0) {
 		exec("/sbin/fbterm");

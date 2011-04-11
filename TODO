@@ -32,13 +32,16 @@ For 0.8 Alpha: (complete)
 For 0.9 Alpha:
 
 + merge libdriver and libc
-- driver interface revision
+- move rcall handling to natio
 - non-recursive VFS find
 - simplify VFS security
 - move more functions to rcall (fs_*)
 - file locking
 - symlinks
 - hard links
+
+For 0.10 Alpha:
+
 - write fenv.h, tgmath.h
 - copy-on-write
 - dynamic linking
@@ -49,7 +52,7 @@ For 0.9 Alpha:
 - FAT32 driver
 - curses port
 
-For 0.10 Alpha:
+For 0.11 Alpha:
 
 - user/password manager
 - login manager
@@ -61,11 +64,14 @@ For 0.10 Alpha:
 - kernel documentation
 - driver writing manual
 - user manual
+
+For 0.12 Alpha:
+
 - text editor (port vim?)
 - finalize core utilities
 - installer
 - POSIX compatibility
-- self-hosting toolchain
+- self-hosting toolchain (port GCC?)
 - installer
 - real hardware testing
 

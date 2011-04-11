@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Jaagup Repän <jrepan@gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -22,18 +23,20 @@
 #include <page.h>
 
 /*****************************************************************************
- * fb_setmode
+ * fb_resize
  *
- * Attempt to set the mode of the framebuffer <fb> to <xdim> by <ydim>.
+ * Resizes bitmap of the framebuffer <fb> to <xdim> by <ydim>.
  * Returns zero on success, nonzero on failure.
  */
 
-int fb_setmode(struct fb *fb, int xdim, int ydim) {
-	char args[40];
-	char *ret;
-	
+int fb_resize(struct fb *fb, int xdim, int ydim) {
 	if (!fb) {
 		return 1;
+	}
+
+	if (xdim == fb->xdim && ydim == fb->ydim) {
+		// nothing to do
+		return 0;
 	}
 
 	if (fb->flags & FB_SHARED) {
@@ -41,17 +44,23 @@ int fb_setmode(struct fb *fb, int xdim, int ydim) {
 		share(fb->rp, NULL, 0, 0, 0);
 	}
 
-	sprintf(args, "setmode %d %d 32", xdim, ydim);
-	ret = rcall(fb->rp, args);
+	// resize bitmap
+	fb->xdim = xdim;
+	fb->ydim = ydim;
+	free(fb->bitmap);
+	fb->bitmap = aalloc(sizeof(uint32_t) * xdim * ydim, PAGESZ);
+	memclr(fb->bitmap, sizeof(uint32_t) * xdim * ydim);
 
-	if (!ret) {
-		return 1;
+	if (fb->flags & FB_SHARED) {
+		// re-register shared memory
+		share(fb->rp, fb->bitmap, xdim * ydim * sizeof(uint32_t), 0, PROT_READ);
 	}
 
-	if (strcmp(ret, "T")) {
-		// setting failed
-		return 1;
-	}
+	// reset flip acceleration
+	fb->minx = fb->xdim + 1;
+	fb->miny = fb->ydim + 1;
+	fb->maxx = 0;
+	fb->maxy = 0;
 
-	return fb_resize(fb, xdim, ydim);
+	return 0;
 }

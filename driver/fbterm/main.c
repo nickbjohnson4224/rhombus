@@ -20,9 +20,7 @@
 #include <stdlib.h>
 #include <driver.h>
 #include <exec.h>
-#include <signal.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <proc.h>
 
 size_t fbterm_write(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
@@ -67,45 +65,14 @@ size_t fbterm_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_
 }
 
 void fbterm_event(uint64_t source, uint64_t value) {
-	char c;
-	static bool ctrl = false;
+	int type = value >> 62;
+	int data = value & ~(0x3LL << 62);
 
-	if (value >> 62) {
-		// not keyboard event
-		return;
+	if (type == 0x0) {
+		keyboard_event(data);
 	}
-
-	if (value & 0x00400000) {
-		if (value == 0x00C00001) {
-			ctrl = false;
-		}
-		return;
-	}
-
-	if (value & 0x00800000) {
-		if (value == 0x00800001) {
-			ctrl = true;
-		}
-		return;
-	}
-
-	c = value;
-
-	if (tolower(c) == 'c' && ctrl) {
-		kill(-getpid(), SIGINT);
-
-		fbterm_print('^');
-		fbterm_print('C');
-
-		fbterm_print('\n');
-		fbterm_buffer('\n');
-		return;
-	}
-
-	fbterm_buffer(c);
-
-	if (isprint(c)) {
-		fbterm_print(c);
+	if (type == 0x3) {
+		screen_resize((data >> 16) & 0xffff, data & 0xffff);
 		screen_flip();
 	}
 }
@@ -135,9 +102,6 @@ int main(int argc, char **argv) {
 		}
 
 		kbd_dev = fb_dev = RP_CONS(RP_PID(wmanager), index);
-		rcall(fb_dev, "setmode 320 240 32");
-		rcall(fb_dev, "setwindowflags 2"); // not resizeable
-		sync(fb_dev);
 	}
 	else {
 		kbd_dev = io_find(argv[1]);
@@ -165,8 +129,9 @@ int main(int argc, char **argv) {
 	font = font_load("builtin");
 	screen.font = font;
 	fb_getmode(fb, &w, &h);
-	screen_resize(w / font->w, h / font->h);
+	screen_resize(w, h);
 	screen_flip();
+	event_register(fb_dev, fbterm_event);
 
 	// set up keyboard
 	event_register(kbd_dev, fbterm_event);

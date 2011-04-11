@@ -76,6 +76,7 @@ int fbterm_reset(void);
 
 char fbterm_getch (void);
 int  fbterm_buffer(int c);
+void keyboard_event(uint64_t value);
 
 #define MODE_ECHO
 #define MODE_COOK

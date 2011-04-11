@@ -19,6 +19,10 @@
 
 #include <stdint.h>
 
+/* Resize event reporting ***************************************************/
+
+void svga_send_resize_event(uint16_t width, uint16_t height);
+
 /* VESA BIOS extensions driver **********************************************/
 
 struct vbe_ctrlinfo {

@@ -20,13 +20,10 @@
 #include <string.h>
 #include <mutex.h>
 
-struct register_t
-{
+struct register_t {
 	uint64_t rp;
 	struct register_t *next;
-};
-
-struct register_t *regs;
+} *regs;
 
 void wait_signal() {
 	while (inb(0x64) & 0x2);
@@ -72,7 +69,7 @@ char *mouse_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 					prev->next = reg->next;
 				}
 				else {
-					regs->next = reg->next;
+					regs = reg->next;
 				}
 				free(reg);
 				mutex_free(&file->mutex);

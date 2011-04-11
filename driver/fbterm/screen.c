@@ -36,9 +36,11 @@ int screen_resize(uint32_t x, uint32_t y) {
 		free(screen.cell);
 	}
 
-	screen.cell = malloc(sizeof(struct cell) * x * y);
-	screen.w = x;
-	screen.h = y;
+	screen.w = x / screen.font->w;
+	screen.h = y / screen.font->h;
+	screen.cell = malloc(sizeof(struct cell) * screen.w * screen.h);
+
+	fb_resize(fb, x, y);
 
 	screen_clear();
 

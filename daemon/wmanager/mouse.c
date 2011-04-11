@@ -15,8 +15,6 @@
  */
 
 #include "wmanager.h"
-#include <natio.h>
-#include <page.h>
 #include <stdlib.h>
 #include <mutex.h>
 
@@ -35,6 +33,7 @@ void mouse_move(int16_t dx, int16_t dy) {
 	struct window_t *prev_active = active_window;
 	struct window_t *window;
 	int x, y, width, height;
+	bool wasfloating;
 
 	if (mousex + dx < 0) dx = -mousex;
 	if (mousey + dy < 0) dy = -mousey;
@@ -62,7 +61,8 @@ void mouse_move(int16_t dx, int16_t dy) {
 		if (prev_active != active_window) {
 			// update decorations
 			if (prev_active) {
-				update_screen(prev_active->x - 1, prev_active->y - 1, prev_active->x + prev_active->width + 1, prev_active->y + prev_active->height + 1);
+				update_screen(prev_active->x - 1, prev_active->y - 1,
+						prev_active->x + prev_active->width + 1, prev_active->y + prev_active->height + 1);
 			}
 
 			if (active_window) {
@@ -76,12 +76,16 @@ void mouse_move(int16_t dx, int16_t dy) {
 
 	if (active_window && (winkey || alreadymoving)) {
 		alreadymoving = true;
+		wasfloating = active_window->flags & FLOATING;
+
 		if (mousebuttons & 1) {
 			// move window
 			mutex_spin(&active_window->mutex);
 
 			active_window->x += dx;
 			active_window->y += dy;
+			active_window->flags |= FLOATING;
+			bring_to_front(active_window);
 
 			x = active_window->x - 1;
 			y = active_window->y - 1;
@@ -91,20 +95,9 @@ void mouse_move(int16_t dx, int16_t dy) {
 			mutex_free(&active_window->mutex);
 		}
 		else if ((mousebuttons & 2) && !(active_window->flags & CONSTANT_SIZE)) {
-			// resize window
-			mutex_spin(&active_window->mutex);
-
-			if (active_window->bitmap) {
-				page_free(active_window->bitmap, active_window->width * active_window->height * 4);
-				active_window->bitmap = NULL;
-			}
-
-			if (mousex > active_window->x + 10) {
-				active_window->width += dx;
-			}
-			if (mousey > active_window->y + 10) {
-				active_window->height += dy;
-			}
+			resize_window(active_window, active_window->width + dx, active_window->height + dy, true);
+			active_window->flags |= FLOATING;
+			bring_to_front(active_window);
 
 			mousex = active_window->x + active_window->width;
 			mousey = active_window->y + active_window->height;
@@ -113,12 +106,14 @@ void mouse_move(int16_t dx, int16_t dy) {
 			y = active_window->y - 1;
 			width = active_window->width + 1 + cursor_width;
 			height = active_window->height + 1 + cursor_height;
+		}
 
-			mutex_free(&active_window->mutex);
-
-			if (active_window->flags & LISTEN_EVENTS) {
-				event(RP_CONS(active_window->owner, 0), 0x3LL << 62 | (active_window->width & 0xffff) << 16 | (active_window->height & 0xffff));
+		if (wasfloating != (active_window->flags & FLOATING)) {
+			if (active_window == main_window) {
+				main_window = NULL;
 			}
+			update_tiling();
+			return; // update_tiling() already updates screen
 		}
 	}
 	

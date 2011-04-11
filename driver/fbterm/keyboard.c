@@ -16,6 +16,8 @@
 
 #include "fbterm.h"
 
+#include <ctype.h>
+#include <signal.h>
 #include <string.h>
 #include <stdlib.h>
 #include <driver.h>
@@ -134,4 +136,43 @@ char fbterm_getch(void) {
 	}
 
 	return c;
+}
+
+void keyboard_event(uint64_t value) {
+	char c;
+	static bool ctrl = false;
+
+	if (value & 0x00400000) {
+		if (value == 0x00C00001) {
+			ctrl = false;
+		}
+		return;
+	}
+
+	if (value & 0x00800000) {
+		if (value == 0x00800001) {
+			ctrl = true;
+		}
+		return;
+	}
+
+	c = value;
+
+	if (tolower(c) == 'c' && ctrl) {
+		kill(-getpid(), SIGINT);
+
+		fbterm_print('^');
+		fbterm_print('C');
+
+		fbterm_print('\n');
+		fbterm_buffer('\n');
+		return;
+	}
+
+	fbterm_buffer(c);
+
+	if (isprint(c)) {
+		fbterm_print(c);
+		screen_flip();
+	}
 }

@@ -16,9 +16,26 @@
 
 #include "wmanager.h"
 #include <natio.h>
+#include <page.h>
+#include <stdlib.h>
+#include <string.h>
 
 uint8_t *screen;
 size_t screen_width, screen_height;
+
+void resize_screen(size_t width, size_t height) {
+	free(screen);
+
+	screen_width = width;
+	screen_height = height;
+
+	screen = malloc(screen_width * screen_height * 4);
+	memset(screen, 0, screen_width * screen_height * 4);
+	share(vgafd, screen, screen_width * screen_height * 4, 0, PROT_READ);
+	sync(vgafd);
+
+	update_tiling();
+}
 
 void update_screen(int x1, int y1, int x2, int y2) {
 	struct window_t *window;

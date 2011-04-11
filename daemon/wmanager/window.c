@@ -17,9 +17,38 @@
 #include "wmanager.h"
 #include <stdlib.h>
 #include <mutex.h>
+#include <natio.h>
+#include <page.h>
 
-struct window_t *windows;
+struct window_t *windows, *windows_end;
 struct window_t *active_window;
+
+void add_to_list(struct window_t *window) {
+	window->next = NULL;
+	window->prev = windows_end;
+	if (windows_end) {
+		windows_end->next = window;
+	}
+	else {
+		windows = window;
+	}
+	windows_end = window;
+}
+
+void remove_from_list(struct window_t *window) {
+	if (window->next) {
+		window->next->prev = window->prev;
+	}
+	else {
+		windows_end = window->prev;
+	}
+	if (window->prev) {
+		window->prev->next = window->next;
+	}
+	else {
+		windows = window->next;
+	}
+}
 
 // if owner == 0, then any owner matches
 struct window_t *find_window(uint32_t id, uint32_t owner) {
@@ -33,7 +62,6 @@ struct window_t *find_window(uint32_t id, uint32_t owner) {
 }
 
 int add_window(uint32_t id) {
-	struct window_t *list;
 	struct window_t *window;
 
 	if (find_window(id, 0)) {
@@ -48,37 +76,31 @@ int add_window(uint32_t id) {
 	window->width = window->height = 0;
 	window->bitmap = NULL;
 	window->mutex = false;
-	window->next = NULL;
 
-	if (windows) {
-		for (list = windows; list->next; list = list->next);
-		list->next = window;
-	}
-	else {
-		windows = window;
-	}
+	add_to_list(window);
+	update_tiling();
 
 	return 0;
 }
 
 int remove_window(uint32_t id, uint32_t owner) {
-	struct window_t *window, *prev = NULL;
-	for (window = windows; window; window = window->next, prev = window) {
-		if (window->id == id && window->owner == owner) {
-			if (window == active_window) {
-				active_window = NULL;
-			}
-			if (prev) {
-				prev->next = window->next;
-			}
-			else {
-				windows = window->next;
-			}
-			free(window);
-			return 0;
-		}
+	struct window_t *window = find_window(id, owner);
+
+	if (!window) {
+		return -1;
 	}
-	return -1;
+
+	if (window == active_window) {
+		active_window = NULL;
+	}
+	if (window == main_window) {
+		main_window = NULL;
+	}
+
+	remove_from_list(window);
+	free(window);
+	update_tiling();
+	return 0;
 }
 
 void draw_window(struct window_t *window, int x1, int y1, int x2, int y2) {
@@ -122,4 +144,41 @@ void draw_window(struct window_t *window, int x1, int y1, int x2, int y2) {
 	}
 
 	mutex_free(&window->mutex);
+}
+
+void resize_window(struct window_t *window, int width, int height, bool notify) {
+	if (window->flags & CONSTANT_SIZE) {
+		return;
+	}
+
+	mutex_spin(&window->mutex);
+
+	if (window->bitmap) {
+		page_free(window->bitmap, window->width * window->height * 4);
+		window->bitmap = NULL;
+	}
+
+	if (width < 10) {
+		width = 10;
+	}
+	if (height < 10) {
+		height = 10;
+	}
+
+	window->width = width;
+	window->height = height;
+
+	if (notify && window->flags & LISTEN_EVENTS) {
+		event(RP_CONS(window->owner, 0), 0x3LL << 62 |
+				(window->width & 0xffff) << 16 | (window->height & 0xffff));
+	}
+
+	mutex_free(&window->mutex);
+}
+
+void bring_to_front(struct window_t *window) {
+	if (window != windows_end) {
+		remove_from_list(window);
+		add_to_list(window);
+	}
 }

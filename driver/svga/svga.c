@@ -128,6 +128,7 @@ int svga_set_mode(int mode) {
 		return 1;
 	}
 
+	svga_send_resize_event(svga.w, svga.h);
 	return 0;
 }
 

@@ -105,5 +105,6 @@ int        fb_lock  (struct fb *fb);
 int        fb_unlock(struct fb *fb);
 uint32_t  *fb_getbmp(struct fb *fb);
 int        fb_setbmp(struct fb *fb, uint32_t *bitmap);
+int		   fb_resize(struct fb *fb, int xdim, int ydim);
 
 #endif/*GRAPH_H*/
