@@ -22,8 +22,8 @@
 
 #include "dict.h"
 
-static struct sp_dict *rcall_default;
-static void *_rcall_handler(struct msg *msg);
+static struct sh_dict *rcall_default;
+static void _rcall_handler(struct msg *msg);
 
 /****************************************************************************
  * rcall_register
@@ -47,11 +47,13 @@ static void *_rcall_handler(struct msg *msg);
 int rcall_register(const char *call, rcall_t handler) {
 	
 	if (!rcall_default) {
-		rcall_default = sp_dict_cons(127);
+		rcall_default = sh_dict_cons(127);
 		when(PORT_RCALL, _rcall_handler);
 	}
 
-	sp_dict_add(rcall_default, call, (uintptr_t) handler);
+	sh_dict_add(rcall_default, call, (handler_t) handler);
+
+	return 1;
 }
 
 /*****************************************************************************
@@ -82,7 +84,7 @@ void _rcall_handler(struct msg *msg) {
 	argv = strparse(args, " ");
 	for (argc = 0; argv[argc]; argv++);
 
-	handler = (rcall_t) sp_dict_get(rcall_default, argv[0]);
+	handler = sh_dict_get(rcall_default, argv[0]);
 
 	if (!handler) {
 		return;

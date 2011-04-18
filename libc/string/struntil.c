@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,21 +14,30 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef NATIO_DICT_H
-#define NATIO_DICT_H
+#include <string.h>
+#include <stdlib.h>
 
-#include <stdint.h>
+/*****************************************************************************
+ * struntil
+ *
+ * Returns a copy of the first part of the given string containing no
+ * characters in <reject>. If <save> is non-NULL, a pointer to the first 
+ * character in <reject> is saved in <save>. Returns NULL on error.
+ */
 
-/* generic string -> handler dictionary, used by rcall and event ************/
+char *struntil(const char *str, const char *reject, const char **save) {
+	size_t size;
+	char *ret;
 
-struct sh_dict {
-	
-};
+	size = strcspn(str, reject) + 1;
+	ret = malloc(size * sizeof(char));
 
-typedef void (*handler_t)(void);
+	memcpy(ret, str, size - 1);
+	ret[size - 1] = '\0';
 
-struct sh_dict *sh_dict_cons(int size);
-handler_t       sh_dict_get(struct sh_dict *dict, const char *key);
-void            sh_dict_add(struct sh_dict *dict, const char *key, handler_t value);
+	if (save) {
+		*save = &str[size - 1];
+	}
 
-#endif/*NATIO_DICT_H*/
+	return ret;
+}

@@ -27,8 +27,29 @@
  */
 
 char **strparse(const char *str, const char *delim) {
+	char **argv;
 	int argc;
+	int i;
 
 	// count potential arguments
+	for (argc = 1, i = 0; str[i]; i++) {
+		if (strchr(delim, str[i])) {
+			argc++;
+		}
+	}
 
+	// allocate argv
+	argv = malloc(sizeof(char*) * (argc + 1));
 
+	for (i = 0;; i++) {
+		if (!*str) {
+			break;
+		}
+
+		argv[i] = struntil(str, delim, &str);
+		str += strspn(str, delim);
+	}
+
+	argv[i] = NULL;
+	return argv;
+}
