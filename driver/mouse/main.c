@@ -22,10 +22,7 @@
 #include <proc.h>
 #include <vfs.h>
 
-struct register_t {
-	uint64_t rp;
-	struct register_t *next;
-} *regs;
+struct event_list *event_list;
 
 void wait_signal() {
 	while (inb(0x64) & 0x2);
@@ -41,58 +38,31 @@ void command(uint8_t byte) {
 
 char *mouse_register(uint64_t source, uint32_t index, int argc, char **argv) {
 	struct vfs_obj *file;
-	struct register_t *reg;
 
 	file = vfs_get(index);
 
 	mutex_spin(&file->mutex);
-	for (reg = regs; reg; reg = reg->next) {
-		if (reg->rp == source) {
-			// avoid duplicates
-			mutex_free(&file->mutex);
-			return strdup("");
-		}
-	}
-
-	reg = malloc(sizeof(struct register_t));
-	if (!reg) {
-		return strdup("");
-	}
-	reg->rp = source;
-	reg->next = regs;
-	regs = reg;
+	event_list = event_list_add(event_list, source);
 	mutex_free(&file->mutex);
+
 	return strdup("T");
 }
 
 char *mouse_deregister(uint64_t source, uint32_t index, int argc, char **argv) {
 	struct vfs_obj *file;
-	struct register_t *reg, *prev = NULL;
 
 	file = vfs_get(index);
 
 	mutex_spin(&file->mutex);
-	for (reg = regs; reg; reg = reg->next, prev = reg) {
-		if (reg->rp == source) {
-			if (prev) {
-				prev->next = reg->next;
-			}
-			else {
-				regs->next = reg->next;
-			}
-			free(reg);
-			mutex_free(&file->mutex);
-			return strdup("T");
-		}
-	}
+	event_list = event_list_del(event_list, source);
 	mutex_free(&file->mutex);
-	return NULL;
+
+	return strdup("T");
 }
 
 
 int main(int argc, char **argv) {
 	struct vfs_obj *root;
-	struct register_t *reg;
 	uint8_t bytes[3];
 	size_t curbyte = 0;
 	bool first;
@@ -123,15 +93,11 @@ int main(int argc, char **argv) {
 		while ((inb(0x64) & 0x21) != 0x21) {
 			if (first) {
 				if (dx || dy) {
-					for (reg = regs; reg; reg = reg->next) {
-						event(reg->rp, 0x1LL << 62 | (dx << 16) & 0xffff0000 | dy & 0xffff);
-					}
+					eventl(event_list, 0x1LL << 62 | (dx << 16) & 0xffff0000 | dy & 0xffff);
 					dx = dy = 0;
 				}
 				if (buttons != prevbuttons) {
-					for (reg = regs; reg; reg = reg->next) {
-						event(reg->rp, 0x2LL << 62 | buttons);
-					}
+					eventl(event_list, 0x2LL << 62 | buttons);
 					prevbuttons = buttons;
 				}
 			}

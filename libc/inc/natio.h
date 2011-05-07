@@ -41,10 +41,21 @@ size_t write(uint64_t rp, void *buf, size_t size, uint64_t offset);
 int    sync (uint64_t rp);
 int    reset(uint64_t rp);
 int    share(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot);
-char  *rcall(uint64_t rp, const char *args);
-int    event(uint64_t rp, uint64_t value);
 
+char  *rcall(uint64_t rp, const char *args);
 char  *rcallf(uint64_t rp, const char *fmt, ...);
+
+struct event_list {
+	uint64_t target;
+	struct event_list *next;
+	struct event_list *prev;
+};
+
+int    event(uint64_t rp, uint64_t value);
+int    eventl(struct event_list *list, uint64_t value);
+
+struct event_list *event_list_add(struct event_list *list, uint64_t target);
+struct event_list *event_list_del(struct event_list *list, uint64_t target);
 
 /* I/O handling *************************************************************/
 

@@ -48,23 +48,25 @@ int event(uint64_t rp, uint64_t value) {
 	return msend(msg);
 }
 
-static event_handler_t _event_handler;
+/******************************************************************************
+ * eventl
+ *
+ * Sends an event to every resource on the event list <list>. Returns zero on 
+ * success, nonzero on error.
+ */
 
-static void _event_wrapper(struct msg *msg) {
-	uint64_t value;
-
-	if (msg->length != sizeof(uint64_t)) {
-		return;
+int eventl(struct event_list *list, uint64_t value) {
+	
+	while (list) {
+		event(list->target, value);
+		list = list->next;
 	}
 
-	if (!_event_handler) {
-		return;
-	}
-
-	value = ((uint64_t*) msg->data)[0];
-
-	_event_handler(msg->source, value);
+	return 0;
 }
+
+static event_handler_t _event_handler;
+static void _event_wrapper(struct msg *msg);
 
 int event_register(uint64_t source, event_handler_t handler) {
 	char *reply;
@@ -95,4 +97,20 @@ int event_register(uint64_t source, event_handler_t handler) {
 			return 1;
 		}
 	}
+}
+
+static void _event_wrapper(struct msg *msg) {
+	uint64_t value;
+
+	if (msg->length != sizeof(uint64_t)) {
+		return;
+	}
+
+	if (!_event_handler) {
+		return;
+	}
+
+	value = ((uint64_t*) msg->data)[0];
+
+	_event_handler(msg->source, value);
 }

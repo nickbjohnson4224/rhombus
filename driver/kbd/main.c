@@ -21,33 +21,15 @@
 #include <proc.h>
 #include <vfs.h>
 
-struct event_recipient {
-	struct event_recipient *next;
-	struct event_recipient *prev;
-	uint64_t rp;
-} *event_recipients;
+struct event_list *event_list;
 
 char *kbd_rcall_register(uint64_t source, uint32_t index, int argc, char **argv) {
 	struct vfs_obj *file;
-	struct event_recipient *r;
 
 	file = vfs_get(index);
 
 	mutex_spin(&file->mutex);
-	for (r = event_recipients; r; r = r->next) {
-		if (r->rp == source) {
-			mutex_free(&file->mutex);
-			return NULL;
-		}
-	}
-
-	r = malloc(sizeof(struct event_recipient));
-	if (!r) return NULL;
-	r->rp = source;
-	r->next = event_recipients;
-	r->prev = NULL;
-	if (r->next) r->next->prev = r;
-	event_recipients = r;
+	event_list = event_list_add(event_list, source);
 	mutex_free(&file->mutex);
 
 	return strdup("T");
@@ -55,31 +37,14 @@ char *kbd_rcall_register(uint64_t source, uint32_t index, int argc, char **argv)
 
 char *kbd_rcall_deregister(uint64_t source, uint32_t index, int argc, char **argv) {
 	struct vfs_obj *file;
-	struct event_recipient *r;
 
 	file = vfs_get(index);
 
 	mutex_spin(&file->mutex);
-	for (r = event_recipients; r; r = r->next) {
-		if (r->rp == source) {
-			if (r->next) r->next->prev = r->prev;
-			if (r->prev) r->prev->next = r->next;
-			free(r);
-			mutex_free(&file->mutex);
-			return strdup("T");
-		}
-	}
+	event_list = event_list_del(event_list, source);
 	mutex_free(&file->mutex);
 
-	return NULL;
-}
-
-void kbd_send_event(int code) {
-	struct event_recipient *r;
-
-	for (r = event_recipients; r; r = r->next) {
-		event(r->rp, (uint64_t) code);
-	}
+	return strdup("T");
 }
 
 #define ALT  0x00800000
@@ -183,7 +148,7 @@ void kbd_irq(struct msg *msg) {
 		case CAPS: caps  = false; break;
 		case NUML: numlk = false; break;
 		default:
-			kbd_send_event(code | RELEASE);
+			eventl(event_list, code | RELEASE);
 		}
 	}
 	else {
@@ -192,7 +157,7 @@ void kbd_irq(struct msg *msg) {
 		case CAPS: caps  = true; break;
 		case NUML: numlk = true; break;
 		default:
-			kbd_send_event(code);
+			eventl(event_list, code);
 		}
 	}
 }
