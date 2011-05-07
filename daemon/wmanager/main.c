@@ -110,6 +110,133 @@ char *wmanager_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
 	return NULL;
 }
 
+char *wmanager_rcall_listmodes(uint64_t source, uint32_t index, int argc, char **argv) {
+	return strdup("any");
+}
+
+char *wmanager_rcall_createwindow(uint64_t source, uint32_t index, int argc, char **argv) {
+	char buffer[32];
+
+	sprintf(buffer, "/sys/wmanager/%i", next_index);
+	io_cons(buffer, RP_TYPE_FILE);
+	find_window(next_index - 1, 0)->owner = RP_PID(source);
+	sprintf(buffer, "%i", next_index - 1);
+
+	return strdup(buffer);
+}
+
+char *wmanager_rcall_setmode(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct window_t *window;
+	int width, height;
+
+	window = find_window(index, RP_PID(source));
+	if (!window) return NULL;
+
+	if (argc != 4) return NULL;
+
+	width  = atoi(argv[1]);
+	height = atoi(argv[2]);
+
+	mutex_spin(&window->mutex);
+	if (window->bitmap) {
+		page_free(window->bitmap, window->width * window->height * 4);
+		window->bitmap = NULL;
+	}
+	window->width = width;
+	window->height = height;
+	mutex_free(&window->mutex);
+
+	return strdup("T");
+}
+
+char *wmanager_rcall_getmode(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct window_t *window;
+
+	window = find_window(index, RP_PID(source));
+	if (!window) return NULL;
+
+	return saprintf("%i %i 32", window->width, window->height);
+}
+
+char *wmanager_rcall_syncrect(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct window_t *window;
+	int x, y, w, h;
+
+	window = find_window(index, RP_PID(source));
+	if (!window) return NULL;
+
+	if (argc != 5) return NULL;
+
+	x = atoi(argv[1]);
+	y = atoi(argv[2]);
+	w = atoi(argv[3]);
+	h = atoi(argv[4]);
+
+	update_screen(window->x + x, window->y + y, window->x + x + w, window->y + y + h);
+
+	return strdup("T");
+}
+
+char *wmanager_rcall_unshare(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct window_t *window;
+
+	window = find_window(index, RP_PID(source));
+	if (!window) return NULL;
+
+	if (!window->bitmap) return NULL;
+
+	mutex_spin(&window->mutex);
+	page_free(window->bitmap, window->width * window->height * 4);
+	window->bitmap = NULL;
+	mutex_free(&window->mutex);
+
+	return strdup("T");
+}
+
+char *wmanager_rcall_register(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct window_t *window;
+
+	window = find_window(index, RP_PID(source));
+	if (!window) return NULL;
+
+	window->flags |= LISTEN_EVENTS;
+
+	return strdup("T");
+}
+
+char *wmanager_rcall_deregister(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct window_t *window;
+
+	window = find_window(index, RP_PID(source));
+	if (!window) return NULL;
+
+	window->flags &= ~LISTEN_EVENTS;
+
+	return strdup("T");
+}
+
+char *wmanager_rcall_getwindowflags(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct window_t *window;
+
+	window = find_window(index, RP_PID(source));
+	if (!window) return NULL;
+
+	return saprintf("%i", window->flags);
+}
+
+char *wmanager_rcall_setwindowflags(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct window_t *window;
+
+	window = find_window(index, RP_PID(source));
+	if (!window) return NULL;
+
+	if (argc != 2) return NULL;
+
+	window->flags = atoi(argv[1]);
+
+	return strdup("T");
+}
+
 int wmanager_share(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off) {
 	struct window_t *window = find_window(file->index, RP_PID(source));
 	if (off != 0) {
@@ -213,7 +340,17 @@ int main(int argc, char **argv) {
 	root->acl   = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
 	vfs_set_index(0, root);
 
-	di_wrap_rcall(wmanager_rcall);
+	rcall_set("listmodes",      wmanager_rcall_listmodes);
+	rcall_set("createwindow",   wmanager_rcall_createwindow);
+	rcall_set("setmode",        wmanager_rcall_setmode);
+	rcall_set("getmode",        wmanager_rcall_getmode);
+	rcall_set("unshare",        wmanager_rcall_unshare);
+	rcall_set("register",       wmanager_rcall_register);
+	rcall_set("deregister",     wmanager_rcall_deregister);
+	rcall_set("getwindowflags", wmanager_rcall_getwindowflags);
+	rcall_set("setwindowflags", wmanager_rcall_setwindowflags);
+	rcall_set("syncrect",       wmanager_rcall_syncrect);
+
 	di_wrap_share(wmanager_share);
 	di_wrap_sync (wmanager_sync);
 	vfs_wrap_cons(wmanager_cons);

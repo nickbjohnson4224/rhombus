@@ -41,8 +41,8 @@ FILE *fopen(const char *path, const char *mode) {
 	/* attempt to find the file */
 	fd = io_find(path);
 
-	/* check if the object is a directory or null */
-	if (!fd || ((fs_type(fd) & RP_TYPE_FILE) == 0)) {
+	/* check if the object is a directory */
+	if (!fd && ((fs_type(fd) & RP_TYPE_FILE) == 0)) {
 		errno = EISDIR;
 		return NULL;
 	}

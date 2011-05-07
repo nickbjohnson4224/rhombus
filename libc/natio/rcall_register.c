@@ -16,17 +16,22 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include <natio.h>
 #include <proc.h>
 #include <ipc.h>
 
-#include "dict.h"
+static struct _rcall_map {
+	struct _rcall_map *next;
 
-static struct sh_dict *rcall_default;
+	rcall_t handler;
+	char *key;
+} *_rcall_map = NULL;
+
 static void _rcall_handler(struct msg *msg);
 
 /****************************************************************************
- * rcall_register
+ * rcall_set
  *
  * Register a handler to be called if a specific rcall message is recieved.
  * If the string <call> is the first whitespace-delimited substring of the
@@ -44,16 +49,41 @@ static void _rcall_handler(struct msg *msg);
  * Returns zero on success, nonzero on error.
  */
 
-int rcall_register(const char *call, rcall_t handler) {
+int rcall_set(const char *call, rcall_t handler) {
+	struct _rcall_map *node;
 	
-	if (!rcall_default) {
-		rcall_default = sh_dict_cons(127);
+	if (!_rcall_map) {
 		when(PORT_RCALL, _rcall_handler);
 	}
 
-	sh_dict_add(rcall_default, call, (handler_t) handler);
+	node = malloc(sizeof(struct _rcall_map));
+	node->next = _rcall_map;
+	node->handler = handler;
+	node->key = strdup(call);
+
+	_rcall_map = node;
 
 	return 1;
+}
+
+/*****************************************************************************
+ * rcall_get
+ *
+ * Returns the rcall handler currently associated with call <call>. Returns
+ * null on failure.
+ */
+
+rcall_t rcall_get(const char *call) {
+	struct _rcall_map *node;
+
+	// get handler
+	for (node = _rcall_map; node; node = node->next) {
+		if (node->key && !strcmp(node->key, call)) {
+			return node->handler;
+		}
+	}
+
+	return NULL;
 }
 
 /*****************************************************************************
@@ -82,9 +112,9 @@ void _rcall_handler(struct msg *msg) {
 	// parse arguments
 	args = (char*) msg->data;
 	argv = strparse(args, " ");
-	for (argc = 0; argv[argc]; argv++);
+	for (argc = 0; argv[argc]; argc++);
 
-	handler = sh_dict_get(rcall_default, argv[0]);
+	handler = rcall_get(argv[0]);
 
 	if (!handler) {
 		return;

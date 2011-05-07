@@ -28,55 +28,76 @@
 uint32_t *buffer;
 char *modesstr;
 
-char *svga_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
+char *svga_rcall_getmode(uint64_t source, uint32_t index, int argc, char **argv) {
 	char *rets = NULL;
-	int x, y, d, w, h;
+
+	rets = malloc(16);
+	sprintf(rets, "%d %d %d", svga.w, svga.h, svga.d);
+	return rets;
+}
+
+char *svga_rcall_listmodes(uint64_t source, uint32_t index, int argc, char **argv) {
+	return strdup(modesstr);
+}
+
+char *svga_rcall_unshare(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct vfs_obj *file;
+
+	file = vfs_get_index(index);
+	if (!file) return NULL;
+
+	mutex_spin(&file->mutex);
+	page_free(buffer, msize(buffer));
+	free(buffer);
+	buffer = valloc(svga.w * svga.h * 4);
+	mutex_free(&file->mutex);
+	return strdup("T");
+}
+
+char *svga_rcall_setmode(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct vfs_obj *file;
+	int x, y, d;
 	int mode;
 
-	if (!strcmp(args, "getmode")) {
-		rets = malloc(16);
-		sprintf(rets, "%d %d %d", svga.w, svga.h, svga.d);
-		return rets;
-	}
-	if (!strcmp(args, "listmodes")) {
-		return strdup(modesstr);
-	}
-	if (!strcmp(args, "unshare")) {
-		mutex_spin(&file->mutex);
-		page_free(buffer, msize(buffer));
-		free(buffer);
-		buffer = valloc(svga.w * svga.h * 4);
-		mutex_free(&file->mutex);
-		return strdup("T");
-	}
+	file = vfs_get_index(index);
+	if (!file) return NULL;
 
-	if (!strncmp(args, "setmode ", 8)) {
-		if (sscanf(args + 8, "%i %i %i", &x, &y, &d) != 3) {
-			return strdup("");
-		}
-		mutex_spin(&file->mutex);
-		mode = svga_find_mode(x, y, d);
-		if (svga_set_mode(mode)) {
-			return strdup("");
-		}
-		page_free(buffer, msize(buffer));
-		free(buffer);
-		buffer = valloc(svga.w * svga.h * 4);
-		mutex_free(&file->mutex);
-		return strdup("T");
-	}
+	if (argc < 4) return NULL;
 
-	if (!strncmp(args, "syncrect ", 9)) {
-		if (sscanf(args + 9, "%i %i %i %i", &x, &y, &w, &h) != 4) {
-			return strdup("");
-		}
-		mutex_spin(&file->mutex);
-		svga_fliprect(buffer, x, y, w, h);
-		mutex_free(&file->mutex);
-		return strdup("T");
-	}
-	
-	return NULL;
+	x = atoi(argv[1]);
+	y = atoi(argv[2]);
+	d = atoi(argv[3]);
+
+	mutex_spin(&file->mutex);
+	mode = svga_find_mode(x, y, d);
+	if (svga_set_mode(mode)) return NULL;
+	page_free(buffer, msize(buffer));
+	free(buffer);
+	buffer = valloc(svga.w * svga.h * 4);
+	mutex_free(&file->mutex);
+
+	return strdup("T");
+}
+
+char *svga_rcall_syncrect(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct vfs_obj *file;
+	int x, y, w, h;
+
+	file = vfs_get_index(index);
+	if (!file) return NULL;
+
+	if (argc < 5) return NULL;
+
+	x = atoi(argv[1]);
+	y = atoi(argv[2]);
+	w = atoi(argv[3]);
+	h = atoi(argv[4]);
+
+	mutex_spin(&file->mutex);
+	svga_fliprect(buffer, x, y, w, h);
+	mutex_free(&file->mutex);
+
+	return strdup("T");
 }
 
 int svga_sync(uint64_t source, struct vfs_obj *file) {
@@ -179,9 +200,13 @@ int main(int argc, char **argv) {
 	buffer = malloc(svga.w * svga.h * 4);
 
 	/* set up driver interface */
+	rcall_set("getmode",   svga_rcall_getmode);
+	rcall_set("listmodes", svga_rcall_listmodes);
+	rcall_set("unshare",   svga_rcall_unshare);
+	rcall_set("setmode",   svga_rcall_setmode);
+	rcall_set("syncrect",  svga_rcall_syncrect);
 	di_wrap_sync (svga_sync);
 	di_wrap_share(svga_share);
-	di_wrap_rcall(svga_rcall);
 	di_wrap_read (svga_read);
 	di_wrap_write(svga_write);
 	vfs_wrap_init();

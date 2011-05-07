@@ -51,8 +51,10 @@ char  *rcallf(uint64_t rp, const char *fmt, ...);
 typedef void (*event_handler_t)(uint64_t source, uint64_t value);
 int event_register(uint64_t source, event_handler_t handler);
 
-typedef char *(rcall_t)(uint64_t src, uint32_t index, int argc, char **argv);
-int rcall_register(const char *call, rcall_t handler);
+typedef char *(*rcall_t)(uint64_t src, uint32_t index, int argc, char **argv);
+
+int     rcall_set(const char *call, rcall_t handler);
+rcall_t rcall_get(const char *call);
 
 /* filesystem operations ****************************************************/
 
