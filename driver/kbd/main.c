@@ -26,43 +26,57 @@ struct event_recipient {
 	uint64_t rp;
 } *event_recipients;
 
-char *kbd_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
+char *kbd_rcall_register(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct vfs_obj *file;
 	struct event_recipient *r;
 
-	if (!strcmp(args, "register")) {
-		mutex_spin(&file->mutex);
-		for (r = event_recipients; r; r = r->next) {
-			if (r->rp == source) {
-				mutex_free(&file->mutex);
-				return NULL;
-			}
-		}
+	file = vfs_get_index(index);
 
-		r = malloc(sizeof(struct event_recipient));
-		if (!r) return NULL;
-		r->rp = source;
-		r->next = event_recipients;
-		r->prev = NULL;
-		if (r->next) r->next->prev = r;
-		event_recipients = r;
-		mutex_free(&file->mutex);
-		return strdup("T");
-	}
-
-	if (!strcmp(args, "deregister")) {
-		mutex_spin(&file->mutex);
-		for (r = event_recipients; r; r = r->next) {
-			if (r->rp == source) {
-				if (r->next) r->next->prev = r->prev;
-				if (r->prev) r->prev->next = r->next;
-				free(r);
-				mutex_free(&file->mutex);
-				return strdup("T");
-			}
-		}
-		mutex_free(&file->mutex);
+	if (!file) {
 		return NULL;
 	}
+
+	mutex_spin(&file->mutex);
+	for (r = event_recipients; r; r = r->next) {
+		if (r->rp == source) {
+			mutex_free(&file->mutex);
+			return NULL;
+		}
+	}
+
+	r = malloc(sizeof(struct event_recipient));
+	if (!r) return NULL;
+	r->rp = source;
+	r->next = event_recipients;
+	r->prev = NULL;
+	if (r->next) r->next->prev = r;
+	event_recipients = r;
+	mutex_free(&file->mutex);
+
+	return strdup("T");
+}
+
+char *kbd_rcall_deregister(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct vfs_obj *file;
+	struct event_recipient *r;
+
+	file = vfs_get_index(index);
+
+	if (!file) {
+		return NULL;
+	}
+
+	mutex_spin(&file->mutex);
+	for (r = event_recipients; r; r = r->next) {
+		if (r->rp == source) {
+			if (r->next) r->next->prev = r->prev;
+			if (r->prev) r->prev->next = r->next;
+			free(r);
+			mutex_free(&file->mutex);
+			return strdup("T");
+		}
+	}
+	mutex_free(&file->mutex);
 
 	return NULL;
 }
@@ -176,7 +190,6 @@ void kbd_irq(struct msg *msg) {
 		case CAPS: caps  = false; break;
 		case NUML: numlk = false; break;
 		default:
-//			printf("release %i %c\n", code, code);
 			kbd_send_event(code | RELEASE);
 		}
 	}
@@ -186,7 +199,6 @@ void kbd_irq(struct msg *msg) {
 		case CAPS: caps  = true; break;
 		case NUML: numlk = true; break;
 		default:
-//			printf("press %i %c\n", code, code);
 			kbd_send_event(code);
 		}
 	}
@@ -201,8 +213,9 @@ int main(int argc, char **argv) {
 	root->acl = acl_set_default(root->acl, 0);
 	vfs_set_index(0, root);
 
+	rcall_set("register", kbd_rcall_register);
+	rcall_set("deregister", kbd_rcall_deregister);
 	di_wrap_irq  (1, kbd_irq);
-	di_wrap_rcall(kbd_rcall);
 	vfs_wrap_init();
 
 	io_link("/dev/kbd", RP_CONS(getpid(), 0));

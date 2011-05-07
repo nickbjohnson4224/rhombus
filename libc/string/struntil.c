@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,34 +14,30 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
-#include <driver.h>
+#include <string.h>
+#include <stdlib.h>
 
-#include "vga.h"
+/*****************************************************************************
+ * struntil
+ *
+ * Returns a copy of the first part of the given string containing no
+ * characters in <reject>. If <save> is non-NULL, a pointer to the first 
+ * character in <reject> is saved in <save>. Returns NULL on error.
+ */
 
-void vga_linear_plot(size_t x, size_t y, uint32_t c) {
-	size_t off;
+char *struntil(const char *str, const char *reject, const char **save) {
+	size_t size;
+	char *ret;
 
-	if (y > mode->height) return;
-	if (x > mode->width)  return;
+	size = strcspn(str, reject) + 1;
+	ret = malloc(size * sizeof(char));
 
-	off = mode->offset + x + y * mode->width;
-	vmem[off] = mode->get_color(c);
-}
+	memcpy(ret, str, size - 1);
+	ret[size - 1] = '\0';
 
-void vga_planar_plot(size_t x, size_t y, uint32_t c) {
-	size_t off, plane;
+	if (save) {
+		*save = &str[size - 1];
+	}
 
-	if (y > mode->height) return;
-	if (x > mode->width)  return;
-
-	off   = mode->offset + (x + y * mode->width) / 4;
-	plane = x & 3;
-
-	outb(GC_INDEX, 4);
-	outb(GC_DATA, plane);
-	outb(SEQ_INDEX, 2);
-	outb(SEQ_DATA, 1 << plane);
-
-	vmem[off] = mode->get_color(c);
+	return ret;
 }

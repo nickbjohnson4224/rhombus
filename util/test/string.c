@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -41,6 +42,8 @@ int test_string(void) {
 		+ test_strspn()
 		+ test_strcspn()
 		+ test_strtok()
+		+ test_strdup()
+		+ test_strparse()
 	;
 }
 
@@ -350,6 +353,39 @@ int test_strtok(void) {
 	if (strcmp(strtok(NULL, ": "), "def")) return 1;
 	if (strcmp(strtok(NULL, "d:"), "ab")) return 1;
 	if (strcmp(strtok(NULL, " "), "de")) return 1;
+
+	printf("\tpassed.\n");
+
+	return 0;
+}
+
+int test_strdup(void) {
+	char *str;
+	
+	printf("\tstrdup");
+
+	str = strdup("supercalifragilistic");
+	if (!str) return 1;
+	if (strcmp(str, "supercalifragilistic")) return 1;
+	free(str);
+
+	printf("\tpassed.\n");
+
+	return 0;
+}
+
+int test_strparse(void) {
+	char **strv;
+
+	printf("\tstrparse");
+
+	strv = strparse("abc def:ghi alphabet-rhombus", " :");
+	if (!strv) return 1;
+	if (!strv[3] || strv[4]) return 1;
+	if (strcmp(strv[0], "abc")) return 1;
+	if (strcmp(strv[1], "def")) return 1;
+	if (strcmp(strv[2], "ghi")) return 1;
+	if (strcmp(strv[3], "alphabet-rhombus")) return 1;
 
 	printf("\tpassed.\n");
 

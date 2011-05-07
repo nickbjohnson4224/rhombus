@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2011 Jaagup Repän <jrepan@gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail dot com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -37,54 +38,66 @@ void command(uint8_t byte) {
 	while ((inb(0x64) & 0x21) == 0x21 && inb(0x60) != 0xfa); // ACK
 }
 
-char *mouse_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
-	struct register_t *reg, *prev = NULL;
+char *mouse_register(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct vfs_obj *file;
+	struct register_t *reg;
 
-	if (strcmp(args, "register") == 0) {
-		mutex_spin(&file->mutex);
-		for (reg = regs; reg; reg = reg->next) {
-			if (reg->rp == source) {
-				// avoid duplicates
-				mutex_free(&file->mutex);
-				return strdup("");
-			}
-		}
+	file = vfs_get_index(index);
 
-		reg = malloc(sizeof(struct register_t));
-		if (!reg) {
+	if (!file) {
+		return NULL;
+	}
+
+	mutex_spin(&file->mutex);
+	for (reg = regs; reg; reg = reg->next) {
+		if (reg->rp == source) {
+			// avoid duplicates
+			mutex_free(&file->mutex);
 			return strdup("");
 		}
-		reg->rp = source;
-		reg->next = regs;
-		regs = reg;
-		mutex_free(&file->mutex);
-		return strdup("T");
 	}
 
-	if (strcmp(args, "deregister") == 0) {
-		mutex_spin(&file->mutex);
-		for (reg = regs; reg; reg = reg->next, prev = reg) {
-			if (reg->rp == source) {
-				if (prev) {
-					prev->next = reg->next;
-				}
-				else {
-					regs = reg->next;
-				}
-				free(reg);
-				mutex_free(&file->mutex);
-				return strdup("T");
-			}
-		}
-		mutex_free(&file->mutex);
+	reg = malloc(sizeof(struct register_t));
+	if (!reg) {
 		return strdup("");
 	}
+	reg->rp = source;
+	reg->next = regs;
+	regs = reg;
+	mutex_free(&file->mutex);
+	return strdup("T");
+}
 
+char *mouse_deregister(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct vfs_obj *file;
+	struct register_t *reg, *prev = NULL;
+
+	file = vfs_get_index(index);
+
+	if (!file) {
+		return NULL;
+	}
+
+	mutex_spin(&file->mutex);
+	for (reg = regs; reg; reg = reg->next, prev = reg) {
+		if (reg->rp == source) {
+			if (prev) {
+				prev->next = reg->next;
+			}
+			else {
+				regs->next = reg->next;
+			}
+			free(reg);
+			mutex_free(&file->mutex);
+			return strdup("T");
+		}
+	}
+	mutex_free(&file->mutex);
 	return NULL;
 }
 
-int main()
-{
+
+int main(int argc, char **argv) {
 	struct vfs_obj *root;
 	struct register_t *reg;
 	uint8_t bytes[3];
@@ -97,7 +110,7 @@ int main()
 	command(0xf6);  // load default config
 	command(0xf4);  // enable mouse
 	command(0xf3);  // set sample rate:
-	outb(0x60, 10); //    10 samples per second
+	outb(0x60, 10); // 10 samples per second
 
 	root        = calloc(sizeof(struct vfs_obj), 1);
 	root->type  = RP_TYPE_FILE;
@@ -105,7 +118,8 @@ int main()
 	root->acl   = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
 	vfs_set_index(0, root);
 
-	di_wrap_rcall(mouse_rcall);
+	rcall_set("register",   mouse_register);
+	rcall_set("deregister", mouse_deregister);
 	vfs_wrap_init();
 
 	io_link("/dev/mouse", RP_CONS(getpid(), 0));

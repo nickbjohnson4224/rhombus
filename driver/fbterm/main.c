@@ -35,19 +35,16 @@ size_t fbterm_write(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size
 	return size;
 }
 
-char *fbterm_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
+char *fbterm_rcall_getfg(uint64_t source, uint32_t index, int argc, char **argv) {
 	char buffer[10];
 
-	if (!strcmp(args, "getfg")) {
-		sprintf(buffer, "%d", getpid());
-		return strdup(buffer);
-	}
+	sprintf(buffer, "%d", getpid());
+	return strdup(buffer);
+}
 
-	if (!strcmp(args, "clear")) {
-		fbterm_clear();
-	}
-
-	return NULL;
+char *fbterm_rcall_clear(uint64_t source, uint32_t index, int argc, char **argv) {
+	fbterm_clear();
+	return strdup("T");
 }
 
 size_t fbterm_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
@@ -136,9 +133,10 @@ int main(int argc, char **argv) {
 	// set up keyboard
 	event_register(kbd_dev, fbterm_event);
 
+	rcall_set("clear", fbterm_rcall_clear);
+	rcall_set("getfg", fbterm_rcall_getfg);
 	di_wrap_write(fbterm_write);
 	di_wrap_read (fbterm_read);
-	di_wrap_rcall(fbterm_rcall);
 	vfs_wrap_init();
 
 	// launch shell

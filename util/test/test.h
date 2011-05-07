@@ -45,6 +45,8 @@ int test_strpbrk(void);
 int test_strspn(void);
 int test_strcspn(void);
 int test_strtok(void);
+int test_strdup(void);
+int test_strparse(void);
 
 /* stdlib tests ************************************************************/
 

@@ -14,63 +14,30 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
-#include <stdlib.h>
 #include <string.h>
-#include <mutex.h>
-#include <natio.h>
-#include <proc.h>
-#include <ipc.h>
+#include <stdlib.h>
 
 /*****************************************************************************
- * __rcall_wrapper
+ * strwhile
  *
- * protocol:
- *   port: PORT_RCALL
- *
- *   request:
- *     char args[]
- *
- *   reply:
- *     char rets[]
+ * Returns a copy of the first part of the given string containing only
+ * characters in <accept>. If <save> is non-NULL, a pointer to the first 
+ * character not in <accept> is saved in <save>. Returns NULL on error.
  */
 
-void __rcall_wrapper(struct msg *msg) {
-	struct vfs_obj *file;
-	struct msg *reply;
-	char *args;
-	char *rets;
+char *strwhile(const char *str, const char *accept, const char **save) {
+	size_t size;
+	char *ret;
 
-	if (!_di_rcall) {
-		merror(msg);
-		return;
+	size = strspn(str, accept) + 1;
+	ret = malloc(size * sizeof(char));
+
+	memcpy(ret, str, size - 1);
+	ret[size - 1] = '\0';
+
+	if (save) {
+		*save = &str[size - 1];
 	}
 
-	file = vfs_get_index(RP_INDEX(msg->target));
-
-	if (!file) {
-		merror(msg);
-		return;
-	}
-
-	args = (char*) msg->data;
-
-	rets = _di_rcall(msg->source, file, args);
-
-	if (!rets) {
-		merror(msg);
-		return;
-	}
-
-	reply = aalloc(sizeof(struct msg) + strlen(rets) + 1, PAGESZ);
-	reply->source = msg->target;
-	reply->target = msg->source;
-	reply->length = strlen(rets) + 1;
-	reply->port   = PORT_REPLY;
-	reply->arch   = ARCH_NAT;
-	strcpy((char*) reply->data, rets);
-	free(rets);
-
-	free(msg);
-	msend(reply);
+	return ret;
 }

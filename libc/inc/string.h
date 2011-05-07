@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -47,7 +47,9 @@ int    strncmp(const char *, const char *, size_t);
 
 size_t strlen (const char *);
 
-char  *strdup(const char *);
+char  *strdup  (const char *);
+char  *struntil(const char *, const char *, const char **);
+char  *strwhile(const char *, const char *, const char **);
 
 /* advanced string functions ***********************************************/
 
@@ -62,6 +64,8 @@ size_t strcspn(const char *, const char *);
 
 char  *strtok  (char *, const char *);
 char  *strtok_r(char *, const char *, char **);
+
+char **strparse(const char *, const char *);
 
 const char *strerror(int);
 
