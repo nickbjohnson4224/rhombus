@@ -84,6 +84,18 @@ int main() {
 	io_link("/dev/serial", start(file, argv));
 	stdout = stderr = fopen("/dev/serial", "w");
 
+	/* Keyboard Driver */
+	argv[0] = "kbd";
+	argv[1] = NULL;
+	file = tar_find(boot_image, "sbin/kbd");
+	temp = start(file, argv);
+
+	/* Graphics Driver */
+	argv[0] = "svga";
+	argv[1] = NULL;
+	file = tar_find(boot_image, "sbin/svga");
+	start(file, argv);
+
 	/* Init control file */
 	io_link("/sys/init", RP_CONS(getpid(), 1));
 
@@ -105,6 +117,18 @@ int main() {
 	io_link("/dev", temp1);
 	io_link("/sys", temp2);
 
+	/* Terminal Driver */
+	argv[0] = "fbterm";
+	argv[1] = "/dev/kbd";
+	argv[2] = "/dev/svga0";
+	argv[3] = NULL;
+	file = tar_find(boot_image, "sbin/fbterm");
+	io_link("/dev/tty", start(file, argv));
+
+	/* Splash */
+	stdout = stderr = stdin = fopen("/dev/tty", "w");
+	printf(splash);
+
 	/* Temporary filesystem */
 	argv[0] = "tmpfs";
 	argv[1] = NULL;	
@@ -116,33 +140,6 @@ int main() {
 	argv[1] = NULL;
 	file = tar_find(boot_image, "sbin/time");
 	io_link("/dev/time", start(file, argv));
-
-	/* Keyboard Driver */
-	argv[0] = "kbd";
-	argv[1] = NULL;
-	file = tar_find(boot_image, "sbin/kbd");
-	temp = start(file, argv);
-
-	/* Graphics Driver */
-	argv[0] = "svga";
-	argv[1] = NULL;
-	file = tar_find(boot_image, "sbin/svga");
-	start(file, argv);
-
-	/* Path */
-	setenv("PATH", "/bin");
-
-	/* Terminal Driver (launches shell) */
-	argv[0] = "fbterm";
-	argv[1] = "/dev/kbd";
-	argv[2] = "/dev/svga0";
-	argv[3] = NULL;
-	file = tar_find(boot_image, "sbin/fbterm");
-	io_link("/dev/tty", start(file, argv));
-
-	/* Splash */
-	stdout = stderr = stdin = fopen("/dev/tty", "w");
-	printf(splash);
 
 	setenv("NAME", "init");
 	

@@ -20,6 +20,7 @@
 #include <mutex.h>
 #include <proc.h>
 #include <ipc.h>
+#include <vfs.h>
 
 /*****************************************************************************
  * __read_wrapper
@@ -29,10 +30,11 @@
 
 void __read_wrapper(struct msg *msg) {
 	struct vfs_obj *file;
+	struct msg *reply;
 	uint64_t offset;
 	uint64_t source;
+	uint32_t index;
 	uint32_t size;
-	struct msg *reply;
 
 	if (msg->length != sizeof(uint64_t) + sizeof(uint32_t)) {
 		merror(msg);
@@ -44,18 +46,19 @@ void __read_wrapper(struct msg *msg) {
 		return;
 	}
 
-	file = vfs_get_index(RP_INDEX(msg->target));
+	index = RP_INDEX(msg->target);
 
-	if (!file || !(file->type & RP_TYPE_FILE)) {
+	file = vfs_get(index);
+	if (!file || !(acl_get(file->acl, getuser(RP_PID(msg->source))) & PERM_READ) & PERM_READ) {
 		merror(msg);
 		return;
 	}
 
-	if (!(acl_get(file->acl, gettuser()) & PERM_READ)) {
+	if (!(file->type & RP_TYPE_FILE)) {
 		merror(msg);
 		return;
 	}
-	
+
 	offset = ((uint64_t*) msg->data)[0];
 	size   = ((uint32_t*) msg->data)[2];
 	
@@ -69,7 +72,7 @@ void __read_wrapper(struct msg *msg) {
 	source = msg->source;
 	free(msg);
 
-	reply->length = _di_read(source, file, reply->data, size, offset);
+	reply->length = _di_read(source, index, reply->data, size, offset);
 
 	msend(reply);
 }

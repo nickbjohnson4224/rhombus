@@ -16,36 +16,48 @@
 
 #include <driver.h>
 #include <stdlib.h>
-#include <mutex.h>
-#include <natio.h>
+#include <string.h>
 #include <proc.h>
+#include <vfs.h>
 
 /*****************************************************************************
- * __type_wrapper
+ * vfs_add
  *
- * Performs the requested actions of a FS_TYPE command.
- *
- * protocol:
- *   port: PORT_TYPE
- *
- *   request:
- *
- *   reply:
- *     uint8_t type
+ * Adds the filesystem object <obj> to the virtual filesystem at path <path>
+ * from the directory <root>; the object is given index <index> and entered
+ * into the VFS index. This function is intended for internal use by drivers, 
+ * esp. during init. Returns zero on success, nonzero on error.
  */
 
-void __type_wrapper(struct msg *msg) {
-	struct vfs_obj *file;
-
-	/* find file node */
-	file = vfs_get_index(RP_INDEX(msg->target));
-
-	if (!file) {
-		merror(msg);
-		return;
+int vfs_add(struct vfs_obj *root, const char *path, struct vfs_obj *obj) {
+	struct vfs_obj *dir;
+	uint64_t dirrp;
+	char *path1;
+	
+	if (!obj) {
+		return 1;
 	}
 
-	msg->length = 1;
-	msg->data[0] = file->type;
-	mreply(msg);
+	/* find parent directory */
+	path1 = path_parent(path);
+	dirrp = vfs_find(root, path1, false);
+	if (RP_PID(dirrp) != getpid()) {
+		dir = NULL;
+	}
+	else {
+		dir = vfs_get(RP_INDEX(dirrp));
+	}
+	free(path1);
+
+	if (!dir) {
+		return 1;
+	}
+
+	/* push object into parent directory */
+	path1 = path_name(path);
+	obj->name = strdup(path1);
+	vfs_push(RP_CONS(getpid(), 0), dir, obj);
+	free(path1);
+
+	return 0;
 }

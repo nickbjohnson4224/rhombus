@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,6 +20,7 @@
 #include <mutex.h>
 #include <proc.h>
 #include <ipc.h>
+#include <vfs.h>
 
 /*****************************************************************************
  * __reset_wrapper
@@ -34,20 +35,14 @@ void __reset_wrapper(struct msg *msg) {
 		merror(msg);
 		return;
 	}
-
-	file = vfs_get_index(RP_INDEX(msg->target));
-
-	if (!file || !(file->type & RP_TYPE_FILE)) {
+	
+	file = vfs_get(RP_INDEX(msg->target));
+	if (!file || !(acl_get(file->acl, getuser(RP_PID(msg->source))) & PERM_WRITE)) {
 		merror(msg);
 		return;
 	}
 
-	if (!(acl_get(file->acl, gettuser()) & PERM_WRITE)) {
-		merror(msg);
-		return;
-	}
-
-	_di_reset(msg->source, file);
+	_di_reset(msg->source, RP_INDEX(msg->target));
 
 	merror(msg); // errors are the same as valid replies
 }

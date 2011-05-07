@@ -14,11 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <mutex.h>
 #include <proc.h>
+#include <vfs.h>
 
 /*****************************************************************************
  * __cons_wrapper
@@ -59,7 +60,7 @@ void __cons_wrapper(struct msg *msg) {
 	name = (const char*) &msg->data[4];
 
 	/* get the requested parent directory */
-	dir = vfs_get_index(RP_INDEX(msg->target));
+	dir = vfs_get(RP_INDEX(msg->target));
 
 	if (dir) {
 		/* check permissions */
@@ -72,8 +73,10 @@ void __cons_wrapper(struct msg *msg) {
 			new_fobj = _vfs_cons(msg->source, type);
 
 			if (new_fobj) {
+
 				/* add new object to parent directory */
-				vfs_dir_push(msg->source, dir, new_fobj, name);
+				new_fobj->name = strdup(name);
+				vfs_push(msg->source, dir, new_fobj);
 
 				/* return pointer to new object on success */
 				rp = RP_CONS(getpid(), new_fobj->index);

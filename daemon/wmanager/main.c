@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2011 Jaagup Repan
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail dot com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,99 +15,21 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "wmanager.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <driver.h>
+#include <mutex.h>
+#include <stdio.h>
 #include <exec.h>
 #include <proc.h>
 #include <page.h>
-#include <mutex.h>
+#include <vfs.h>
+
+#include "wmanager.h"
 
 uint64_t vgafd, mousefd, kbdfd;
 bool winkey;
 int next_index = 1;
-
-char *wmanager_rcall(uint64_t source, struct vfs_obj *file, const char *args) {
-	struct window_t *window;
-	size_t width, height;
-	int flags, x, y;
-	char buffer[32];
-
-	if (strcmp(args, "listmodes") == 0) {
-		return strdup("any");
-	}
-	if (strcmp(args, "createwindow") == 0) {
-		sprintf(buffer, "/sys/wmanager/%i", next_index);
-		io_cons(buffer, RP_TYPE_FILE);
-		find_window(next_index - 1, 0)->owner = RP_PID(source);
-		sprintf(buffer, "%i", next_index - 1);
-		return strdup(buffer);
-	}
-
-	window = find_window(file->index, RP_PID(source));
-	if (!window) {
-		return strdup("");
-	}
-
-	if (strncmp(args, "setmode ", 8) == 0) {
-		if (sscanf(args + 8, "%i %i", &width, &height) != 2) {
-			return strdup("");
-		}
-		resize_window(window, window->width, window->height, false);
-		if (!(window->flags & CONSTANT_SIZE) && !(window->flags & FLOATING)) {
-			// window must be CONSTNAT_SIZE or FLOATING for resizing to make sense
-			window->flags |= FLOATING;
-			update_tiling();
-		}
-		return strdup("T");
-	}
-	if (strcmp(args, "getmode") == 0) {
-		sprintf(buffer, "%i %i 32", window->width, window->height);
-		return strdup(buffer);
-	}
-	if (strncmp(args, "syncrect ", 9) == 0) {
-		if (sscanf(args + 9, "%i %i %i %i", &x, &y, &width, &height) != 4) {
-			return strdup("");
-		}
-		update_screen(window->x + x, window->y + y, window->x + x + width, window->y + y + height);
-		return strdup("T");
-	}
-	if (strcmp(args, "unshare") == 0) {
-		if (!window->bitmap) {
-			return strdup("");
-		}
-		mutex_spin(&window->mutex);
-		page_free(window->bitmap, window->width * window->height * 4);
-		window->bitmap = NULL;
-		mutex_free(&window->mutex);
-		return strdup("T");
-	}
-
-	if (strcmp(args, "register") == 0) {
-		window->flags |= LISTEN_EVENTS;
-		return strdup("T");
-	}
-	if (strcmp(args, "deregister") == 0) {
-		window->flags &= ~LISTEN_EVENTS;
-		return strdup("T");
-	}
-
-	if (strcmp(args, "getwindowflags") == 0) {
-		sprintf(buffer, "%i", window->flags);
-		return strdup(buffer);
-	}
-	if (strncmp(args, "setwindowflags ", 15) == 0) {
-		if (sscanf(args + 15, "%i", &flags) != 1) {
-			return strdup("");
-		}
-		window->flags = flags;
-		return strdup("T");
-	}
-
-	return NULL;
-}
 
 char *wmanager_rcall_listmodes(uint64_t source, uint32_t index, int argc, char **argv) {
 	return strdup("any");
@@ -235,8 +158,9 @@ char *wmanager_rcall_setwindowflags(uint64_t source, uint32_t index, int argc, c
 	return strdup("T");
 }
 
-int wmanager_share(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off) {
-	struct window_t *window = find_window(file->index, RP_PID(source));
+int wmanager_share(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off) {
+	struct window_t *window = find_window(index, RP_PID(source));
+
 	if (off != 0) {
 		return -1;
 	}
@@ -246,6 +170,7 @@ int wmanager_share(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_
 	if (size != window->width * window->height * 4) {
 		return -1;
 	}
+
 	mutex_spin(&window->mutex);
 	if (window->bitmap) {
 		page_free(window->bitmap, window->width * window->height * 4);
@@ -255,8 +180,8 @@ int wmanager_share(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_
 	return 0;
 }
 
-int wmanager_sync(uint64_t source, struct vfs_obj *file) {
-	struct window_t *window = find_window(file->index, RP_PID(source));
+int wmanager_sync(uint64_t source, uint32_t index) {
+	struct window_t *window = find_window(index, RP_PID(source));
 	if (!window) {
 		return -1;
 	}
@@ -341,7 +266,7 @@ int main(int argc, char **argv) {
 	root->type  = RP_TYPE_DIR;
 	root->size  = 0;
 	root->acl   = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
-	vfs_set_index(0, root);
+	vfs_set(0, root);
 
 	rcall_set("listmodes",      wmanager_rcall_listmodes);
 	rcall_set("createwindow",   wmanager_rcall_createwindow);
@@ -356,10 +281,10 @@ int main(int argc, char **argv) {
 
 	di_wrap_share(wmanager_share);
 	di_wrap_sync (wmanager_sync);
-	vfs_wrap_cons(wmanager_cons);
-	vfs_wrap_push(wmanager_push);
-	vfs_wrap_pull(wmanager_pull);
-	vfs_wrap_init();
+	vfs_set_cons(wmanager_cons);
+	vfs_set_push(wmanager_push);
+	vfs_set_pull(wmanager_pull);
+	vfs_init();
 
 	io_link("/sys/wmanager", RP_CONS(getpid(), 0));
 

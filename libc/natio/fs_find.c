@@ -78,6 +78,7 @@ uint64_t fs_find(uint64_t root, const char *path) {
 
 	if (msg->length < sizeof(uint64_t) + sizeof(uint32_t)) {
 		free(msg);
+		errno = EACCES;
 		return 0;
 	}
 

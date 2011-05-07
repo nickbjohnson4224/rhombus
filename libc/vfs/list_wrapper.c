@@ -14,67 +14,77 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
+#include <string.h>
 #include <stdlib.h>
 #include <mutex.h>
-#include <natio.h>
 #include <proc.h>
+#include <vfs.h>
 
 /*****************************************************************************
- * __auth_wrapper
+ * __list_wrapper
  *
- * Performs the requested actions of a FS_AUTH command.
+ * Performs the requested actions of a FS_LIST command.
  *
  * protocol:
- *   port: PORT_AUTH
+ *   port: PORT_LIST
  *
  *   request:
- *     uint32_t user
- *     uint8_t perm
+ *     uint32_t entry
  *
  *   reply:
- *     uint8_t ret
+ *     char name[]
  */
 
-void __auth_wrapper(struct msg *msg) {
-	struct vfs_obj *fobj;
-	uint32_t user;
-	uint8_t perm;
+void __list_wrapper(struct msg *msg) {
+	struct vfs_obj *dir;
+	uint32_t entry;
+	char *name;
 	int err = 0;
 	
-	/* check message */
-	if (msg->length != sizeof(uint32_t) + sizeof(uint8_t)) {
+	/* check request */
+	if (msg->length != sizeof(uint32_t)) {
 		merror(msg);
 		return;
 	}
 
-	/* get data */
-	user = ((uint32_t*) msg->data)[0];
-	perm = msg->data[4];
+	/* extract data */
+	entry = ((uint32_t*) msg->data)[0];
 
-	/* get the requested object */
-	fobj = vfs_get_index(RP_INDEX(msg->target));
+	/* get requested directory */
+	dir = vfs_get(RP_INDEX(msg->target));
 
-	if (fobj) {
-		mutex_spin(&fobj->mutex);
+	if (dir) {
+		mutex_spin(&dir->mutex);
 
-		/* check permissions */
-		if ((acl_get(fobj->acl, gettuser()) & PERM_ALTER) == 0) {
-			err = 1;
+		if (dir->type & RP_TYPE_DIR) {
+
+			/* check permissions */
+			if ((acl_get(dir->acl, gettuser()) & PERM_READ) == 0) {
+				err = 1;
+			}
+			else if (!(name = vfs_list(dir, entry))) {
+				/* return ERR_FILE if the entry does not exist */
+				err = 1;
+			}
 		}
 		else {
-			/* set the permissions on the object for user <cmd->v0> */
-			acl_set(fobj->acl, user, perm);
+			/* return ERR_TYPE if <dir> is not a directory */
+			err = 1;
 		}
 
-		mutex_free(&fobj->mutex);
+		mutex_free(&dir->mutex);
 	}
 	else {
-		/* return ERR_FILE on failure to find object */
+		/* return ERR_FILE on failure to find directory */
 		err = 1;
 	}
 
-	msg->length = sizeof(uint8_t);
-	msg->data[0] = err;
-	mreply(msg);
+	if (err) {
+		merror(msg);
+	}
+	else {
+		msg->length = strlen(name) + 1;
+		strcpy((char*) msg->data, name);
+		mreply(msg);
+	}
 }

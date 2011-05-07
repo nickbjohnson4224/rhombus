@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,39 +19,48 @@
 #include <mutex.h>
 #include <natio.h>
 #include <proc.h>
+#include <page.h>
+#include <ipc.h>
+#include <vfs.h>
 
-/*****************************************************************************
- * __size_wrapper
- *
- * Performs the requested actions of a FS_SIZE command.
- *
- * protocol:
- *   port: PORT_SIZE
- *
- *   request:
- *
- *   reply:
- *     uint64_t size
- */
-
-void __size_wrapper(struct msg *msg) {
+void __share_wrapper(struct msg *msg) {
 	struct vfs_obj *file;
+	uint64_t offset;
+	uint8_t err;
+	void *pages;
 
-	/* find file node */
-	file = vfs_get_index(RP_INDEX(msg->target));
+	/* check request */
+	if (msg->length < PAGESZ - sizeof(struct msg)) {
+		merror(msg);
+		return;
+	}
+
+	if (!_di_share) {
+		merror(msg);
+		return;
+	}
+
+	file = vfs_get(RP_INDEX(msg->target));
 
 	if (!file) {
 		merror(msg);
 		return;
 	}
 
-	/* check file type */
-	if ((file->type & RP_TYPE_FILE) == 0) {
+	if (!(acl_get(file->acl, RP_PID(msg->source)) & PERM_WRITE)) {
 		merror(msg);
 		return;
 	}
 
-	msg->length = sizeof(uint64_t);
-	((uint64_t*) msg->data)[0] = file->size;
+	/* extract data */
+	offset = ((uint64_t*) msg->data)[0];
+	pages = aalloc(msg->length - PAGESZ + sizeof(struct msg), PAGESZ);
+	page_self(&msg->data[PAGESZ - sizeof(struct msg)], pages, msg->length - PAGESZ + sizeof(struct msg));
+
+	err = _di_share(msg->source, RP_INDEX(msg->target), 
+		pages, msg->length - PAGESZ + sizeof(struct msg), offset);
+
+	msg->data[0] = err;
+	msg->length = 1;
 	mreply(msg);
 }

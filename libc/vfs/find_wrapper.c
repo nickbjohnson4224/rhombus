@@ -14,77 +14,69 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
-#include <string.h>
 #include <stdlib.h>
 #include <mutex.h>
 #include <proc.h>
+#include <vfs.h>
 
 /*****************************************************************************
- * __list_wrapper
+ * __find_wrapper
  *
- * Performs the requested actions of a FS_LIST command.
+ * Finds the requested resource in the virtual filesystem.
  *
  * protocol:
- *   port: PORT_LIST
+ *   port: PORT_FIND
  *
  *   request:
- *     uint32_t entry
+ *     char link
+ *     char path[]
  *
  *   reply:
- *     char name[]
+ *     uint64_t rp
+ *     uint32_t err
+ *
+ *   errors:
+ *     0 - none
+ *     1 - not found
+ *     2 - permission denied
+ *     3 - not implemented
  */
 
-void __list_wrapper(struct msg *msg) {
-	struct vfs_obj *dir;
-	uint32_t entry;
-	char buffer[100];
-	int err = 0;
-	
+void __find_wrapper(struct msg *msg) {
+	uint64_t file;
+	struct vfs_obj *root;
+	const char *path;
+	uint8_t link;
+
 	/* check request */
-	if (msg->length != sizeof(uint32_t)) {
+	if (msg->length < 1) {
 		merror(msg);
 		return;
 	}
 
 	/* extract data */
-	entry = ((uint32_t*) msg->data)[0];
+	link = msg->data[0];
+	path = (const char*) &msg->data[1];
 
-	/* get requested directory */
-	dir = vfs_get_index(RP_INDEX(msg->target));
+	/* find root node */
+	root = vfs_get(RP_INDEX(msg->target));
 
-	if (dir) {
-		mutex_spin(&dir->mutex);
-
-		if (dir->type & RP_TYPE_DIR) {
-
-			/* check permissions */
-			if ((acl_get(dir->acl, gettuser()) & PERM_READ) == 0) {
-				err = 1;
-			}
-			else if (vfs_dir_list(dir, entry, buffer, 100)) {
-				/* return ERR_FILE if the entry does not exist */
-				err = 1;
-			}
-		}
-		else {
-			/* return ERR_TYPE if <dir> is not a directory */
-			err = 1;
-		}
-
-		mutex_free(&dir->mutex);
-	}
-	else {
-		/* return ERR_FILE on failure to find directory */
-		err = 1;
-	}
-
-	if (err) {
+	if (!root) {
 		merror(msg);
+		return;
+	}
+
+	/* find pointer to file */
+	file = vfs_find(root, path, (link) ? true : false);
+
+	msg->length = sizeof(uint64_t) + sizeof(uint32_t);
+	if (file) {
+		((uint64_t*) msg->data)[0] = file;
+		((uint32_t*) msg->data)[2] = 0;
 	}
 	else {
-		msg->length = strlen(buffer) + 1;
-		strcpy((char*) msg->data, buffer);
-		mreply(msg);
+		((uint32_t*) msg->data)[2] = 1;
 	}
+	
+	mreply(msg);
 }

@@ -15,10 +15,11 @@
  */
 
 #include <driver.h>
-#include <proc.h>
 #include <stdlib.h>
 #include <string.h>
 #include <mutex.h>
+#include <proc.h>
+#include <vfs.h>
 
 struct event_recipient {
 	struct event_recipient *next;
@@ -30,11 +31,7 @@ char *kbd_rcall_register(uint64_t source, uint32_t index, int argc, char **argv)
 	struct vfs_obj *file;
 	struct event_recipient *r;
 
-	file = vfs_get_index(index);
-
-	if (!file) {
-		return NULL;
-	}
+	file = vfs_get(index);
 
 	mutex_spin(&file->mutex);
 	for (r = event_recipients; r; r = r->next) {
@@ -60,11 +57,7 @@ char *kbd_rcall_deregister(uint64_t source, uint32_t index, int argc, char **arg
 	struct vfs_obj *file;
 	struct event_recipient *r;
 
-	file = vfs_get_index(index);
-
-	if (!file) {
-		return NULL;
-	}
+	file = vfs_get(index);
 
 	mutex_spin(&file->mutex);
 	for (r = event_recipients; r; r = r->next) {
@@ -206,17 +199,17 @@ void kbd_irq(struct msg *msg) {
 
 int main(int argc, char **argv) {
 	struct vfs_obj *root;
-	
+
 	root = calloc(sizeof(struct vfs_obj), 1);
 	root->type = 0;
 	root->size = 0;
 	root->acl = acl_set_default(root->acl, 0);
-	vfs_set_index(0, root);
+	vfs_set(0, root);
 
-	rcall_set("register", kbd_rcall_register);
-	rcall_set("deregister", kbd_rcall_deregister);
-	di_wrap_irq  (1, kbd_irq);
-	vfs_wrap_init();
+	rcall_set  ("register",   kbd_rcall_register);
+	rcall_set  ("deregister", kbd_rcall_deregister);
+	di_wrap_irq(1, kbd_irq);
+	vfs_init();
 
 	io_link("/dev/kbd", RP_CONS(getpid(), 0));
 

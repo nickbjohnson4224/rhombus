@@ -14,11 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
 #include <stdlib.h>
 #include <string.h>
 #include <mutex.h>
 #include <proc.h>
+#include <vfs.h>
 
 /*****************************************************************************
  * index_lookup
@@ -31,13 +31,13 @@ static struct vfs_obj *index_lookup[256];
 static bool m_index_lookup;
 
 /*****************************************************************************
- * vfs_get_index
+ * vfs_get
  *
  * Find a virtual filesystem object by index number. Returns the found 
  * filesystem object on success, NULL on error.
  */
 
-struct vfs_obj *vfs_get_index(uint32_t index) {
+struct vfs_obj *vfs_get(uint32_t index) {
 	struct vfs_obj *obj;
 
 	mutex_spin(&m_index_lookup);
@@ -58,7 +58,7 @@ struct vfs_obj *vfs_get_index(uint32_t index) {
 }
 
 /*****************************************************************************
- * vfs_set_index
+ * vfs_set
  *
  * Register a virtual filesystem object with an index. If another filesystem
  * object already uses that index, its index is set to zero and a pointer to
@@ -66,11 +66,11 @@ struct vfs_obj *vfs_get_index(uint32_t index) {
  * appropriate index.
  */
 
-struct vfs_obj *vfs_set_index(uint32_t index, struct vfs_obj *obj) {
+struct vfs_obj *vfs_set(uint32_t index, struct vfs_obj *obj) {
 	struct vfs_obj *old_obj;
 
 	/* check for existing object */
-	old_obj = vfs_get_index(index);
+	old_obj = vfs_get(index);
 
 	/* remove existing object if found */
 	if (old_obj) {

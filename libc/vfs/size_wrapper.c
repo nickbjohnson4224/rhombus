@@ -14,69 +14,44 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
 #include <stdlib.h>
 #include <mutex.h>
+#include <natio.h>
 #include <proc.h>
+#include <vfs.h>
 
 /*****************************************************************************
- * __find_wrapper
+ * __size_wrapper
  *
- * Finds the requested resource in the virtual filesystem.
+ * Performs the requested actions of a FS_SIZE command.
  *
  * protocol:
- *   port: PORT_FIND
+ *   port: PORT_SIZE
  *
  *   request:
- *     char link
- *     char path[]
  *
  *   reply:
- *     uint64_t rp
- *     uint32_t err
- *
- *   errors:
- *     0 - none
- *     1 - not found
- *     2 - permission denied
- *     3 - not implemented
+ *     uint64_t size
  */
 
-void __find_wrapper(struct msg *msg) {
-	uint64_t file;
-	struct vfs_obj *root;
-	const char *path;
-	uint8_t link;
+void __size_wrapper(struct msg *msg) {
+	struct vfs_obj *file;
 
-	/* check request */
-	if (msg->length < 1) {
+	/* find file node */
+	file = vfs_get(RP_INDEX(msg->target));
+
+	if (!file) {
 		merror(msg);
 		return;
 	}
 
-	/* extract data */
-	link = msg->data[0];
-	path = (const char*) &msg->data[1];
-
-	/* find root node */
-	root = vfs_get_index(RP_INDEX(msg->target));
-
-	if (!root) {
+	/* check file type */
+	if ((file->type & RP_TYPE_FILE) == 0) {
 		merror(msg);
 		return;
 	}
 
-	/* find pointer to file */
-	file = vfs_find(root, path, (link) ? true : false);
-
-	msg->length = sizeof(uint64_t) + sizeof(uint32_t);
-	if (file) {
-		((uint64_t*) msg->data)[0] = file;
-		((uint32_t*) msg->data)[2] = 0;
-	}
-	else {
-		((uint32_t*) msg->data)[2] = 1;
-	}
-	
+	msg->length = sizeof(uint64_t);
+	((uint64_t*) msg->data)[0] = file->size;
 	mreply(msg);
 }

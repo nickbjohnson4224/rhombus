@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,20 +14,23 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <mutex.h>
-#include <ipc.h>
-#include <proc.h>
-
-#include <stdio.h>
-#include <natio.h>
-#include <string.h>
 #include <stdlib.h>
 #include <driver.h>
+#include <string.h>
+#include <stdio.h>
+#include <natio.h>
+#include <mutex.h>
+#include <proc.h>
+#include <ipc.h>
+#include <vfs.h>
 
 #include "initrd.h"
 #include "inc/tar.h"
 
-size_t initrd_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+size_t initrd_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
+	struct vfs_obj *file;
+
+	file = vfs_get(index);
 
 	if (!file->data) {
 		return 0;
@@ -54,8 +57,8 @@ void initrd_init(void) {
 	root->data = (void*) BOOT_IMAGE;
 	root->size = tar_size(root->data);
 	root->acl  = acl_set_default(root->acl, PERM_READ);
-	vfs_set_index(0, root);
+	vfs_set(0, root);
 
 	di_wrap_read(initrd_read);
-	vfs_wrap_init();
+	vfs_init();
 }

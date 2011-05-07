@@ -16,10 +16,11 @@
  */
 
 #include <driver.h>
-#include <proc.h>
 #include <stdlib.h>
 #include <string.h>
 #include <mutex.h>
+#include <proc.h>
+#include <vfs.h>
 
 struct register_t {
 	uint64_t rp;
@@ -42,11 +43,7 @@ char *mouse_register(uint64_t source, uint32_t index, int argc, char **argv) {
 	struct vfs_obj *file;
 	struct register_t *reg;
 
-	file = vfs_get_index(index);
-
-	if (!file) {
-		return NULL;
-	}
+	file = vfs_get(index);
 
 	mutex_spin(&file->mutex);
 	for (reg = regs; reg; reg = reg->next) {
@@ -72,11 +69,7 @@ char *mouse_deregister(uint64_t source, uint32_t index, int argc, char **argv) {
 	struct vfs_obj *file;
 	struct register_t *reg, *prev = NULL;
 
-	file = vfs_get_index(index);
-
-	if (!file) {
-		return NULL;
-	}
+	file = vfs_get(index);
 
 	mutex_spin(&file->mutex);
 	for (reg = regs; reg; reg = reg->next, prev = reg) {
@@ -113,14 +106,14 @@ int main(int argc, char **argv) {
 	outb(0x60, 10); // 10 samples per second
 
 	root        = calloc(sizeof(struct vfs_obj), 1);
-	root->type  = RP_TYPE_FILE;
+	root->type  = 0;
 	root->size  = 0;
 	root->acl   = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
-	vfs_set_index(0, root);
+	vfs_set(0, root);
 
 	rcall_set("register",   mouse_register);
 	rcall_set("deregister", mouse_deregister);
-	vfs_wrap_init();
+	vfs_init();
 
 	io_link("/dev/mouse", RP_CONS(getpid(), 0));
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
@@ -143,6 +136,7 @@ int main(int argc, char **argv) {
 				}
 			}
 			first = false;
+			sleep();
 		}
 
 		bytes[curbyte++] = inb(0x60);

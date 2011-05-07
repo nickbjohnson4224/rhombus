@@ -14,15 +14,15 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <mutex.h>
-#include <proc.h>
-#include <ipc.h>
-
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <natio.h>
+#include <mutex.h>
+#include <proc.h>
+#include <ipc.h>
+#include <vfs.h>
 
 #include "tarfs.h"
 
@@ -66,8 +66,10 @@ static uintptr_t getvalue(char *field, size_t size) {
 	return sum;
 }
 
-size_t tarfs_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
-	uint32_t user;
+size_t tarfs_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
+	struct vfs_obj *file;
+
+	file = vfs_get(index);
 
 	if (!file->data) {
 		return 0;
@@ -81,13 +83,8 @@ size_t tarfs_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t
 		size = file->size - offset;
 	}
 
-	user = gettuser();
-	settuser(0);
-
 	fseek(parent, (size_t) file->data + offset, SEEK_SET);
 	fread(buffer, 1, size, parent);
-
-	settuser(user);
 
 	return size;
 }
@@ -126,7 +123,7 @@ int main(int argc, char **argv) {
 	root = calloc(sizeof(struct vfs_obj), 1);
 	root->type = RP_TYPE_DIR;
 	root->acl = acl_set_default(root->acl, PERM_READ);
-	vfs_set_index(0, root);
+	vfs_set(0, root);
 
 	/* allocate buffer space for header block */
 	block = malloc(512);
@@ -175,7 +172,7 @@ int main(int argc, char **argv) {
 
 	/* set up interface */
 	di_wrap_read(tarfs_read);
-	vfs_wrap_init();
+	vfs_init();
 
 	/* daemonize */
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);

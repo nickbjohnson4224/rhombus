@@ -14,72 +14,67 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
 #include <stdlib.h>
 #include <mutex.h>
+#include <natio.h>
 #include <proc.h>
+#include <vfs.h>
 
 /*****************************************************************************
- * __remv_wrapper
+ * __auth_wrapper
  *
- * Performs the requested actions of a FS_REMV command.
+ * Performs the requested actions of a FS_AUTH command.
  *
  * protocol:
- *   port: PORT_REMV
+ *   port: PORT_AUTH
  *
  *   request:
- *   
+ *     uint32_t user
+ *     uint8_t perm
+ *
  *   reply:
- *     uint8_t err;
+ *     uint8_t ret
  */
 
-void __remv_wrapper(struct msg *msg) {
+void __auth_wrapper(struct msg *msg) {
 	struct vfs_obj *fobj;
+	uint32_t user;
+	uint8_t perm;
+	int err = 0;
 	
+	/* check message */
+	if (msg->length != sizeof(uint32_t) + sizeof(uint8_t)) {
+		merror(msg);
+		return;
+	}
+
+	/* get data */
+	user = ((uint32_t*) msg->data)[0];
+	perm = msg->data[4];
+
 	/* get the requested object */
-	fobj = vfs_get_index(RP_INDEX(msg->target));
+	fobj = vfs_get(RP_INDEX(msg->target));
 
 	if (fobj) {
 		mutex_spin(&fobj->mutex);
 
-		/* check all permissions */
-		if ((acl_get(fobj->acl, gettuser()) & PERM_WRITE) == 0 ||
-			(acl_get(fobj->mother->acl, gettuser() & PERM_WRITE) == 0)) {
-			merror(msg);
-			return;
-		}
-
-		/* check if directory is empty */
-		if (fobj->type & RP_TYPE_DIR && fobj->daughter) {
-			merror(msg);
-			return;
-		}
-
-		/* remove the object from its directory */
-		vfs_dir_pull(msg->source, fobj);
-
-		if (_vfs_free) {
-			/* allow the driver to free the object */
-			if (_vfs_free(msg->source, fobj)) {
-				mutex_free(&fobj->mutex);
-				merror(msg);
-				return;
-			}
+		/* check permissions */
+		if ((acl_get(fobj->acl, gettuser()) & PERM_ALTER) == 0) {
+			err = 1;
 		}
 		else {
-			/* free the object, assuming data is not allocated */
-			acl_free(fobj->acl);
-			free(fobj);
+			/* set the permissions on the object for user <cmd->v0> */
+			acl_set(fobj->acl, user, perm);
 		}
 
 		mutex_free(&fobj->mutex);
 	}
 	else {
 		/* return ERR_FILE on failure to find object */
-		merror(msg);
+		err = 1;
 	}
 
-	msg->length = 1;
-	msg->data[0] = 0;
+	msg->length = sizeof(uint8_t);
+	msg->data[0] = err;
 	mreply(msg);
 }

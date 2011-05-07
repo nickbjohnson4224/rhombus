@@ -18,6 +18,7 @@
 #include <driver.h>
 #include <mutex.h>
 #include <proc.h>
+#include <vfs.h>
 
 #define PORT 0x3f8 // COM1
 
@@ -28,13 +29,15 @@ void char_write(char c) {
 	   char_write('\r');
 }
 
-size_t serial_write(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
-	mutex_spin(&file->mutex);
+size_t serial_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
+	struct vfs_obj *file;
 
+	file = vfs_get(index);
+
+	mutex_spin(&file->mutex);
 	for (size_t i = 0; i < size; i++) {
 		char_write(buffer[i]);
 	}
-
 	mutex_free(&file->mutex);
 	
 	return size;
@@ -47,7 +50,7 @@ int main(int argc, char **argv) {
 	root->type = RP_TYPE_FILE;
 	root->size = 0;
 	root->acl = acl_set_default(root->acl, PERM_WRITE);
-	vfs_set_index(0, root);
+	vfs_set(0, root);
 
 	outb(PORT + 1, 0x00);
 	outb(PORT + 3, 0x80);
@@ -58,7 +61,7 @@ int main(int argc, char **argv) {
 	outb(PORT + 4, 0x0B);
 
 	di_wrap_write(serial_write);
-	vfs_wrap_init();
+	vfs_init();
 
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 	_done();

@@ -14,11 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
 #include <stdlib.h>
 #include <string.h>
 #include <mutex.h>
 #include <proc.h>
+#include <vfs.h>
 
 /*****************************************************************************
  * vfs_find

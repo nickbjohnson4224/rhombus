@@ -31,10 +31,10 @@
 #define RP_INDEX(rp) ((rp) & 0xFFFFFFFF)
 #define RP_NULL ((uint64_t) 0)
 
-#define RP_TYPE_FILE  0x01
-#define RP_TYPE_DIR	  0x02
-#define RP_TYPE_SLINK 0x04
-#define RP_TYPE_PLINK 0x08
+#define RP_TYPE_FILE  0x01	// file (allows read, write, reset)
+#define RP_TYPE_DIR	  0x02	// directory (allows find, link, list, etc.)
+#define RP_TYPE_SLINK 0x04	// symbolic link
+#define RP_TYPE_PLINK 0x08	// pointer link (similar to mountpoint)
 
 size_t read (uint64_t rp, void *buf, size_t size, uint64_t offset);
 size_t write(uint64_t rp, void *buf, size_t size, uint64_t offset);
@@ -48,11 +48,12 @@ char  *rcallf(uint64_t rp, const char *fmt, ...);
 
 /* I/O handling *************************************************************/
 
+// event
 typedef void (*event_handler_t)(uint64_t source, uint64_t value);
 int event_register(uint64_t source, event_handler_t handler);
 
+// rcall
 typedef char *(*rcall_t)(uint64_t src, uint32_t index, int argc, char **argv);
-
 int     rcall_set(const char *call, rcall_t handler);
 rcall_t rcall_get(const char *call);
 

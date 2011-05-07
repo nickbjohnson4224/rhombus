@@ -14,21 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
-#include <stdlib.h>
-#include <mutex.h>
-#include <stdio.h>
-#include <proc.h>
 #include <ipc.h>
+#include <vfs.h>
 
 /*****************************************************************************
- * vfs_wrap_init
+ * vfs_init
  *
  * Initialize VFS request handling system. Returns zero on success, nonzero on
  * error.
  */
 
-int vfs_wrap_init(void) {
+int vfs_init(void) {
 	when(PORT_FIND, __find_wrapper);
 	when(PORT_CONS, __cons_wrapper);
 	when(PORT_MOVE, __move_wrapper);

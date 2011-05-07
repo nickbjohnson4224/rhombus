@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,46 +14,38 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
 #include <stdlib.h>
 #include <mutex.h>
 #include <natio.h>
 #include <proc.h>
-#include <page.h>
-#include <ipc.h>
+#include <vfs.h>
 
-void __share_wrapper(struct msg *msg) {
+/*****************************************************************************
+ * __type_wrapper
+ *
+ * Performs the requested actions of a FS_TYPE command.
+ *
+ * protocol:
+ *   port: PORT_TYPE
+ *
+ *   request:
+ *
+ *   reply:
+ *     uint8_t type
+ */
+
+void __type_wrapper(struct msg *msg) {
 	struct vfs_obj *file;
-	uint64_t offset;
-	uint8_t err;
-	void *pages;
 
-	/* check request */
-	if (msg->length < PAGESZ - sizeof(struct msg)) {
-		merror(msg);
-		return;
-	}
-
-	if (!_di_share) {
-		merror(msg);
-		return;
-	}
-
-	file = vfs_get_index(RP_INDEX(msg->target));
+	/* find file node */
+	file = vfs_get(RP_INDEX(msg->target));
 
 	if (!file) {
 		merror(msg);
 		return;
 	}
 
-	/* extract data */
-	offset = ((uint64_t*) msg->data)[0];
-	pages = aalloc(msg->length - PAGESZ + sizeof(struct msg), PAGESZ);
-	page_self(&msg->data[PAGESZ - sizeof(struct msg)], pages, msg->length - PAGESZ + sizeof(struct msg));
-
-	err = _di_share(msg->source, file, pages, msg->length - PAGESZ + sizeof(struct msg), offset);
-
-	msg->data[0] = err;
 	msg->length = 1;
+	msg->data[0] = file->type;
 	mreply(msg);
 }

@@ -21,13 +21,20 @@
 #include <mutex.h>
 #include <natio.h>
 #include <proc.h>
+#include <vfs.h>
 
 #include "time.h"
 
 static bool m_time = false;
 
-size_t time_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+size_t time_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
+	struct vfs_obj *file;
 	char *data;
+
+	file = vfs_get(index);
+
+	if (!file) return 0;
+	if (!(acl_get(file->acl, RP_INDEX(source)) & PERM_READ)) return 0;
 
 	if (size > 20) {
 		size = 20;
@@ -46,14 +53,14 @@ size_t time_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t 
 int main(int argc, char **argv) {
 	struct vfs_obj *root;
 
-	root        = calloc(sizeof(struct vfs_obj), 1);
-	root->type  = RP_TYPE_FILE;
-	root->size  = 0;
-	root->acl   = acl_set_default(root->acl, PERM_READ);
-	vfs_set_index(0, root);
+	root       = calloc(sizeof(struct vfs_obj), 1);
+	root->type = RP_TYPE_FILE;
+	root->size = 0;
+	root->acl  = acl_set_default(root->acl, PERM_READ);
+	vfs_set(0, root);
 
 	di_wrap_read(time_read);
-	vfs_wrap_init();
+	vfs_init();
 
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 	_done();

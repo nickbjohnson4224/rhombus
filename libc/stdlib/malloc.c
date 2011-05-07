@@ -20,6 +20,7 @@
 #include <mutex.h>
 #include <errno.h>
 #include <page.h>
+#include <proc.h>
 #include <arch.h>
 
 #include "malloc.h"
@@ -138,7 +139,7 @@ void free(void *ptr) {
 		// check for double frees
 		if (node->status == 0) {
 			mutex_free(&_mutex);
-			fprintf(stderr, "double free (%x)\n", base);
+			fprintf(stderr, "%d: double free (%x)\n", getpid(), base);
 			abort();
 		}
 

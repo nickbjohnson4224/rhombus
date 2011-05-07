@@ -20,6 +20,7 @@
 #include <natio.h>
 #include <proc.h>
 #include <ipc.h>
+#include <vfs.h>
 
 /*****************************************************************************
  * __write_wrapper
@@ -51,21 +52,21 @@ void __write_wrapper(struct msg *msg) {
 		return;
 	}
 
-	file = vfs_get_index(RP_INDEX(msg->target));
-
-	if (!file || !(file->type & RP_TYPE_FILE)) {
+	file = vfs_get(RP_INDEX(msg->target));
+	if (!file || !(acl_get(file->acl, getuser(RP_PID(msg->source))) & PERM_WRITE)) {
 		merror(msg);
 		return;
 	}
 
-	if (!(acl_get(file->acl, gettuser()) & PERM_WRITE)) {
+	if (!(file->type & RP_TYPE_FILE)) {
 		merror(msg);
 		return;
 	}
-	
+
 	offset = ((uint64_t*) msg->data)[0];
 
-	((uint32_t*) msg->data)[0] = _di_write(msg->source, file, &msg->data[8], msg->length - 8, offset);
+	((uint32_t*) msg->data)[0] = _di_write(msg->source, RP_INDEX(msg->target), 
+		&msg->data[8], msg->length - 8, offset);
 	msg->length = sizeof(uint32_t);
 
 	mreply(msg);

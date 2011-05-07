@@ -32,13 +32,16 @@ For 0.8 Alpha: (complete)
 For 0.9 Alpha:
 
 + merge libdriver and libc
-- move rcall handling to natio
++ move rcall handling to natio
++ isolate VFS code from driver code
+- isolate permission code from VFS code
 - non-recursive VFS find
 - simplify VFS security
 - move more functions to rcall (fs_*)
 - file locking
 - symlinks
 - hard links
+- better event system
 
 For 0.10 Alpha:
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,9 +17,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <driver.h>
+#include <mutex.h>
 #include <proc.h>
 #include <ipc.h>
 #include <abi.h>
+#include <vfs.h>
 
 #include "tmpfs.h"
 
@@ -51,19 +53,21 @@ struct vfs_obj *tmpfs_cons(uint64_t source, int type) {
 
 int tmpfs_free(uint64_t source, struct vfs_obj *obj) {
 
+	mutex_spin(&obj->mutex);
 	acl_free(obj->acl);
-
 	if (obj->data) {
 		free(obj->data);
 	}
-
 	free(obj);
 
 	return 0;
 }
 
-size_t tmpfs_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
-	
+size_t tmpfs_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
+	struct vfs_obj *file;
+
+	file = vfs_get(index);
+
 	if (!file->data) {
 		return 0;
 	}
@@ -81,7 +85,10 @@ size_t tmpfs_read(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t
 	return size;
 }
 
-size_t tmpfs_write(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t offset) {
+size_t tmpfs_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
+	struct vfs_obj *file;
+
+	file = vfs_get(index);
 
 	if (offset + size >= file->size) {
 		file->data = realloc(file->data, offset + size);
@@ -93,8 +100,11 @@ size_t tmpfs_write(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_
 	return size;
 }
 
-int tmpfs_reset(uint64_t source, struct vfs_obj *file) {
-	
+int tmpfs_reset(uint64_t source, uint32_t index) {
+	struct vfs_obj *file;
+
+	file = vfs_get(index);
+
 	if (file->data) {
 		free(file->data);
 		file->size = 0;
@@ -119,15 +129,15 @@ int main(int argc, char **argv) {
 	root = calloc(sizeof(struct vfs_obj), 1);
 	root->type = RP_TYPE_DIR;
 	root->acl = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
-	vfs_set_index(0, root);
+	vfs_set(0, root);
 
 	/* set interface */
 	di_wrap_read (tmpfs_read);
 	di_wrap_write(tmpfs_write);
 	di_wrap_reset(tmpfs_reset);
-	vfs_wrap_cons(tmpfs_cons);
-	vfs_wrap_free(tmpfs_free);
-	vfs_wrap_init();
+	vfs_set_cons (tmpfs_cons);
+	vfs_set_free (tmpfs_free);
+	vfs_init();
 
 	/* daemonize */
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);

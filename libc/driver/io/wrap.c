@@ -20,45 +20,48 @@
 
 /* wrapper function pointers ************************************************/
 
-size_t   (*_di_read) (uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off);
-size_t   (*_di_write)(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off);
-int      (*_di_reset)(uint64_t source, struct vfs_obj *file);
-int      (*_di_sync) (uint64_t source, struct vfs_obj *file);
-uint64_t (*_di_size) (uint64_t source, struct vfs_obj *file);
-int      (*_di_share)(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off);
+size_t   (*_di_read) (uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off);
+size_t   (*_di_write)(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off);
+int      (*_di_reset)(uint64_t source, uint32_t index);
+int      (*_di_sync) (uint64_t source, uint32_t index);
+uint64_t (*_di_size) (uint64_t source, uint32_t index);
+int      (*_di_share)(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off);
 
 /* wrapper registering functions ********************************************/
 
-int di_wrap_read(size_t (*di_read)(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off)) {
+int di_wrap_read(size_t (*di_read)
+		(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off)) {
 	when(PORT_READ, __read_wrapper);
 	_di_read = di_read;
 	return 0;
 }
 
-int di_wrap_write(size_t (*di_write)(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off)) {
+int di_wrap_write(size_t (*di_write)
+		(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off)) {
 	when(PORT_WRITE, __write_wrapper);
 	_di_write = di_write;
 	return 0;
 }
 
-int di_wrap_reset(int (*di_reset)(uint64_t source, struct vfs_obj *file)) {
+int di_wrap_reset(int (*di_reset)(uint64_t source, uint32_t index)) {
 	when(PORT_RESET, __reset_wrapper);
 	_di_reset = di_reset;
 	return 0;
 }
 
-int di_wrap_sync(int (*di_sync)(uint64_t source, struct vfs_obj *file)) {
+int di_wrap_sync(int (*di_sync)(uint64_t source, uint32_t index)) {
 	when(PORT_SYNC, __sync_wrapper);
 	_di_sync = di_sync;
 	return 0;
 }
 
-int di_wrap_size(uint64_t (*di_size)(uint64_t source, struct vfs_obj *file)) {
+int di_wrap_size(uint64_t (*di_size)(uint64_t source, uint32_t index)) {
 	_di_size = di_size;
 	return 0;
 }
 
-int di_wrap_share(int (*di_share)(uint64_t source, struct vfs_obj *file, uint8_t *buffer, size_t size, uint64_t off)) {
+int di_wrap_share(int (*di_share)
+		(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off)) {
 	when(PORT_SHARE, __share_wrapper);
 	_di_share = di_share;
 	return 0;

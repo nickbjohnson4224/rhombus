@@ -14,31 +14,29 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
 #include <stdlib.h>
 #include <string.h>
 #include <mutex.h>
 #include <proc.h>
+#include <vfs.h>
 
 /*****************************************************************************
- * vfs_dir_push
+ * vfs_push
  *
  * Add the filesystem object <obj> to the directory <dir>, giving it the
- * name <name>. Also adds the filesystem object <obj> to the index lookup 
- * hash based on its index field. Calls the active driver's push function and 
- * returns zero on success; returns nonzero on error.
+ * name <name>. Calls the active driver's push function and returns zero on 
+ * success; returns nonzero on error.
  */
 
-int vfs_dir_push(uint64_t source, struct vfs_obj *dir, struct vfs_obj *obj, const char *name) {
+int vfs_push(uint64_t source, struct vfs_obj *dir, struct vfs_obj *obj) {
 	struct vfs_obj *sister;
 
-	if (!(dir && obj && name)) {
+	if (!(dir && obj)) {
 		return 1;
 	}
 
 	mutex_spin(&dir->mutex);
 
-	obj->name     = strdup(name);
 	obj->mutex    = 0;
 	obj->mother   = dir;
 	obj->daughter = NULL;
@@ -53,14 +51,14 @@ int vfs_dir_push(uint64_t source, struct vfs_obj *dir, struct vfs_obj *obj, cons
 	}
 	else {
 		while (sister->sister1) {
-			if (strcmp(sister->name, name) > 0) {
+			if (strcmp(sister->name, obj->name) > 0) {
 				break;
 			}
 			sister = sister->sister1;
 		}
 
 		/* insert */
-		if (strcmp(sister->name, name) > 0) {
+		if (strcmp(sister->name, obj->name) > 0) {
 			if (sister->sister0) {
 				sister->sister0->sister1 = obj;
 			}
@@ -82,7 +80,7 @@ int vfs_dir_push(uint64_t source, struct vfs_obj *dir, struct vfs_obj *obj, cons
 	mutex_free(&dir->mutex);
 
 	/* add to index */
-	vfs_set_index(obj->index, obj);
+	vfs_set(obj->index, obj);
 
 	if (_vfs_push) {
 		return _vfs_push(source, obj);
@@ -93,14 +91,14 @@ int vfs_dir_push(uint64_t source, struct vfs_obj *dir, struct vfs_obj *obj, cons
 }
 
 /*****************************************************************************
- * vfs_dir_pull
+ * vfs_pull
  *
  * Remove the filesystem object <obj> from its parent directory. Calls the 
  * active driver's pull function and returns zero on success; returns nonzero 
  * on error.
  */
 
-int vfs_dir_pull(uint64_t source, struct vfs_obj *obj) {
+int vfs_pull(uint64_t source, struct vfs_obj *obj) {
 
 	if (!obj) {
 		return 1;
@@ -136,17 +134,21 @@ int vfs_dir_pull(uint64_t source, struct vfs_obj *obj) {
 }
 
 /*****************************************************************************
- * vfs_dir_list
+ * vfs_list
  *
- * Copy the name of the <entry>th entry in the directory <dir> into <buffer>.
- * Returns zero on success, nonzero on error.
+ * Return a copy of the <entry>th entry in the directory <dir>. Returns null
+ * on error.
  */
 
-int vfs_dir_list(struct vfs_obj *dir, int entry, char *buffer, size_t size) {
+char *vfs_list(struct vfs_obj *dir, int entry) {
 	struct vfs_obj *daughter;
 
 	if (!dir) {
-		return 1;
+		return NULL;
+	}
+
+	if (entry < 0) {
+		return NULL;
 	}
 
 	daughter = dir->daughter;
@@ -164,10 +166,9 @@ int vfs_dir_list(struct vfs_obj *dir, int entry, char *buffer, size_t size) {
 
 	if (daughter) {
 		/* return name of selected daughter */
-		strlcpy(buffer, daughter->name, size);
-		return 0;
+		return strdup(daughter->name);
 	}
 	else {
-		return 1;
+		return NULL;
 	}
 }

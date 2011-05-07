@@ -14,10 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
+#include <string.h>
 #include <stdlib.h>
 #include <mutex.h>
 #include <proc.h>
+#include <vfs.h>
 
 /*****************************************************************************
  * __move_wrapper
@@ -57,8 +58,8 @@ void __move_wrapper(struct msg *msg) {
 	}
 
 	/* get the requested object and new parent directory */
-	dir = vfs_get_index(RP_INDEX(msg->target));
-	obj = vfs_get_index(RP_INDEX(fobj));
+	dir = vfs_get(RP_INDEX(msg->target));
+	obj = vfs_get(RP_INDEX(fobj));
 
 	if (!dir || !obj) {
 		merror(msg);
@@ -81,15 +82,18 @@ void __move_wrapper(struct msg *msg) {
 	mutex_free(&dir->mutex);
 
 	/* remove object from its directory */
-	if (vfs_dir_pull(msg->source, obj)) {
+	if (vfs_pull(msg->source, obj)) {
 		merror(msg);
 		return;
 	}
 
-	/* add object to new directory with name <cmd->s0> */
-	if (vfs_dir_push(msg->source, dir, obj, name)) {
+	/* add object to new directory with name <name> */
+	if (vfs_push(msg->source, dir, obj)) {
 		merror(msg);
 		return;
+	}
+	else {
+		obj->name = strdup(name);
 	}
 
 	mutex_free(&obj->mutex);

@@ -14,48 +14,57 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
 #include <stdlib.h>
-#include <string.h>
+#include <mutex.h>
+#include <natio.h>
 #include <proc.h>
+#include <vfs.h>
 
 /*****************************************************************************
- * vfs_add
+ * __perm_wrapper
  *
- * Adds the filesystem object <obj> to the virtual filesystem at path <path>
- * from the directory <root>; the object is given index <index> and entered
- * into the VFS index. This function is intended for internal use by drivers, 
- * esp. during init. Returns zero on success, nonzero on error.
+ * Performs the requested actions of a FS_PERM command.
+ *
+ * protocol:
+ *   port: PORT_PERM
+ *
+ *   request:
+ *     uint32_t user
+ *
+ *   reply:
+ *     uint8_t perm
  */
 
-int vfs_add(struct vfs_obj *root, const char *path, struct vfs_obj *obj) {
-	char *path1;
-	uint64_t dirrp;
-	struct vfs_obj *dir;
-	
-	if (!obj) {
-		return 1;
+void __perm_wrapper(struct msg *msg) {
+	struct vfs_obj *fobj;
+	uint32_t user;
+	uint8_t perm;
+
+	/* check request */
+	if (msg->length != sizeof(uint32_t)) {
+		merror(msg);
+		return;
 	}
 
-	/* find parent directory */
-	path1 = path_parent(path);
-	dirrp = vfs_find(root, path1, false);
-	if (RP_PID(dirrp) != getpid()) {
-		dir = NULL;
+	/* extract data */
+	user = ((uint32_t*) msg->data)[0];
+	
+	/* look up the requested object */
+	fobj = vfs_get(RP_INDEX(msg->target));
+
+	if (fobj) {
+		mutex_spin(&fobj->mutex);
+
+		/* return the permissions of the object for user <cmd->v0> */	
+		perm = acl_get(fobj->acl, user);
+
+		mutex_free(&fobj->mutex);
 	}
 	else {
-		dir = vfs_get_index(RP_INDEX(dirrp));
-	}
-	free(path1);
-
-	if (!dir) {
-		return 1;
+		perm = 0;
 	}
 
-	/* push object into parent directory */
-	path1 = path_name(path);
-	vfs_dir_push(RP_CONS(getpid(), 0), dir, obj, path1);
-	free(path1);
-
-	return 0;
+	msg->length = 1;
+	msg->data[0] = perm;
+	mreply(msg);
 }

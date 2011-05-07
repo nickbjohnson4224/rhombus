@@ -14,10 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
 #include <stdlib.h>
 #include <mutex.h>
 #include <proc.h>
+#include <vfs.h>
 
 /*****************************************************************************
  * __link_wrapper
@@ -49,7 +49,7 @@ void __link_wrapper(struct msg *msg) {
 	rp = ((uint64_t*) msg->data)[0];
 
 	/* get the requested directory */
-	dir = vfs_get_index(RP_INDEX(msg->target));
+	dir = vfs_get(RP_INDEX(msg->target));
 
 	if (dir) {
 		mutex_spin(&dir->mutex);
