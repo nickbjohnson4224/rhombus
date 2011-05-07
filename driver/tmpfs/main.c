@@ -30,22 +30,22 @@ uint8_t tmpfs_index_top = 1;
 struct vfs_obj *tmpfs_cons(uint64_t source, int type) {
 	struct vfs_obj *fobj = NULL;
 
-	switch (type) {
-	case RP_TYPE_FILE:
+	printf("tmpfs_cons %d\n", type);
+
+	if (type & RP_TYPE_FILE) {
 		fobj        = calloc(sizeof(struct vfs_obj), 1);
 		fobj->type  = RP_TYPE_FILE;
 		fobj->size  = 0;
 		fobj->data  = NULL;
 		fobj->index = tmpfs_index_top++;
 		fobj->acl   = acl_set_default(fobj->acl, PERM_READ | PERM_WRITE);
-		break;
-	case RP_TYPE_DIR:
+	}
+	else if (type & RP_TYPE_DIR) {
 		fobj        = calloc(sizeof(struct vfs_obj), 1);
 		fobj->type  = RP_TYPE_DIR;
 		fobj->index = tmpfs_index_top++;
 		fobj->acl   = acl_set_default(fobj->acl, PERM_READ | PERM_WRITE);
 		fobj->link  = 0;
-		break;
 	}
 
 	return fobj;
@@ -68,6 +68,7 @@ size_t tmpfs_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size,
 
 	file = vfs_get(index);
 
+	mutex_spin(&file->mutex);
 	if (!file->data) {
 		return 0;
 	}
@@ -81,6 +82,7 @@ size_t tmpfs_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size,
 	}
 
 	memcpy(buffer, &file->data[offset], size);
+	mutex_free(&file->mutex);
 	
 	return size;
 }
@@ -90,12 +92,14 @@ size_t tmpfs_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t size
 
 	file = vfs_get(index);
 
+	mutex_spin(&file->mutex);
 	if (offset + size >= file->size) {
 		file->data = realloc(file->data, offset + size);
 		file->size = offset + size;
 	}
 
 	memcpy(&file->data[offset], buffer, size);
+	mutex_free(&file->mutex);
 
 	return size;
 }

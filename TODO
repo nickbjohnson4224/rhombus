@@ -34,14 +34,16 @@ For 0.9 Alpha:
 + merge libdriver and libc
 + move rcall handling to natio
 + isolate VFS code from driver code
-- isolate permission code from VFS code
 - non-recursive VFS find
-- simplify VFS security
 - move more functions to rcall (fs_*)
 - file locking
 - symlinks
 - hard links
-- better event system
+- better event system (textual)
+- process manager
+- top/ps equivalent
+- pipe driver
+- shell pipe support
 
 For 0.10 Alpha:
 
@@ -59,7 +61,6 @@ For 0.11 Alpha:
 
 - user/password manager
 - login manager
-- pipe driver
 - decent shell (POSIX-compliant)
 - finalize native I/O API
 - finalize driver API

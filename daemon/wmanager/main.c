@@ -39,7 +39,7 @@ char *wmanager_rcall_createwindow(uint64_t source, uint32_t index, int argc, cha
 	char buffer[32];
 
 	sprintf(buffer, "/sys/wmanager/%i", next_index);
-	io_cons(buffer, RP_TYPE_FILE);
+	io_cons(buffer, RP_TYPE_FILE | RP_TYPE_GRAPH | RP_TYPE_EVENT);
 	find_window(next_index - 1, 0)->owner = RP_PID(source);
 	sprintf(buffer, "%i", next_index - 1);
 

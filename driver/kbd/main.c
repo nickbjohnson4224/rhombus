@@ -166,7 +166,7 @@ int main(int argc, char **argv) {
 	struct vfs_obj *root;
 
 	root = calloc(sizeof(struct vfs_obj), 1);
-	root->type = 0;
+	root->type = RP_TYPE_EVENT;
 	root->size = 0;
 	root->acl = acl_set_default(root->acl, 0);
 	vfs_set(0, root);

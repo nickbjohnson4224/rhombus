@@ -35,6 +35,9 @@
 #define RP_TYPE_DIR	  0x02	// directory (allows find, link, list, etc.)
 #define RP_TYPE_SLINK 0x04	// symbolic link
 #define RP_TYPE_PLINK 0x08	// pointer link (similar to mountpoint)
+#define RP_TYPE_EVENT 0x10	// event source
+#define RP_TYPE_GRAPH 0x20	// graphics file
+#define RP_TYPE_CHAR  0x40	// character device
 
 size_t read (uint64_t rp, void *buf, size_t size, uint64_t offset);
 size_t write(uint64_t rp, void *buf, size_t size, uint64_t offset);

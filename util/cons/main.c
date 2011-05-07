@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -37,7 +37,7 @@
  */ 
 
 int main(int argc, char **argv) {
-	uint64_t fobj, dir;
+	uint64_t fobj;
 	char *path;
 	char type;
 
@@ -55,41 +55,17 @@ int main(int argc, char **argv) {
 		path = path_simplify(argv[1]);
 	}
 
-	fobj = fs_find(0, path);
-
-	if (fobj) {
-		errno = EEXIST;
-		printf("%s: %s: ", argv[0], path);
-		perror(NULL);
-		return 1;
-	}
-
-	dir = fs_find(0, path_parent(path));
-
-	if (!dir) {
-		fprintf(stderr, "%s: %s: ", argv[0], path_parent(path));
-		perror(NULL);
-		return 1;
-	}
-
-	if (fs_type(dir) != RP_TYPE_DIR) {
-		errno = ENOTDIR;
-		fprintf(stderr, "%s: %s: ", argv[0], path_parent(path));
-		perror(NULL);
-		return 1;
-	}
-	
 	switch (type) {
-	case 'f': /* construct file */
-		fobj = fs_cons(dir, path_name(path), RP_TYPE_FILE);
+	case 'f':
+		fobj = io_cons(path, RP_TYPE_FILE);
 		break;
-	case 'd': /* construct directory */
-		fobj = fs_cons(dir, path_name(path), RP_TYPE_DIR);
+	case 'd':
+		fobj = io_cons(path, RP_TYPE_FILE);
 		break;
 	default:
 		fobj = 0;
 	}
-
+	
 	if (!fobj) {
 		fprintf(stderr, "%s: cannot construct %s: ", argv[0], path);
 		perror(NULL);
