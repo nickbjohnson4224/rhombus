@@ -66,6 +66,50 @@ char *rcall(uint64_t rp, const char *args) {
 	return rets;
 }
 
+/*****************************************************************************
+ * rcallf
+ *
+ * Generic remote procedure call protocol. Sends a formatted string to the 
+ * given resource, and recieves a string in return. This function can be used 
+ * to implement any sort of ad-hoc textual protocol, and is a cover-all for 
+ * any things that cannot be done with the standard I/O and filesystem 
+ * routines. Returns NULL on error or empty return string.
+ */
+
+char *rcallf(uint64_t rp, const char *fmt, ...) {
+	va_list ap;
+	char *args;
+	char *ret;
+
+	// format argument string
+	va_start(ap, fmt);
+	args = vsaprintf(fmt, ap);
+	va_end(ap);
+
+	if (!args) {
+		return NULL;
+	}
+
+	// perform rcall
+	ret = rcall(rp, args);
+
+	// free argument string
+	free(args);
+
+	return ret;
+}
+
+/****************************************************************************
+ * _rcall_map
+ *
+ * Structure mapping rcall commands to their respective handlers.
+ *
+ * Notes:
+ * Currently, this is implemented as a linked list, which has terrible
+ * scalability. If rcall becomes a bottleneck, which it probably will soon,
+ * this could be vastly improved by using a trie or PATRICIA tree.
+ */
+
 static struct _rcall_map {
 	struct _rcall_map *next;
 
