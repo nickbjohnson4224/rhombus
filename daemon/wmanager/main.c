@@ -49,23 +49,26 @@ char *wmanager_rcall_createwindow(uint64_t source, uint32_t index, int argc, cha
 char *wmanager_rcall_setmode(uint64_t source, uint32_t index, int argc, char **argv) {
 	struct window_t *window;
 	int width, height;
+	int old_flags;
 
 	window = find_window(index, RP_PID(source));
 	if (!window) return NULL;
 
 	if (argc != 4) return NULL;
 
+	old_flags = window->flags;
 	width  = atoi(argv[1]);
 	height = atoi(argv[2]);
 
-	mutex_spin(&window->mutex);
-	if (window->bitmap) {
-		page_free(window->bitmap, window->width * window->height * 4);
-		window->bitmap = NULL;
+	resize_window(window, window->width, window->height, false);
+	if (!(window->flags & CONSTANT_SIZE) && !(window->flags & FLOATING)) {
+		// window must be CONSTNAT_SIZE or FLOATING for resizing to make sense
+		window->flags |= FLOATING;
 	}
-	window->width = width;
-	window->height = height;
-	mutex_free(&window->mutex);
+
+	if (!(old_flags & FLOATING)) {
+		update_tiling();
+	}
 
 	return strdup("T");
 }
@@ -196,8 +199,7 @@ struct vfs_obj *wmanager_cons(uint64_t source, int type) {
 		return NULL;
 	}
 
-	switch (type) {
-	case RP_TYPE_FILE:
+	if (type & RP_TYPE_FILE) {
 		fobj        = calloc(sizeof(struct vfs_obj), 1);
 		fobj->type  = type;
 		fobj->size  = 0;
@@ -205,7 +207,6 @@ struct vfs_obj *wmanager_cons(uint64_t source, int type) {
 		fobj->data  = NULL;
 		fobj->index = next_index++;
 		fobj->acl   = acl_set_default(fobj->acl, PERM_READ | PERM_WRITE);
-		break;
 	}
 	
 	return fobj;
