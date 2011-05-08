@@ -34,15 +34,15 @@ void update_tiling() {
 			else {
 				others = true;
 			}
-			if (window->flags & CONSTANT_SIZE) {
-				height -= window->height;
-				if (screen_width - width < window->width) {
-					width = screen_width - window->width;
+			if (window != main_window) {
+				if (window->flags & CONSTANT_SIZE) {
+					height -= window->height + 2;
+					if (screen_width - width < window->width) {
+						width = screen_width - window->width;
+					}
 				}
-			}
-			else {
-				last = window;
-				if (window != main_window) {
+				else {
+					last = window;
 					count++;
 				}
 			}
@@ -67,13 +67,13 @@ void update_tiling() {
 
 	for (window = windows; window; window = window->next) {
 		if (!(window->flags & FLOATING) && window != main_window) {
-			window->x = width;
+			window->x = width + 2;
 			window->y = y;
 			if (!(window->flags & CONSTANT_SIZE)) {
-				resize_window(window,
-						screen_width - width, height / count + (window == last ? height % count : 0), true);
+				resize_window(window, screen_width - width - 2,
+						height / count + (window == last ? height % count : -2), true);
 			}
-			y += window->height;
+			y += window->height + 2;
 		}
 	}
 
