@@ -30,8 +30,6 @@ uint8_t tmpfs_index_top = 1;
 struct vfs_obj *tmpfs_cons(uint64_t source, int type) {
 	struct vfs_obj *fobj = NULL;
 
-	printf("tmpfs_cons %d\n", type);
-
 	if (type & RP_TYPE_FILE) {
 		fobj        = calloc(sizeof(struct vfs_obj), 1);
 		fobj->type  = RP_TYPE_FILE;

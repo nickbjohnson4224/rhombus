@@ -25,7 +25,9 @@
  */
 
 void debug_clear(void) {
+	#if (SCREEN == VGA_FULL) || (SCREEN == VGA_LEFT)
 	size_t i, j;
+	#endif
 	
 	#if SCREEN == VGA_FULL
 		for (i = 0; i < 25; i++) {

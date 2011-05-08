@@ -23,9 +23,10 @@
  */
 
 void debug_scroll(size_t lines) {
-	size_t i, j;
 	
 	#if (SCREEN == VGA_FULL) || (SCREEN == VGA_LEFT)
+	size_t i, j;
+
 	for (i = 0; i <= 24 - lines; i++) {
 		#if SCREEN == VGA_FULL
 			for (j = 0; j < 80; j++) {

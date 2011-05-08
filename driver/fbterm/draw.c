@@ -18,6 +18,7 @@
 
 #include <stdlib.h>
 #include <graph.h>
+#include <stdio.h>
 
 struct fb *fb = NULL;
 
@@ -30,16 +31,17 @@ int draw_cell(struct font *font, struct cell *c, int x, int y) {
 		return 1;
 	}
 
-	if (c->ch > font->count) {
-		return 1;
-	}
-
-	glyph = font->glyph[c->ch];
-
-	if (!glyph) {
+	if (c->ch >= font->count) {
 		glyph = font->def_glyph;
+	}
+	else {
+		glyph = font->glyph[c->ch];
+
 		if (!glyph) {
-			return 1;
+			glyph = font->def_glyph;
+			if (!glyph) {
+				return 1;
+			}
 		}
 	}
 

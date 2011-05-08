@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <ports.h>
 #include <debug.h>
 #include <stdint.h>
 
@@ -25,6 +26,12 @@
  */
 
 void debug_char(char c) {
+
+	#if SCREEN == SERIAL
+		while (!(inb(0x3FD) & 0x20));
+		outb(0x3F8, c);
+		if (c == '\n') debug_char('\r');
+	#endif/*SCREEN == SERIAL*/
 
 	#if (SCREEN == VGA_FULL) || (SCREEN == VGA_LEFT)
 
