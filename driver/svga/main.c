@@ -26,28 +26,30 @@
 
 #include "svga.h"
 
-struct register_t {
-	uint64_t rp;
-	struct register_t *next;
-} *regs;
-
+struct event_list *event_list;
 uint32_t *buffer;
 char *modesstr;
 
-void svga_send_resize_event(uint16_t width, uint16_t height) {
-	struct register_t *reg;
+char *svga_rcall_register(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct vfs_obj *file;
 
-	for (reg = regs; reg; reg = reg->next) {
-		event(reg->rp, 0x3LL << 62 | width << 16 | height);
-	}
+	file = vfs_get(index);
+
+	mutex_spin(&file->mutex);
+	event_list = event_list_add(event_list, source);
+	mutex_free(&file->mutex);
+
+	return strdup("T");
 }
 
-char *svga_rcall_register(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct register_t *reg;
+char *svga_rcall_deregister(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct vfs_obj *file;
 
-	reg = malloc(sizeof(struct register_t));
-	reg->next = regs;
-	reg->rp   = source;
+	file = vfs_get(index);
+
+	mutex_spin(&file->mutex);
+	event_list = event_list_del(event_list, source);
+	mutex_free(&file->mutex);
 
 	return strdup("T");
 }
@@ -194,12 +196,13 @@ int main(int argc, char **argv) {
 	buffer = malloc(svga.w * svga.h * 4);
 
 	/* set up driver interface */
-	rcall_set("getmode",   svga_rcall_getmode);
-	rcall_set("listmodes", svga_rcall_listmodes);
-	rcall_set("unshare",   svga_rcall_unshare);
-	rcall_set("setmode",   svga_rcall_setmode);
-	rcall_set("register",  svga_rcall_register);
-	rcall_set("syncrect",  svga_rcall_syncrect);
+	rcall_set("getmode",    svga_rcall_getmode);
+	rcall_set("listmodes",  svga_rcall_listmodes);
+	rcall_set("unshare",    svga_rcall_unshare);
+	rcall_set("setmode",    svga_rcall_setmode);
+	rcall_set("register",   svga_rcall_register);
+	rcall_set("deregister", svga_rcall_deregister);
+	rcall_set("syncrect",   svga_rcall_syncrect);
 	di_wrap_sync (svga_sync);
 	di_wrap_share(svga_share);
 	vfs_init();
