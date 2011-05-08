@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <natio.h>
 #include <ipc.h>
 #include <vfs.h>
 
@@ -35,6 +36,8 @@ int vfs_init(void) {
 	when(PORT_TYPE, __type_wrapper);
 	when(PORT_PERM, __perm_wrapper);
 	when(PORT_AUTH, __auth_wrapper);
+
+	rcall_set("fs_find", __find_rcall_wrapper);
 
 	return 0;
 }

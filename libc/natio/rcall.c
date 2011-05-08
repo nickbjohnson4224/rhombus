@@ -152,7 +152,7 @@ int rcall_set(const char *call, rcall_t handler) {
 
 	_rcall_map = node;
 
-	return 1;
+	return 0;
 }
 
 /*****************************************************************************
@@ -201,6 +201,7 @@ void _rcall_handler(struct msg *msg) {
 	}
 
 	rets = handler(msg->source, RP_INDEX(msg->target), argc, argv);
+	if (!rets) rets = strdup("");
 
 	for (argc = 0; argv[argc]; argv++) {
 		free(argv[argc]);

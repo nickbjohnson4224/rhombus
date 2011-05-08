@@ -95,6 +95,8 @@ void __type_wrapper(struct msg *msg);
 void __perm_wrapper(struct msg *msg);
 void __auth_wrapper(struct msg *msg);
 
+char *__find_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
+
 extern struct vfs_obj *(*_vfs_cons)(uint64_t source, int type);
 extern int             (*_vfs_push)(uint64_t source, struct vfs_obj *obj);
 extern int             (*_vfs_pull)(uint64_t source, struct vfs_obj *obj);

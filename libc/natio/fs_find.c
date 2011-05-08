@@ -17,8 +17,62 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <natio.h>
 #include <errno.h>
+
+/*****************************************************************************
+ * fs_find
+ *
+ * Finds the filesystem object with the given path <path> from <root> if it
+ * exists. If it does not exist, this function returns 0.
+ */
+
+uint64_t fs_find(uint64_t root, const char *path) {
+	uint32_t pid, index;
+	char buffer[100];
+	uint64_t rp;
+	char *reply;
+	char *path_s;
+
+	if (!path) {
+		path = "/";
+	}
+
+	path_s = path_simplify(path);
+	if (!path_s) return 0;
+	
+	if (!root) {
+		root = fs_root;
+	}
+
+	sprintf(buffer, "fs_find %s", path_s);
+	free(path_s);
+	reply = rcall(root, buffer);
+
+	if (!reply) {
+		errno = ENOSYS;
+		return 0;
+	}
+
+	if (reply[0] == '!') {
+		if      (!strcmp(reply, "! nfound"))	errno = ENOENT;
+		else if (!strcmp(reply, "! denied"))	errno = EACCES;
+		else if (!strcmp(reply, "! nosys"))		errno = ENOSYS;
+		else 									errno = EUNK;
+		free(reply);
+		return 0;
+	}
+
+	if (sscanf(reply, "%i %i", &pid, &index) != 2) {
+		free(reply);
+		return 0;
+	}
+	rp = RP_CONS(pid, index);
+
+	free(reply);
+	return rp;
+}
 
 /*****************************************************************************
  * fs_find
@@ -44,11 +98,13 @@
  *     3 - not implemented
  */
 
-uint64_t fs_find(uint64_t root, const char *path) {
+/*uint64_t fs_find(uint64_t root, const char *path) {
 	struct msg *msg;
 	uint64_t rp;
 	uint32_t err;
 	char *path_s;
+
+	return _fs_find(root, path);
 
 	if (!root) {
 		root = fs_root;
@@ -98,4 +154,4 @@ uint64_t fs_find(uint64_t root, const char *path) {
 	}
 
 	return rp;
-}
+}*/

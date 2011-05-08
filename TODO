@@ -34,7 +34,6 @@ For 0.9 Alpha:
 + merge libdriver and libc
 + move rcall handling to natio
 + isolate VFS code from driver code
-- non-recursive VFS find
 - move more functions to rcall (fs_*)
 - file locking
 - symlinks

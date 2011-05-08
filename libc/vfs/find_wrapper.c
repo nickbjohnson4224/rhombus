@@ -14,7 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include <mutex.h>
 #include <proc.h>
 #include <vfs.h>
@@ -79,4 +82,49 @@ void __find_wrapper(struct msg *msg) {
 	}
 	
 	mreply(msg);
+}
+
+/*****************************************************************************
+ * __find_rcall_wrapper
+ */
+
+char *__find_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct vfs_obj *root;
+	const char *path;
+	uint64_t file;
+	bool link;
+
+	if (argc <= 1) {
+		return NULL;
+	}
+
+	// check for follow link flag
+	if (argc == 2) {
+		link = false;
+		path = argv[1];
+	}
+	else if (!strcmp(argv[1], "-l")) {
+		link = true;
+		path = argv[2];
+	}
+	else {
+		return NULL;
+	}
+
+	/* find root node */
+	root = vfs_get(index);
+
+	if (!root) {
+		return strdup("! nfound");
+	}
+
+	/* found pointer to file */
+	file = vfs_find(root, path, link);
+
+	if (file) {
+		return saprintf("%d %d", RP_PID(file), RP_INDEX(file));
+	}
+	else {
+		return saprintf("! nfound");
+	}
 }

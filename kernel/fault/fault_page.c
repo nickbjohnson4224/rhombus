@@ -58,7 +58,7 @@ struct thread *fault_page(struct thread *image) {
 		debug_printf("%d: page fault at %x, ip = %x, frame %x\n", 
 			image->proc->pid, cr2, image->eip, page_get(cr2));
 		debug_printf("user stack dump: (ebp = %x)\n", image->ebp);
-		debug_dumpi((void*) image->useresp, 12);
+		debug_dumpi((void*) image->useresp, 30);
 		debug_panic("page fault exception");
 
 		process_freeze(image->proc);
