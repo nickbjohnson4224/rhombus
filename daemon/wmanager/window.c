@@ -85,6 +85,7 @@ int add_window(uint32_t id) {
 
 int remove_window(uint32_t id, uint32_t owner) {
 	struct window_t *window = find_window(id, owner);
+	int flags = window->flags;
 
 	if (!window) {
 		return -1;
@@ -99,7 +100,11 @@ int remove_window(uint32_t id, uint32_t owner) {
 
 	remove_from_list(window);
 	free(window);
-	update_tiling();
+
+	if (!(flags & FLOATING)) {
+		update_tiling();
+	}
+
 	return 0;
 }
 
@@ -181,4 +186,11 @@ void bring_to_front(struct window_t *window) {
 		remove_from_list(window);
 		add_to_list(window);
 	}
+}
+
+void update_decorations(struct window_t *window) {
+	update_screen(window->x - 1, window->y - 1, window->x, window->y + window->height + 1);
+	update_screen(window->x + window->width, window->y - 1, window->x + window->width + 1, window->y + window->height + 1);
+	update_screen(window->x, window->y - 1, window->x + window->width, window->y);
+	update_screen(window->x, window->y + window->height, window->x + window->width, window->y + window->height + 1);
 }
