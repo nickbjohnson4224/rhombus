@@ -125,6 +125,6 @@ char *__find_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **arg
 		return saprintf("%d %d", RP_PID(file), RP_INDEX(file));
 	}
 	else {
-		return saprintf("! nfound");
+		return strdup("! nfound");
 	}
 }

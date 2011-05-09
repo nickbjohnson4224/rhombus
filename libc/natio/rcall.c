@@ -15,6 +15,7 @@
  */
 
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <natio.h>
 #include <proc.h>
