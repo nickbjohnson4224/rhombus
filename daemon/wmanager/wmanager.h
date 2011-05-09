@@ -51,6 +51,7 @@ int remove_window(uint32_t id, uint32_t owner);
 void draw_window(struct window_t *window, int x1, int y1, int x2, int y2);
 void resize_window(struct window_t *window, int width, int height, bool notify);
 void bring_to_front(struct window_t *window);
+void update_decorations(struct window_t *window);
 
 void resize_screen(size_t width, size_t height);
 void update_screen(int x1, int y1, int x2, int y2);

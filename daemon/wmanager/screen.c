@@ -45,6 +45,8 @@ void update_screen(int x1, int y1, int x2, int y2) {
 	if (y1 < 0) y1 = 0;
 	if (x2 > (int) screen_width) x2 = screen_width;
 	if (y2 > (int) screen_height) y2 = screen_height;
+	if (x1 > x2) return;
+	if (y1 > y2) return;
 
 	for (int x = x1; x < x2; x++) {
 		for (int y = y1; y < y2; y++) {
@@ -65,8 +67,8 @@ void update_screen(int x1, int y1, int x2, int y2) {
 }
 
 void blit_bitmap(const uint8_t *bitmap, int tox, int toy, size_t width, size_t height, int x1, int y1, int x2, int y2) {
-	for (size_t x = tox >= x1 ? tox : x1; x < tox + width && x < (size_t) x2; x++) {
-		for (size_t y = toy >= y1 ? toy : y1; y < toy + height && y < (size_t) y2; y++) {
+	for (size_t y = toy >= y1 ? toy : y1; y < toy + height && y < (size_t) y2; y++) {
+		for (size_t x = tox >= x1 ? tox : x1; x < tox + width && x < (size_t) x2; x++) {
 			size_t screen_index = (x + y * screen_width) * 4;
 			size_t bitmap_index = ((x - tox) + (y - toy) * width) * 4;
 			double alpha = bitmap[bitmap_index + 3] / 255.0;

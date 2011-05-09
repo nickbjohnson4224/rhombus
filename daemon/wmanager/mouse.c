@@ -59,17 +59,11 @@ void mouse_move(int16_t dx, int16_t dy) {
 		}
 
 		if (prev_active != active_window) {
-			// update decorations
 			if (prev_active) {
-				update_screen(prev_active->x - 1, prev_active->y - 1,
-						prev_active->x + prev_active->width + 1, prev_active->y + prev_active->height + 1);
+				update_decorations(prev_active);
 			}
-
 			if (active_window) {
-				x = active_window->x - 1;
-				y = active_window->y - 1;
-				width = active_window->width + 1 + cursor_width;
-				height = active_window->height + 1 + cursor_height;
+				update_decorations(active_window);
 			}
 		}
 	}
