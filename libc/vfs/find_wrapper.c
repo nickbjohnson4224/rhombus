@@ -103,7 +103,7 @@ char *__find_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **arg
 		link = false;
 		path = argv[1];
 	}
-	else if (!strcmp(argv[1], "-l")) {
+	else if (!strcmp(argv[1], "-L")) {
 		link = true;
 		path = argv[2];
 	}

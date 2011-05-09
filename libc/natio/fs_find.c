@@ -34,16 +34,9 @@ uint64_t fs_find(uint64_t root, const char *path) {
 	char *reply;
 	char *path_s;
 
-	if (!path) {
-		path = "/";
-	}
-
 	path_s = path_simplify(path);
 	if (!path_s) return 0;
-	
-	if (!root) {
-		root = fs_root;
-	}
+	if (!root) root = fs_root;
 
 	reply = rcallf(root, "fs_find %s", path_s);
 	free(path_s);

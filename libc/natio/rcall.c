@@ -56,7 +56,7 @@ char *rcall(uint64_t rp, const char *args) {
 	if (msend(msg)) return NULL;
 	msg = mwait(PORT_REPLY, rp);
 
-	if (msg->length) {
+	if (msg->length && msg->data[0] != '\0') {
 		rets = strdup((char*) msg->data);
 	}
 	else {
@@ -198,6 +198,7 @@ void _rcall_handler(struct msg *msg) {
 	handler = rcall_get(argv[0]);
 
 	if (!handler) {
+		merror(msg);
 		return;
 	}
 
