@@ -21,7 +21,7 @@
 
 /* Resize event reporting ***************************************************/
 
-void svga_send_resize_event(uint16_t width, uint16_t height);
+extern struct event_list *event_list;
 
 /* VESA BIOS extensions driver **********************************************/
 
