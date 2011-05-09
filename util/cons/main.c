@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
 		fobj = io_cons(path, RP_TYPE_FILE);
 		break;
 	case 'd':
-		fobj = io_cons(path, RP_TYPE_FILE);
+		fobj = io_cons(path, RP_TYPE_DIR);
 		break;
 	default:
 		fobj = 0;
