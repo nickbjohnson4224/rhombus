@@ -48,7 +48,7 @@ char *vsaprintf(const char *format, va_list ap) {
 		else {
 			m[0] = format[i];
 			string1 = string0;
-			string0 = strvcat(string1, m);
+			string0 = strvcat(string1, m, NULL);
 			free(string1);
 		}
 	}

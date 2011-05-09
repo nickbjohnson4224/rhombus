@@ -27,8 +27,8 @@
 /* core I/O *****************************************************************/
 
 #define RP_CONS(pid, idx) ((((uint64_t) (pid)) << 32) | (uint64_t) (idx))
-#define RP_PID(rp) ((rp) >> 32)
-#define RP_INDEX(rp) ((rp) & 0xFFFFFFFF)
+#define RP_PID(rp) ((uint32_t) ((rp) >> 32))
+#define RP_INDEX(rp) ((uint32_t) ((rp) & 0xFFFFFFFF))
 #define RP_NULL ((uint64_t) 0)
 
 #define RP_TYPE_FILE  0x01	// file (allows read, write, reset)

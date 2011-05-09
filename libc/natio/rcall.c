@@ -15,6 +15,7 @@
  */
 
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <natio.h>
 #include <proc.h>
@@ -55,7 +56,7 @@ char *rcall(uint64_t rp, const char *args) {
 	if (msend(msg)) return NULL;
 	msg = mwait(PORT_REPLY, rp);
 
-	if (msg->length) {
+	if (msg->length && msg->data[0] != '\0') {
 		rets = strdup((char*) msg->data);
 	}
 	else {
@@ -152,7 +153,7 @@ int rcall_set(const char *call, rcall_t handler) {
 
 	_rcall_map = node;
 
-	return 1;
+	return 0;
 }
 
 /*****************************************************************************
@@ -197,10 +198,12 @@ void _rcall_handler(struct msg *msg) {
 	handler = rcall_get(argv[0]);
 
 	if (!handler) {
+		merror(msg);
 		return;
 	}
 
 	rets = handler(msg->source, RP_INDEX(msg->target), argc, argv);
+	if (!rets) rets = strdup("");
 
 	for (argc = 0; argv[argc]; argv++) {
 		free(argv[argc]);
