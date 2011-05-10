@@ -39,7 +39,6 @@ void resize_screen(size_t width, size_t height) {
 
 void update_screen(int x1, int y1, int x2, int y2) {
 	struct window_t *window;
-	char buffer[32];
 
 	if (x1 < 0) x1 = 0;
 	if (y1 < 0) y1 = 0;
@@ -62,8 +61,7 @@ void update_screen(int x1, int y1, int x2, int y2) {
 	}
 	draw_cursor(x1, y1, x2, y2);
 
-	sprintf(buffer, "syncrect %i %i %i %i", x1, y1, x2 - x1, y2 - y1);
-	rcall(vgafd, buffer);
+	rcallf(vgafd, "syncrect %i %i %i %i", x1, y1, x2 - x1, y2 - y1);
 }
 
 void blit_bitmap(const uint8_t *bitmap, int tox, int toy, size_t width, size_t height, int x1, int y1, int x2, int y2) {
