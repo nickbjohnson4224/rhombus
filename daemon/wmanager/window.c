@@ -152,10 +152,6 @@ void draw_window(struct window_t *window, int x1, int y1, int x2, int y2) {
 }
 
 void resize_window(struct window_t *window, int width, int height, bool notify) {
-	if (window->flags & CONSTANT_SIZE) {
-		return;
-	}
-
 	mutex_spin(&window->mutex);
 
 	if (window->bitmap) {
