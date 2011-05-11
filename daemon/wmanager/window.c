@@ -85,7 +85,7 @@ int add_window(uint32_t id) {
 
 int remove_window(uint32_t id, uint32_t owner) {
 	struct window_t *window = find_window(id, owner);
-	int flags = window->flags;
+	int flags;
 
 	if (!window) {
 		return -1;
@@ -97,6 +97,7 @@ int remove_window(uint32_t id, uint32_t owner) {
 	if (window == main_window) {
 		main_window = NULL;
 	}
+	flags = window->flags;
 
 	remove_from_list(window);
 	free(window);

@@ -66,7 +66,7 @@ char *wmanager_rcall_setmode(uint64_t source, uint32_t index, int argc, char **a
 	width  = atoi(argv[1]);
 	height = atoi(argv[2]);
 
-	resize_window(window, window->width, window->height, false);
+	resize_window(window, width, height, false);
 	if (!(window->flags & CONSTANT_SIZE) && !(window->flags & FLOATING)) {
 		// window must be CONSTNAT_SIZE or FLOATING for resizing to make sense
 		window->flags |= FLOATING;
