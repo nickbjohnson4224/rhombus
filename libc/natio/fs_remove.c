@@ -43,7 +43,7 @@ int fs_remove(uint64_t fobj) {
 	msg->source = RP_CONS(getpid(), 0);
 	msg->target = fobj;
 	msg->length = 0;
-	msg->port   = PORT_AUTH;
+	msg->port   = PORT_REMV;
 	msg->arch   = ARCH_NAT;
 
 	if (msend(msg)) return 1;

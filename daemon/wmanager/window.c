@@ -85,7 +85,7 @@ int add_window(uint32_t id) {
 
 int remove_window(uint32_t id, uint32_t owner) {
 	struct window_t *window = find_window(id, owner);
-	int flags = window->flags;
+	int flags;
 
 	if (!window) {
 		return -1;
@@ -97,6 +97,7 @@ int remove_window(uint32_t id, uint32_t owner) {
 	if (window == main_window) {
 		main_window = NULL;
 	}
+	flags = window->flags;
 
 	remove_from_list(window);
 	free(window);
@@ -152,10 +153,6 @@ void draw_window(struct window_t *window, int x1, int y1, int x2, int y2) {
 }
 
 void resize_window(struct window_t *window, int width, int height, bool notify) {
-	if (window->flags & CONSTANT_SIZE) {
-		return;
-	}
-
 	mutex_spin(&window->mutex);
 
 	if (window->bitmap) {
