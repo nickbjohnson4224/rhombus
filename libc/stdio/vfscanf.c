@@ -380,10 +380,7 @@ int vfscanf(FILE *stream, const char *format, va_list ap) {
 			count++;
 		}
 		else {
-			if (getc(stream) == *format) {
-				format++;
-			}
-			else {
+			if (getc(stream) != *format) {
 				return count;
 			}
 		}
