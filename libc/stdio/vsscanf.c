@@ -263,7 +263,6 @@ int vsscanf(const char *str, const char *format, va_list ap) {
 		else {
 			if (*str == *format) {
 				str++;
-				format++;
 			}
 			else {
 				return count;
