@@ -26,76 +26,41 @@
  * Finds the filesystem object with the given path <path> from <root> if it 
  * exists, without following terminal links. If it does not exist, this 
  * function returns 0.
- *
- * protocol:
- *   port: PORT_FIND
- *
- *   request:
- *     char link
- *     char path[]
- *
- *   reply:
- *     uint64_t rp
- *     uint32_t err
- *
- *   errors:
- *     0 - none
- *     1 - not found
- *     2 - permission denied
- *     3 - not implemented
  */
 
 uint64_t fs_lfind(uint64_t root, const char *path) {
-	struct msg *msg;
+	uint32_t pid, index;
 	uint64_t rp;
-	uint32_t err;
+	char *reply;
 	char *path_s;
 
-	if (!root) {
-		root = fs_root;
-	}
-
 	path_s = path_simplify(path);
-	if (!path_s) {
-		return 0;
-	}
-	
-	msg = aalloc(sizeof(struct msg) + 1 + strlen(path_s) + 1, PAGESZ);
-	if (!msg) return 0;
-	msg->source = RP_CONS(getpid(), 0);
-	msg->target = root;
-	msg->length = strlen(path_s) + 2;
-	msg->port   = PORT_FIND;
-	msg->arch   = ARCH_NAT;
-	msg->data[0] = 1;
-	strcpy((char*) &msg->data[1], path_s);
+	if (!path_s) return 0;
+	if (!root) root = fs_root;
+
+	reply = rcallf(root, "fs_find -L %s", path_s);
 	free(path_s);
 
-	if (msend(msg)) {
+	if (!reply) {
 		errno = ENOSYS;
 		return 0;
 	}
-	msg = mwait(PORT_REPLY, root);
 
-	if (msg->length < sizeof(uint64_t) + sizeof(uint32_t)) {
-		free(msg);
+	if (reply[0] == '!') {
+		if      (!strcmp(reply, "! nfound"))	errno = ENOENT;
+		else if (!strcmp(reply, "! denied"))	errno = EACCES;
+		else if (!strcmp(reply, "! nosys"))		errno = ENOSYS;
+		else 									errno = EUNK;
+		free(reply);
 		return 0;
 	}
 
-	rp  = ((uint64_t*) msg->data)[0];
-	err = ((uint32_t*) msg->data)[2];
-
-	free(msg);
-
-	if (err) {	
-		switch (err) {
-		case 1: errno = ENOENT; break;
-		case 2: errno = EACCES; break;
-		case 3: errno = ENOSYS; break;
-		default: errno = EUNK; break;
-		}
+	if (sscanf(reply, "%i %i", &pid, &index) != 2) {
+		free(reply);
 		return 0;
 	}
+	rp = RP_CONS(pid, index);
 
+	free(reply);
 	return rp;
 }
