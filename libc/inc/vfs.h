@@ -84,7 +84,6 @@ int vfs_set_free(int (*vfs_free)(uint64_t source, struct vfs_obj *obj));
 
 int vfs_init(void);
 
-void __find_wrapper(struct msg *msg);
 void __cons_wrapper(struct msg *msg);
 void __move_wrapper(struct msg *msg);
 void __remv_wrapper(struct msg *msg);

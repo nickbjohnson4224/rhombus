@@ -26,8 +26,6 @@
  */
 
 int vfs_init(void) {
-	when(PORT_FIND, __find_wrapper);
-	when(PORT_CONS, __cons_wrapper);
 	when(PORT_MOVE, __move_wrapper);
 	when(PORT_REMV, __remv_wrapper);
 	when(PORT_LINK, __link_wrapper);
@@ -38,6 +36,7 @@ int vfs_init(void) {
 	when(PORT_AUTH, __auth_wrapper);
 
 	rcall_set("fs_find", __find_rcall_wrapper);
+	rcall_set("fs_cons", __cons_rcall_wrapper);
 
 	return 0;
 }

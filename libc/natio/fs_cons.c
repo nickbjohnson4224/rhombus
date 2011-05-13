@@ -25,43 +25,40 @@
  *
  * Attempts to create a new filesystem object of type <type> and name <name> 
  * in directory <dir>. Returns the new object on success, NULL on failure.
- *
- * protocol:
- *   port: PORT_CONS
- *
- *   request:
- *     uint32_t type
- *     char name[]
- *
- *   reply:
- *     uint64_t rp
  */
 
 uint64_t fs_cons(uint64_t dir, const char *name, int type) {
-	struct msg *msg;
+	uint32_t pid, index;
 	uint64_t rp;
+	char *reply;
 
-	msg = aalloc(sizeof(struct msg) + sizeof(uint32_t) + strlen(name) + 1, PAGESZ);
-	if (!msg) return 0;
-	msg->source = RP_CONS(getpid(), 0);
-	msg->target = dir;
-	msg->length = sizeof(uint32_t) + strlen(name) + 1;
-	msg->port   = PORT_CONS;
-	msg->arch   = ARCH_NAT;
-
-	((uint32_t*) msg->data)[0] = type;
-	strcpy((char*) &msg->data[sizeof(uint32_t)], name);
-
-	if (msend(msg)) return 0;
-	msg = mwait(PORT_REPLY, dir);
-
-	if (msg->length < sizeof(uint64_t)) {
-		free(msg);
+	if (!dir) {
 		return 0;
 	}
 
-	rp = ((uint64_t*) msg->data)[0];
+	reply = rcallf(dir, "fs_cons %s %d", name, type);
 
-	free(msg);
+	if (!reply) {
+		errno = ENOSYS;
+		return 0;
+	}
+
+	if (reply[0] == '!') {
+		if      (!strcmp(reply, "! nfound"))	errno = ENOENT;
+		else if (!strcmp(reply, "! denied"))	errno = EACCES;
+		else if (!strcmp(reply, "! nosys"))		errno = ENOSYS;
+		else if (!strcmp(reply, "! construct")) errno = ENOSPC;
+		else 									errno = EUNK;
+		free(reply);
+		return 0;
+	}
+
+	if (sscanf(reply, "%i %i", &pid, &index) != 2) {
+		free(reply);
+		return 0;
+	}
+	rp = RP_CONS(pid, index);
+
+	free(reply);
 	return rp;
 }

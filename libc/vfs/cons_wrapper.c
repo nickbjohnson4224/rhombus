@@ -22,75 +22,63 @@
 #include <vfs.h>
 
 /*****************************************************************************
- * __cons_wrapper
- *
- * Performs the requested actions of a FS_CONS command.
- *
- * protocol:
- *   port: PORT_CONS
- *
- *   request:
- *     uint32_t type
- *     char name[]
- *
- *   reply:
- *     uint64_t rp
+ * __cons_rcall_wrapper
  */
 
-void __cons_wrapper(struct msg *msg) {
+char *__cons_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv) {
 	struct vfs_obj *dir, *new_fobj;
-	int type;
-	uint64_t rp;
 	const char *name;
+	uint64_t rp;
+	int type;
 
 	/* check request */
-	if (msg->length < sizeof(uint32_t)) {
-		merror(msg);
-		return;
+	if (argc <= 2) {
+		return NULL;
 	}
 
-	/* make sure the active driver can construct new objects */
+	/* make sure active driver can construct new objects */
 	if (!_vfs_cons) {
-		merror(msg);
-		return;
+		return strdup("! nosys");
 	}
 
-	/* extract data */
-	type = ((uint32_t*) msg->data)[0];
-	name = (const char*) &msg->data[4];
+	name = argv[1];
+	type = atoi(argv[2]);
 
-	/* get the requested parent directory */
-	dir = vfs_get(RP_INDEX(msg->target));
+	/* get requested parent directory */
+	dir = vfs_get(index);
 
 	if (dir) {
 		/* check permissions */
-		if ((acl_get(dir->acl, gettuser()) & PERM_WRITE) == 0) {
-			rp = 0;
+		if ((acl_get(dir->acl, gettuser()) & PERM_WRITE) == 0 || (dir->type & RP_TYPE_DIR) == 0) {
+			return strdup("! denied");
 		}
 		else {
-
+			
 			/* construct new object */
-			new_fobj = _vfs_cons(msg->source, type);
+			new_fobj = _vfs_cons(source, type);
 
 			if (new_fobj) {
-
+				
 				/* add new object to parent directory */
 				new_fobj->name = strdup(name);
-				vfs_push(msg->source, dir, new_fobj);
+				vfs_push(source, dir, new_fobj);
 
 				/* return pointer to new object on success */
 				rp = RP_CONS(getpid(), new_fobj->index);
 			}
 			else {
-				rp = 0;
+				return strdup("! construct");
 			}
 		}
 	}
 	else {
-		rp = 0;
+		return strdup("! notfound");
 	}
 
-	msg->length = sizeof(uint64_t);
-	((uint64_t*) msg->data)[0] = rp;
-	mreply(msg);
+	if (rp) {
+		return saprintf("%d %d", RP_PID(rp), RP_INDEX(rp));
+	}
+	else {
+		return NULL;
+	}
 }
