@@ -48,6 +48,7 @@ uint64_t fs_cons(uint64_t dir, const char *name, int type) {
 		else if (!strcmp(reply, "! denied"))	errno = EACCES;
 		else if (!strcmp(reply, "! nosys"))		errno = ENOSYS;
 		else if (!strcmp(reply, "! construct")) errno = ENOSPC;
+		else if (!strcmp(reply, "! type"))		errno = ENOTDIR;
 		else 									errno = EUNK;
 		free(reply);
 		return 0;

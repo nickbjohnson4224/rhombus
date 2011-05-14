@@ -49,8 +49,11 @@ char *__cons_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **arg
 
 	if (dir) {
 		/* check permissions */
-		if ((acl_get(dir->acl, gettuser()) & PERM_WRITE) == 0 || (dir->type & RP_TYPE_DIR) == 0) {
+		if ((acl_get(dir->acl, getuser(RP_PID(source))) & PERM_WRITE) == 0) {
 			return strdup("! denied");
+		}
+		else if ((dir->type & RP_TYPE_DIR) == 0) {
+			return strcup("! type");
 		}
 		else {
 			
@@ -61,10 +64,25 @@ char *__cons_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **arg
 				
 				/* add new object to parent directory */
 				new_fobj->name = strdup(name);
-				vfs_push(source, dir, new_fobj);
+				
+				if (vfs_push(source, dir, new_fobj)) {
 
-				/* return pointer to new object on success */
-				rp = RP_CONS(getpid(), new_fobj->index);
+					/* free the new object */
+					if (_vfs_free) {
+						_vfs_free(source, new_fobj);
+					}
+					else {
+						acl_free(fobj->acl);
+						free(fobj->name);
+						free(fobj);
+					}
+
+					return NULL;
+				}
+				else {
+					/* return pointer to new object on success */
+					rp = RP_CONS(getpid(), new_fobj->index);
+				}
 			}
 			else {
 				return strdup("! construct");
@@ -72,7 +90,7 @@ char *__cons_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **arg
 		}
 	}
 	else {
-		return strdup("! notfound");
+		return strdup("! nfound");
 	}
 
 	if (rp) {
