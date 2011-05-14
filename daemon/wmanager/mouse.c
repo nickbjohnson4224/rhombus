@@ -115,9 +115,16 @@ void mouse_move(int16_t dx, int16_t dy) {
 }
 
 void mouse_buttons(int buttons) {
+	int clicked = buttons & ~mousebuttons;
+
 	if (~buttons & mousebuttons) {
 		// release buttons
 		alreadymoving = false;
+	}
+	if ((clicked & 4) && active_window && (active_window->flags & FLOATING)) {
+		alreadymoving = false;
+		active_window->flags &= ~FLOATING;
+		update_tiling();
 	}
 	mousebuttons = buttons;
 }
