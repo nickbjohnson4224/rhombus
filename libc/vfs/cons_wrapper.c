@@ -53,7 +53,7 @@ char *__cons_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **arg
 			return strdup("! denied");
 		}
 		else if ((dir->type & RP_TYPE_DIR) == 0) {
-			return strcup("! type");
+			return strdup("! type");
 		}
 		else {
 			
@@ -72,9 +72,9 @@ char *__cons_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **arg
 						_vfs_free(source, new_fobj);
 					}
 					else {
-						acl_free(fobj->acl);
-						free(fobj->name);
-						free(fobj);
+						acl_free(new_fobj->acl);
+						free(new_fobj->name);
+						free(new_fobj);
 					}
 
 					return NULL;
