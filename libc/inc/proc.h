@@ -28,6 +28,8 @@
 
 int fork(void);		/* Spawn new process */
 
+int daemonize(void); /* Play dead and end main thread */
+
 /* thread management *******************************************************/
 
 void     stop  (void);               /* block current thread */
