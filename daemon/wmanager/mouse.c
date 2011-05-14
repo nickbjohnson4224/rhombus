@@ -30,8 +30,6 @@ int mousebuttons;
 bool alreadymoving;
 
 void mouse_move(int16_t dx, int16_t dy) {
-	struct window_t *prev_active = active_window;
-	struct window_t *window;
 	int x, y, width, height;
 	bool wasfloating;
 
@@ -49,23 +47,7 @@ void mouse_move(int16_t dx, int16_t dy) {
 	height = cursor_height;
 
 	if (!mousebuttons) {
-		// activate window
-		active_window = NULL;
-		for (window = windows; window; window = window->next) {
-			if (window->x - 1 <= mousex && mousex <= window->x + (int) window->width &&
-				window->y - 1 <= mousey && mousey <= window->y + (int) window->height) {
-				active_window = window;
-			}
-		}
-
-		if (prev_active != active_window) {
-			if (prev_active) {
-				update_decorations(prev_active);
-			}
-			if (active_window) {
-				update_decorations(active_window);
-			}
-		}
+		activate_window();
 	}
 
 	if (active_window && (winkey || alreadymoving)) {
@@ -131,4 +113,26 @@ void mouse_buttons(int buttons) {
 
 void draw_cursor(int x1, int y1, int x2, int y2) {
 	blit_bitmap(cursor_bitmap, mousex, mousey, cursor_width, cursor_height, x1, y1, x2, y2);
+}
+
+void activate_window() {
+	struct window_t *prev_active = active_window;
+	struct window_t *window;
+
+	active_window = NULL;
+	for (window = windows; window; window = window->next) {
+		if (window->x - 1 <= mousex && mousex <= window->x + (int) window->width &&
+			window->y - 1 <= mousey && mousey <= window->y + (int) window->height) {
+			active_window = window;
+		}
+	}
+
+	if (prev_active != active_window) {
+		if (prev_active) {
+			update_decorations(prev_active);
+		}
+		if (active_window) {
+			update_decorations(active_window);
+		}
+	}
 }
