@@ -93,7 +93,6 @@ int main(int argc, char **argv) {
 	uint64_t wmanager;
 	char *ret;
 	int w, h;
-	int index;
 	int pid;
 
 	if (argc < 3) {
@@ -104,12 +103,13 @@ int main(int argc, char **argv) {
 		}
 
 		ret = rcall(wmanager, "createwindow");
-		if (!ret || sscanf(ret, "%i", &index) != 1) {
+		kbd_dev = fb_dev = ator(ret);
+		free(ret);
+
+		if (!fb_dev) {
 			fprintf(stderr, "%s: creating window failed\n", argv[0]);
 			return 1;
 		}
-
-		kbd_dev = fb_dev = RP_CONS(RP_PID(wmanager), index);
 	}
 	else {
 		kbd_dev = io_find(argv[1]);

@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
 
 	rp = io_find(argv[1]);
 
-	printf("%d:%d\n", (uint32_t) RP_PID(rp), (uint32_t) RP_INDEX(rp));
+	printf("%r\n", rp);
 
 	return 0;
 }

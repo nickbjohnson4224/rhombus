@@ -53,6 +53,7 @@ int draw_cell(struct font *font, struct cell *c, int x, int y) {
 
 	// blit onto framebuffer
 	fb_blit(fb, bitmap, x, y, glyph->w, glyph->h);
+	free(bitmap);
 
 	return 0;
 }

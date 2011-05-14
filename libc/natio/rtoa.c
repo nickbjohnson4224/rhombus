@@ -25,5 +25,11 @@
  */
 
 char *rtoa(uint64_t rp) {
-	return saprintf("r%d:%d", RP_PID(rp), RP_INDEX(rp));
+
+	if (!rp) {
+		return strdup("rnil");
+	}
+	else {
+		return saprintf("r%d:%d", RP_PID(rp), RP_INDEX(rp));
+	}
 }

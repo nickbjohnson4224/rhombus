@@ -47,9 +47,8 @@ char *wmanager_rcall_createwindow(uint64_t source, uint32_t index, int argc, cha
 		return NULL;
 	}
 	window->owner = RP_PID(source);
-	sprintf(buffer, "%i", next_index - 1);
 
-	return strdup(buffer);
+	return rtoa(RP_CONS(getpid(), next_index - 1));
 }
 
 char *wmanager_rcall_setmode(uint64_t source, uint32_t index, int argc, char **argv) {

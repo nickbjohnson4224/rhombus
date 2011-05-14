@@ -35,6 +35,11 @@ uint64_t ator(const char *str) {
 
 	str++;
 
+	// check for nil
+	if (str[0] == 'n') {
+		return 0;
+	}
+
 	// extract pid
 	substr = struntil(str, ":", &str);
 	pid = atoi(substr);

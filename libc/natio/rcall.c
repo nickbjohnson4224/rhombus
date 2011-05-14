@@ -205,9 +205,10 @@ void _rcall_handler(struct msg *msg) {
 	rets = handler(msg->source, RP_INDEX(msg->target), argc, argv);
 	if (!rets) rets = strdup("");
 
-	for (argc = 0; argv[argc]; argv++) {
+	for (argc = 0; argv[argc]; argc++) {
 		free(argv[argc]);
 	}
+	free(argv);
 
 	reply = aalloc(sizeof(struct msg) + strlen(rets) + 1, PAGESZ);
 	reply->source = msg->target;
