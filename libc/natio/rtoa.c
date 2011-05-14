@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,36 +14,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
 #include <string.h>
-#include <stdlib.h>
 #include <natio.h>
-#include <errno.h>
+#include <stdio.h>
 
 /*****************************************************************************
- * io_link
+ * rtoa
  *
- * High level filesystem operation. Modifies the link pointer of an existing
- * link or directory at path <name> to resource pointer <rp>. If <rp> is null,
- * the link becomes a directory. Returns zero on success, nonzero on error.
+ * Converts the resource pointer <rp> to canonical string format.
  */
 
-int io_link(const char *name, uint64_t rp) {
-	uint64_t link;
-
-	/* find actual link */
-	link = fs_lfind(RP_NULL, name);
-
-	if (!link) {
-
-		/* try to create a new link */
-		link = io_cons(name, TYPE_DIR);
-
-		if (!link) {
-			return 1;
-		}
-	}
-
-	/* set link value */
-	return fs_link(link, rp);
+char *rtoa(uint64_t rp) {
+	return saprintf("r%d:%d", RP_PID(rp), RP_INDEX(rp));
 }

@@ -50,7 +50,7 @@ uint64_t vfs_find(struct vfs_obj *root, const char *path_str, bool nolink) {
 			}
 		}
 
-		if ((fobj->type & RP_TYPE_DIR) == 0) {
+		if ((fobj->type & TYPE_DIR) == 0) {
 			free(name);
 			return 0;
 		}

@@ -60,7 +60,7 @@ char *__find_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **arg
 	file = vfs_find(root, path, link);
 
 	if (file) {
-		return saprintf("%d %d", RP_PID(file), RP_INDEX(file));
+		return rtoa(file);
 	}
 	else {
 		return strdup("! nfound");

@@ -29,7 +29,6 @@
  */
 
 uint64_t fs_lfind(uint64_t root, const char *path) {
-	uint32_t pid, index;
 	uint64_t rp;
 	char *reply;
 	char *path_s;
@@ -55,12 +54,8 @@ uint64_t fs_lfind(uint64_t root, const char *path) {
 		return 0;
 	}
 
-	if (sscanf(reply, "%i %i", &pid, &index) != 2) {
-		free(reply);
-		return 0;
-	}
-	rp = RP_CONS(pid, index);
-
+	rp = ator(reply);
 	free(reply);
+
 	return rp;
 }

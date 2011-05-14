@@ -57,10 +57,10 @@ int main(int argc, char **argv) {
 
 	switch (type) {
 	case 'f':
-		fobj = io_cons(path, RP_TYPE_FILE);
+		fobj = io_cons(path, TYPE_FILE);
 		break;
 	case 'd':
-		fobj = io_cons(path, RP_TYPE_DIR);
+		fobj = io_cons(path, TYPE_DIR);
 		break;
 	default:
 		fobj = 0;

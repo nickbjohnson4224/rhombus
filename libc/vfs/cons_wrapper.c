@@ -52,7 +52,7 @@ char *__cons_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **arg
 		if ((acl_get(dir->acl, getuser(RP_PID(source))) & PERM_WRITE) == 0) {
 			return strdup("! denied");
 		}
-		else if ((dir->type & RP_TYPE_DIR) == 0) {
+		else if ((dir->type & TYPE_DIR) == 0) {
 			return strdup("! type");
 		}
 		else {
@@ -94,7 +94,7 @@ char *__cons_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **arg
 	}
 
 	if (rp) {
-		return saprintf("%d %d", RP_PID(rp), RP_INDEX(rp));
+		return rtoa(rp);
 	}
 	else {
 		return NULL;

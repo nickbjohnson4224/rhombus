@@ -59,7 +59,7 @@ int main() {
 		if (!strcmp(argv[0], "cd")) {
 			path = path_simplify(argv[1]);
 
-			if (path && fs_type(fs_find(0, path)) & RP_TYPE_DIR) {
+			if (path && fs_type(fs_find(0, path)) & TYPE_DIR) {
 				setenv("PWD", path);
 			}
 			else {

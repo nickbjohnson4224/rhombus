@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,47 +14,36 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <natio.h>
-#include <errno.h>
 
 /*****************************************************************************
- * fs_cons
+ * ator
  *
- * Attempts to create a new filesystem object of type <type> and name <name> 
- * in directory <dir>. Returns the new object on success, NULL on failure.
+ * Converts the resource pointer string <str> to a resource pointer.
  */
 
-uint64_t fs_cons(uint64_t dir, const char *name, int type) {
-	uint64_t rp;
-	char *reply;
+uint64_t ator(const char *str) {
+	uint32_t index;
+	uint32_t pid;
+	char *substr;
 
-	if (!dir) {
+	if (!str || str[0] != 'r') {
 		return 0;
 	}
 
-	reply = rcallf(dir, "fs_cons %s %d", name, type);
+	str++;
 
-	if (!reply) {
-		errno = ENOSYS;
-		return 0;
-	}
+	// extract pid
+	substr = struntil(str, ":", &str);
+	pid = atoi(substr);
+	free(substr);
 
-	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nfound"))	errno = ENOENT;
-		else if (!strcmp(reply, "! denied"))	errno = EACCES;
-		else if (!strcmp(reply, "! nosys"))		errno = ENOSYS;
-		else if (!strcmp(reply, "! construct")) errno = ENOSPC;
-		else if (!strcmp(reply, "! type"))		errno = ENOTDIR;
-		else 									errno = EUNK;
-		free(reply);
-		return 0;
-	}
+	str++;
 
-	rp = ator(reply);
-	free(reply);
+	// extract index
+	index = atoi(str);
 
-	return rp;
+	return RP_CONS(pid, index);
 }

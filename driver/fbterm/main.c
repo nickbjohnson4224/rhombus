@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
 	}
 
 	root = calloc(sizeof(struct vfs_obj), 1);
-	root->type = RP_TYPE_FILE | RP_TYPE_CHAR;
+	root->type = TYPE_FILE | TYPE_CHAR;
 	root->size = 0;
 	root->acl = acl_set_default(root->acl, PERM_WRITE | PERM_READ);
 	vfs_set(0, root);

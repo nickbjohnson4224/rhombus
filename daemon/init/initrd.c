@@ -53,7 +53,7 @@ void initrd_init(void) {
 	struct vfs_obj *root;
 
 	root = calloc(sizeof(struct vfs_obj), 1);
-	root->type = RP_TYPE_FILE;
+	root->type = TYPE_FILE;
 	root->data = (void*) BOOT_IMAGE;
 	root->size = tar_size(root->data);
 	root->acl  = acl_set_default(root->acl, PERM_READ);

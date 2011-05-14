@@ -24,20 +24,27 @@
 #include <path.h>
 #include <ipc.h>
 
-/* core I/O *****************************************************************/
+/* resource pointers ********************************************************/
+
+/*
+ * This stuff right here, this is important. Resource pointers are the way
+ * that Rhombus indentifies pretty much everything on the system. Every file
+ * can be uniquely identified by a resource pointer, which, because it is an 
+ * integer type, is easy to pass to and from functions. Resource pointers 
+ * also have canonical string representations which are used in the rcall and 
+ * event interfaces, and are human readable.
+ */
 
 #define RP_CONS(pid, idx) ((((uint64_t) (pid)) << 32) | (uint64_t) (idx))
 #define RP_PID(rp) ((uint32_t) ((rp) >> 32))
 #define RP_INDEX(rp) ((uint32_t) ((rp) & 0xFFFFFFFF))
 #define RP_NULL ((uint64_t) 0)
 
-#define RP_TYPE_FILE  0x01	// file (allows read, write, reset)
-#define RP_TYPE_DIR	  0x02	// directory (allows find, link, list, etc.)
-#define RP_TYPE_SLINK 0x04	// symbolic link
-#define RP_TYPE_PLINK 0x08	// pointer link (similar to mountpoint)
-#define RP_TYPE_EVENT 0x10	// event source
-#define RP_TYPE_GRAPH 0x20	// graphics file
-#define RP_TYPE_CHAR  0x40	// character device
+// string represenation (also %r in printf/scanf)
+char    *rtoa(uint64_t rp);
+uint64_t ator(const char *str);
+
+/* core I/O *****************************************************************/
 
 size_t read (uint64_t rp, void *buf, size_t size, uint64_t offset);
 size_t write(uint64_t rp, void *buf, size_t size, uint64_t offset);
@@ -72,6 +79,14 @@ int     rcall_set(const char *call, rcall_t handler);
 rcall_t rcall_get(const char *call);
 
 /* filesystem operations ****************************************************/
+
+#define TYPE_FILE	0x01	// file (allows read, write, reset)
+#define TYPE_DIR	0x02	// directory (allows find, link, list, etc.)
+#define TYPE_SLINK	0x04	// symbolic link
+#define TYPE_PLINK	0x08	// pointer link (similar to mountpoint)
+#define TYPE_EVENT	0x10	// event source
+#define TYPE_GRAPH	0x20	// graphics file
+#define TYPE_CHAR	0x40	// character device
 
 uint64_t io_find(const char *name);
 uint64_t io_cons(const char *name, int type);
