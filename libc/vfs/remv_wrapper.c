@@ -50,7 +50,7 @@ void __remv_wrapper(struct msg *msg) {
 		}
 
 		/* check if directory is empty */
-		if (fobj->type & TYPE_DIR && fobj->daughter) {
+		if (fobj->type & FS_TYPE_DIR && fobj->daughter) {
 			merror(msg);
 			return;
 		}

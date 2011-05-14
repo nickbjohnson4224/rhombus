@@ -71,11 +71,11 @@ int main() {
 	argv[1] = NULL;
 	file = tar_find(boot_image, "sbin/tmpfs");
 	fs_root = start(file, argv);
-	io_cons("/dev", TYPE_DIR);
-	io_cons("/sys", TYPE_DIR);
+	io_cons("/dev", FS_TYPE_DIR);
+	io_cons("/sys", FS_TYPE_DIR);
 
 	/* Logfile */
-	io_cons("/dev/stderr", TYPE_FILE);
+	io_cons("/dev/stderr", FS_TYPE_FILE);
 
 	/* Serial Driver */
 	argv[0] = "serial";

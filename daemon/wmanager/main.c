@@ -40,7 +40,7 @@ char *wmanager_rcall_createwindow(uint64_t source, uint32_t index, int argc, cha
 	char buffer[32];
 
 	sprintf(buffer, "/sys/wmanager/%i", next_index);
-	io_cons(buffer, TYPE_FILE | TYPE_GRAPH | TYPE_EVENT);
+	io_cons(buffer, FS_TYPE_FILE | FS_TYPE_GRAPH | FS_TYPE_EVENT);
 	window = find_window(next_index - 1, 0);
 	if (!window) {
 		fprintf(stderr, "wmanager: unable to create window\n");
@@ -205,7 +205,7 @@ struct vfs_obj *wmanager_cons(uint64_t source, int type) {
 		return NULL;
 	}
 
-	if (type & TYPE_FILE) {
+	if (type & FS_TYPE_FILE) {
 		fobj        = calloc(sizeof(struct vfs_obj), 1);
 		fobj->type  = type;
 		fobj->size  = 0;
@@ -270,7 +270,7 @@ int main(int argc, char **argv) {
 	mwait(PORT_CHILD, 0);
 
 	root        = calloc(sizeof(struct vfs_obj), 1);
-	root->type  = TYPE_DIR;
+	root->type  = FS_TYPE_DIR;
 	root->size  = 0;
 	root->acl   = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
 	vfs_set(0, root);

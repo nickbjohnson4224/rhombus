@@ -55,7 +55,7 @@ void __link_wrapper(struct msg *msg) {
 		mutex_spin(&dir->mutex);
 
 		/* check type of object */
-		if ((dir->type & TYPE_DIR) == 0) {
+		if ((dir->type & FS_TYPE_DIR) == 0) {
 			err = 1;
 		}
 

@@ -56,7 +56,7 @@ void __list_wrapper(struct msg *msg) {
 	if (dir) {
 		mutex_spin(&dir->mutex);
 
-		if (dir->type & TYPE_DIR) {
+		if (dir->type & FS_TYPE_DIR) {
 
 			/* check permissions */
 			if ((acl_get(dir->acl, gettuser()) & PERM_READ) == 0) {

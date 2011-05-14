@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 	outb(0x60, 10); // 10 samples per second
 
 	root        = calloc(sizeof(struct vfs_obj), 1);
-	root->type  = TYPE_EVENT;
+	root->type  = FS_TYPE_EVENT;
 	root->size  = 0;
 	root->acl   = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
 	vfs_set(0, root);

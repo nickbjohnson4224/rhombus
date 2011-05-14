@@ -80,13 +80,13 @@ rcall_t rcall_get(const char *call);
 
 /* filesystem operations ****************************************************/
 
-#define TYPE_FILE	0x01	// file (allows read, write, reset)
-#define TYPE_DIR	0x02	// directory (allows find, link, list, etc.)
-#define TYPE_SLINK	0x04	// symbolic link
-#define TYPE_PLINK	0x08	// pointer link (similar to mountpoint)
-#define TYPE_EVENT	0x10	// event source
-#define TYPE_GRAPH	0x20	// graphics file
-#define TYPE_CHAR	0x40	// character device
+#define FS_TYPE_FILE	0x01	// file (allows read, write, reset)
+#define FS_TYPE_DIR	0x02	// directory (allows find, link, list, etc.)
+#define FS_TYPE_SLINK	0x04	// symbolic link
+#define FS_TYPE_PLINK	0x08	// pointer link (similar to mountpoint)
+#define FS_TYPE_EVENT	0x10	// event source
+#define FS_TYPE_GRAPH	0x20	// graphics file
+#define FS_TYPE_CHAR	0x40	// character device
 
 uint64_t io_find(const char *name);
 uint64_t io_cons(const char *name, int type);

@@ -30,17 +30,17 @@ uint8_t tmpfs_index_top = 1;
 struct vfs_obj *tmpfs_cons(uint64_t source, int type) {
 	struct vfs_obj *fobj = NULL;
 
-	if (type & TYPE_FILE) {
+	if (type & FS_TYPE_FILE) {
 		fobj        = calloc(sizeof(struct vfs_obj), 1);
-		fobj->type  = TYPE_FILE;
+		fobj->type  = FS_TYPE_FILE;
 		fobj->size  = 0;
 		fobj->data  = NULL;
 		fobj->index = tmpfs_index_top++;
 		fobj->acl   = acl_set_default(fobj->acl, PERM_READ | PERM_WRITE);
 	}
-	else if (type & TYPE_DIR) {
+	else if (type & FS_TYPE_DIR) {
 		fobj        = calloc(sizeof(struct vfs_obj), 1);
-		fobj->type  = TYPE_DIR;
+		fobj->type  = FS_TYPE_DIR;
 		fobj->index = tmpfs_index_top++;
 		fobj->acl   = acl_set_default(fobj->acl, PERM_READ | PERM_WRITE);
 		fobj->link  = 0;
@@ -129,7 +129,7 @@ int main(int argc, char **argv) {
 	struct vfs_obj *root;
 
 	root = calloc(sizeof(struct vfs_obj), 1);
-	root->type = TYPE_DIR;
+	root->type = FS_TYPE_DIR;
 	root->acl = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
 	vfs_set(0, root);
 

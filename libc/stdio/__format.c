@@ -17,6 +17,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <natio.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
@@ -37,6 +38,7 @@
 #define TYPE_INT		3		// Signed integer
 #define TYPE_UINT		4		// Unsigned integer
 #define TYPE_DOUBLE		5		// Floating point
+#define TYPE_RP			6		// Resource pointer
 
 #define LENGTH_BYTE		0		// char
 #define LENGTH_SHORT	1		// short int
@@ -253,6 +255,7 @@ char *__format(const char **_fmt, va_list *argp) {
 	char *string;
 	char *string1;
 
+	uint64_t val_ll;
 	long double val_d;
 	int val_i;
 	unsigned int val_u;
@@ -381,6 +384,9 @@ char *__format(const char **_fmt, va_list *argp) {
 	case 'c':
 		type = TYPE_CHAR;
 		break;
+	case 'r':
+		type = TYPE_RP;
+		break;
 	case '%':
 		type = TYPE_LITERAL;
 		break;
@@ -399,6 +405,7 @@ char *__format(const char **_fmt, va_list *argp) {
 		if (length == LENGTH_LLONG)	val_d = va_arg(*argp, long double);
 		else						val_d = va_arg(*argp, double);
 		break;
+	case TYPE_RP:		val_ll = va_arg(*argp, uint64_t);		break;
 	}
 
 	/* format value */
@@ -420,6 +427,9 @@ char *__format(const char **_fmt, va_list *argp) {
 		break;
 	case TYPE_DOUBLE:
 		string = __format_double(val_d, flags, precision);
+		break;
+	case TYPE_RP:
+		string = rtoa(val_ll);
 		break;
 	}
 

@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
 	struct vfs_obj *root;
 
 	root       = calloc(sizeof(struct vfs_obj), 1);
-	root->type = TYPE_FILE;
+	root->type = FS_TYPE_FILE;
 	root->size = 0;
 	root->acl  = acl_set_default(root->acl, PERM_READ);
 	vfs_set(0, root);

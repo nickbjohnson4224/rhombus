@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
 
 	/* create root directory */
 	root = calloc(sizeof(struct vfs_obj), 1);
-	root->type = TYPE_DIR;
+	root->type = FS_TYPE_DIR;
 	root->acl = acl_set_default(root->acl, PERM_READ);
 	vfs_set(0, root);
 
@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
 			/* add directory to VFS */
 			block->filename[strlen(block->filename) - 1] = 0;
 			file        = calloc(sizeof(struct vfs_obj), 1);
-			file->type  = TYPE_DIR;
+			file->type  = FS_TYPE_DIR;
 			file->index = n;
 			file->acl   = acl_set_default(file->acl, PERM_READ);
 			vfs_add(root, block->filename, file);
@@ -154,7 +154,7 @@ int main(int argc, char **argv) {
 
 			/* add file to VFS */
 			file        = calloc(sizeof(struct vfs_obj), 1);
-			file->type  = TYPE_FILE;
+			file->type  = FS_TYPE_FILE;
 			file->index = n;
 			file->data  = (uint8_t*) (i + 512);
 			file->size  = getvalue(block->filesize, 12);

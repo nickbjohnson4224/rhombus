@@ -23,7 +23,7 @@
 /*****************************************************************************
  * __type_wrapper
  *
- * Performs the requested actions of a FS_TYPE command.
+ * Performs the requested actions of a FS_TYPE_ command.
  *
  * protocol:
  *   port: PORT_TYPE

@@ -46,7 +46,7 @@ void __size_wrapper(struct msg *msg) {
 	}
 
 	/* check file type */
-	if ((file->type & TYPE_FILE) == 0) {
+	if ((file->type & FS_TYPE_FILE) == 0) {
 		merror(msg);
 		return;
 	}
