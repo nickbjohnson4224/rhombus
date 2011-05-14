@@ -31,18 +31,33 @@ struct screen screen = {
 };
 
 int screen_resize(uint32_t x, uint32_t y) {
+	struct cell *old;
+	int old_w, old_h;
+	int i, j;
 	
 	if (screen.cell) {
-		free(screen.cell);
+		old = screen.cell;
 	}
+
+	old_w = screen.w;
+	old_h = screen.h;
 
 	screen.w = x / screen.font->w;
 	screen.h = y / screen.font->h;
 	screen.cell = malloc(sizeof(struct cell) * screen.w * screen.h);
 
 	fb_resize(fb, x, y);
-
 	screen_clear();
+
+	if (old) {
+		for (i = 0; i < screen.w && i < old_w; i++) {
+			for (j = 0; j < screen.h && j < old_h; j++) {
+				screen_print(i, j, old[i + j * old_w].ch);
+			}
+		}
+
+		free(old);
+	}
 
 	return 0;
 }
@@ -93,9 +108,6 @@ int screen_scroll(void) {
 int screen_clear(void) {
 	int x, y;
 
-	screen.fg = COLOR_WHITE;
-	screen.bg = COLOR_BLACK;
-
 	for (x = 0; x < screen.w; x++) {
 		for (y = 0; y < screen.h; y++) {
 			screen_print(x, y, ' ');
@@ -114,6 +126,20 @@ int screen_flip(void) {
 				(i % screen.w) * screen.font->w, (i / screen.w) * screen.font->h);
 			screen.cell[i].dirty = 0;
 		}
+	}
+
+	fb_flip(fb);
+
+	return 0;
+}
+
+int screen_sync(void) {
+	int i;
+
+	for (i = 0; i < screen.w * screen.h; i++) {
+		draw_cell(screen.font, &screen.cell[i], 
+			(i % screen.w) * screen.font->w, (i / screen.w) * screen.font->h);
+		screen.cell[i].dirty = 0;
 	}
 
 	fb_flip(fb);

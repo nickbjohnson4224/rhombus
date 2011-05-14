@@ -18,6 +18,7 @@
 
 #include <mutex.h>
 #include <graph.h>
+#include <stdio.h>
 
 static bool mutex;
 static int cursor = 0;
@@ -27,6 +28,12 @@ int fbterm_print(uint32_t c) {
 	uint32_t bg;
 
 	mutex_spin(&mutex);
+	
+	if (cursor > screen.w * screen.h - 2) {
+		screen_scroll();
+		cursor -= screen.w;
+		c_base -= screen.w;
+	}
 
 	switch (c) {
 	case '\0':
@@ -53,12 +60,6 @@ int fbterm_print(uint32_t c) {
 		break;
 	}
 
-	if (cursor > screen.w * screen.h - 1) {
-		screen_scroll();
-		cursor -= screen.w;
-		c_base -= screen.w;
-	}
-
 	// draw cursor
 	bg = screen.bg;
 	screen.bg = COLOR_LGRAY;
@@ -76,6 +77,30 @@ int fbterm_clear(void) {
 
 	cursor = 0;
 	c_base = 0;
+
+	return 0;
+}
+
+int fbterm_resize(uint32_t x, uint32_t y) {
+	int old_w;
+	int old_h;
+	int cur_x;
+	int cur_y;
+
+	old_w = screen.w;
+	old_h = screen.h;
+
+	screen_resize(x, y);
+
+	cur_x = cursor % old_w;
+	cur_y = cursor / old_w;
+
+	cursor = cur_x + cur_y * screen.w;
+
+	cur_x = c_base % old_w;
+	cur_y = c_base / old_w;
+
+	c_base = cur_x + cur_y * screen.w;
 
 	return 0;
 }

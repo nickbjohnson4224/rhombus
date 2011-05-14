@@ -53,6 +53,30 @@ char *fbterm_rcall_clear(uint64_t source, uint32_t index, int argc, char **argv)
 	return strdup("T");
 }
 
+char *fbterm_rcall_set_fgcolor(uint64_t source, uint32_t index, int argc, char **argv) {
+	
+	if (argc != 2) {
+		return NULL;
+	}
+
+	screen.fg = atoi(argv[1]);
+	screen_sync();
+
+	return strdup("T");
+}
+
+char *fbterm_rcall_set_bgcolor(uint64_t source, uint32_t index, int argc, char **argv) {
+	
+	if (argc != 2) {
+		return NULL;
+	}
+
+	screen.bg = atoi(argv[1]);
+	screen_sync();
+
+	return strdup("T");
+}
+
 size_t fbterm_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
 	struct vfs_obj *file;
 	size_t i;
@@ -80,7 +104,7 @@ void fbterm_event(uint64_t source, uint64_t value) {
 		keyboard_event(data);
 	}
 	if (type == 0x3) {
-		screen_resize((data >> 16) & 0xffff, data & 0xffff);
+		fbterm_resize((data >> 16) & 0xffff, data & 0xffff);
 		screen_flip();
 	}
 }
@@ -146,6 +170,8 @@ int main(int argc, char **argv) {
 
 	rcall_set("clear", fbterm_rcall_clear);
 	rcall_set("getfg", fbterm_rcall_getfg);
+	rcall_set("set_fgcolor", fbterm_rcall_set_fgcolor);
+	rcall_set("set_bgcolor", fbterm_rcall_set_bgcolor);
 	di_wrap_write(fbterm_write);
 	di_wrap_read (fbterm_read);
 	vfs_init();

@@ -65,12 +65,14 @@ int screen_print (int x, int y, uint32_t c);
 int screen_scroll(void);
 int screen_clear (void);
 int screen_flip  (void);
+int screen_sync  (void);
 
 /* terminal emulation *******************************************************/
 
-int fbterm_clear(void);
-int fbterm_print(uint32_t c);
-int fbterm_reset(void);
+int fbterm_clear (void);
+int fbterm_print (uint32_t c);
+int fbterm_resize(uint32_t x, uint32_t y);
+int fbterm_reset (void);
 
 /* line buffering ***********************************************************/
 
