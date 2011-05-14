@@ -60,6 +60,7 @@ void blit_bitmap(const uint8_t *bitmap, int tox, int toy, size_t width, size_t h
 void mouse_move(int16_t dx, int16_t dy);
 void mouse_buttons(int buttons);
 void draw_cursor(int x1, int y1, int x2, int y2);
+void activate_window();
 
 void update_tiling();
 

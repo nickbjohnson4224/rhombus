@@ -77,5 +77,6 @@ void update_tiling() {
 		}
 	}
 
+	activate_window();
 	update_screen(0, 0, screen_width, screen_height);
 }
