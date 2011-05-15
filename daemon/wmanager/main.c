@@ -232,27 +232,44 @@ int wmanager_pull(uint64_t source, struct vfs_obj *file) {
 void wmanager_event(uint64_t source, uint64_t value) {
 	int type = value >> 62;
 	int data = value & ~(0x3LL << 62);
-	bool released;
+	bool forward = false;
+	bool pressed;
 
-	if (type == 0x0 && source == kbdfd) { // keyboard
-		released = data & 0x00400000 ? true : false;
+	if (type == 0x0 && source == kbdfd) {
+		// Keyboard
+		pressed = data & 0x00400000 ? false : true;
 		data &= ~0x00400000;
+
 		if (data == 0x00800004) {
-			winkey = !released;
+			winkey = pressed;
+		}
+
+		if (winkey && pressed && (data == 10)) {
+			// ENTER
+			if (active_window && (active_window != main_window)) {
+				main_window = active_window;
+				update_tiling();
+			}
+		}
+		else {
+			forward = true;
 		}
 	}
+
 	if (type == 0x1 && source == mousefd) { 
 		mouse_move((data >> 16) & 0xffff, data & 0xffff);
+		forward = true;
 	}
 	if (type == 0x2 && source == mousefd) {
 		mouse_buttons(data & ~(0x3LL << 62));
-	}
-	if (type == 0x3 && source == vgafd) {
-		resize_screen((data >> 16) & 0xffff, data & 0xffff);
-		return; // don't forward
+		forward = true;
 	}
 
-	if (active_window && (active_window->flags & LISTEN_EVENTS)) {
+	if (type == 0x3 && source == vgafd) {
+		resize_screen((data >> 16) & 0xffff, data & 0xffff);
+	}
+
+	if (forward && active_window && (active_window->flags & LISTEN_EVENTS)) {
 		event(RP_CONS(active_window->owner, 0), value);
 	}
 }
