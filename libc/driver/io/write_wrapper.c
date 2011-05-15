@@ -58,7 +58,7 @@ void __write_wrapper(struct msg *msg) {
 		return;
 	}
 
-	if (!(file->type & RP_TYPE_FILE)) {
+	if (!(file->type & FS_TYPE_FILE)) {
 		merror(msg);
 		return;
 	}
