@@ -46,10 +46,12 @@ For 0.9 Alpha:
 
 For 0.10 Alpha:
 
+- better shared memory architecture
 - write fenv.h, tgmath.h
 - copy-on-write
 - dynamic linking
 - device manager (PCI)
+- finalize VFS security
 - ATA/ATAPI driver
 - iso9660 driver
 - ext2 driver
@@ -58,6 +60,8 @@ For 0.10 Alpha:
 
 For 0.11 Alpha:
 
+- finalize RNG API
+- finalize mutex API
 - user/password manager
 - login manager
 - decent shell (POSIX-compliant)
@@ -84,7 +88,7 @@ For 1.0 Beta:
 - window manager API finalized
 - GUI toolkit
 - GUI and window manager documentation
-- port SDL, Cairo
+- port SDL
 - networking stack
 - native networking API
 - POSIX socket API
