@@ -81,7 +81,7 @@ rcall_t rcall_get(const char *call);
 /* filesystem operations ****************************************************/
 
 #define FS_TYPE_FILE	0x01	// file (allows read, write, reset)
-#define FS_TYPE_DIR	0x02	// directory (allows find, link, list, etc.)
+#define FS_TYPE_DIR		0x02	// directory (allows find, link, list, etc.)
 #define FS_TYPE_SLINK	0x04	// symbolic link
 #define FS_TYPE_PLINK	0x08	// pointer link (similar to mountpoint)
 #define FS_TYPE_EVENT	0x10	// event source

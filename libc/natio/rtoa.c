@@ -27,9 +27,9 @@
 char *rtoa(uint64_t rp) {
 
 	if (!rp) {
-		return strdup("rnil");
+		return strdup("@nil");
 	}
 	else {
-		return saprintf("r%d:%d", RP_PID(rp), RP_INDEX(rp));
+		return saprintf("@%d:%d", RP_PID(rp), RP_INDEX(rp));
 	}
 }

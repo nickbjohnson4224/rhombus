@@ -29,7 +29,7 @@ uint64_t ator(const char *str) {
 	uint32_t pid;
 	char *substr;
 
-	if (!str || str[0] != 'r') {
+	if (!str || str[0] != '@') {
 		return 0;
 	}
 
