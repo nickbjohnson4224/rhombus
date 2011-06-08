@@ -26,5 +26,16 @@
  */
 
 uint64_t io_find(const char *name) {
-	return fs_find(RP_NULL, name);
+	uint64_t root;
+	
+	// if preceeded by a resource pointer, use that as root
+	if (name[0] == '@') {
+		root = ator(name);
+		while (*name != '/' && *name) name++;
+	}
+	else {
+		root = RP_NULL;
+	}
+
+	return fs_find(root, name);
 }

@@ -32,6 +32,9 @@ int main(int argc, char **argv) {
 	if (argv[1][0] == '/') {
 		path = strdup(argv[1]);
 	}
+	else if (argv[1][0] == '@') {
+		path = strdup(argv[1]);
+	}
 	else {
 		path = strvcat("/sys/", argv[1]);
 	}
