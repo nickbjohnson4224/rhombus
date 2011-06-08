@@ -49,6 +49,7 @@ uint64_t fs_find(uint64_t root, const char *path) {
 		if      (!strcmp(reply, "! nfound"))	errno = ENOENT;
 		else if (!strcmp(reply, "! denied"))	errno = EACCES;
 		else if (!strcmp(reply, "! nosys"))		errno = ENOSYS;
+		else if (!strcmp(reply, "! notdir"))	errno = ENOTDIR;
 		else 									errno = EUNK;
 		free(reply);
 		return 0;

@@ -25,41 +25,28 @@
  *
  * Gives the name of the entry of number <entry> in the directory <dir>.
  * Returns a copy of that string on success, NULL on failure.
- *
- * protocol:
- *   port: PORT_LIST
- *
- *   request:
- *     uint32_t entry
- *
- *   reply:
- *     char name[]
  */
 
 char *fs_list(uint64_t dir, int entry) {
-	struct msg *msg;
-	char *name;
+	char *reply;
 
-	msg = aalloc(sizeof(struct msg) + sizeof(uint32_t), PAGESZ);
-	if (!msg) return NULL;
-	msg->source = RP_CONS(getpid(), 0);
-	msg->target = dir;
-	msg->length = sizeof(uint32_t);
-	msg->port   = PORT_LIST;
-	msg->arch   = ARCH_NAT;
-
-	((uint32_t*) msg->data)[0] = entry;
-
-	if (msend(msg)) return NULL;
-	msg = mwait(PORT_REPLY, dir);
-
-	if (msg->length == 0) {
-		free(msg);
-		return NULL;
+	if (!dir) dir = fs_root;
+	
+	reply = rcallf(dir, "fs_list %d\n", entry);
+	
+	if (!reply) {
+		errno = ENOSYS;
+		return 0;
 	}
 
-	name = strdup((const char*) msg->data);
-
-	free(msg);
-	return name;
+	if (reply[0] == '!') {
+		if      (!strcmp(reply, "! denied"))	errno = EACCES;
+		else if (!strcmp(reply, "! nfound"))	errno = ENOENT;
+		else if (!strcmp(reply, "! nosys"))		errno = ENOSYS;
+		else									errno = EUNK;
+		free(reply);
+		return 0;
+	}
+	
+	return reply;
 }

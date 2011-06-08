@@ -21,70 +21,47 @@
 #include <vfs.h>
 
 /*****************************************************************************
- * __list_wrapper
- *
- * Performs the requested actions of a FS_LIST command.
- *
- * protocol:
- *   port: PORT_LIST
- *
- *   request:
- *     uint32_t entry
- *
- *   reply:
- *     char name[]
+ * __list_rcall_wrapper
  */
 
-void __list_wrapper(struct msg *msg) {
+char *__list_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv) {
 	struct vfs_obj *dir;
 	uint32_t entry;
 	char *name;
-	int err = 0;
-	
-	/* check request */
-	if (msg->length != sizeof(uint32_t)) {
-		merror(msg);
-		return;
+
+	if (argc <= 1) {
+		return NULL;
 	}
 
-	/* extract data */
-	entry = ((uint32_t*) msg->data)[0];
+	/* find directory */
+	dir = vfs_get(index);
 
-	/* get requested directory */
-	dir = vfs_get(RP_INDEX(msg->target));
+	if (!dir) {
+		return strdup("! nfound");
+	}
 
-	if (dir) {
-		mutex_spin(&dir->mutex);
+	entry = atoi(argv[1]);
 
-		if (dir->type & FS_TYPE_DIR) {
+	mutex_spin(&dir->mutex);
 
-			/* check permissions */
-			if ((acl_get(dir->acl, gettuser()) & PERM_READ) == 0) {
-				err = 1;
-			}
-			else if (!(name = vfs_list(dir, entry))) {
-				/* return ERR_FILE if the entry does not exist */
-				err = 1;
-			}
-		}
-		else {
-			/* return ERR_TYPE if <dir> is not a directory */
-			err = 1;
-		}
-
+	if (!(dir->type & FS_TYPE_DIR)) {
 		mutex_free(&dir->mutex);
-	}
-	else {
-		/* return ERR_FILE on failure to find directory */
-		err = 1;
+		return strdup("! notdir");
 	}
 
-	if (err) {
-		merror(msg);
+	if ((acl_get(dir->acl, gettuser()) & PERM_READ) == 0) {
+		mutex_free(&dir->mutex);
+		return strdup("! denied");
 	}
-	else {
-		msg->length = strlen(name) + 1;
-		strcpy((char*) msg->data, name);
-		mreply(msg);
+
+	name = vfs_list(dir, entry);
+
+	if (!name) {
+		mutex_free(&dir->mutex);
+		return strdup("! nfound");
 	}
+
+	mutex_free(&dir->mutex);
+
+	return name;
 }
