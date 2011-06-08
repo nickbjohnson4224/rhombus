@@ -43,6 +43,9 @@ char *path_simplify(const char *path) {
 	}
 	else {
 		path1 = strvcat(getenv("PWD"), "/", path, NULL);
+		path2 = path_simplify(path1);
+		free(path1);
+		return path2;
 	}
 
 	path_struct = path_cons(path1);

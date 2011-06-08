@@ -34,6 +34,11 @@ uint64_t fs_find(const char *path) {
 	char *reply;
 	char *path_s;
 
+	// if path is NULL, return NULL
+	if (!path) {
+		return 0;
+	}
+
 	// if preceeded by a resource pointer, use that as root and strip it
 	if (path[0] == '@') {
 		root = ator(path);
@@ -41,6 +46,11 @@ uint64_t fs_find(const char *path) {
 	}
 	else {
 		root = fs_root;
+	}
+
+	// simply return root if path is nonexistent
+	if (path[0] == '\0' || (path[0] == '/' && path[1] == '\0')) {
+		return root;
 	}
 
 	path_s = path_simplify(path);
