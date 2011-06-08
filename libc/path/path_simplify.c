@@ -27,13 +27,19 @@ struct path_list {
 char *path_simplify(const char *path) {
 	struct path *path_struct;
 	struct path_list *stack, *stack1, *node;
-	char *name, *path1, *path2;
+	char *name, *path1, *path2, *path3;
 
 	stack = NULL;
 	stack1 = NULL;
+	path3 = strdup("");
 
 	if (path[0] == '/') {
 		path1 = strdup(path);
+	}
+	else if (path[0] == '@') {
+		free(path3);
+		path3 = struntil(path, "/", NULL);
+		path1 = strdup(&path[strlen(path3)]);
 	}
 	else {
 		path1 = strvcat(getenv("PWD"), "/", path, NULL);
@@ -88,5 +94,9 @@ char *path_simplify(const char *path) {
 	free(path1);
 	free(path_struct);
 
-	return path2;
+	path1 = strvcat(path3, path2, NULL);
+	free(path3);
+	free(path2);
+
+	return path1;
 }

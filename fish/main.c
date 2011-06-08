@@ -58,8 +58,9 @@ int main() {
 
 		if (!strcmp(argv[0], "cd")) {
 			path = path_simplify(argv[1]);
+			printf("new path = %s\n", path);
 
-			if (path && fs_type(fs_find(0, path)) & FS_TYPE_DIR) {
+			if (path && fs_type(io_find(path)) & FS_TYPE_DIR) {
 				setenv("PWD", path);
 			}
 			else {
