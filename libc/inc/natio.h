@@ -103,8 +103,8 @@ uint64_t fs_size  (uint64_t file);
 int      fs_remove(uint64_t rp);
 int      fs_type  (uint64_t rp);
 
-uint8_t  fs_perm  (uint64_t rp, uint32_t user);
-int      fs_auth  (uint64_t rp, uint32_t user, uint8_t perm);
+uint8_t  fs_getperm(uint64_t rp, uint32_t user);
+int      fs_setperm(uint64_t rp, uint32_t user, uint8_t perm);
 
 #define PERM_READ	0x01
 #define PERM_WRITE	0x02
