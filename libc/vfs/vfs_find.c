@@ -31,42 +31,46 @@
 
 uint64_t vfs_find(struct vfs_obj *root, const char *path_str, bool nolink) {
 	struct path   *path;
-	struct vfs_obj *fobj;
-	struct vfs_obj *sub;
+	struct vfs_node *fobj;
+	struct vfs_node *sub;
 	uint64_t rp;
 	char *name;
 
 	path = path_cons(path_str);
-	fobj = root;
+	fobj = root->vfs;
+
+	if (!fobj) {
+		return RP_CONS(getpid(), root->index);
+	}
 
 	while (fobj) {
 		name = path_next(path);
 
 		if (!name) {
-			if (fobj->link && !nolink) {
-				return fobj->link;
+			if (fobj->resource->link && !nolink) {
+				return fobj->resource->link;
 			}
 			else {
-				return RP_CONS(getpid(), fobj->index);
+				return RP_CONS(getpid(), fobj->resource->index);
 			}
 		}
 
-		if ((fobj->type & FS_TYPE_DIR) == 0) {
+		if ((fobj->resource->type & FS_TYPE_DIR) == 0) {
 			free(name);
 			return 0;
 		}
 		else {
-			if (fobj->link) {
+			if (fobj->resource->link) {
 				free(name);
 				path_prev(path);
 
-				name = saprintf("%r/%s", fobj->link, path_tail(path));
+				name = saprintf("%r/%s", fobj->resource->link, path_tail(path));
 				rp = fs_find(name);
 				free(name);
 				return rp;
 			}
 
-			if ((acl_get(fobj->acl, gettuser()) & PERM_READ) == 0) {
+			if ((acl_get(fobj->resource->acl, gettuser()) & PERM_READ) == 0) {
 				return 0;
 			}
 

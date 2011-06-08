@@ -33,7 +33,7 @@ int vfs_add(struct vfs_obj *root, const char *path, struct vfs_obj *obj) {
 	struct vfs_obj *dir;
 	uint64_t dirrp;
 	char *path1;
-	
+
 	if (!obj) {
 		return 1;
 	}
@@ -55,7 +55,9 @@ int vfs_add(struct vfs_obj *root, const char *path, struct vfs_obj *obj) {
 
 	/* push object into parent directory */
 	path1 = path_name(path);
-	obj->name = strdup(path1);
+	obj->vfs = calloc(sizeof(struct vfs_node), 1);
+	obj->vfs->resource = obj;
+	obj->vfs->name = strdup(path1);
 	vfs_push(RP_CONS(getpid(), 0), dir, obj);
 	free(path1);
 

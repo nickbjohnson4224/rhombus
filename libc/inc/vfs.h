@@ -52,11 +52,7 @@ struct vfs_obj {
 	struct vfs_obj *prev;
 
 	/* directory structure */
-	char *name;
-	struct vfs_obj *mother;
-	struct vfs_obj *sister0;
-	struct vfs_obj *sister1;
-	struct vfs_obj *daughter;
+	struct vfs_node *vfs;
 
 	/* permissions */
 	struct vfs_acl *acl;
@@ -68,8 +64,24 @@ struct vfs_obj {
 struct vfs_obj *vfs_get(uint32_t index);
 struct vfs_obj *vfs_set(uint32_t index, struct vfs_obj *obj);
 
+struct vfs_node {
+	bool mutex;
+
+	// associated resource (i.e. hard link)
+	struct vfs_obj *resource;
+
+	char *name;
+	struct vfs_node *mother;
+	struct vfs_node *sister0;
+	struct vfs_node *sister1;
+	struct vfs_node *daughter;
+};
+
 uint64_t vfs_find(struct vfs_obj *root, const char *path, bool nolink);
 int      vfs_add (struct vfs_obj *root, const char *path, struct vfs_obj *obj);
+
+struct vfs_obj *vfs_getlink(struct vfs_node *root, const char *path);
+int      vfs_setlink(struct vfs_node *root, const char *path, struct vfs_obj *obj);
 
 char *vfs_list(struct vfs_obj *dir, int entry);
 int   vfs_push(uint64_t source, struct vfs_obj *dir, struct vfs_obj *obj);

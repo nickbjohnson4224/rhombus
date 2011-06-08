@@ -36,7 +36,7 @@
  *     uint8_t perm
  */
 
-uint8_t fs_perm(uint64_t fobj, uint32_t user) {
+uint8_t fs_getperm(uint64_t fobj, uint32_t user) {
 	struct msg *msg;
 	int err;
 

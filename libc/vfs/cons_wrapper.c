@@ -63,17 +63,20 @@ char *__cons_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **arg
 			if (new_fobj) {
 				
 				/* add new object to parent directory */
-				new_fobj->name = strdup(name);
+				new_fobj->vfs = calloc(sizeof(struct vfs_node), 1);
+				new_fobj->vfs->resource = new_fobj;
+				new_fobj->vfs->name = strdup(name);
 				
 				if (vfs_push(source, dir, new_fobj)) {
 
 					/* free the new object */
+					free(new_fobj->vfs->name);
+					free(new_fobj->vfs);
 					if (_vfs_free) {
 						_vfs_free(source, new_fobj);
 					}
 					else {
 						acl_free(new_fobj->acl);
-						free(new_fobj->name);
 						free(new_fobj);
 					}
 

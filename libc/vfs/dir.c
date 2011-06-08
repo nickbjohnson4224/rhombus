@@ -23,29 +23,37 @@
 /*****************************************************************************
  * vfs_push
  *
- * Add the filesystem object <obj> to the directory <dir>, giving it the
+ * Add the filesystem object <robj> to the directory <dir>, giving it the
  * name <name>. Calls the active driver's push function and returns zero on 
  * success; returns nonzero on error.
  */
 
-int vfs_push(uint64_t source, struct vfs_obj *dir, struct vfs_obj *obj) {
-	struct vfs_obj *sister;
+int vfs_push(uint64_t source, struct vfs_obj *dir, struct vfs_obj *robj) {
+	struct vfs_node *sister;
+	struct vfs_node *obj;
 
-	if (!(dir && obj)) {
+	if (!(dir && robj)) {
 		return 1;
 	}
 
-	mutex_spin(&dir->mutex);
+	obj = robj->vfs;
+
+	if (!dir->vfs) {
+		dir->vfs = calloc(sizeof(struct vfs_node), 1);
+		dir->vfs->resource = dir;
+	}
+
+	mutex_spin(&dir->vfs->mutex);
 
 	obj->mutex    = 0;
-	obj->mother   = dir;
+	obj->mother   = dir->vfs;
 	obj->daughter = NULL;
 	
-	sister = dir->daughter;
+	sister = dir->vfs->daughter;
 
 	if (!sister) {
 		/* only in the list, insert at top */
-		dir->daughter = obj;
+		dir->vfs->daughter = obj;
 		obj->sister0 = NULL;
 		obj->sister1 = NULL;
 	}
@@ -63,7 +71,7 @@ int vfs_push(uint64_t source, struct vfs_obj *dir, struct vfs_obj *obj) {
 				sister->sister0->sister1 = obj;
 			}
 			else {
-				dir->daughter = obj;
+				dir->vfs->daughter = obj;
 			}
 
 			obj->sister0 = sister->sister0;
@@ -77,13 +85,13 @@ int vfs_push(uint64_t source, struct vfs_obj *dir, struct vfs_obj *obj) {
 		}
 	}
 
-	mutex_free(&dir->mutex);
+	mutex_free(&dir->vfs->mutex);
 
 	/* add to index */
-	vfs_set(obj->index, obj);
+	vfs_set(robj->index, robj);
 
 	if (_vfs_push) {
-		return _vfs_push(source, obj);
+		return _vfs_push(source, robj);
 	}
 	else {
 		return 0;
@@ -93,16 +101,21 @@ int vfs_push(uint64_t source, struct vfs_obj *dir, struct vfs_obj *obj) {
 /*****************************************************************************
  * vfs_pull
  *
- * Remove the filesystem object <obj> from its parent directory. Calls the 
+ * Remove the filesystem object <robj> from its parent directory. Calls the 
  * active driver's pull function and returns zero on success; returns nonzero 
  * on error.
  */
 
-int vfs_pull(uint64_t source, struct vfs_obj *obj) {
+int vfs_pull(uint64_t source, struct vfs_obj *robj) {
+	struct vfs_node *obj;
 
-	if (!obj) {
+	if (!robj) {
 		return 1;
 	}
+
+	obj = robj->vfs;
+
+	mutex_spin(&obj->mutex);
 
 	free(obj->name);
 	
@@ -125,8 +138,10 @@ int vfs_pull(uint64_t source, struct vfs_obj *obj) {
 		mutex_free(&obj->mother->mutex);
 	}
 
+	mutex_free(&obj->mutex);
+
 	if (_vfs_pull) {
-		return _vfs_pull(source, obj);
+		return _vfs_pull(source, robj);
 	}
 	else {
 		return 0;
@@ -140,12 +155,15 @@ int vfs_pull(uint64_t source, struct vfs_obj *obj) {
  * on error.
  */
 
-char *vfs_list(struct vfs_obj *dir, int entry) {
-	struct vfs_obj *daughter;
+char *vfs_list(struct vfs_obj *rdir, int entry) {
+	struct vfs_node *daughter;
+	struct vfs_node *dir;
 
-	if (!dir) {
+	if (!rdir) {
 		return NULL;
 	}
+
+	dir = rdir->vfs;
 
 	if (entry < 0) {
 		return NULL;

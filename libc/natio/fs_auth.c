@@ -37,7 +37,7 @@
  *     uint8_t ret
  */
 
-int fs_auth(uint64_t fobj, uint32_t user, uint8_t perm) {
+int fs_setperm(uint64_t fobj, uint32_t user, uint8_t perm) {
 	struct msg *msg;
 	int err;
 

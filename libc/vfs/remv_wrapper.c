@@ -44,13 +44,13 @@ void __remv_wrapper(struct msg *msg) {
 
 		/* check all permissions */
 		if ((acl_get(fobj->acl, gettuser()) & PERM_WRITE) == 0 ||
-			(acl_get(fobj->mother->acl, gettuser() & PERM_WRITE) == 0)) {
+			(acl_get(fobj->vfs->mother->resource->acl, gettuser() & PERM_WRITE) == 0)) {
 			merror(msg);
 			return;
 		}
 
 		/* check if directory is empty */
-		if (fobj->type & FS_TYPE_DIR && fobj->daughter) {
+		if (fobj->type & FS_TYPE_DIR && fobj->vfs->daughter) {
 			merror(msg);
 			return;
 		}
