@@ -88,14 +88,13 @@ rcall_t rcall_get(const char *call);
 #define FS_TYPE_GRAPH	0x20	// graphics file
 #define FS_TYPE_CHAR	0x40	// character device
 
-uint64_t io_find(const char *name);
 uint64_t io_cons(const char *name, int type);
 int      io_remv(const char *name);
 int      io_link(const char *name, uint64_t rp);
 
 extern uint64_t fs_root;
 
-uint64_t fs_find  (uint64_t root, const char *path);
+uint64_t fs_find  (const char *path);
 uint64_t fs_lfind (uint64_t root, const char *path);
 uint64_t fs_cons  (uint64_t dir, const char *name, int type);
 char    *fs_list  (uint64_t dir, int entry);

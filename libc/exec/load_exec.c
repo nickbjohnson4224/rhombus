@@ -36,12 +36,12 @@ void *load_exec(const char *name) {
 	void *image;
 
 	/* attempt to find requested file */
-	if (name[0] == '/') {
-		fd = fs_find(0, name);
+	if (name[0] == '/' || name[0] == '@') {
+		fd = fs_find(name);
 	}
 	else {
 		path = strvcat(getenv("PATH"), "/", name, NULL);
-		fd = fs_find(0, path);
+		fd = fs_find(path);
 		free(path);
 	}
 

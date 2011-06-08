@@ -311,12 +311,12 @@ int main(int argc, char **argv) {
 
 	io_link("/sys/wmanager", RP_CONS(getpid(), 0));
 
-	vgafd = io_find("/dev/svga0");
+	vgafd = fs_find("/dev/svga0");
 	sscanf(rcall(vgafd, "getmode"), "%i %i", &width, &height);
 	resize_screen(width, height);
 
-	mousefd = io_find("/dev/mouse");
-	kbdfd = io_find("/dev/kbd");
+	mousefd = fs_find("/dev/mouse");
+	kbdfd = fs_find("/dev/kbd");
 	event_register(mousefd, wmanager_event);
 	event_register(kbdfd, wmanager_event);
 	event_register(vgafd, wmanager_event);

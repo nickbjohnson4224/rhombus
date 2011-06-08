@@ -111,8 +111,8 @@ int main() {
 	temp = start(file, argv);
 
 	/* Link /dev and /sys and change root */
-	temp1 = io_find("/dev");
-	temp2 = io_find("/sys");
+	temp1 = fs_find("/dev");
+	temp2 = fs_find("/sys");
 	fs_root = temp;
 	io_link("/dev", temp1);
 	io_link("/sys", temp2);

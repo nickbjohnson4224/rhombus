@@ -29,7 +29,7 @@
 int remove(const char *path) {
 	uint64_t file;
 
-	file = io_find(path);
+	file = fs_find(path);
 
 	if (file) {
 		if (fs_remove(file)) {

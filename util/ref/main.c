@@ -22,7 +22,7 @@
 int main(int argc, char **argv) {
 	uint64_t rp;
 
-	rp = io_find(argv[1]);
+	rp = fs_find(argv[1]);
 
 	printf("%r\n", rp);
 

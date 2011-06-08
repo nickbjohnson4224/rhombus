@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 		path = argv[1];
 	}
 	
-	dir = io_find(path);
+	dir = fs_find(path);
 	
 	if (!dir) {
 		fprintf(stderr, "%s: ", path_simplify(path));

@@ -24,18 +24,27 @@
 /*****************************************************************************
  * fs_find
  *
- * Finds the filesystem object with the given path <path> from <root> if it
- * exists. If it does not exist, this function returns 0.
+ * Finds the resource with the given path <path> if it exists and returns a
+ * resource pointer to it. If it does not exist, this function returns NULL.
  */
 
-uint64_t fs_find(uint64_t root, const char *path) {
+uint64_t fs_find(const char *path) {
 	uint64_t rp;
+	uint64_t root;
 	char *reply;
 	char *path_s;
 
+	// if preceeded by a resource pointer, use that as root and strip it
+	if (path[0] == '@') {
+		root = ator(path);
+		while (*path != '/' && *path) path++;
+	}
+	else {
+		root = fs_root;
+	}
+
 	path_s = path_simplify(path);
 	if (!path_s) return 0;
-	if (!root) root = fs_root;
 
 	reply = rcallf(root, "fs_find %s", path_s);
 	free(path_s);

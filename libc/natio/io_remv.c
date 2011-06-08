@@ -24,5 +24,5 @@
  */
 
 int io_remv(const char *name) {
-	return fs_remove(io_find(name));
+	return fs_remove(fs_find(name));
 }

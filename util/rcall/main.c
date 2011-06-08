@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
 		path = strvcat("/sys/", argv[1]);
 	}
 
-	ctrl = io_find(path);
+	ctrl = fs_find(path);
 	
 	if (!ctrl) {
 		fprintf(stderr, "%s: %s: control file not accessible\n", argv[0], path);

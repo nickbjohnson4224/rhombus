@@ -39,7 +39,7 @@ FILE *fopen(const char *path, const char *mode) {
 	}
 
 	/* attempt to find the file */
-	fd = io_find(path);
+	fd = fs_find(path);
 
 	/* check if the object is a directory */
 	if (fd && ((fs_type(fd) & FS_TYPE_FILE) == 0)) {

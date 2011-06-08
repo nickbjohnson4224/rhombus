@@ -40,7 +40,7 @@ uint64_t io_cons(const char *name, int type) {
 	}
 
 	/* find requested parent directory */
-	dir = fs_find(RP_NULL, dirname);
+	dir = fs_find(dirname);
 	free(dirname);
 
 	if (!dir) {
