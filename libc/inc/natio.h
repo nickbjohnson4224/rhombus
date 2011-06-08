@@ -98,7 +98,6 @@ extern uint64_t fs_root;
 uint64_t fs_find  (uint64_t root, const char *path);
 uint64_t fs_lfind (uint64_t root, const char *path);
 uint64_t fs_cons  (uint64_t dir, const char *name, int type);
-uint64_t fs_move  (uint64_t dir, const char *name, uint64_t file);
 char    *fs_list  (uint64_t dir, int entry);
 int      fs_link  (uint64_t link, uint64_t fobj);
 uint64_t fs_size  (uint64_t file);
