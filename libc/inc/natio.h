@@ -80,13 +80,30 @@ rcall_t rcall_get(const char *call);
 
 /* filesystem operations ****************************************************/
 
+/*****************************************************************************
+ * file types
+ *
+ * All files must have one or zero of the following type flags:
+ *   FS_TYPE_FILE					(f)
+ *   FS_TYPE_DIR					(d)
+ *
+ * Files of the type FS_TYPE_FILE may have zero or one of these type flags:
+ *   FS_TYPE_GRAPH 					(g)
+ *   FS_TYPE_CHAR  					(c)
+ *   FS_TYPE_SLINK 					(l)
+ *   FS_TYPE_EVENT 					(e)
+ *   FS_TYPE_EVENT | FS_TYPE_GRAPH	(w)
+ *
+ * Files of the type FS_TYPE_DIR may not have any additional type flags.
+ */
+
 #define FS_TYPE_FILE	0x01	// file (allows read, write, reset)
 #define FS_TYPE_DIR		0x02	// directory (allows find, link, list, etc.)
 #define FS_TYPE_SLINK	0x04	// symbolic link
 #define FS_TYPE_PLINK	0x08	// pointer link (similar to mountpoint)
-#define FS_TYPE_EVENT	0x10	// event source
-#define FS_TYPE_GRAPH	0x20	// graphics file
-#define FS_TYPE_CHAR	0x40	// character device
+#define FS_TYPE_EVENT	0x10	// event source (allows register, deregister)
+#define FS_TYPE_GRAPH	0x20	// graphics file (allows various)
+#define FS_TYPE_CHAR	0x40	// character device (disallows size, offsets)
 
 uint64_t io_cons(const char *name, int type);
 int      io_remv(const char *name);

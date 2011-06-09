@@ -90,8 +90,8 @@ int vfs_push(uint64_t source, struct resource *dir, struct resource *robj) {
 	/* add to index */
 	index_set(robj->index, robj);
 
-	if (_vfs_push) {
-		return _vfs_push(source, robj);
+	if (_vfs_sync) {
+		return _vfs_sync(source, robj);
 	}
 	else {
 		return 0;
@@ -140,8 +140,8 @@ int vfs_pull(uint64_t source, struct resource *robj) {
 
 	mutex_free(&obj->mutex);
 
-	if (_vfs_pull) {
-		return _vfs_pull(source, robj);
+	if (_vfs_sync) {
+		return _vfs_sync(source, robj);
 	}
 	else {
 		return 0;

@@ -67,7 +67,7 @@ char *wmanager_rcall_setmode(uint64_t source, uint32_t index, int argc, char **a
 
 	resize_window(window, width, height, false);
 	if (!(window->flags & CONSTANT_SIZE) && !(window->flags & FLOATING)) {
-		// window must be CONSTNAT_SIZE or FLOATING for resizing to make sense
+		// window must be CONSTANT_SIZE or FLOATING for resizing to make sense
 		window->flags |= FLOATING;
 	}
 
@@ -212,21 +212,11 @@ struct resource *wmanager_cons(uint64_t source, int type) {
 		fobj->data  = NULL;
 		fobj->index = next_index++;
 		fobj->acl   = acl_set_default(fobj->acl, PERM_READ | PERM_WRITE);
+
+		add_window(fobj->index);
 	}
 	
 	return fobj;
-}
-
-int wmanager_push(uint64_t source, struct resource *file) {
-	if (RP_PID(source) != getpid()) {
-		return -1;
-	}
-
-	return add_window(file->index);
-}
-
-int wmanager_pull(uint64_t source, struct resource *file) {
-	return remove_window(file->index, RP_PID(source));
 }
 
 void wmanager_event(uint64_t source, uint64_t value) {
@@ -305,8 +295,6 @@ int main(int argc, char **argv) {
 	di_wrap_share(wmanager_share);
 	di_wrap_sync (wmanager_sync);
 	vfs_set_cons(wmanager_cons);
-	vfs_set_push(wmanager_push);
-	vfs_set_pull(wmanager_pull);
 	vfs_init();
 
 	io_link("/sys/wmanager", RP_CONS(getpid(), 0));

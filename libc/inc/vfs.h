@@ -36,7 +36,7 @@ struct vfs_acl *acl_set_default(struct vfs_acl *acl, uint8_t permit);
 
 void acl_free(struct vfs_acl *acl);
 
-/* virtual filesystem interface *********************************************/
+/* resource structure *******************************************************/
 
 struct resource {
 	int type;
@@ -64,7 +64,7 @@ struct resource {
 struct resource *index_get(uint32_t index);
 struct resource *index_set(uint32_t index, struct resource *r);
 
-uint64_t resource_ref(struct resource *resource);
+/* virtual filesystem interface *********************************************/
 
 struct vfs_node {
 	bool mutex;
@@ -91,11 +91,37 @@ char *vfs_list(struct resource *dir, int entry);
 int   vfs_push(uint64_t source, struct resource *dir, struct resource *obj);
 int   vfs_pull(uint64_t source, struct resource *obj);
 
-/* virtual filesystem request wrapper ***************************************/
+/* virtual filesystem request wrapper ****************************************
+ *
+ * The VFS request wrapper contains three functions that may be provided by
+ * the driver for use by the VFS. Their behavior is as follows:
+ *
+ * _vfs_cons (set by vfs_set_free)
+ *
+ * This function creates a new resource of the given type <type> and returns
+ * a pointer to the resource structure on success (NULL on failure). This is
+ * used by the VFS when a request for a new file, directory, etc. is recieved.
+ *
+ * _vfs_sync (set by vfs_set_sync)
+ *
+ * This function synchronizes the contents of a VFS directory structure
+ * with its corresponding directory resource. If there are any differences
+ * between the VFS directory structure of the given resource and the
+ * directory contents of that resource, the resource's version is modified.
+ * This is used by the VFS whenever a directory structure is modified by
+ * a request, but not when it is modified internally, i.e. by vfs_add.
+ *
+ * _vfs_free (set by vfs_set_free)
+ *
+ * This function destroys the given resource. If this function is not defined
+ * by the driver, the VFS instead free()'s the resource and it's directory
+ * structure and ACL, which is only appropriate if no other memory is in any
+ * way allocated to the resource (which is rare except for directories in 
+ * tmpfs)
+ */
 
 int vfs_set_cons(struct resource *(*vfs_cons)(uint64_t source, int type));
-int vfs_set_push(int (*vfs_push)(uint64_t source, struct resource *obj));
-int vfs_set_pull(int (*vfs_pull)(uint64_t source, struct resource *obj));
+int vfs_set_sync(int (*vfs_sync)(uint64_t source, struct resource *obj));
 int vfs_set_free(int (*vfs_free)(uint64_t source, struct resource *obj));
 
 int vfs_init(void);
@@ -122,8 +148,7 @@ char *__perm_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **arg
 char *__auth_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
 
 extern struct resource *(*_vfs_cons)(uint64_t source, int type);
-extern int             (*_vfs_push)(uint64_t source, struct resource *obj);
-extern int             (*_vfs_pull)(uint64_t source, struct resource *obj);
+extern int             (*_vfs_sync)(uint64_t source, struct resource *obj);
 extern int             (*_vfs_free)(uint64_t source, struct resource *obj);
 
 #endif/*VFS_H*/
