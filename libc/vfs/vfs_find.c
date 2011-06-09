@@ -23,42 +23,14 @@
 /*****************************************************************************
  * vfs_find
  *
- * Finds a file, starting at the filesystem object <root> in the current 
- * driver. Returns a file structure referring to the found file, which may not 
- * be in the current driver, on success, and zero on failure. If <nolink> is 
- * true, terminal links are not followed, so link objects can be found.
+ * Finds a resource, starting at the filesystem node <root>. Returns the found
+ * resource structure on success, and NULL on failure. If a symbolic link is 
+ * encountered before the proper resource, the link's resource is returned 
+ * instead, and the remaining path string is stored in *<tail> if <tail> is
+ * non-NULL.  
  */
 
-uint64_t vfs_find(struct vfs_node *root, const char *path_str, bool nolink) {
-	struct resource *r;
-	const char *tail;
-	uint64_t rp;
-	char *path;
-
-	r = _vfs_find(root, path_str, &tail);
-
-	if (r) {
-		if (r->link) {
-			if (!tail && !nolink) {
-				return r->link;
-			}
-			else {
-				path = saprintf("%r/%s", r->link, tail);
-				rp = fs_find(path);
-				free(path);
-				return rp;
-			}
-		}
-		else {
-			return RP_CONS(getpid(), r->index);
-		}
-	}
-	else {
-		return RP_NULL;
-	}
-}
-
-struct resource *_vfs_find(struct vfs_node *root, const char *path_str, const char **tail) {
+struct resource *vfs_find(struct vfs_node *root, const char *path_str, const char **tail) {
 	struct path *path;
 	struct vfs_node *child;
 	char *name;

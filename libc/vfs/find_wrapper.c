@@ -63,7 +63,7 @@ char *__find_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **arg
 		tail = NULL;
 	}
 	else {
-		file = _vfs_find(root->vfs, path, &tail);
+		file = vfs_find(root->vfs, path, &tail);
 	}
 
 	if (!file) {

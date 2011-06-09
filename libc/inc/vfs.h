@@ -82,10 +82,8 @@ struct vfs_node {
 	struct vfs_node *daughter;
 };
 
-uint64_t vfs_find(struct vfs_node *root, const char *path, bool nolink);
-int      vfs_add (struct resource *root, const char *path, struct resource *obj);
-
-struct resource *_vfs_find(struct vfs_node *root, const char *path, const char **tail);
+int vfs_add(struct resource *root, const char *path, struct resource *obj);
+struct resource *vfs_find(struct vfs_node *root, const char *path, const char **tail);
 
 int vfs_link(struct vfs_node *root, const char *path, struct resource *obj);
 

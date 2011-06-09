@@ -31,7 +31,6 @@
 
 int vfs_add(struct resource *root, const char *path, struct resource *obj) {
 	struct resource *dir;
-	uint64_t dirrp;
 	char *path1;
 
 	if (!obj) {
@@ -46,13 +45,7 @@ int vfs_add(struct resource *root, const char *path, struct resource *obj) {
 		root->vfs->resource = root;
 	}
 
-	dirrp = vfs_find(root->vfs, path1, false);
-	if (RP_PID(dirrp) != getpid()) {
-		dir = NULL;
-	}
-	else {
-		dir = index_get(RP_INDEX(dirrp));
-	}
+	dir = vfs_find(root->vfs, path1, NULL);
 	free(path1);
 
 	if (!dir) {
