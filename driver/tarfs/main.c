@@ -67,9 +67,9 @@ static uintptr_t getvalue(char *field, size_t size) {
 }
 
 size_t tarfs_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
-	struct vfs_obj *file;
+	struct resource *file;
 
-	file = vfs_get(index);
+	file = index_get(index);
 
 	if (!file->data) {
 		return 0;
@@ -99,7 +99,7 @@ size_t tarfs_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size,
 
 int main(int argc, char **argv) {
 	struct tar_block *block;
-	struct vfs_obj *file, *root;
+	struct resource *file, *root;
 	size_t i, n;
 
 	/* reject if no parent is speicified */
@@ -120,10 +120,10 @@ int main(int argc, char **argv) {
 	}
 
 	/* create root directory */
-	root = calloc(sizeof(struct vfs_obj), 1);
+	root = calloc(sizeof(struct resource), 1);
 	root->type = FS_TYPE_DIR;
 	root->acl = acl_set_default(root->acl, PERM_READ);
-	vfs_set(0, root);
+	index_set(0, root);
 
 	/* allocate buffer space for header block */
 	block = malloc(512);
@@ -143,7 +143,7 @@ int main(int argc, char **argv) {
 
 			/* add directory to VFS */
 			block->filename[strlen(block->filename) - 1] = 0;
-			file        = calloc(sizeof(struct vfs_obj), 1);
+			file        = calloc(sizeof(struct resource), 1);
 			file->type  = FS_TYPE_DIR;
 			file->index = n;
 			file->acl   = acl_set_default(file->acl, PERM_READ);
@@ -153,7 +153,7 @@ int main(int argc, char **argv) {
 		else {
 
 			/* add file to VFS */
-			file        = calloc(sizeof(struct vfs_obj), 1);
+			file        = calloc(sizeof(struct resource), 1);
 			file->type  = FS_TYPE_FILE;
 			file->index = n;
 			file->data  = (uint8_t*) (i + 512);

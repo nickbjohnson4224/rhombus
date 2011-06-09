@@ -38,7 +38,7 @@ void acl_free(struct vfs_acl *acl);
 
 /* virtual filesystem interface *********************************************/
 
-struct vfs_obj {
+struct resource {
 	int type;
 	bool mutex;
 
@@ -48,8 +48,8 @@ struct vfs_obj {
 
 	/* index lookup table */
 	uint32_t index;
-	struct vfs_obj *next;
-	struct vfs_obj *prev;
+	struct resource *next;
+	struct resource *prev;
 
 	/* directory structure */
 	struct vfs_node *vfs;
@@ -61,38 +61,44 @@ struct vfs_obj {
 	uint64_t link;
 };
 
-struct vfs_obj *vfs_get(uint32_t index);
-struct vfs_obj *vfs_set(uint32_t index, struct vfs_obj *obj);
+struct resource *index_get(uint32_t index);
+struct resource *index_set(uint32_t index, struct resource *r);
+
+uint64_t resource_ref(struct resource *resource);
 
 struct vfs_node {
 	bool mutex;
 
 	// associated resource (i.e. hard link)
-	struct vfs_obj *resource;
+	struct resource *resource;
 
+	// name
 	char *name;
+
+	// directory structure
 	struct vfs_node *mother;
 	struct vfs_node *sister0;
 	struct vfs_node *sister1;
 	struct vfs_node *daughter;
 };
 
-uint64_t vfs_find(struct vfs_obj *root, const char *path, bool nolink);
-int      vfs_add (struct vfs_obj *root, const char *path, struct vfs_obj *obj);
+uint64_t vfs_find(struct vfs_node *root, const char *path, bool nolink);
+int      vfs_add (struct resource *root, const char *path, struct resource *obj);
 
-struct vfs_obj *vfs_getlink(struct vfs_node *root, const char *path);
-int      vfs_setlink(struct vfs_node *root, const char *path, struct vfs_obj *obj);
+struct resource *_vfs_find(struct vfs_node *root, const char *path, const char **tail);
 
-char *vfs_list(struct vfs_obj *dir, int entry);
-int   vfs_push(uint64_t source, struct vfs_obj *dir, struct vfs_obj *obj);
-int   vfs_pull(uint64_t source, struct vfs_obj *obj);
+int vfs_link(struct vfs_node *root, const char *path, struct resource *obj);
+
+char *vfs_list(struct resource *dir, int entry);
+int   vfs_push(uint64_t source, struct resource *dir, struct resource *obj);
+int   vfs_pull(uint64_t source, struct resource *obj);
 
 /* virtual filesystem request wrapper ***************************************/
 
-int vfs_set_cons(struct vfs_obj *(*vfs_cons)(uint64_t source, int type));
-int vfs_set_push(int (*vfs_push)(uint64_t source, struct vfs_obj *obj));
-int vfs_set_pull(int (*vfs_pull)(uint64_t source, struct vfs_obj *obj));
-int vfs_set_free(int (*vfs_free)(uint64_t source, struct vfs_obj *obj));
+int vfs_set_cons(struct resource *(*vfs_cons)(uint64_t source, int type));
+int vfs_set_push(int (*vfs_push)(uint64_t source, struct resource *obj));
+int vfs_set_pull(int (*vfs_pull)(uint64_t source, struct resource *obj));
+int vfs_set_free(int (*vfs_free)(uint64_t source, struct resource *obj));
 
 int vfs_init(void);
 
@@ -117,9 +123,9 @@ char *__type_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **arg
 char *__perm_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
 char *__auth_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
 
-extern struct vfs_obj *(*_vfs_cons)(uint64_t source, int type);
-extern int             (*_vfs_push)(uint64_t source, struct vfs_obj *obj);
-extern int             (*_vfs_pull)(uint64_t source, struct vfs_obj *obj);
-extern int             (*_vfs_free)(uint64_t source, struct vfs_obj *obj);
+extern struct resource *(*_vfs_cons)(uint64_t source, int type);
+extern int             (*_vfs_push)(uint64_t source, struct resource *obj);
+extern int             (*_vfs_pull)(uint64_t source, struct resource *obj);
+extern int             (*_vfs_free)(uint64_t source, struct resource *obj);
 
 #endif/*VFS_H*/

@@ -30,9 +30,9 @@ void char_write(char c) {
 }
 
 size_t serial_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
-	struct vfs_obj *file;
+	struct resource *file;
 
-	file = vfs_get(index);
+	file = index_get(index);
 
 	mutex_spin(&file->mutex);
 	for (size_t i = 0; i < size; i++) {
@@ -44,13 +44,13 @@ size_t serial_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t siz
 }
 
 int main(int argc, char **argv) {
-	struct vfs_obj *root;
+	struct resource *root;
 
-	root = calloc(sizeof(struct vfs_obj), 1);
+	root = calloc(sizeof(struct resource), 1);
 	root->type = FS_TYPE_FILE | FS_TYPE_CHAR;
 	root->size = 0;
 	root->acl = acl_set_default(root->acl, PERM_WRITE);
-	vfs_set(0, root);
+	index_set(0, root);
 
 	outb(PORT + 1, 0x00);
 	outb(PORT + 3, 0x80);

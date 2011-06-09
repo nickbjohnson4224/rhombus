@@ -31,9 +31,9 @@ uint32_t *buffer;
 char *modesstr;
 
 char *svga_rcall_register(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct vfs_obj *file;
+	struct resource *file;
 
-	file = vfs_get(index);
+	file = index_get(index);
 
 	mutex_spin(&file->mutex);
 	event_list = event_list_add(event_list, source);
@@ -43,9 +43,9 @@ char *svga_rcall_register(uint64_t source, uint32_t index, int argc, char **argv
 }
 
 char *svga_rcall_deregister(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct vfs_obj *file;
+	struct resource *file;
 
-	file = vfs_get(index);
+	file = index_get(index);
 
 	mutex_spin(&file->mutex);
 	event_list = event_list_del(event_list, source);
@@ -67,9 +67,9 @@ char *svga_rcall_listmodes(uint64_t source, uint32_t index, int argc, char **arg
 }
 
 char *svga_rcall_unshare(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct vfs_obj *file;
+	struct resource *file;
 
-	file = vfs_get(index);
+	file = index_get(index);
 	if (!file) return NULL;
 
 	mutex_spin(&file->mutex);
@@ -81,11 +81,11 @@ char *svga_rcall_unshare(uint64_t source, uint32_t index, int argc, char **argv)
 }
 
 char *svga_rcall_setmode(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct vfs_obj *file;
+	struct resource *file;
 	int x, y, d;
 	int mode;
 
-	file = vfs_get(index);
+	file = index_get(index);
 	if (!file) return NULL;
 
 	if (argc != 4) return NULL;
@@ -106,10 +106,10 @@ char *svga_rcall_setmode(uint64_t source, uint32_t index, int argc, char **argv)
 }
 
 char *svga_rcall_syncrect(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct vfs_obj *file;
+	struct resource *file;
 	int x, y, w, h;
 
-	file = vfs_get(index);
+	file = index_get(index);
 	if (!file) return NULL;
 
 	if (argc != 5) return NULL;
@@ -127,13 +127,13 @@ char *svga_rcall_syncrect(uint64_t source, uint32_t index, int argc, char **argv
 }
 
 int svga_sync(uint64_t source, uint32_t index) {
-	struct vfs_obj *file;
+	struct resource *file;
 
 	if (!buffer) {
 		return -1;
 	}
 
-	file = vfs_get(index);
+	file = index_get(index);
 
 	mutex_spin(&file->mutex);
 	svga_flip(buffer);
@@ -143,7 +143,7 @@ int svga_sync(uint64_t source, uint32_t index) {
 }
 
 int svga_share(uint64_t source, uint32_t index, uint8_t *_buffer, size_t size, uint64_t off) {
-	struct vfs_obj *file;
+	struct resource *file;
 
 	if (size != svga.w * svga.h * 4) {
 		return -1;
@@ -152,7 +152,7 @@ int svga_share(uint64_t source, uint32_t index, uint8_t *_buffer, size_t size, u
 		return -1;
 	}
 
-	file = vfs_get(index);
+	file = index_get(index);
 
 	mutex_spin(&file->mutex);
 
@@ -169,16 +169,16 @@ int svga_share(uint64_t source, uint32_t index, uint8_t *_buffer, size_t size, u
 }
 
 int main(int argc, char **argv) {
-	struct vfs_obj *root;
+	struct resource *root;
 	char *modesstr0;
 	char *modestr;
 	int i;
 
-	root       = calloc(sizeof(struct vfs_obj), 1);
+	root       = calloc(sizeof(struct resource), 1);
 	root->type = FS_TYPE_FILE | FS_TYPE_GRAPH;
 	root->size = 0;
 	root->acl  = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
-	vfs_set(0, root);
+	index_set(0, root);
 
 	svga_init();
 

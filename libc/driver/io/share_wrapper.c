@@ -24,7 +24,7 @@
 #include <vfs.h>
 
 void __share_wrapper(struct msg *msg) {
-	struct vfs_obj *file;
+	struct resource *file;
 	uint64_t offset;
 	uint8_t err;
 	void *pages;
@@ -40,7 +40,7 @@ void __share_wrapper(struct msg *msg) {
 		return;
 	}
 
-	file = vfs_get(RP_INDEX(msg->target));
+	file = index_get(RP_INDEX(msg->target));
 
 	if (!file) {
 		merror(msg);

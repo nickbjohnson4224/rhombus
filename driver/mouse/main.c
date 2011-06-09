@@ -37,9 +37,9 @@ void command(uint8_t byte) {
 }
 
 char *mouse_register(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct vfs_obj *file;
+	struct resource *file;
 
-	file = vfs_get(index);
+	file = index_get(index);
 
 	mutex_spin(&file->mutex);
 	event_list = event_list_add(event_list, source);
@@ -49,9 +49,9 @@ char *mouse_register(uint64_t source, uint32_t index, int argc, char **argv) {
 }
 
 char *mouse_deregister(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct vfs_obj *file;
+	struct resource *file;
 
-	file = vfs_get(index);
+	file = index_get(index);
 
 	mutex_spin(&file->mutex);
 	event_list = event_list_del(event_list, source);
@@ -62,7 +62,7 @@ char *mouse_deregister(uint64_t source, uint32_t index, int argc, char **argv) {
 
 
 int main(int argc, char **argv) {
-	struct vfs_obj *root;
+	struct resource *root;
 	uint8_t bytes[3];
 	size_t curbyte = 0;
 	bool first;
@@ -75,11 +75,11 @@ int main(int argc, char **argv) {
 	command(0xf3);  // set sample rate:
 	outb(0x60, 10); // 10 samples per second
 
-	root        = calloc(sizeof(struct vfs_obj), 1);
+	root        = calloc(sizeof(struct resource), 1);
 	root->type  = FS_TYPE_EVENT;
 	root->size  = 0;
 	root->acl   = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
-	vfs_set(0, root);
+	index_set(0, root);
 
 	rcall_set("register",   mouse_register);
 	rcall_set("deregister", mouse_deregister);

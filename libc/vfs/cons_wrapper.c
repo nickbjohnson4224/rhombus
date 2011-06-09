@@ -26,7 +26,7 @@
  */
 
 char *__cons_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct vfs_obj *dir, *new_fobj;
+	struct resource *dir, *new_fobj;
 	const char *name;
 	uint64_t rp;
 	int type;
@@ -45,7 +45,7 @@ char *__cons_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **arg
 	type = atoi(argv[2]);
 
 	/* get requested parent directory */
-	dir = vfs_get(index);
+	dir = index_get(index);
 
 	if (dir) {
 		/* check permissions */

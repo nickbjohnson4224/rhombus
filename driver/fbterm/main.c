@@ -25,10 +25,10 @@
 #include <vfs.h>
 
 size_t fbterm_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
-	struct vfs_obj *file;
+	struct resource *file;
 	size_t i;
 
-	file = vfs_get(index);
+	file = index_get(index);
 
 	mutex_spin(&file->mutex);
 	for (i = 0; i < size; i++) {
@@ -78,10 +78,10 @@ char *fbterm_rcall_set_bgcolor(uint64_t source, uint32_t index, int argc, char *
 }
 
 size_t fbterm_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
-	struct vfs_obj *file;
+	struct resource *file;
 	size_t i;
 
-	file = vfs_get(index);
+	file = index_get(index);
 
 	mutex_spin(&file->mutex);
 	for (i = 0; i < size; i++) {
@@ -110,7 +110,7 @@ void fbterm_event(uint64_t source, uint64_t value) {
 }
 
 int main(int argc, char **argv) {
-	struct vfs_obj *root;
+	struct resource *root;
 	struct font *font;
 	uint64_t kbd_dev;
 	uint64_t fb_dev;
@@ -150,11 +150,11 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	root = calloc(sizeof(struct vfs_obj), 1);
+	root = calloc(sizeof(struct resource), 1);
 	root->type = FS_TYPE_FILE | FS_TYPE_CHAR;
 	root->size = 0;
 	root->acl = acl_set_default(root->acl, PERM_WRITE | PERM_READ);
-	vfs_set(0, root);
+	index_set(0, root);
 
 	// set up screen
 	fb = fb_cons(fb_dev);

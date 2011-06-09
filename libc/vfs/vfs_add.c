@@ -29,8 +29,8 @@
  * esp. during init. Returns zero on success, nonzero on error.
  */
 
-int vfs_add(struct vfs_obj *root, const char *path, struct vfs_obj *obj) {
-	struct vfs_obj *dir;
+int vfs_add(struct resource *root, const char *path, struct resource *obj) {
+	struct resource *dir;
 	uint64_t dirrp;
 	char *path1;
 
@@ -40,12 +40,18 @@ int vfs_add(struct vfs_obj *root, const char *path, struct vfs_obj *obj) {
 
 	/* find parent directory */
 	path1 = path_parent(path);
-	dirrp = vfs_find(root, path1, false);
+
+	if (!root->vfs) {
+		root->vfs = calloc(sizeof(struct vfs_node), 1);
+		root->vfs->resource = root;
+	}
+
+	dirrp = vfs_find(root->vfs, path1, false);
 	if (RP_PID(dirrp) != getpid()) {
 		dir = NULL;
 	}
 	else {
-		dir = vfs_get(RP_INDEX(dirrp));
+		dir = index_get(RP_INDEX(dirrp));
 	}
 	free(path1);
 

@@ -39,7 +39,7 @@
  */
 
 void __write_wrapper(struct msg *msg) {
-	struct vfs_obj *file;
+	struct resource *file;
 	uint64_t offset;
 
 	if (msg->length < sizeof(uint64_t)) {
@@ -52,7 +52,7 @@ void __write_wrapper(struct msg *msg) {
 		return;
 	}
 
-	file = vfs_get(RP_INDEX(msg->target));
+	file = index_get(RP_INDEX(msg->target));
 	if (!file || !(acl_get(file->acl, getuser(RP_PID(msg->source))) & PERM_WRITE)) {
 		merror(msg);
 		return;

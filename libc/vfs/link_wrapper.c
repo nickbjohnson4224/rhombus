@@ -35,7 +35,7 @@
  */
 
 void __link_wrapper(struct msg *msg) {
-	struct vfs_obj *dir;
+	struct resource *dir;
 	uint64_t rp;
 	uint8_t err = 0;
 
@@ -49,7 +49,7 @@ void __link_wrapper(struct msg *msg) {
 	rp = ((uint64_t*) msg->data)[0];
 
 	/* get the requested directory */
-	dir = vfs_get(RP_INDEX(msg->target));
+	dir = index_get(RP_INDEX(msg->target));
 
 	if (dir) {
 		mutex_spin(&dir->mutex);

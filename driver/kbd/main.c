@@ -24,9 +24,9 @@
 struct event_list *event_list;
 
 char *kbd_rcall_register(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct vfs_obj *file;
+	struct resource *file;
 
-	file = vfs_get(index);
+	file = index_get(index);
 
 	mutex_spin(&file->mutex);
 	event_list = event_list_add(event_list, source);
@@ -36,9 +36,9 @@ char *kbd_rcall_register(uint64_t source, uint32_t index, int argc, char **argv)
 }
 
 char *kbd_rcall_deregister(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct vfs_obj *file;
+	struct resource *file;
 
-	file = vfs_get(index);
+	file = index_get(index);
 
 	mutex_spin(&file->mutex);
 	event_list = event_list_del(event_list, source);
@@ -163,13 +163,13 @@ void kbd_irq(struct msg *msg) {
 }
 
 int main(int argc, char **argv) {
-	struct vfs_obj *root;
+	struct resource *root;
 
-	root = calloc(sizeof(struct vfs_obj), 1);
+	root = calloc(sizeof(struct resource), 1);
 	root->type = FS_TYPE_EVENT;
 	root->size = 0;
 	root->acl = acl_set_default(root->acl, 0);
-	vfs_set(0, root);
+	index_set(0, root);
 
 	rcall_set  ("register",   kbd_rcall_register);
 	rcall_set  ("deregister", kbd_rcall_deregister);

@@ -27,11 +27,11 @@
 
 uint8_t tmpfs_index_top = 1;
 
-struct vfs_obj *tmpfs_cons(uint64_t source, int type) {
-	struct vfs_obj *fobj = NULL;
+struct resource *tmpfs_cons(uint64_t source, int type) {
+	struct resource *fobj = NULL;
 
 	if (type & FS_TYPE_FILE) {
-		fobj        = calloc(sizeof(struct vfs_obj), 1);
+		fobj        = calloc(sizeof(struct resource), 1);
 		fobj->type  = FS_TYPE_FILE;
 		fobj->size  = 0;
 		fobj->data  = NULL;
@@ -39,7 +39,7 @@ struct vfs_obj *tmpfs_cons(uint64_t source, int type) {
 		fobj->acl   = acl_set_default(fobj->acl, PERM_READ | PERM_WRITE);
 	}
 	else if (type & FS_TYPE_DIR) {
-		fobj        = calloc(sizeof(struct vfs_obj), 1);
+		fobj        = calloc(sizeof(struct resource), 1);
 		fobj->type  = FS_TYPE_DIR;
 		fobj->index = tmpfs_index_top++;
 		fobj->acl   = acl_set_default(fobj->acl, PERM_READ | PERM_WRITE);
@@ -49,7 +49,7 @@ struct vfs_obj *tmpfs_cons(uint64_t source, int type) {
 	return fobj;
 }
 
-int tmpfs_free(uint64_t source, struct vfs_obj *obj) {
+int tmpfs_free(uint64_t source, struct resource *obj) {
 
 	mutex_spin(&obj->mutex);
 	acl_free(obj->acl);
@@ -62,9 +62,9 @@ int tmpfs_free(uint64_t source, struct vfs_obj *obj) {
 }
 
 size_t tmpfs_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
-	struct vfs_obj *file;
+	struct resource *file;
 
-	file = vfs_get(index);
+	file = index_get(index);
 
 	mutex_spin(&file->mutex);
 	if (!file->data) {
@@ -86,9 +86,9 @@ size_t tmpfs_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size,
 }
 
 size_t tmpfs_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
-	struct vfs_obj *file;
+	struct resource *file;
 
-	file = vfs_get(index);
+	file = index_get(index);
 
 	mutex_spin(&file->mutex);
 	if (offset + size >= file->size) {
@@ -103,9 +103,9 @@ size_t tmpfs_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t size
 }
 
 int tmpfs_reset(uint64_t source, uint32_t index) {
-	struct vfs_obj *file;
+	struct resource *file;
 
-	file = vfs_get(index);
+	file = index_get(index);
 
 	if (file->data) {
 		free(file->data);
@@ -126,12 +126,12 @@ int tmpfs_reset(uint64_t source, uint32_t index) {
  */
 
 int main(int argc, char **argv) {	
-	struct vfs_obj *root;
+	struct resource *root;
 
-	root = calloc(sizeof(struct vfs_obj), 1);
+	root = calloc(sizeof(struct resource), 1);
 	root->type = FS_TYPE_DIR;
 	root->acl = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
-	vfs_set(0, root);
+	index_set(0, root);
 
 	/* set interface */
 	di_wrap_read (tmpfs_read);

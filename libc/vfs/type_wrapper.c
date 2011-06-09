@@ -35,10 +35,10 @@
  */
 
 void __type_wrapper(struct msg *msg) {
-	struct vfs_obj *file;
+	struct resource *file;
 
 	/* find file node */
-	file = vfs_get(RP_INDEX(msg->target));
+	file = index_get(RP_INDEX(msg->target));
 
 	if (!file) {
 		merror(msg);

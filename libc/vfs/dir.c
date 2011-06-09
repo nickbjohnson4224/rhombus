@@ -28,7 +28,7 @@
  * success; returns nonzero on error.
  */
 
-int vfs_push(uint64_t source, struct vfs_obj *dir, struct vfs_obj *robj) {
+int vfs_push(uint64_t source, struct resource *dir, struct resource *robj) {
 	struct vfs_node *sister;
 	struct vfs_node *obj;
 
@@ -88,7 +88,7 @@ int vfs_push(uint64_t source, struct vfs_obj *dir, struct vfs_obj *robj) {
 	mutex_free(&dir->vfs->mutex);
 
 	/* add to index */
-	vfs_set(robj->index, robj);
+	index_set(robj->index, robj);
 
 	if (_vfs_push) {
 		return _vfs_push(source, robj);
@@ -106,7 +106,7 @@ int vfs_push(uint64_t source, struct vfs_obj *dir, struct vfs_obj *robj) {
  * on error.
  */
 
-int vfs_pull(uint64_t source, struct vfs_obj *robj) {
+int vfs_pull(uint64_t source, struct resource *robj) {
 	struct vfs_node *obj;
 
 	if (!robj) {
@@ -155,7 +155,7 @@ int vfs_pull(uint64_t source, struct vfs_obj *robj) {
  * on error.
  */
 
-char *vfs_list(struct vfs_obj *rdir, int entry) {
+char *vfs_list(struct resource *rdir, int entry) {
 	struct vfs_node *daughter;
 	struct vfs_node *dir;
 
@@ -164,6 +164,9 @@ char *vfs_list(struct vfs_obj *rdir, int entry) {
 	}
 
 	dir = rdir->vfs;
+	if (!dir) {
+		return NULL;
+	}
 
 	if (entry < 0) {
 		return NULL;

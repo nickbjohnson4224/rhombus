@@ -28,10 +28,10 @@
 static bool m_time = false;
 
 size_t time_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
-	struct vfs_obj *file;
+	struct resource *file;
 	char *data;
 
-	file = vfs_get(index);
+	file = index_get(index);
 
 	if (!file) return 0;
 	if (!(acl_get(file->acl, RP_INDEX(source)) & PERM_READ)) return 0;
@@ -51,13 +51,13 @@ size_t time_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, 
 }
 
 int main(int argc, char **argv) {
-	struct vfs_obj *root;
+	struct resource *root;
 
-	root       = calloc(sizeof(struct vfs_obj), 1);
+	root       = calloc(sizeof(struct resource), 1);
 	root->type = FS_TYPE_FILE;
 	root->size = 0;
 	root->acl  = acl_set_default(root->acl, PERM_READ);
-	vfs_set(0, root);
+	index_set(0, root);
 
 	di_wrap_read(time_read);
 	vfs_init();

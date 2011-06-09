@@ -29,71 +29,70 @@
  * true, terminal links are not followed, so link objects can be found.
  */
 
-uint64_t vfs_find(struct vfs_obj *root, const char *path_str, bool nolink) {
-	struct path   *path;
-	struct vfs_node *fobj;
-	struct vfs_node *sub;
+uint64_t vfs_find(struct vfs_node *root, const char *path_str, bool nolink) {
+	struct resource *r;
+	const char *tail;
 	uint64_t rp;
+	char *path;
+
+	r = _vfs_find(root, path_str, &tail);
+
+	if (r) {
+		if (r->link) {
+			if (!tail && !nolink) {
+				return r->link;
+			}
+			else {
+				path = saprintf("%r/%s", r->link, tail);
+				rp = fs_find(path);
+				free(path);
+				return rp;
+			}
+		}
+		else {
+			return RP_CONS(getpid(), r->index);
+		}
+	}
+	else {
+		return RP_NULL;
+	}
+}
+
+struct resource *_vfs_find(struct vfs_node *root, const char *path_str, const char **tail) {
+	struct path *path;
+	struct vfs_node *child;
 	char *name;
 
 	path = path_cons(path_str);
-	fobj = root->vfs;
 
-	if (!fobj) {
-		return RP_CONS(getpid(), root->index);
-	}
-
-	while (fobj) {
+	while (root) {
 		name = path_next(path);
 
 		if (!name) {
-			if (fobj->resource->link && !nolink) {
-				return fobj->resource->link;
-			}
-			else {
-				return RP_CONS(getpid(), fobj->resource->index);
-			}
+			if (tail) *tail = NULL;
+			free(path);
+			return root->resource;
 		}
 
-		if ((fobj->resource->type & FS_TYPE_DIR) == 0) {
-			free(name);
-			return 0;
+		if (root->resource->link) {
+			path_prev(path);
+			if (tail) *tail = path_tail(path);
+			free(path);
+			return root->resource;
 		}
-		else {
-			if (fobj->resource->link) {
-				free(name);
-				path_prev(path);
 
-				name = saprintf("%r/%s", fobj->resource->link, path_tail(path));
-				rp = fs_find(name);
-				free(name);
-				return rp;
+		child = root->daughter;
+		while (child) {
+			if (!strcmp(child->name, name)) {
+				break;
 			}
 
-			if ((acl_get(fobj->resource->acl, gettuser()) & PERM_READ) == 0) {
-				return 0;
-			}
-
-			sub = fobj->daughter;
-
-			while (sub) {
-				if (!strcmp(sub->name, name)) {
-					break;
-				}
-
-				sub = sub->sister1;
-			}
-
-			free(name);
-
-			if (sub) {
-				fobj = sub;
-			}
-			else {
-				return 0;
-			}
+			child = child->sister1;
 		}
+
+		free(name);
+		root = child;
 	}
 
-	return 0;
+	return NULL;
 }

@@ -36,7 +36,7 @@
  */
 
 void __perm_wrapper(struct msg *msg) {
-	struct vfs_obj *fobj;
+	struct resource *fobj;
 	uint32_t user;
 	uint8_t perm;
 
@@ -50,7 +50,7 @@ void __perm_wrapper(struct msg *msg) {
 	user = ((uint32_t*) msg->data)[0];
 	
 	/* look up the requested object */
-	fobj = vfs_get(RP_INDEX(msg->target));
+	fobj = index_get(RP_INDEX(msg->target));
 
 	if (fobj) {
 		mutex_spin(&fobj->mutex);

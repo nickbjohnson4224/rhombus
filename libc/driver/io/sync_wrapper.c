@@ -29,14 +29,14 @@
  */
 
 void __sync_wrapper(struct msg *msg) {
-	struct vfs_obj *file;
+	struct resource *file;
 
 	if (!_di_sync) {
 		merror(msg);
 		return;
 	}
 	
-	file = vfs_get(RP_INDEX(msg->target));
+	file = index_get(RP_INDEX(msg->target));
 	if (!file || !(acl_get(file->acl, getuser(RP_PID(msg->source))) & PERM_WRITE)) {
 		merror(msg);
 		return;

@@ -27,29 +27,29 @@
  * by index alone.
  */
 
-static struct vfs_obj *index_lookup[256];
+static struct resource *index_lookup[256];
 static bool m_index_lookup;
 
 /*****************************************************************************
- * vfs_get
+ * index_get
  *
- * Find a virtual filesystem object by index number. Returns the found 
- * filesystem object on success, NULL on error.
+ * Find a resource by index number. Returns the found resource structure on 
+ * success, NULL on error.
  */
 
-struct vfs_obj *vfs_get(uint32_t index) {
-	struct vfs_obj *obj;
+struct resource *index_get(uint32_t index) {
+	struct resource *r;
 
 	mutex_spin(&m_index_lookup);
 
-	obj = index_lookup[index % 256];
+	r = index_lookup[index % 256];
 
-	while (obj) {
-		if (obj->index == index) {
+	while (r) {
+		if (r->index == index) {
 			mutex_free(&m_index_lookup);
-			return obj;
+			return r;
 		}
-		obj = obj->next;
+		r = r->next;
 	}
 
 	mutex_free(&m_index_lookup);
@@ -58,56 +58,57 @@ struct vfs_obj *vfs_get(uint32_t index) {
 }
 
 /*****************************************************************************
- * vfs_set
+ * index_set
  *
- * Register a virtual filesystem object with an index. If another filesystem
- * object already uses that index, its index is set to zero and a pointer to
- * it is returned. The index field of the registered object will be set to the
- * appropriate index.
+ * Register a resource with an index. If another resource already uses that 
+ * index, its index is set to zero and a pointer to it is returned. The index 
+ * field of the registered resource will be set to the appropriate index.
  */
 
-struct vfs_obj *vfs_set(uint32_t index, struct vfs_obj *obj) {
-	struct vfs_obj *old_obj;
+struct resource *index_set(uint32_t index, struct resource *r) {
+	struct resource *old;
 
-	/* check for existing object */
-	old_obj = vfs_get(index);
+	/* check for existing resource */
+	old = index_get(index);
 
-	/* remove existing object if found */
-	if (old_obj) {
+	/* remove existing resource if found */
+	if (old) {
 		mutex_spin(&m_index_lookup);
 
-		if (old_obj->next) {
-			old_obj->next->prev = old_obj->prev;
+		if (old->next) {
+			old->next->prev = old->prev;
 		}
 
-		if (old_obj->prev) {
-			old_obj->prev->next = old_obj->next;
+		if (old->prev) {
+			old->prev->next = old->next;
 		}
 		else {
-			index_lookup[old_obj->index % 256] = NULL;
+			index_lookup[old->index % 256] = NULL;
 		}
 
 		mutex_free(&m_index_lookup);
 
-		old_obj->next = old_obj->prev = NULL;
-		old_obj->index = 0;
+		old->next = old->prev = NULL;
+		old->index = 0;
 	}
 
-	/* add new object if it exists */
-	if (obj) {
-		obj->index = index;
+	/* add new resource if it exists */
+	if (r) {
+		r->index = index;
 		mutex_spin(&m_index_lookup);
-		obj->next = index_lookup[index % 256];
-		obj->prev = NULL;
+		mutex_spin(&r->mutex);
+		r->next = index_lookup[index % 256];
+		r->prev = NULL;
 	
-		if (obj->next) {
-			obj->next->prev = obj;
+		if (r->next) {
+			r->next->prev = r;
 		}
 
-		index_lookup[index % 256] = obj;
+		index_lookup[index % 256] = r;
+		mutex_free(&r->mutex);
 		mutex_free(&m_index_lookup);
 	}
 
-	/* return old object if found */
-	return old_obj;
+	/* return old resource if found */
+	return old;
 }

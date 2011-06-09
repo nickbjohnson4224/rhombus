@@ -27,7 +27,7 @@
  */
 
 char *__find_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct vfs_obj *root;
+	struct resource *root;
 	const char *path;
 	uint64_t file;
 	bool link;
@@ -50,14 +50,19 @@ char *__find_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **arg
 	}
 
 	/* find root node */
-	root = vfs_get(index);
+	root = index_get(index);
 
 	if (!root) {
 		return strdup("! nfound");
 	}
 
-	/* found pointer to file */
-	file = vfs_find(root, path, link);
+	/* find pointer to file */
+	if (!root->vfs && (path[0] == '\0' || (path[0] == '/' && path[1] == '\0'))) {
+		file = RP_CONS(getpid(), root->index);
+	}
+	else {
+		file = vfs_find(root->vfs, path, link);
+	}
 
 	if (file) {
 		return rtoa(file);

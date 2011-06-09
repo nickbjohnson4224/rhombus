@@ -34,10 +34,10 @@
  */
 
 void __remv_wrapper(struct msg *msg) {
-	struct vfs_obj *fobj;
+	struct resource *fobj;
 	
 	/* get the requested object */
-	fobj = vfs_get(RP_INDEX(msg->target));
+	fobj = index_get(RP_INDEX(msg->target));
 
 	if (fobj) {
 		mutex_spin(&fobj->mutex);

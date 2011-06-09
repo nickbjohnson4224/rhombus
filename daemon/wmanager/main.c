@@ -197,15 +197,15 @@ int wmanager_sync(uint64_t source, uint32_t index) {
 	return 0;
 }
 
-struct vfs_obj *wmanager_cons(uint64_t source, int type) {
-	struct vfs_obj *fobj = NULL;
+struct resource *wmanager_cons(uint64_t source, int type) {
+	struct resource *fobj = NULL;
 
 	if (RP_PID(source) != getpid()) {
 		return NULL;
 	}
 
 	if (type & FS_TYPE_FILE) {
-		fobj        = calloc(sizeof(struct vfs_obj), 1);
+		fobj        = calloc(sizeof(struct resource), 1);
 		fobj->type  = type;
 		fobj->size  = 0;
 		fobj->link  = 0;
@@ -217,7 +217,7 @@ struct vfs_obj *wmanager_cons(uint64_t source, int type) {
 	return fobj;
 }
 
-int wmanager_push(uint64_t source, struct vfs_obj *file) {
+int wmanager_push(uint64_t source, struct resource *file) {
 	if (RP_PID(source) != getpid()) {
 		return -1;
 	}
@@ -225,7 +225,7 @@ int wmanager_push(uint64_t source, struct vfs_obj *file) {
 	return add_window(file->index);
 }
 
-int wmanager_pull(uint64_t source, struct vfs_obj *file) {
+int wmanager_pull(uint64_t source, struct resource *file) {
 	return remove_window(file->index, RP_PID(source));
 }
 
@@ -275,7 +275,7 @@ void wmanager_event(uint64_t source, uint64_t value) {
 }
 
 int main(int argc, char **argv) {
-	struct vfs_obj *root;
+	struct resource *root;
 	size_t width, height;
 
 	stdout = stderr = fopen("/dev/serial", "w");
@@ -285,11 +285,11 @@ int main(int argc, char **argv) {
 	}
 	mwait(PORT_CHILD, 0);
 
-	root        = calloc(sizeof(struct vfs_obj), 1);
+	root        = calloc(sizeof(struct resource), 1);
 	root->type  = FS_TYPE_DIR;
 	root->size  = 0;
 	root->acl   = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
-	vfs_set(0, root);
+	index_set(0, root);
 
 	rcall_set("listmodes",      wmanager_rcall_listmodes);
 	rcall_set("createwindow",   wmanager_rcall_createwindow);

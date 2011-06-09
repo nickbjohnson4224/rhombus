@@ -25,7 +25,7 @@
  */
 
 char *__list_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct vfs_obj *dir;
+	struct resource *dir;
 	uint32_t entry;
 	char *name;
 
@@ -34,7 +34,7 @@ char *__list_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **arg
 	}
 
 	/* find directory */
-	dir = vfs_get(index);
+	dir = index_get(index);
 
 	if (!dir) {
 		return strdup("! nfound");

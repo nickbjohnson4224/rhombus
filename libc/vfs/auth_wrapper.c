@@ -37,7 +37,7 @@
  */
 
 void __auth_wrapper(struct msg *msg) {
-	struct vfs_obj *fobj;
+	struct resource *fobj;
 	uint32_t user;
 	uint8_t perm;
 	int err = 0;
@@ -53,7 +53,7 @@ void __auth_wrapper(struct msg *msg) {
 	perm = msg->data[4];
 
 	/* get the requested object */
-	fobj = vfs_get(RP_INDEX(msg->target));
+	fobj = index_get(RP_INDEX(msg->target));
 
 	if (fobj) {
 		mutex_spin(&fobj->mutex);

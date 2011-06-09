@@ -29,7 +29,7 @@
  */
 
 void __read_wrapper(struct msg *msg) {
-	struct vfs_obj *file;
+	struct resource *file;
 	struct msg *reply;
 	uint64_t offset;
 	uint64_t source;
@@ -48,7 +48,7 @@ void __read_wrapper(struct msg *msg) {
 
 	index = RP_INDEX(msg->target);
 
-	file = vfs_get(index);
+	file = index_get(index);
 	if (!file || !(acl_get(file->acl, getuser(RP_PID(msg->source))) & PERM_READ) & PERM_READ) {
 		merror(msg);
 		return;
