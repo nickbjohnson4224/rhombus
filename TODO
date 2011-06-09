@@ -35,7 +35,7 @@ For 0.9 Alpha:
 + move rcall handling to natio
 + isolate VFS code from driver code
 - move more functions to rcall (fs_*)
-- non-recursive fs_find
++ non-recursive fs_find
 - file locking
 - symlinks
 - hard links

@@ -33,9 +33,27 @@ uint64_t fs_lfind(uint64_t root, const char *path) {
 	char *reply;
 	char *path_s;
 
+	// if path is NULL, return NULL
+	if (!path) {
+		return 0;
+	}
+
+	// if preceeded by a resource pointer, use that as root and strip it
+	if (path[0] == '@') {
+		root = ator(path);
+		while (*path != '/' && *path) path++;
+	}
+	else {
+		root = fs_root;
+	}
+
+	// simply return root if path is nonexistent
+	if (path[0] == '\0' || (path[0] == '/' && path[1] == '\0')) {
+		return root;
+	}
+
 	path_s = path_simplify(path);
 	if (!path_s) return 0;
-	if (!root) root = fs_root;
 
 	reply = rcallf(root, "fs_find -L %s", path_s);
 	free(path_s);
@@ -49,10 +67,17 @@ uint64_t fs_lfind(uint64_t root, const char *path) {
 		if      (!strcmp(reply, "! nfound"))	errno = ENOENT;
 		else if (!strcmp(reply, "! denied"))	errno = EACCES;
 		else if (!strcmp(reply, "! nosys"))		errno = ENOSYS;
+		else if (!strcmp(reply, "! notdir"))	errno = ENOTDIR;
 		else 									errno = EUNK;
 		free(reply);
 		return 0;
 	}
+
+	if (reply[0] == '>' && reply[1] == '>' && reply[2] == ' ' && reply[3] == '@') {
+		rp = fs_find(&reply[3]);
+		free(reply);
+		return rp;
+	}	
 
 	rp = ator(reply);
 	free(reply);

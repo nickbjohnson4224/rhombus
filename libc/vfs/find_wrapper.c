@@ -28,8 +28,9 @@
 
 char *__find_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv) {
 	struct resource *root;
+	struct resource *file;
 	const char *path;
-	uint64_t file;
+	const char *tail;
 	bool link;
 
 	if (argc <= 1) {
@@ -49,25 +50,30 @@ char *__find_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **arg
 		return NULL;
 	}
 
-	/* find root node */
+	// find root node
 	root = index_get(index);
 
 	if (!root) {
 		return strdup("! nfound");
 	}
 
-	/* find pointer to file */
+	// find resource
 	if (!root->vfs && (path[0] == '\0' || (path[0] == '/' && path[1] == '\0'))) {
-		file = RP_CONS(getpid(), root->index);
+		file = root;
+		tail = NULL;
 	}
 	else {
-		file = vfs_find(root->vfs, path, link);
+		file = _vfs_find(root->vfs, path, &tail);
 	}
 
-	if (file) {
-		return rtoa(file);
+	if (!file) {
+		return strdup("! nfound");
+	}
+
+	if (file->link && !(!tail && link)) {
+		return saprintf(">> %r%s", file->link, (tail) ? tail : "");
 	}
 	else {
-		return strdup("! nfound");
+		return rtoa(RP_CONS(getpid(), file->index));
 	}
 }
