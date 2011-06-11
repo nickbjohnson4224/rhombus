@@ -15,6 +15,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <stdlib.h>
 #include <natio.h>
 #include <errno.h>
@@ -24,38 +25,32 @@
  *
  * Attempts to remove the fileystem object <fobj>. Returns zero on success,
  * nonzero on failure.
- *
- * protocol:
- *   port: PORT_REMV
- *
- *   request:
- *   
- *   reply:
- *     uint8_t err;
  */
 
 int fs_remove(uint64_t fobj) {
-	struct msg *msg;
-	int err;
+	char *reply;
 
-	msg = aalloc(sizeof(struct msg), PAGESZ);
-	if (!msg) return 1;
-	msg->source = RP_CONS(getpid(), 0);
-	msg->target = fobj;
-	msg->length = 0;
-	msg->port   = PORT_REMV;
-	msg->arch   = ARCH_NAT;
+	if (!fobj) {
+		return RP_NULL;
+	}
 
-	if (msend(msg)) return 1;
-	msg = mwait(PORT_REPLY, fobj);
-
-	if (msg->length < sizeof(uint8_t)) {
-		free(msg);
+	reply = rcall(fobj, "fs_remv");
+	
+	if (!reply) {
+		errno = ENOSYS;
 		return 1;
 	}
 
-	err = msg->data[0];
+	if (reply[0] == '!') {
+		if      (!strcmp(reply, "! denied"))   errno = EACCES;
+		else if (!strcmp(reply, "! nosys"))    errno = ENOSYS;
+		else if (!strcmp(reply, "! notempty")) errno = ENOTEMPTY;
+		else if (!strcmp(reply, "! nfound"))   errno = ENOENT;
+		else                                   errno = EUNK;
+		free(reply);
+		return 1;
+	}
 
-	free(msg);
-	return err;
+	free(reply);
+	return 0;
 }

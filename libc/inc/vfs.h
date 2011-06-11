@@ -126,11 +126,7 @@ int vfs_set_free(int (*vfs_free)(uint64_t source, struct resource *obj));
 
 int vfs_init(void);
 
-void __cons_wrapper(struct msg *msg);
-void __move_wrapper(struct msg *msg);
-void __remv_wrapper(struct msg *msg);
 void __link_wrapper(struct msg *msg);
-void __list_wrapper(struct msg *msg);
 void __size_wrapper(struct msg *msg);
 void __type_wrapper(struct msg *msg);
 void __perm_wrapper(struct msg *msg);
@@ -138,7 +134,6 @@ void __auth_wrapper(struct msg *msg);
 
 char *__find_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
 char *__cons_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
-char *__move_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
 char *__remv_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
 char *__link_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
 char *__list_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);

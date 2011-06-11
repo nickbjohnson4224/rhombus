@@ -15,71 +15,51 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <mutex.h>
 #include <proc.h>
 #include <vfs.h>
 
 /*****************************************************************************
- * __remv_wrapper
- *
- * Performs the requested actions of a FS_REMV command.
- *
- * protocol:
- *   port: PORT_REMV
- *
- *   request:
- *   
- *   reply:
- *     uint8_t err;
+ * __remv_rcall_wrapper
  */
 
-void __remv_wrapper(struct msg *msg) {
-	struct resource *fobj;
-	
-	/* get the requested object */
-	fobj = index_get(RP_INDEX(msg->target));
+char *__remv_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct resource *r;
 
-	if (fobj) {
-		mutex_spin(&fobj->mutex);
+	r = index_get(index);
+
+	if (r) {
+		mutex_spin(&r->mutex);
 
 		/* check all permissions */
-		if ((acl_get(fobj->acl, gettuser()) & PERM_WRITE) == 0 ||
-			(acl_get(fobj->vfs->mother->resource->acl, gettuser() & PERM_WRITE) == 0)) {
-			merror(msg);
-			return;
+		if ((acl_get(r->acl, gettuser() & PERM_WRITE) == 0) ||
+			(acl_get(r->vfs->mother->resource->acl, gettuser()) & PERM_WRITE) == 0) {
+			return strdup("! denied");
 		}
 
 		/* check if directory is empty */
-		if (fobj->type & FS_TYPE_DIR && fobj->vfs->daughter) {
-			merror(msg);
-			return;
+		if (r->vfs && r->vfs->daughter) {
+			return strdup("! notempty");
 		}
-
+		
 		/* remove the object from its directory */
-		vfs_pull(msg->source, fobj);
+		vfs_pull(source, r);
 
 		if (_vfs_free) {
 			/* allow the driver to free the object */
-			if (_vfs_free(msg->source, fobj)) {
-				mutex_free(&fobj->mutex);
-				merror(msg);
-				return;
+			if (_vfs_free(source, r)) {
+				return strdup("! unknown");
 			}
 		}
 		else {
 			/* free the object, assuming data is not allocated */
-			acl_free(fobj->acl);
-			free(fobj);
+			acl_free(r->acl);
+			free(r);
 		}
 
-		mutex_free(&fobj->mutex);
-	}
-	else {
-		/* return ERR_FILE on failure to find object */
-		merror(msg);
+		return strdup("T");
 	}
 
-	msg->length = 1;
-	msg->data[0] = 0;
-	mreply(msg);
+	return strdup("! nfound");
 }

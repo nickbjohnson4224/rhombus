@@ -51,7 +51,6 @@ struct resource *tmpfs_cons(uint64_t source, int type) {
 
 int tmpfs_free(uint64_t source, struct resource *obj) {
 
-	mutex_spin(&obj->mutex);
 	acl_free(obj->acl);
 	if (obj->data) {
 		free(obj->data);
