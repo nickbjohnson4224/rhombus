@@ -32,7 +32,7 @@ int io_link(const char *name, uint64_t rp) {
 	uint64_t link;
 
 	/* find actual link */
-	link = fs_lfind(RP_NULL, name);
+	link = fs_lfind(name);
 
 	if (!link) {
 

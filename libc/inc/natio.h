@@ -24,15 +24,15 @@
 #include <path.h>
 #include <ipc.h>
 
-/* resource pointers ********************************************************/
-
-/*
+/*****************************************************************************
+ * resource pointers
+ *
  * This stuff right here, this is important. Resource pointers are the way
  * that Rhombus indentifies pretty much everything on the system. Every file
  * can be uniquely identified by a resource pointer, which, because it is an 
  * integer type, is easy to pass to and from functions. Resource pointers 
  * also have canonical string representations which are used in the rcall and 
- * event interfaces, and are human readable.
+ * event interfaces, and are human-readable.
  */
 
 #define RP_CONS(pid, idx) ((((uint64_t) (pid)) << 32) | (uint64_t) (idx))
@@ -78,24 +78,24 @@ typedef char *(*rcall_t)(uint64_t src, uint32_t index, int argc, char **argv);
 int     rcall_set(const char *call, rcall_t handler);
 rcall_t rcall_get(const char *call);
 
-/* filesystem operations ****************************************************/
-
 /*****************************************************************************
- * file types
+ * resource types
  *
- * All files must have one or zero of the following type flags:
+ * All resources must have exactly one of the following type flags:
  *   FS_TYPE_FILE					(f)
  *   FS_TYPE_DIR					(d)
  *
- * Files of the type FS_TYPE_FILE may have zero or one of these type flags:
+ * Files of may have zero or one of these type flag sets:
  *   FS_TYPE_GRAPH 					(g)
  *   FS_TYPE_CHAR  					(c)
  *   FS_TYPE_SLINK 					(l)
  *   FS_TYPE_EVENT 					(e)
  *   FS_TYPE_EVENT | FS_TYPE_GRAPH	(w)
  *
- * Files of the type FS_TYPE_DIR may not have any additional type flags.
+ * Directories may not have any additional type flags.
  */
+
+int fs_type(uint64_t rp);
 
 #define FS_TYPE_FILE	0x01	// file (allows read, write, reset)
 #define FS_TYPE_DIR		0x02	// directory (allows find, link, list, etc.)
@@ -105,6 +105,11 @@ rcall_t rcall_get(const char *call);
 #define FS_TYPE_GRAPH	0x20	// graphics file (allows various)
 #define FS_TYPE_CHAR	0x40	// character device (disallows size, offsets)
 
+#define FS_IS_FILE(t) (((t) & FS_TYPE_FILE) != 0)
+#define FS_IS_DIR (t) ((t) == FS_TYPE_DIR)
+
+/* filesystem operations ****************************************************/
+
 uint64_t io_cons(const char *name, int type);
 int      io_remv(const char *name);
 int      io_link(const char *name, uint64_t rp);
@@ -112,19 +117,101 @@ int      io_link(const char *name, uint64_t rp);
 extern uint64_t fs_root;
 
 uint64_t fs_find  (const char *path);
-uint64_t fs_lfind (uint64_t root, const char *path);
+uint64_t fs_lfind (const char *path);
 uint64_t fs_cons  (uint64_t dir, const char *name, int type);
+int      fs_remove(uint64_t rp);
 char    *fs_list  (uint64_t dir, int entry);
 int      fs_link  (uint64_t link, uint64_t fobj);
 uint64_t fs_size  (uint64_t file);
-int      fs_remove(uint64_t rp);
-int      fs_type  (uint64_t rp);
 
-uint8_t  fs_getperm(uint64_t rp, uint32_t user);
-int      fs_setperm(uint64_t rp, uint32_t user, uint8_t perm);
+/*****************************************************************************
+ * lock types
+ *
+ * There are five different basic types of resource locks, each providing a
+ * different type of permission and/or exclusion. All locks are mandatory in
+ * nature, meaning that the relevant operations can only be performed if a
+ * lock is granted.
+ *
+ * LOCK_RS - Read-Shared
+ *
+ * This is the default lock type (all files act as if LOCK_RS was aquired by
+ * every process, unless LOCK_PX is aquired). It allows reading but not 
+ * writing. It may be aquired at any point unless LOCK_PX is aquired. It does
+ * not prevent any locks from being aquired, even LOCK_PX. It effectively does
+ * not guarantee consistency of reads.
+ *
+ * LOCK_RX - Read-eXclusive
+ *
+ * This lock allows reading but not writing. It may be aquired unless LOCK_WS,
+ * LOCK_WX, or LOCK_PX are aquired. It effectively guarantees consistency of
+ * reads. This is similar to the shared lock used with flock().
+ *
+ * LOCK_WS - Write-Shared
+ *
+ * This lock allows reading and writing. It may be aquired unless LOCK_WX,
+ * LOCK_RX, or LOCK_PX are aquired. It does not guarantee consistency of 
+ * reads or writes.
+ *
+ * LOCK_WX - Write-eXclusive
+ *
+ * This lock allows reading and writing. It may be aquired unless LOCK_RX,
+ * LOCK_WS, LOCK_WX, or LOCK_PX are aquired. It effectively guarantees
+ * consistency of reads and writes. This is similar to the exclusive lock
+ * used with flock().
+ *
+ * LOCK_PX - Private-eXclusive
+ *
+ * This lock allows reading and writing. It may be aquired unless LOCK_RX,
+ * LOCK_WS, LOCK_WX, or LOCK_PX are aquired. It prevents LOCK_RS from being
+ * aquired as well, and invalidates all LOCK_RS locks while it is aquired.
+ * It effectively guarantees consistency of reads and writes as well as
+ * privacy of file contents. It is used for files that have "process owners",
+ * such as windows and nameless pipes.
+ */
+
+int fs_setlock(uint64_t rp, int locktype);
+int fs_getlock(uint64_t rp);
+
+#define LOCK_RS		0x00
+#define LOCK_RX		0x01
+#define LOCK_WS		0x02
+#define LOCK_WX		0x03
+#define LOCK_PX		0x04
+
+/*****************************************************************************
+ * permission bitmap
+ *
+ * The following flags correspond to bits that may be set in the permission
+ * bitmap. Permissions can be assigned on a per-user basis, but not a 
+ * per-process basis.
+ *
+ * PERM_READ
+ *
+ * This flag obstensibly gives read access. More correctly, it allows a user 
+ * to aquire read locks (RS, RX) on a file. For directories, reading means 
+ * listing contents and finding paths.
+ *
+ * PERM_WRITE
+ *
+ * This flag obstensibly gives write access. More correctly, it allows a user
+ * to aquire write locks (WS, WX, PX) on a file. For directories, writing
+ * means creating directory entries.
+ *
+ * PERM_ALTER
+ *
+ * This flag allows the permission bitmap to be modified.
+ *
+ * PERM_XLOCK
+ *
+ * This flag allows a user to aquire exclusive locks (RX, WX, PX) on a file.
+ */
+
+uint8_t fs_getperm(uint64_t rp, uint32_t user);
+int     fs_setperm(uint64_t rp, uint32_t user, uint8_t perm);
 
 #define PERM_READ	0x01
 #define PERM_WRITE	0x02
 #define PERM_ALTER	0x04
+#define PERM_XLOCK	0x08
 
 #endif/*NATIO_H*/

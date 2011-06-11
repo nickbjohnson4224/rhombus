@@ -23,12 +23,13 @@
 /*****************************************************************************
  * fs_lfind
  * 
- * Finds the filesystem object with the given path <path> from <root> if it 
- * exists, without following terminal links. If it does not exist, this 
- * function returns 0.
+ * Finds the filesystem object with the given path <path> if it exists, 
+ * without following terminal links. If it does not exist, this function 
+ * returns RP_NULL.
  */
 
-uint64_t fs_lfind(uint64_t root, const char *path) {
+uint64_t fs_lfind(const char *path) {
+	uint64_t root;
 	uint64_t rp;
 	char *reply;
 	char *path_s;
