@@ -79,14 +79,8 @@ void _init() {
 	when(PORT_RCALL, reject);
 	when(PORT_EVENT, ignore);
 
-	when(PORT_FIND,  reject);
-	when(PORT_CONS,  reject);
-	when(PORT_MOVE,  reject);
-	when(PORT_REMV,  reject);
 	when(PORT_LINK,  reject);
-	when(PORT_LIST,  reject);
 	when(PORT_SIZE,  reject);
-	when(PORT_TYPE,  reject);
 	when(PORT_PERM,  reject);
 	when(PORT_AUTH,  reject);
 

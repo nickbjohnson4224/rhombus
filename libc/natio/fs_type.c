@@ -15,26 +15,47 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <stdlib.h>
 #include <natio.h>
 #include <errno.h>
 
 /*****************************************************************************
- * fs_size
+ * fs_type
  *
  * Returns the file type of <file> on success, zero on error.
- *
- * protocol:
- *   port: PORT_TYPE
- *
- *   request:
- *
- *   reply:
- *     uint8_t type
  */
 
 int fs_type(uint64_t fobj) {
-	struct msg *msg;
+	char *reply;
+	int type;
+
+	if (!fobj) {
+		return 0;
+	}
+
+	reply = rcall(fobj, "fs_type");
+
+	if (!reply) {
+		errno = ENOSYS;
+		return 0;
+	}
+
+	if (reply[0] == '!') {
+		if      (!strcmp(reply, "! nfound")) errno = ENOENT;
+		else if (!strcmp(reply, "! nosys"))  errno = ENOSYS;
+		else                                 errno = EUNK;
+		free(reply);
+		return 0;
+	}
+
+	type = typeflag(reply[0]);
+	free(reply);
+
+	return type;
+}
+
+/*	struct msg *msg;
 	int type;
 
 	msg = aalloc(sizeof(struct msg), PAGESZ);
@@ -56,4 +77,4 @@ int fs_type(uint64_t fobj) {
 
 	free(msg);
 	return type;
-}
+}*/

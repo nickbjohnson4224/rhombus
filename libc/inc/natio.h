@@ -97,6 +97,9 @@ rcall_t rcall_get(const char *call);
 
 int fs_type(uint64_t rp);
 
+char typechar(int type);
+int  typeflag(char type);
+
 #define FS_TYPE_FILE	0x01	// file (allows read, write, reset)
 #define FS_TYPE_DIR		0x02	// directory (allows find, link, list, etc.)
 #define FS_TYPE_LINK	0x04	// symbolic link

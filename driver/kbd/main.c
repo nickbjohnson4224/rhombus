@@ -166,7 +166,7 @@ int main(int argc, char **argv) {
 	struct resource *root;
 
 	root = calloc(sizeof(struct resource), 1);
-	root->type = FS_TYPE_EVENT;
+	root->type = FS_TYPE_FILE | FS_TYPE_EVENT;
 	root->size = 0;
 	root->acl = acl_set_default(root->acl, 0);
 	index_set(0, root);

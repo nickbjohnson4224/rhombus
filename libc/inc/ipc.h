@@ -53,14 +53,8 @@
 #define PORT_EVENT	23
 
 // filesystem
-#define PORT_FIND	32
-#define PORT_CONS	33
-#define PORT_MOVE	34
-#define PORT_REMV	35
 #define PORT_LINK	36
-#define PORT_LIST	37
 #define PORT_SIZE	38
-#define PORT_TYPE	39
 #define PORT_PERM	40
 #define PORT_AUTH	41
 

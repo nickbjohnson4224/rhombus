@@ -15,27 +15,33 @@
  */
 
 #include <natio.h>
-#include <ipc.h>
-#include <vfs.h>
 
-/*****************************************************************************
- * vfs_init
- *
- * Initialize VFS request handling system. Returns zero on success, nonzero on
- * error.
- */
+char typechar(int type) {
+	
+	switch (type) {
+	case FS_TYPE_DIR:  return 'd';
+	case FS_TYPE_FILE: return 'f';
+	case FS_TYPE_FILE | FS_TYPE_GRAPH: return 'g';
+	case FS_TYPE_FILE | FS_TYPE_CHAR:  return 'c';
+	case FS_TYPE_FILE | FS_TYPE_EVENT: return 'e';
+	case FS_TYPE_FILE | FS_TYPE_LINK:  return 'l';
+	case FS_TYPE_FILE | FS_TYPE_EVENT | FS_TYPE_GRAPH: return 'w';
+	}
 
-int vfs_init(void) {
-	when(PORT_LINK, __link_wrapper);
-	when(PORT_SIZE, __size_wrapper);
-	when(PORT_PERM, __perm_wrapper);
-	when(PORT_AUTH, __auth_wrapper);
+	return 'n';
+}
 
-	rcall_set("fs_find", __find_rcall_wrapper);
-	rcall_set("fs_cons", __cons_rcall_wrapper);
-	rcall_set("fs_list", __list_rcall_wrapper);
-	rcall_set("fs_remv", __remv_rcall_wrapper);
-	rcall_set("fs_type", __type_rcall_wrapper);
+int typeflag(char type) {
+	
+	switch (type) {
+	case 'd': return FS_TYPE_DIR;
+	case 'f': return FS_TYPE_FILE;
+	case 'g': return FS_TYPE_FILE | FS_TYPE_GRAPH;
+	case 'c': return FS_TYPE_FILE | FS_TYPE_CHAR;
+	case 'e': return FS_TYPE_FILE | FS_TYPE_EVENT;
+	case 'l': return FS_TYPE_FILE | FS_TYPE_LINK;
+	case 'w': return FS_TYPE_FILE | FS_TYPE_GRAPH | FS_TYPE_EVENT;
+	}
 
 	return 0;
 }

@@ -15,10 +15,32 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <mutex.h>
 #include <natio.h>
 #include <proc.h>
 #include <vfs.h>
+
+/*****************************************************************************
+ * __type_rcall_wrapper
+ */
+
+char *__type_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct resource *r;
+	char *reply;
+
+	r = index_get(index);
+
+	if (!r) {
+		return strdup("! nfound");
+	}
+
+	reply = malloc(sizeof(char) * 2);
+	reply[1] = '\0';
+	reply[0] = typechar(r->type);
+
+	return reply;
+}
 
 /*****************************************************************************
  * __type_wrapper
