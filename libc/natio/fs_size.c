@@ -15,6 +15,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <stdlib.h>
 #include <natio.h>
 #include <errno.h>
@@ -25,38 +26,37 @@
  * Returns the file size of <file>. If this value is zero, the file may not
  * exist, be the wrong type, or be a character device. fs_type can be used to 
  * differentiate between these cases.
- *
- * protocol:
- *   port: PORT_SIZE
- *
- *   request:
- *
- *   reply:
- *     uint64_t size
  */
 
 uint64_t fs_size(uint64_t file) {
-	struct msg *msg;
 	uint64_t size;
+	uint32_t size0, size1;
+	char *reply;
 
-	msg = aalloc(sizeof(struct msg), PAGESZ);
-	if (!msg) return 0;
-	msg->source = RP_CONS(getpid(), 0);
-	msg->target = file;
-	msg->length = 0;
-	msg->port   = PORT_SIZE;
-	msg->arch   = ARCH_NAT;
-
-	if (msend(msg)) return 0;
-	msg = mwait(PORT_REPLY, file);
-
-	if (msg->length < sizeof(uint64_t)) {
-		free(msg);
+	if (!file) {
 		return 0;
 	}
 
-	size = ((uint64_t*) msg->data)[0];
+	reply = rcall(file, "fs_size");
 
-	free(msg);
+	if (!reply) {
+		errno = ENOSYS;
+		return 0;
+	}
+
+	if (reply[0] == '!') {
+		if      (!strcmp(reply, "! nfound")) errno = ENOENT;
+		else if (!strcmp(reply, "! nosys"))  errno = ENOSYS;
+		else if (!strcmp(reply, "! denied")) errno = EACCES;
+		else                                 errno = EUNK;
+		free(reply);
+		return 0;
+	}
+
+	size0 = 0;
+	sscanf(reply, "%u:%u", &size0, &size1);
+	size = size1 | (uint64_t) size0 << 32;
+	free(reply);
+
 	return size;
 }

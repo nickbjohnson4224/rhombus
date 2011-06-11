@@ -192,6 +192,10 @@ int vsscanf(const char *str, const char *format, va_list ap) {
 				flags |= FLAGS_OCT;
 				type = TYPE_UINT;
 				break;
+			case 'u':
+				flags |= FLAGS_DEC;
+				type = TYPE_UINT;
+				break;
 			case 's':
 				type = TYPE_STR;
 				break;

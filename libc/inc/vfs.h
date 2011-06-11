@@ -127,8 +127,6 @@ int vfs_set_free(int (*vfs_free)(uint64_t source, struct resource *obj));
 int vfs_init(void);
 
 void __link_wrapper(struct msg *msg);
-void __size_wrapper(struct msg *msg);
-void __type_wrapper(struct msg *msg);
 void __perm_wrapper(struct msg *msg);
 void __auth_wrapper(struct msg *msg);
 

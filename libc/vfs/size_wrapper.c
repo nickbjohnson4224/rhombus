@@ -15,43 +15,32 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <mutex.h>
 #include <natio.h>
 #include <proc.h>
 #include <vfs.h>
 
 /*****************************************************************************
- * __size_wrapper
- *
- * Performs the requested actions of a FS_SIZE command.
- *
- * protocol:
- *   port: PORT_SIZE
- *
- *   request:
- *
- *   reply:
- *     uint64_t size
+ * __size_rcall_wrapper
  */
 
-void __size_wrapper(struct msg *msg) {
-	struct resource *file;
+char *__size_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct resource *r;
 
-	/* find file node */
-	file = index_get(RP_INDEX(msg->target));
+	r = index_get(index);
 
-	if (!file) {
-		merror(msg);
-		return;
+	if (!r) {
+		return strdup("! nfound");
 	}
 
-	/* check file type */
-	if ((file->type & FS_TYPE_FILE) == 0) {
-		merror(msg);
-		return;
+	if ((acl_get(r->acl, gettuser()) & PERM_READ) == 0) {
+		return strdup("! denied");
 	}
 
-	msg->length = sizeof(uint64_t);
-	((uint64_t*) msg->data)[0] = file->size;
-	mreply(msg);
+	if ((r->type & FS_TYPE_FILE) == 0 || (r->type & FS_TYPE_CHAR) != 0) {
+		return strdup("! type");
+	}
+
+	return saprintf("%d:%d", (uint32_t) (r->size >> 32), (uint32_t) r->size);
 }

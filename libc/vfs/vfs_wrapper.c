@@ -27,7 +27,6 @@
 
 int vfs_init(void) {
 	when(PORT_LINK, __link_wrapper);
-	when(PORT_SIZE, __size_wrapper);
 	when(PORT_PERM, __perm_wrapper);
 	when(PORT_AUTH, __auth_wrapper);
 
@@ -36,6 +35,7 @@ int vfs_init(void) {
 	rcall_set("fs_list", __list_rcall_wrapper);
 	rcall_set("fs_remv", __remv_rcall_wrapper);
 	rcall_set("fs_type", __type_rcall_wrapper);
+	rcall_set("fs_size", __size_rcall_wrapper);
 
 	return 0;
 }
