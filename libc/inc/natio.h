@@ -43,6 +43,7 @@
 // string represenation (also %r in printf/scanf)
 char    *rtoa(uint64_t rp);
 uint64_t ator(const char *str);
+char    *rtoa_static(uint64_t rp);
 
 /* core I/O *****************************************************************/
 
@@ -125,7 +126,7 @@ char    *fs_list (const char *path, int entry);
 int      fs_slnk (const char *path, const char *link);
 int      fs_link (const char *path, const char *link);
 int      fs_plink(uint64_t link, uint64_t fobj);
-uint64_t fs_size (uint64_t file);
+uint64_t fs_size (const char *path);
 
 /*****************************************************************************
  * lock types

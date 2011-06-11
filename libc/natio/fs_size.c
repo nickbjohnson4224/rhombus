@@ -28,10 +28,13 @@
  * differentiate between these cases.
  */
 
-uint64_t fs_size(uint64_t file) {
+uint64_t fs_size(const char *path) {
+	uint64_t file;
 	uint64_t size;
 	uint32_t size0, size1;
 	char *reply;
+
+	file = fs_find(path);
 
 	if (!file) {
 		return 0;

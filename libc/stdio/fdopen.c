@@ -47,7 +47,7 @@ FILE *fdopen(uint64_t fd, const char *mode) {
 	stream->fd       = fd;
 	stream->mutex    = false;
 	stream->position = 0;
-	stream->size     = fs_size(fd);
+	stream->size     = fs_size(rtoa_static(fd));
 	stream->buffer   = NULL;
 	stream->buffsize = 0;
 	stream->buffpos  = 0;

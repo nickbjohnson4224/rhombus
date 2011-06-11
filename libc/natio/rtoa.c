@@ -15,6 +15,7 @@
  */
 
 #include <string.h>
+#include <stdlib.h>
 #include <natio.h>
 #include <stdio.h>
 
@@ -32,4 +33,15 @@ char *rtoa(uint64_t rp) {
 	else {
 		return saprintf("@%d:%d", RP_PID(rp), RP_INDEX(rp));
 	}
+}
+
+char *rtoa_static(uint64_t rp) {
+	char *str;
+	static char str_static[42];
+
+	str = rtoa(rp);
+	strcpy(str_static, str);
+	free(str);
+
+	return str_static;
 }

@@ -96,7 +96,7 @@ FILE *fopen(const char *path, const char *mode) {
 	stream->fd       = fd;
 	stream->mutex    = false;
 	stream->position = 0;
-	stream->size     = fs_size(fd);
+	stream->size     = fs_size(path);
 	stream->buffer   = NULL;
 	stream->buffsize = 0;
 	stream->buffpos  = 0;
