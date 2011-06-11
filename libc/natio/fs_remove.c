@@ -21,20 +21,23 @@
 #include <errno.h>
 
 /*****************************************************************************
- * fs_remove
+ * fs_remv
  *
  * Attempts to remove the fileystem object <fobj>. Returns zero on success,
  * nonzero on failure.
  */
 
-int fs_remove(uint64_t fobj) {
+int fs_remv(const char *path) {
+	uint64_t rp;
 	char *reply;
 
-	if (!fobj) {
+	rp = fs_find(path);
+
+	if (!rp) {
 		return RP_NULL;
 	}
 
-	reply = rcall(fobj, "fs_remv");
+	reply = rcall(rp, "fs_remv");
 	
 	if (!reply) {
 		errno = ENOSYS;

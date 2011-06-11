@@ -110,7 +110,6 @@ int fs_type(uint64_t rp);
 
 /* filesystem operations ****************************************************/
 
-int      io_remv(const char *name);
 int      io_link(const char *name, uint64_t rp);
 
 extern uint64_t fs_root;
@@ -118,7 +117,7 @@ extern uint64_t fs_root;
 uint64_t fs_find  (const char *path);
 uint64_t fs_lfind (const char *path);
 uint64_t fs_cons  (const char *path, int type);
-int      fs_remove(uint64_t rp);
+int      fs_remv  (const char *path);
 char    *fs_list  (uint64_t dir, int entry);
 int      fs_link  (uint64_t link, uint64_t fobj);
 uint64_t fs_size  (uint64_t file);

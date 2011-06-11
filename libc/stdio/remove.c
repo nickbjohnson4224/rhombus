@@ -27,21 +27,5 @@
  */
 
 int remove(const char *path) {
-	uint64_t file;
-
-	file = fs_find(path);
-
-	if (file) {
-		if (fs_remove(file)) {
-			errno = EPERM;
-			return 1;
-		}
-		else {
-			return 0;
-		}
-	}
-	else {
-		errno = ENOENT;
-		return 1;
-	}
+	return fs_remv(path);
 }
