@@ -41,33 +41,3 @@ char *__type_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **arg
 
 	return reply;
 }
-
-/*****************************************************************************
- * __type_wrapper
- *
- * Performs the requested actions of a FS_TYPE_ command.
- *
- * protocol:
- *   port: PORT_TYPE
- *
- *   request:
- *
- *   reply:
- *     uint8_t type
- */
-
-void __type_wrapper(struct msg *msg) {
-	struct resource *file;
-
-	/* find file node */
-	file = index_get(RP_INDEX(msg->target));
-
-	if (!file) {
-		merror(msg);
-		return;
-	}
-
-	msg->length = 1;
-	msg->data[0] = file->type;
-	mreply(msg);
-}

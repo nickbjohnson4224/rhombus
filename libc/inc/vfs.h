@@ -143,7 +143,7 @@ char *__perm_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **arg
 char *__auth_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
 
 extern struct resource *(*_vfs_cons)(uint64_t source, int type);
-extern int             (*_vfs_sync)(uint64_t source, struct resource *obj);
-extern int             (*_vfs_free)(uint64_t source, struct resource *obj);
+extern int              (*_vfs_sync)(uint64_t source, struct resource *obj);
+extern int              (*_vfs_free)(uint64_t source, struct resource *obj);
 
 #endif/*VFS_H*/
