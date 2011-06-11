@@ -37,7 +37,7 @@ int io_link(const char *name, uint64_t rp) {
 	if (!link) {
 
 		/* try to create a new link */
-		link = io_cons(name, FS_TYPE_DIR);
+		link = fs_cons(name, FS_TYPE_DIR);
 
 		if (!link) {
 			return 1;

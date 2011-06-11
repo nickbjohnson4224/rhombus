@@ -51,7 +51,7 @@ FILE *fopen(const char *path, const char *mode) {
 
 		/* create the file */
 		if (mode[0] == 'w' || mode[0] == 'a') {
-			fd = io_cons(path, FS_TYPE_FILE);
+			fd = fs_cons(path, FS_TYPE_FILE);
 			if (!fd) {
 				return NULL;
 			}

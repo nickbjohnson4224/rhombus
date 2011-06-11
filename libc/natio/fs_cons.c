@@ -23,19 +23,40 @@
 /*****************************************************************************
  * fs_cons
  *
- * Attempts to create a new filesystem object of type <type> and name <name> 
- * in directory <dir>. Returns the new object on success, NULL on failure.
+ * Attempts to create a new filesystem object of type <type> at the path 
+ * <path>. Returns a resource pointer to the new resource on success, NULL on 
+ * failure.
+ *
+ * Notes:
+ *
+ * <type> should only be FS_TYPE_FILE, FS_TYPE_DIR, or FS_TYPE_FILE | 
+ * FS_TYPE_LINK. The driver will fill in the appropriate flags for its files
+ * beyond that.
+ *
+ * If the creation is successful, the process will recieve either a RX or WX
+ * lock on the resource depending on write access.
  */
 
-uint64_t fs_cons(uint64_t dir, const char *name, int type) {
+uint64_t fs_cons(const char *path, int type) {
+	uint64_t dir;
 	uint64_t rp;
 	char *reply;
+	char *dirname, *name;
+
+	/* find parent directory */
+	dirname = path_parent(path);
+	name    = path_name(path);
+
+	dir = fs_find(dirname);
+	free(dirname);
 
 	if (!dir) {
-		return 0;
+		free(name);
+		return RP_NULL;
 	}
 
 	reply = rcallf(dir, "fs_cons %s %d", name, type);
+	free(name);
 
 	if (!reply) {
 		errno = ENOSYS;

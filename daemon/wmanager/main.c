@@ -40,7 +40,7 @@ char *wmanager_rcall_createwindow(uint64_t source, uint32_t index, int argc, cha
 	char buffer[32];
 
 	sprintf(buffer, "/sys/wmanager/%i", next_index);
-	io_cons(buffer, FS_TYPE_FILE | FS_TYPE_GRAPH | FS_TYPE_EVENT);
+	fs_cons(buffer, FS_TYPE_FILE | FS_TYPE_GRAPH | FS_TYPE_EVENT);
 	window = find_window(next_index - 1, 0);
 	if (!window) {
 		fprintf(stderr, "wmanager: unable to create window\n");
@@ -204,9 +204,9 @@ struct resource *wmanager_cons(uint64_t source, int type) {
 		return NULL;
 	}
 
-	if (type & FS_TYPE_FILE) {
+	if (FS_IS_FILE(type)) {
 		fobj        = calloc(sizeof(struct resource), 1);
-		fobj->type  = type;
+		fobj->type  = FS_TYPE_FILE | FS_TYPE_GRAPH | FS_TYPE_EVENT;
 		fobj->size  = 0;
 		fobj->link  = 0;
 		fobj->data  = NULL;

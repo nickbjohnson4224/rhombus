@@ -88,7 +88,7 @@ rcall_t rcall_get(const char *call);
  * Files of may have zero or one of these type flag sets:
  *   FS_TYPE_GRAPH 					(g)
  *   FS_TYPE_CHAR  					(c)
- *   FS_TYPE_SLINK 					(l)
+ *   FS_TYPE_LINK 					(l)
  *   FS_TYPE_EVENT 					(e)
  *   FS_TYPE_EVENT | FS_TYPE_GRAPH	(w)
  *
@@ -99,7 +99,7 @@ int fs_type(uint64_t rp);
 
 #define FS_TYPE_FILE	0x01	// file (allows read, write, reset)
 #define FS_TYPE_DIR		0x02	// directory (allows find, link, list, etc.)
-#define FS_TYPE_SLINK	0x04	// symbolic link
+#define FS_TYPE_LINK	0x04	// symbolic link
 #define FS_TYPE_PLINK	0x08	// pointer link (similar to mountpoint)
 #define FS_TYPE_EVENT	0x10	// event source (allows register, deregister)
 #define FS_TYPE_GRAPH	0x20	// graphics file (allows various)
@@ -110,7 +110,6 @@ int fs_type(uint64_t rp);
 
 /* filesystem operations ****************************************************/
 
-uint64_t io_cons(const char *name, int type);
 int      io_remv(const char *name);
 int      io_link(const char *name, uint64_t rp);
 
@@ -118,7 +117,7 @@ extern uint64_t fs_root;
 
 uint64_t fs_find  (const char *path);
 uint64_t fs_lfind (const char *path);
-uint64_t fs_cons  (uint64_t dir, const char *name, int type);
+uint64_t fs_cons  (const char *path, int type);
 int      fs_remove(uint64_t rp);
 char    *fs_list  (uint64_t dir, int entry);
 int      fs_link  (uint64_t link, uint64_t fobj);
