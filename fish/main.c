@@ -64,7 +64,7 @@ int main() {
 
 			path = path_simplify(argv[1]);
 
-			if (path && fs_type(fs_find(path)) & FS_TYPE_DIR) {
+			if (path && FS_IS_DIR(fs_type(path))) {
 				setenv("PWD", path);
 			}
 			else {

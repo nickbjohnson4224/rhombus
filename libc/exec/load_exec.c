@@ -44,13 +44,13 @@ void *load_exec(const char *name) {
 	}
 	fd = fs_find(path);
 
-	if (!fd) {
+	if (!fd || !FS_IS_FILE(rp_type(fd))) {
 		/* file not found */
 		return NULL;
 	}
 	else {
 		/* read whole file into buffer */
-		size = fs_size(path);
+		size = rp_size(fd);
 
 		if (!size) {
 			return NULL;

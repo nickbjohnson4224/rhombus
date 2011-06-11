@@ -34,16 +34,17 @@ For 0.9 Alpha:
 + merge libdriver and libc
 + move rcall handling to natio
 + isolate VFS code from driver code
-- move more functions to rcall (fs_*)
++ move more functions to rcall (fs_*)
 + non-recursive fs_find
 - file locking
 - symlinks
 - hard links
 - better event system (textual)
-- process manager
+- process tracker
 - top/ps equivalent
 - pipe driver
 - shell pipe support
+- stdio buffering
 
 For 0.10 Alpha:
 

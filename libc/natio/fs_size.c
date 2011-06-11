@@ -21,20 +21,17 @@
 #include <errno.h>
 
 /*****************************************************************************
- * fs_size
+ * rp_size
  *
  * Returns the file size of <file>. If this value is zero, the file may not
  * exist, be the wrong type, or be a character device. fs_type can be used to 
  * differentiate between these cases.
  */
 
-uint64_t fs_size(const char *path) {
-	uint64_t file;
+uint64_t rp_size(uint64_t file) {
 	uint64_t size;
 	uint32_t size0, size1;
 	char *reply;
-
-	file = fs_find(path);
 
 	if (!file) {
 		return 0;
@@ -62,4 +59,8 @@ uint64_t fs_size(const char *path) {
 	free(reply);
 
 	return size;
+}
+
+uint64_t fs_size(const char *path) {
+	return rp_size(fs_find(path));
 }

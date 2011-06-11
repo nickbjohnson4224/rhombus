@@ -35,19 +35,3 @@ char *rtoa(uint64_t rp) {
 		return saprintf("@%d:%d", RP_PID(rp), RP_INDEX(rp));
 	}
 }
-
-char *rtoa_static(uint64_t rp) {
-	char *str;
-	static char *str_static[MAX_THREADS];
-
-	str = rtoa(rp);
-
-	if (!str_static[gettid()]) {
-		str_static[gettid()] = malloc(sizeof(char) * 42);
-	}
-
-	strcpy(str_static[gettid()], str);
-	free(str);
-
-	return str_static[gettid()];
-}

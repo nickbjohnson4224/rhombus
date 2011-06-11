@@ -21,12 +21,12 @@
 #include <errno.h>
 
 /*****************************************************************************
- * fs_type
+ * rp_type
  *
  * Returns the file type of <file> on success, zero on error.
  */
 
-int fs_type(uint64_t fobj) {
+int rp_type(uint64_t fobj) {
 	char *reply;
 	int type;
 
@@ -53,4 +53,8 @@ int fs_type(uint64_t fobj) {
 	free(reply);
 
 	return type;
+}
+
+int fs_type(const char *path) {
+	return rp_type(fs_find(path));
 }

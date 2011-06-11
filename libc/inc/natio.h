@@ -43,7 +43,6 @@
 // string represenation (also %r in printf/scanf)
 char    *rtoa(uint64_t rp);
 uint64_t ator(const char *str);
-char    *rtoa_static(uint64_t rp);
 
 /* core I/O *****************************************************************/
 
@@ -96,7 +95,8 @@ rcall_t rcall_get(const char *call);
  * Directories may not have any additional type flags.
  */
 
-int fs_type(uint64_t rp);
+int fs_type(const char *path);
+int rp_type(uint64_t rp);
 
 char typechar(int type);
 int  typeflag(char type);
@@ -110,7 +110,7 @@ int  typeflag(char type);
 #define FS_TYPE_CHAR	0x40	// character device (disallows size, offsets)
 
 #define FS_IS_FILE(t) (((t) & FS_TYPE_FILE) != 0)
-#define FS_IS_DIR (t) ((t) == FS_TYPE_DIR)
+#define FS_IS_DIR(t) ((t) == FS_TYPE_DIR)
 
 /* filesystem operations ****************************************************/
 
@@ -127,6 +127,9 @@ int      fs_slnk (const char *path, const char *link);
 int      fs_link (const char *path, const char *link);
 int      fs_plink(uint64_t link, uint64_t fobj);
 uint64_t fs_size (const char *path);
+
+uint64_t rp_size (uint64_t rp);
+int      rp_remv (uint64_t rp);
 
 /*****************************************************************************
  * lock types

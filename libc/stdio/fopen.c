@@ -42,7 +42,7 @@ FILE *fopen(const char *path, const char *mode) {
 	fd = fs_find(path);
 
 	/* check if the object is a directory */
-	if (fd && ((fs_type(fd) & FS_TYPE_FILE) == 0)) {
+	if (fd && ((rp_type(fd) & FS_TYPE_FILE) == 0)) {
 		errno = EISDIR;
 		return NULL;
 	}
@@ -96,7 +96,7 @@ FILE *fopen(const char *path, const char *mode) {
 	stream->fd       = fd;
 	stream->mutex    = false;
 	stream->position = 0;
-	stream->size     = fs_size(path);
+	stream->size     = rp_size(fd);
 	stream->buffer   = NULL;
 	stream->buffsize = 0;
 	stream->buffpos  = 0;

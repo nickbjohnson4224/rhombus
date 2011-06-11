@@ -21,17 +21,14 @@
 #include <errno.h>
 
 /*****************************************************************************
- * fs_remv
+ * rp_remv
  *
- * Attempts to remove the fileystem object <fobj>. Returns zero on success,
+ * Attempts to remove the fileystem object <rp>. Returns zero on success,
  * nonzero on failure.
  */
 
-int fs_remv(const char *path) {
-	uint64_t rp;
+int rp_remv(uint64_t rp) {
 	char *reply;
-
-	rp = fs_find(path);
 
 	if (!rp) {
 		return RP_NULL;
@@ -56,4 +53,8 @@ int fs_remv(const char *path) {
 
 	free(reply);
 	return 0;
+}
+
+int fs_remv(const char *path) {
+	return rp_remv(fs_find(path));
 }
