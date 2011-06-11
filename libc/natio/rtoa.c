@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <natio.h>
 #include <stdio.h>
+#include <proc.h>
 
 /*****************************************************************************
  * rtoa
@@ -37,11 +38,16 @@ char *rtoa(uint64_t rp) {
 
 char *rtoa_static(uint64_t rp) {
 	char *str;
-	static char str_static[42];
+	static char *str_static[MAX_THREADS];
 
 	str = rtoa(rp);
-	strcpy(str_static, str);
+
+	if (!str_static[gettid()]) {
+		str_static[gettid()] = malloc(sizeof(char) * 42);
+	}
+
+	strcpy(str_static[gettid()], str);
 	free(str);
 
-	return str_static;
+	return str_static[gettid()];
 }
