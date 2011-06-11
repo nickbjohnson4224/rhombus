@@ -20,7 +20,7 @@
 #include <errno.h>
 
 /*****************************************************************************
- * fs_link
+ * fs_plink
  *
  * Sets the link at <link> to point to the filesystem object <fobj>. Returns 
  * zero on success, nonzero on failure.
@@ -35,7 +35,7 @@
  *     uint8_t err
  */
 
-int fs_link(uint64_t link, uint64_t fobj) {
+int fs_plink(uint64_t link, uint64_t fobj) {
 	struct msg *msg;
 	int err;
 

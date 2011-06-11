@@ -45,5 +45,5 @@ int io_link(const char *name, uint64_t rp) {
 	}
 
 	/* set link value */
-	return fs_link(link, rp);
+	return fs_plink(link, rp);
 }
