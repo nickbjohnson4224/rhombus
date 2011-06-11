@@ -27,10 +27,20 @@
  * Returns a copy of that string on success, NULL on failure.
  */
 
-char *fs_list(uint64_t dir, int entry) {
+char *fs_list(const char *path, int entry) {
+	uint64_t dir;
 	char *reply;
 
-	if (!dir) dir = fs_root;
+	if (path) {
+		dir = fs_find(path);
+
+		if (!dir) {
+			return NULL;
+		}
+	}
+	else {
+		dir = fs_root;
+	}
 	
 	reply = rcallf(dir, "fs_list %d\n", entry);
 	

@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
 	list[0] = '\0';
 
 	for (i = 0;; i++) {
-		name = fs_list(dir, i);
+		name = fs_list(path, i);
 
 		if (name) {
 			strlcat(list, name, 1000);
