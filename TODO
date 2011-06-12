@@ -36,11 +36,11 @@ For 0.9 Alpha:
 + isolate VFS code from driver code
 + move more functions to rcall (fs_*)
 + non-recursive fs_find
-- file locking
-- symlinks
 - hard links
+- symlinks
 - better event system (textual)
 - process tracker
+- file locking
 - top/ps equivalent
 - pipe driver
 - shell pipe support

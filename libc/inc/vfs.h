@@ -36,6 +36,41 @@ struct vfs_acl *acl_set_default(struct vfs_acl *acl, uint8_t permit);
 
 void acl_free(struct vfs_acl *acl);
 
+/* locks ********************************************************************/
+
+struct vfs_lock_list {
+	struct vfs_lock_list *next;
+	uint32_t pid;
+};
+
+struct vfs_lock_list *vfs_lock_list_add (struct vfs_lock_list *ll, uint32_t pid);
+struct vfs_lock_list *vfs_lock_list_del (struct vfs_lock_list *ll, uint32_t pid);
+int                   vfs_lock_list_tst (struct vfs_lock_list *ll, uint32_t pid);
+struct vfs_lock_list *vfs_lock_list_free(struct vfs_lock_list *ll);
+
+struct vfs_lock {
+	bool mutex;
+
+	/* read-exclusive lock */
+	struct vfs_lock_list *rxlock;
+	
+	/* write-shared lock */
+	struct vfs_lock_list *wslock;
+
+	/* write-exlusive lock */
+	uint32_t wxlock;
+
+	/* private-exclusive lock */
+	uint32_t pxlock;
+};
+
+struct vfs_lock *vfs_lock_cons(void);
+void vfs_lock_free(struct vfs_lock *lock);
+
+int vfs_lock_acquire(struct vfs_lock *lock, uint32_t pid, int locktype);
+int vfs_lock_waitfor(struct vfs_lock *lock, uint32_t pid, int locktype);
+int vfs_lock_current(struct vfs_lock *lock, uint32_t pid);
+
 /* resource structure *******************************************************/
 
 struct resource {
@@ -56,6 +91,9 @@ struct resource {
 
 	/* permissions */
 	struct vfs_acl *acl;
+
+	/* locks */
+	struct vfs_lock *lock;
 
 	/* link information */
 	uint64_t link;

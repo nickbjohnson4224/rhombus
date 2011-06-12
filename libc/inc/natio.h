@@ -182,8 +182,9 @@ int      rp_remv (uint64_t rp);
  * and nameless pipes.
  */
 
-int fs_setlock(uint64_t rp, int locktype);
-int fs_getlock(uint64_t rp);
+int rp_lock_acquire(uint64_t rp, int locktype);
+int rp_lock_waitfor(uint64_t rp, int locktype);
+int rp_lock_current(uint64_t rp);
 
 #define LOCK_NO		0x00
 #define LOCK_RS		0x01
