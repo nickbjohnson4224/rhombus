@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,28 +14,42 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
 #include <natio.h>
-#include <ipc.h>
+#include <mutex.h>
+#include <proc.h>
 #include <vfs.h>
 
-/*****************************************************************************
- * vfs_init
- *
- * Initialize VFS request handling system. Returns zero on success, nonzero on
- * error.
- */
+char *__setperm_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct resource *r;
+	uint32_t user;
+	uint8_t perm;
 
-int vfs_init(void) {
-	when(PORT_LINK, __link_wrapper);
+	if (argc < 3) {
+		return NULL;
+	}
 
-	rcall_set("fs_find", __find_rcall_wrapper);
-	rcall_set("fs_cons", __cons_rcall_wrapper);
-	rcall_set("fs_list", __list_rcall_wrapper);
-	rcall_set("fs_remv", __remv_rcall_wrapper);
-	rcall_set("fs_type", __type_rcall_wrapper);
-	rcall_set("fs_size", __size_rcall_wrapper);
-	rcall_set("fs_getperm", __getperm_rcall_wrapper);
-	rcall_set("fs_setperm", __setperm_rcall_wrapper);
+	user = atoi(argv[1]);
+	perm = atoi(argv[2]);
 
-	return 0;
+	r = index_get(index);
+
+	if (!r) {
+		return strdup("! nfound");
+	}
+
+	mutex_spin(&r->mutex);
+
+	if ((acl_get(r->acl, gettuser()) & PERM_ALTER) == 0) {
+		mutex_free(&r->mutex);
+		return strdup("! denied");
+	}
+
+	r->acl = acl_set(r->acl, user, perm);
+
+	mutex_free(&r->mutex);
+
+	return strdup("T");
 }

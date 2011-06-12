@@ -33,6 +33,12 @@
  * integer type, is easy to pass to and from functions. Resource pointers 
  * also have canonical string representations which are used in the rcall and 
  * event interfaces, and are human-readable.
+ *
+ * The string representations have the following format:
+ *
+ *   @p:i
+ *
+ * Where p is the PID of the pointer and i is the index, both in decimal.
  */
 
 #define RP_CONS(pid, idx) ((((uint64_t) (pid)) << 32) | (uint64_t) (idx))
@@ -52,8 +58,17 @@ int    sync (uint64_t rp);
 int    reset(uint64_t rp);
 int    share(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot);
 
-char  *rcall(uint64_t rp, const char *args);
-char  *rcallf(uint64_t rp, const char *fmt, ...);
+/* rcall ********************************************************************/
+
+typedef char *(*rcall_t)(uint64_t src, uint32_t index, int argc, char **argv);
+
+char   *rcall    (uint64_t rp, const char *args);
+char   *rcallf   (uint64_t rp, const char *fmt, ...);
+
+int     rcall_set(const char *call, rcall_t handler);
+rcall_t rcall_get(const char *call);
+
+/* event ********************************************************************/
 
 struct event_list {
 	uint64_t target;
@@ -61,22 +76,14 @@ struct event_list {
 	struct event_list *prev;
 };
 
-int    event(uint64_t rp, uint64_t value);
-int    eventl(struct event_list *list, uint64_t value);
-
 struct event_list *event_list_add(struct event_list *list, uint64_t target);
 struct event_list *event_list_del(struct event_list *list, uint64_t target);
 
-/* I/O handling *************************************************************/
+int    event (uint64_t rp, uint64_t value);
+int    eventl(struct event_list *list, uint64_t value);
 
-// event
 typedef void (*event_handler_t)(uint64_t source, uint64_t value);
-int event_register(uint64_t source, event_handler_t handler);
-
-// rcall
-typedef char *(*rcall_t)(uint64_t src, uint32_t index, int argc, char **argv);
-int     rcall_set(const char *call, rcall_t handler);
-rcall_t rcall_get(const char *call);
+int    event_register(uint64_t source, event_handler_t handler);
 
 /*****************************************************************************
  * resource types
@@ -144,14 +151,14 @@ int      rp_remv (uint64_t rp);
  * This is the default lock type (all files act as if LOCK_RS was aquired by
  * every process, unless LOCK_PX is aquired). It allows reading but not 
  * writing. It may be aquired at any point unless LOCK_PX is aquired. It does
- * not prevent any locks from being aquired, even LOCK_PX. It effectively does
- * not guarantee consistency of reads.
+ * not prevent any locks from being aquired, even LOCK_PX. It does not 
+ * guarantee consistency of reads.
  *
  * LOCK_RX - Read-eXclusive
  *
  * This lock allows reading but not writing. It may be aquired unless LOCK_WS,
- * LOCK_WX, or LOCK_PX are aquired. It effectively guarantees consistency of
- * reads. This is similar to the shared lock used with flock().
+ * LOCK_WX, or LOCK_PX are aquired. It guarantees consistency of reads. This 
+ * is similar to the shared lock used with flock().
  *
  * LOCK_WS - Write-Shared
  *
@@ -162,28 +169,28 @@ int      rp_remv (uint64_t rp);
  * LOCK_WX - Write-eXclusive
  *
  * This lock allows reading and writing. It may be aquired unless LOCK_RX,
- * LOCK_WS, LOCK_WX, or LOCK_PX are aquired. It effectively guarantees
- * consistency of reads and writes. This is similar to the exclusive lock
- * used with flock().
+ * LOCK_WS, LOCK_WX, or LOCK_PX are aquired. It guarantees consistency of 
+ * reads and writes. This is similar to the exclusive lock used with flock().
  *
  * LOCK_PX - Private-eXclusive
  *
  * This lock allows reading and writing. It may be aquired unless LOCK_RX,
  * LOCK_WS, LOCK_WX, or LOCK_PX are aquired. It prevents LOCK_RS from being
  * aquired as well, and invalidates all LOCK_RS locks while it is aquired.
- * It effectively guarantees consistency of reads and writes as well as
- * privacy of file contents. It is used for files that have "process owners",
- * such as windows and nameless pipes.
+ * It guarantees consistency of reads and writes as well as privacy of file 
+ * contents. It is used for files that have "process owners", such as windows 
+ * and nameless pipes.
  */
 
 int fs_setlock(uint64_t rp, int locktype);
 int fs_getlock(uint64_t rp);
 
-#define LOCK_RS		0x00
-#define LOCK_RX		0x01
-#define LOCK_WS		0x02
-#define LOCK_WX		0x03
-#define LOCK_PX		0x04
+#define LOCK_NO		0x00
+#define LOCK_RS		0x01
+#define LOCK_RX		0x02
+#define LOCK_WS		0x03
+#define LOCK_WX		0x04
+#define LOCK_PX		0x05
 
 /*****************************************************************************
  * permission bitmap
@@ -206,15 +213,21 @@ int fs_getlock(uint64_t rp);
  *
  * PERM_ALTER
  *
- * This flag allows the permission bitmap to be modified.
+ * This flag allows the permission bitmap to be modified. Some drivers simply
+ * do not allow certain operations (usually writing, if the filesystem is
+ * read-only) and this does not ensure that the permission bitmap will 
+ * actually be modified as specified.
  *
  * PERM_XLOCK
  *
  * This flag allows a user to aquire exclusive locks (RX, WX, PX) on a file.
  */
 
-uint8_t fs_getperm(uint64_t rp, uint32_t user);
-int     fs_setperm(uint64_t rp, uint32_t user, uint8_t perm);
+uint8_t fs_getperm(const char *path, uint32_t user);
+int     fs_setperm(const char *path, uint32_t user, uint8_t perm);
+
+uint8_t rp_getperm(uint64_t rp, uint32_t user);
+int     rp_setperm(uint64_t rp, uint32_t user, uint8_t perm);
 
 #define PERM_READ	0x01
 #define PERM_WRITE	0x02

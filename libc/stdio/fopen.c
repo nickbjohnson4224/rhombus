@@ -62,7 +62,7 @@ FILE *fopen(const char *path, const char *mode) {
 		}
 	}
 
-	perm = fs_getperm(fd, gettuser());
+	perm = rp_getperm(fd, gettuser());
 
 	/* check read permissions */
 	if (mode[0] == 'r' || mode[1] == '+') {

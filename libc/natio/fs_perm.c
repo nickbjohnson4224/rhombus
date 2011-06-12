@@ -21,45 +21,45 @@
 #include <errno.h>
 
 /*****************************************************************************
- * fs_perm
+ * fs_getperm
  *
  * Returns the filesystem permissions of the filesystem object <fobj> that
  * apply to the user <user>. Returns zero on error.
- *
- * protocol:
- *   port: PORT_PERM
- *
- *   request:
- *     uint32_t user
- *
- *   reply:
- *     uint8_t perm
  */
 
-uint8_t fs_getperm(uint64_t fobj, uint32_t user) {
-	struct msg *msg;
-	int err;
+uint8_t rp_getperm(uint64_t fobj, uint32_t user) {
+	uint8_t perm;
+	char *reply;
 
-	msg = aalloc(sizeof(struct msg) + sizeof(uint32_t), PAGESZ);
-	if (!msg) return 0;
-	msg->source = RP_CONS(getpid(), 0);
-	msg->target = fobj;
-	msg->length = sizeof(uint32_t);
-	msg->port   = PORT_PERM;
-	msg->arch   = ARCH_NAT;
-
-	((uint32_t*) msg->data)[0] = user;
-
-	if (msend(msg)) return 0;
-	msg = mwait(PORT_REPLY, fobj);
-
-	if (msg->length < sizeof(uint8_t)) {
-		free(msg);
-		return 1;
+	if (!fobj) {
+		return 0;
 	}
 
-	err = msg->data[0];
+	reply = rcallf(fobj, "fs_getperm %d", user);
 
-	free(msg);
-	return err;
+	if (!reply) {
+		errno = ENOSYS;
+		return 0;
+	}
+
+	if (reply[0] == '!') {
+		if      (!strcmp(reply, "! nfound")) errno = ENOENT;
+		else if (!strcmp(reply, "! denied")) errno = EACCES;
+		else if (!strcmp(reply, "! nosys"))  errno = ENOSYS;
+		else                                 errno = EUNK;
+		free(reply);
+		return 0;
+	}
+	else {
+		errno = 0;
+	}
+
+	perm = atoi(reply);
+	free(reply);
+
+	return perm;
+}
+
+uint8_t fs_getperm(const char *path, uint32_t user) {
+	return rp_getperm(fs_find(path), user);
 }

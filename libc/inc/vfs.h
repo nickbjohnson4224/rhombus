@@ -130,15 +130,15 @@ void __link_wrapper(struct msg *msg);
 void __perm_wrapper(struct msg *msg);
 void __auth_wrapper(struct msg *msg);
 
-char *__find_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
-char *__cons_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
-char *__remv_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
-char *__link_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
-char *__list_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
-char *__size_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
-char *__type_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
-char *__perm_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
-char *__auth_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
+char *__find_rcall_wrapper   (uint64_t source, uint32_t index, int argc, char **argv);
+char *__cons_rcall_wrapper   (uint64_t source, uint32_t index, int argc, char **argv);
+char *__remv_rcall_wrapper   (uint64_t source, uint32_t index, int argc, char **argv);
+char *__link_rcall_wrapper   (uint64_t source, uint32_t index, int argc, char **argv);
+char *__list_rcall_wrapper   (uint64_t source, uint32_t index, int argc, char **argv);
+char *__size_rcall_wrapper   (uint64_t source, uint32_t index, int argc, char **argv);
+char *__type_rcall_wrapper   (uint64_t source, uint32_t index, int argc, char **argv);
+char *__getperm_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
+char *__setperm_rcall_wrapper(uint64_t source, uint32_t index, int argc, char **argv);
 
 extern struct resource *(*_vfs_cons)(uint64_t source, int type);
 extern int              (*_vfs_sync)(uint64_t source, struct resource *obj);
