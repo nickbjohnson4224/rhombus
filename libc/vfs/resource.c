@@ -25,7 +25,9 @@
  */
 
 void resource_free(struct resource *r) {
-	
+
+	index_set(r->index, NULL);
+
 	if (r->acl) {
 		free(r->acl);
 	}

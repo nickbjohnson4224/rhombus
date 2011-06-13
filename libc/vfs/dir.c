@@ -133,13 +133,34 @@ int vfs_link(struct vfs_node *dir, const char *name, struct resource *r) {
  * is running.
  */
 
-int vfs_unlink(struct vfs_node *entry) {
+int vfs_unlink(struct vfs_node *dir, const char *name) {
+	struct vfs_node *entry;
 
-	if (!entry->mother) {
+	if (!dir || !dir->daughter) {
 		/* entry is not in a directory at all: fail */
 		return 1;
 	}
 
+	/* find entry */
+	entry = dir->daughter;
+	while (entry->sister1) {
+		if (strcmp(entry->name, name) == 0) {
+			break;
+		}
+		entry = entry->sister1;
+	}
+
+	if (strcmp(entry->name, name)) {
+		/* entry is not in the directory */
+		return 2;
+	}
+
+	if (entry->daughter) {
+		/* entry is a non-empty directory: fail */
+		return 3;
+	}
+
+	/* remove entry from directory */
 	if (entry->sister0) {
 		/* entry is not first */
 		entry->sister0->sister1 = entry->sister1;

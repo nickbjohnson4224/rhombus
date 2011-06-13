@@ -128,17 +128,17 @@ extern uint64_t fs_root;
 uint64_t fs_find (const char *path);
 uint64_t fs_lfind(const char *path);
 uint64_t fs_cons (const char *path, int type);
-int      fs_remv (const char *path);
 char    *fs_list (const char *path, int entry);
 int      fs_slnk (const char *path, const char *link);
 int      fs_link (const char *path, const char *link);
+int      fs_ulink(const char *path);
 int      fs_plink(uint64_t link, uint64_t fobj);
 uint64_t fs_size (const char *path);
 
 uint64_t rp_size (uint64_t rp);
 int      rp_remv (uint64_t rp);
 int      rp_slnk (uint64_t rp, const char *link);
-int      rp_link (uint64_t rp, uint64_t link);
+int      rp_link (uint64_t dir, const char *name, uint64_t link);
 int      rp_cons (uint64_t driver, int type);
 
 /*****************************************************************************

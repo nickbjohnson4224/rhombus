@@ -15,9 +15,76 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <stdlib.h>
 #include <natio.h>
 #include <errno.h>
+
+/*****************************************************************************
+ * fs_link
+ *
+ * Creates a new link (also known as a hard link) to the existing file <link>
+ * at path <path>. <link> may not be a directory, and must be a file in the
+ * same driver as the new link or be zero. If <link> is zero, the link is 
+ * removed instead of created. Returns zero on success, nonzero on error.
+ */
+
+int fs_link(const char *path, const char *link) {
+	uint64_t dir;
+	uint64_t rp;
+	char *parent;
+	char *name;
+	int err;
+
+	parent = path_parent(path);
+	name   = path_name(path);
+
+	dir = fs_find(parent);
+	rp  = fs_find(link);
+
+	err = rp_link(dir, name, rp);
+
+	free(parent);
+	free(name);
+
+	return err;
+}
+
+int fs_ulink(const char *path) {
+	return fs_link(path, "@0:0");
+}
+
+int rp_link(uint64_t dir, const char *name, uint64_t link) {
+	char *reply;
+
+	if (!name) {
+		return 1;
+	}
+
+	if (link && RP_PID(dir) != RP_PID(link)) {
+		return 1;
+	}
+
+	reply = rcallf(dir, "fs_link %s %r", name, link);
+
+	if (!reply) {
+		errno = ENOSYS;
+		return 1;
+	}
+
+	if (reply[0] == '!') {
+		if      (!strcmp(reply, "! nfound"))   errno = ENOENT;
+		else if (!strcmp(reply, "! denied"))   errno = EACCES;
+		else if (!strcmp(reply, "! type"))     errno = ENOTDIR;
+		else if (!strcmp(reply, "! notempty")) errno = ENOTEMPTY;
+		else                                   errno = EUNK;
+		free(reply);
+		return 1;
+	}
+
+	free(reply);
+	return 0;
+}
 
 /*****************************************************************************
  * fs_plink

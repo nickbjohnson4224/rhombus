@@ -26,7 +26,6 @@
 
 static char *_find_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_cons_handler(uint64_t source, uint32_t index, int argc, char **argv);
-static char *_remv_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_link_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_list_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_size_handler(uint64_t source, uint32_t index, int argc, char **argv);
@@ -47,7 +46,7 @@ int vfs_init(void) {
 	rcall_set("fs_find", _find_handler);
 	rcall_set("fs_cons", _cons_handler);
 	rcall_set("fs_list", _list_handler);
-	rcall_set("fs_remv", _remv_handler);
+	rcall_set("fs_link", _link_handler);
 	rcall_set("fs_type", _type_handler);
 	rcall_set("fs_size", _size_handler);
 	rcall_set("fs_getperm", _getperm_handler);
@@ -183,42 +182,97 @@ static char *_cons_handler(uint64_t source, uint32_t index, int argc, char **arg
 	return ((rp) ? rtoa(rp) : strdup("! link"));
 }
 
-static char *_remv_handler(uint64_t source, uint32_t index, int argc, char **argv) {
+static char *_link_handler(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct resource *dir;
 	struct resource *r;
+	const char *name;
+	uint64_t link;
+	int err;
 
-	return strdup("! nosys");
+	if (argc < 3) {
+		return NULL;
+	}
 
-	r = index_get(index);
+	/* find directory */
+	dir = index_get(index);
+	if (!dir) return strdup("! nfound");
 
-	if (r) {
-		mutex_spin(&r->mutex);
+	if (!FS_IS_DIR(dir->type) || !dir->vfs) {
+		/* dir is not a directory */
+		return strdup("! type");
+	}
 
-		/* check all permissions */
-		if ((acl_get(r->acl, gettuser() & PERM_WRITE) == 0)) {
-			return strdup("! denied");
-		}
+	if ((acl_get(dir->acl, gettuser()) & PERM_WRITE) == 0) {
+		/* permission denied */
+		return strdup("! denied");
+	}
 
-		/* check if directory is empty */
-		if (r->vfs && r->vfs->daughter) {
-			return strdup("! notempty");
-		}
+	/* parse arguments */
+	name = argv[1];
+	link = ator(argv[2]);
+
+	if (link) {
+		/* create new link */
 		
-		/* remove the object from its directory */
-		vfs_pull(source, r);
-
-		if (_vfs_free) {
-			/* allow the driver to free the object */
-			_vfs_free(source, r);
+		if (RP_PID(link) != getpid()) {
+			/* link is outside current driver */
+			return strdup("! extern");
 		}
-		else {
-			/* free the object, assuming data is not allocated */
-			resource_free(r);
+
+		/* find resource to be linked */
+		r = index_get(RP_INDEX(link));
+		if (!r) return strdup("! nfound");
+
+		if (FS_IS_DIR(r->type)) {
+			/* cannot link directories */
+			return strdup("! type");
+		}
+
+		/* create link */
+		mutex_spin(&dir->vfs->mutex);
+		mutex_spin(&r->mutex);
+		err = vfs_link(dir->vfs, name, r);
+		mutex_free(&r->mutex);
+
+		if (err) {
+			mutex_free(&dir->vfs->mutex);
+			return strdup("! link");
+		}
+
+		/* synchronize with driver */
+		mutex_spin(&dir->mutex);
+		if (_vfs_sync) _vfs_sync(source, dir);
+		mutex_free(&dir->mutex);
+		mutex_free(&dir->vfs->mutex);
+
+		return strdup("T");
+	}
+	else {
+
+		/* find linked resource */
+		r = vfs_find(dir->vfs, name, NULL);
+		
+		/* delete link */
+		mutex_spin(&dir->vfs->mutex);
+		err = vfs_unlink(dir->vfs, name);
+		mutex_free(&dir->vfs->mutex);
+
+		switch (err) {
+		case 0: break;
+		case 1: return strdup("! type");
+		case 2: return strdup("! nfound");
+		case 3: return strdup("! notempty");
+		default: return NULL;
+		}
+
+		/* if refcount is zero, free resource */
+		if (r->vfs_refcount == 0) {
+			if (_vfs_free) _vfs_free(source, r);
+			else resource_free(r);
 		}
 
 		return strdup("T");
 	}
-
-	return strdup("! nfound");
 }
 
 static char *_list_handler(uint64_t source, uint32_t index, int argc, char **argv) {

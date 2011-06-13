@@ -51,11 +51,8 @@ struct resource *tmpfs_cons(uint64_t source, int type) {
 
 int tmpfs_free(uint64_t source, struct resource *obj) {
 
-	acl_free(obj->acl);
-	if (obj->data) {
-		free(obj->data);
-	}
-	free(obj);
+	if (obj->data) free(obj->data);
+	resource_free(obj);
 
 	return 0;
 }

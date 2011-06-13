@@ -129,7 +129,7 @@ int vfs_add(struct resource *root, const char *path, struct resource *obj);
 struct resource *vfs_find(struct vfs_node *root, const char *path, const char **tail);
 
 int   vfs_link  (struct vfs_node *dir, const char *name, struct resource *r);
-int   vfs_unlink(struct vfs_node *entry);
+int   vfs_unlink(struct vfs_node *dir, const char *name);
 char *vfs_list  (struct vfs_node *dir, int entry);
 int   vfs_pull  (uint64_t source, struct resource *obj);
 

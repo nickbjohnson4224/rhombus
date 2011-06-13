@@ -27,5 +27,5 @@
  */
 
 int remove(const char *path) {
-	return fs_remv(path);
+	return fs_ulink(path);
 }
