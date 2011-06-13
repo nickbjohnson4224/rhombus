@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -29,7 +29,7 @@
  * only.
  */
 
-static pid_t irq_holder[IRQ_INT_SIZE];
+static pid_t irq_holder[256];
 
 /*****************************************************************************
  * irq_redirect (interrupt handler)
@@ -52,10 +52,6 @@ struct thread *irq_redirect(struct thread *image) {
 
 int irq_set_redirect(pid_t pid, irqid_t irq) {
 
-	if (irq > IRQ_INT_SIZE) {
-		return 1;
-	}
-
 	irq_holder[irq] = pid;
 	int_set_handler(IRQ2INT(irq), irq_redirect);
 	irq_allow(irq);
@@ -72,10 +68,6 @@ int irq_set_redirect(pid_t pid, irqid_t irq) {
  */
 
 pid_t irq_get_redirect(irqid_t irq) {
-
-	if (irq > IRQ_INT_SIZE) {
-		return 1;
-	}
 
 	return irq_holder[irq];
 }

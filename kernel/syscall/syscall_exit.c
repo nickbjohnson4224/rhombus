@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,6 +18,7 @@
 #include <process.h>
 #include <thread.h>
 #include <debug.h>
+#include <irq.h>
 
 /****************************************************************************
  * syscall_exit (int 0x49)
@@ -27,16 +28,37 @@
  * Exits the current process, switching to init temporarily, then switching
  * to the next schedulable thread. If init calls this syscall, the kernel
  * halts. Does not return on success.
+ *
+ * This also sends a virtual IRQ to the process tracker, if it is 
+ * initialized.
  */
 
 struct thread *syscall_exit(struct thread *image) {
+	struct thread *track_image;
+	uint16_t pid;
 
-	if (image->proc->pid == 1) {
+	pid = image->proc->pid;
+
+	if (pid == 1) {
 		debug_panic("init died");
 	}
 
 	process_switch(process_get(1));
 	process_kill(image->proc);
 
-	return thread_switch(image, schedule_next());
+	if (irq_get_redirect(255) != 0) {
+		track_image = thread_send(NULL, irq_get_redirect(255), PORT_IRQ, NULL);
+		track_image->esi = pid; // send PID as source
+		track_image->user = 0;
+	}
+	else {
+		track_image = NULL;
+	}
+
+	if (track_image) {
+		return thread_switch(image, schedule_next());
+	}
+	else {
+		return thread_switch(image, track_image);
+	}
 }

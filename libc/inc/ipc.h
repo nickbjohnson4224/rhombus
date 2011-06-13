@@ -52,12 +52,6 @@
 #define PORT_RCALL	22
 #define PORT_EVENT	23
 
-// filesystem
-#define PORT_LINK	36
-#define PORT_SIZE	38
-#define PORT_PERM	40
-#define PORT_AUTH	41
-
 /* message structure ********************************************************/
 
 struct msg {

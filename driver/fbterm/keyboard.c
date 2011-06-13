@@ -143,9 +143,7 @@ void keyboard_event(uint32_t code, bool press) {
 	static bool ctrl = false;
 
 	if (!press) {
-		if (code == 0x00C00001) {
-			ctrl = false;
-		}
+		ctrl = false;
 		return;
 	}
 

@@ -15,10 +15,15 @@
  */
 
 #include <stdint.h>
+#include <space.h>
 #include <debug.h>
 
 void debug_dumpi(uintptr_t *base, int count) {
 	int i;
+
+	if (!page_get((uintptr_t) base)) {
+		return;
+	}
 
 	if (count >= 0) {
 		for (i = 0; i < count; i++) {
