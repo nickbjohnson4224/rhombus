@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
 	rcall_set("deregister", mouse_deregister);
 	vfs_init();
 
-	io_link("/dev/mouse", RP_CONS(getpid(), 0));
+	fs_plink("/dev/mouse", RP_CONS(getpid(), 0), NULL);
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 
 	while (1) {

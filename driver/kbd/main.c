@@ -176,7 +176,7 @@ int main(int argc, char **argv) {
 	di_wrap_irq(1, kbd_irq);
 	vfs_init();
 
-	io_link("/dev/kbd", RP_CONS(getpid(), 0));
+	fs_plink("/dev/kbd", RP_CONS(getpid(), 0), NULL);
 
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 	_done();

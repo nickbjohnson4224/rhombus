@@ -208,7 +208,7 @@ int main(int argc, char **argv) {
 	vfs_init();
 
 	/* register the driver as /dev/svga0 */
-	io_link("/dev/svga0", RP_CONS(getpid(), 0));
+	fs_plink("/dev/svga0", RP_CONS(getpid(), 0), NULL);
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 	_done();
 

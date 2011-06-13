@@ -81,7 +81,7 @@ int main() {
 	argv[0] = "serial";
 	argv[1] = NULL;
 	file = tar_find(boot_image, "sbin/serial");
-	io_link("/dev/serial", start(file, argv));
+	fs_plink("/dev/serial", start(file, argv), NULL);
 	stdout = stderr = fopen("/dev/serial", "w");
 
 	/* Keyboard Driver */
@@ -97,11 +97,11 @@ int main() {
 	start(file, argv);
 
 	/* Init control file */
-	io_link("/sys/init", RP_CONS(getpid(), 1));
+	fs_plink("/sys/init", RP_CONS(getpid(), 1), NULL);
 
 	/* Initrd */
 	initrd_init();
-	io_link("/dev/initrd", RP_CONS(getpid(), 0));
+	fs_plink("/dev/initrd", RP_CONS(getpid(), 0), NULL);
 
 	/* Root filesystem (tarfs) */
 	argv[0] = "tarfs";
@@ -109,13 +109,13 @@ int main() {
 	argv[2] = NULL;
 	file = tar_find(boot_image, "sbin/tarfs");
 	temp = start(file, argv);
-
+	
 	/* Link /dev and /sys and change root */
 	temp1 = fs_find("/dev");
 	temp2 = fs_find("/sys");
 	fs_root = temp;
-	io_link("/dev", temp1);
-	io_link("/sys", temp2);
+	fs_plink("/dev", temp1, NULL);
+	fs_plink("/sys", temp2, NULL);
 
 	/* Terminal Driver */
 	argv[0] = "fbterm";
@@ -123,7 +123,7 @@ int main() {
 	argv[2] = "/dev/svga0";
 	argv[3] = NULL;
 	file = tar_find(boot_image, "sbin/fbterm");
-	io_link("/dev/tty", start(file, argv));
+	fs_plink("/dev/tty", start(file, argv), NULL);
 
 	/* Splash */
 	stdout = stderr = stdin = fopen("/dev/tty", "w");
@@ -133,13 +133,13 @@ int main() {
 	argv[0] = "tmpfs";
 	argv[1] = NULL;	
 	file = tar_find(boot_image, "sbin/tmpfs");
-	io_link("/tmp", start(file, argv));
+	fs_plink("/tmp", start(file, argv), NULL);
 
 	/* Time Driver */
 	argv[0] = "time";
 	argv[1] = NULL;
 	file = tar_find(boot_image, "sbin/time");
-	io_link("/dev/time", start(file, argv));
+	fs_plink("/dev/time", start(file, argv), NULL);
 
 	setenv("NAME", "init");
 	

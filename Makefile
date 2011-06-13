@@ -56,11 +56,9 @@ image:	all
 
 	@ - mkdir boot
 	@ - mkdir boot/bin
-	@ - mkdir boot/dev
 	@ - mkdir boot/tmp
 	@ - mkdir boot/lib
 	@ - mkdir boot/sbin
-	@ - mkdir boot/sys
 	@ - mkdir boot/etc
 	@ cp bin/* boot/bin
 	@ cp lib/dl.so boot/lib

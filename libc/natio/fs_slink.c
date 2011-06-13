@@ -37,6 +37,34 @@ int fs_slink(const char *path, const char *link) {
 	return rp_slink(rp, link);
 }
 
+int fs_plink(const char *path, uint64_t link_rp, const char *link_path) {
+	char *link_path1;
+	int err;
+
+	if (link_rp && link_path) link_path1 = saprintf("%r/%s", link_rp, link_path);
+	else if (link_path) link_path1 = strdup(link_path);
+	else if (link_rp) link_path1 = rtoa(link_rp);
+
+	err = fs_slink(path, link_path1);
+	free(link_path1);
+
+	return err;
+}
+
+int rp_plink(uint64_t rp, uint64_t link_rp, const char *link_path) {
+	char *link_path1;
+	int err;
+
+	if (link_rp && link_path) link_path1 = saprintf("%r/%s", link_rp, link_path);
+	else if (link_path) link_path1 = strdup(link_path);
+	else if (link_rp) link_path1 = rtoa(link_rp);
+
+	err = rp_slink(rp, link_path1);
+	free(link_path1);
+
+	return err;
+}
+
 int rp_slink(uint64_t rp, const char *link) {
 	char *reply;
 

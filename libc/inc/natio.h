@@ -113,7 +113,6 @@ int  typeflag(char type);
 #define FS_TYPE_FILE	0x01	// file (allows read, write, reset)
 #define FS_TYPE_DIR		0x02	// directory (allows find, link, list, etc.)
 #define FS_TYPE_LINK	0x04	// symbolic link
-#define FS_TYPE_PLINK	0x08	// pointer link (similar to mountpoint)
 #define FS_TYPE_EVENT	0x10	// event source (allows register, deregister)
 #define FS_TYPE_GRAPH	0x20	// graphics file (allows various)
 #define FS_TYPE_CHAR	0x40	// character device (disallows size, offsets)
@@ -124,22 +123,45 @@ int  typeflag(char type);
 
 /* filesystem operations ****************************************************/
 
-int      io_link(const char *name, uint64_t rp);
-
 extern uint64_t fs_root;
 
 uint64_t fs_find (const char *path);
 uint64_t fs_lfind(const char *path);
 uint64_t fs_cons (const char *path, int type);
 char    *fs_list (const char *path, int entry);
-int      fs_slink(const char *path, const char *link);
-int      fs_link (const char *path, const char *link);
-int      fs_ulink(const char *path);
-int      fs_plink(uint64_t link, uint64_t fobj);
 uint64_t fs_size (const char *path);
 
 uint64_t rp_size (uint64_t rp);
+
+/*****************************************************************************
+ * links
+ *
+ * There are two different types of links: hard links and symbolic links.
+ *
+ * Hard links are simply directory entries, and are used for all directories
+ * and files. Because of this, hard links are indistinguishable from files.
+ * All metadata of a file is shared between its hard links, except for its
+ * position in the VFS. Files may have an unlimited number of hard links, but
+ * directories may only have one, to prevent a variety of problems. If you
+ * want to link directories, use symbolic links. Once a file or directory has
+ * no hard links, it is typically freed. Use fs_link to create hard links and
+ * fs_ulink to remove them.
+ *
+ * Symbolic links are redirections to a specified path. Because paths may
+ * contain resource pointers, symbolic links may be used like UNIX
+ * mountpoints, because they can span devices without those devices having a
+ * contiguous VFS. Symbolic links may be invalid as well, because they don't
+ * keep track of their targets. Symbolic links may be created and modified
+ * using fs_slink (and fs_plink, which is a more flexible form.)
+ */
+
+int      fs_slink(const char *path, const char *link);
+int      fs_plink(const char *path, uint64_t link_rp, const char *link_path);
+int      fs_link (const char *path, const char *link);
+int      fs_ulink(const char *path);
+
 int      rp_slink(uint64_t rp, const char *link);
+int      rp_plink(uint64_t rp, uint64_t link_rp, const char *link_path);
 int      rp_link (uint64_t dir, const char *name, uint64_t link);
 
 /*****************************************************************************

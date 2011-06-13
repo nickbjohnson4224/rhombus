@@ -66,6 +66,18 @@ static uintptr_t getvalue(char *field, size_t size) {
 	return sum;
 }
 
+struct resource *tarfs_cons(uint64_t source, int type) {
+	static uint32_t tarfs_index_top = 1000;
+	struct resource *fobj = NULL;
+
+	if (FS_IS_LINK(type)) {
+		fobj        = resource_cons(FS_TYPE_LINK, PERM_READ | PERM_WRITE);
+		fobj->index = tarfs_index_top++;
+	}
+
+	return fobj;
+}
+
 size_t tarfs_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
 	struct resource *file;
 
@@ -146,7 +158,7 @@ int main(int argc, char **argv) {
 			file        = calloc(sizeof(struct resource), 1);
 			file->type  = FS_TYPE_DIR;
 			file->index = n;
-			file->acl   = acl_set_default(file->acl, PERM_READ);
+			file->acl   = acl_set_default(file->acl, PERM_READ | PERM_WRITE);
 			vfs_add(root, block->filename, file);
 
 		}
@@ -172,6 +184,7 @@ int main(int argc, char **argv) {
 
 	/* set up interface */
 	di_wrap_read(tarfs_read);
+	vfs_set_cons(tarfs_cons);
 	vfs_init();
 
 	/* daemonize */

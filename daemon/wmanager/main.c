@@ -297,7 +297,7 @@ int main(int argc, char **argv) {
 	vfs_set_cons(wmanager_cons);
 	vfs_init();
 
-	io_link("/sys/wmanager", RP_CONS(getpid(), 0));
+	fs_plink("/sys/wmanager", RP_CONS(getpid(), 0), NULL);
 
 	vgafd = fs_find("/dev/svga0");
 	sscanf(rcall(vgafd, "getmode"), "%i %i", &width, &height);
