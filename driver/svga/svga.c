@@ -90,6 +90,7 @@ int svga_find_mode(int width, int height, int depth) {
 }
 
 int svga_set_mode(int mode) {
+	char *event;
 	
 	if (vbe_readmode(mode)) {
 		return 1;
@@ -128,7 +129,11 @@ int svga_set_mode(int mode) {
 		return 1;
 	}
 
-	eventl(event_list, 0x3LL << 62 | svga.w << 16 | svga.h);
+	event = saprintf("graph resize %d %d", svga.w, svga.h);
+	eventl(event_list, event);
+	free(event);
+	
+//	eventl(event_list, 0x3LL << 62 | svga.w << 16 | svga.h);
 	return 0;
 }
 

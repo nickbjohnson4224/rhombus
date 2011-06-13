@@ -82,8 +82,6 @@ char *kbd_rcall_deregister(uint64_t source, uint32_t index, int argc, char **arg
 #define SCRL 0x0080001E
 #define DEL  0x0080001F
 
-#define RELEASE 0x00400000
-
 const int keymap[4][128] = {
 	{	// lower case, no numlock
 		0,
@@ -129,6 +127,7 @@ const int keymap[4][128] = {
 
 void kbd_irq(struct msg *msg) {
 	uint8_t scan;
+	char *event;
 	int code;
 
 	static bool shift = false;
@@ -148,7 +147,10 @@ void kbd_irq(struct msg *msg) {
 		case CAPS: caps  = false; break;
 		case NUML: numlk = false; break;
 		default:
-			eventl(event_list, code | RELEASE);
+			event = saprintf("key release %d\n", code);
+			eventl(event_list, event);
+			free(event);
+//			eventl(event_list, code | RELEASE);
 		}
 	}
 	else {
@@ -157,7 +159,10 @@ void kbd_irq(struct msg *msg) {
 		case CAPS: caps  = true; break;
 		case NUML: numlk = true; break;
 		default:
-			eventl(event_list, code);
+			event = saprintf("key press %d\n", code);
+			eventl(event_list, event);
+			free(event);
+//			eventl(event_list, code);
 		}
 	}
 }

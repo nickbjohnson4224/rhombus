@@ -28,6 +28,10 @@
 int atoi(const char *nptr) {
 	int i, sum;
 
+	if (nptr[0] == '-') {
+		return -atoi(&nptr[1]);
+	}
+
 	for (sum = 0, i = 0; isdigit(nptr[i]); i++) {
 		sum *= 10;
 		sum += nptr[i] - '0';

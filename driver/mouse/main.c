@@ -60,7 +60,6 @@ char *mouse_deregister(uint64_t source, uint32_t index, int argc, char **argv) {
 	return strdup("T");
 }
 
-
 int main(int argc, char **argv) {
 	struct resource *root;
 	uint8_t bytes[3];
@@ -68,6 +67,7 @@ int main(int argc, char **argv) {
 	bool first;
 	int buttons = 0, prevbuttons = 0;
 	int16_t dx = 0, dy = 0;
+	char *event;
 
 	command(0xa8);  // enable aux. PS2
 	command(0xf6);  // load default config
@@ -93,11 +93,13 @@ int main(int argc, char **argv) {
 		while ((inb(0x64) & 0x21) != 0x21) {
 			if (first) {
 				if (dx || dy) {
-					eventl(event_list, 0x1LL << 62 | (dx << 16) & 0xffff0000 | dy & 0xffff);
+					event = saprintf("mouse delta %d %d", dx, dy);
+					eventl(event_list, event);
+					free(event);
 					dx = dy = 0;
 				}
 				if (buttons != prevbuttons) {
-					eventl(event_list, 0x2LL << 62 | buttons);
+					event = saprintf("mouse button %d", buttons);
 					prevbuttons = buttons;
 				}
 			}

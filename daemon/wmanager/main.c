@@ -219,53 +219,79 @@ struct resource *wmanager_cons(uint64_t source, int type) {
 	return fobj;
 }
 
-void wmanager_event(uint64_t source, uint64_t value) {
-	int type = value >> 62;
-	int data = value & ~(0x3LL << 62);
-	bool forward = false;
+void wmanager_key_event(uint64_t source, int argc, char **argv) {
+	char *event_str;
 	bool pressed;
+	int data;
 
-	if (type == 0x0 && source == kbdfd) {
-		// Keyboard
-		pressed = data & 0x00400000 ? false : true;
-		data &= ~0x00400000;
+	if (argc != 3) return;
+	if (source != kbdfd) return;
 
-		if (data == 0x00800004) {
-			winkey = pressed;
+	if (!strcmp(argv[1], "press")) pressed = true;
+	else if (!strcmp(argv[1], "release")) pressed = false;
+	else return;
+
+	data = atoi(argv[2]);
+
+	if (data == 0x00800004) {
+		winkey = pressed;
+	}
+
+	if (winkey && pressed && (data == 10)) {
+		// ENTER
+		if (active_window && (active_window != main_window)) {
+			main_window = active_window;
+			update_tiling();
 		}
+	}
+	else if (active_window && (active_window->flags & LISTEN_EVENTS)) {
+		event_str = saprintf("key %s %s", argv[1], argv[2]);
+		event(RP_CONS(active_window->owner, 0), event_str);
+		free(event_str);
+	}
+}
 
-		if (winkey && pressed && (data == 10)) {
-			// ENTER
-			if (active_window && (active_window != main_window)) {
-				main_window = active_window;
-				update_tiling();
-			}
+void wmanager_mouse_event(uint64_t source, int argc, char **argv) {
+	char *event_str;
+	
+	if (source != mousefd) return;
+	if (argc < 2) return;
+
+	if (!strcmp(argv[1], "delta")) {
+		if (argc != 4) return;
+
+		mouse_move(atoi(argv[2]), atoi(argv[3]));
+		
+		if (active_window && (active_window->flags & LISTEN_EVENTS)) {
+			event_str = saprintf("mouse delta %s %s", argv[2], argv[3]);
+			event(RP_CONS(active_window->owner, 0), event_str);
+			free(event_str);
 		}
-		else {
-			forward = true;
+	}
+	else if (!strcmp(argv[1], "button")) {
+		if (argc != 3) return;
+
+		mouse_buttons(atoi(argv[2]));
+
+		if (active_window && (active_window->flags & LISTEN_EVENTS)) {
+			event_str = saprintf("mouse button %s", argv[2]);
+			event(RP_CONS(active_window->owner, 0), event_str);
+			free(event_str);
 		}
 	}
+}
 
-	if (type == 0x1 && source == mousefd) { 
-		mouse_move((data >> 16) & 0xffff, data & 0xffff);
-		forward = true;
-	}
-	if (type == 0x2 && source == mousefd) {
-		mouse_buttons(data & ~(0x3LL << 62));
-		forward = true;
-	}
-
-	if (type == 0x3 && source == vgafd) {
-		resize_screen((data >> 16) & 0xffff, data & 0xffff);
-	}
-
-	if (forward && active_window && (active_window->flags & LISTEN_EVENTS)) {
-		event(RP_CONS(active_window->owner, 0), value);
+void wmanager_graph_event(uint64_t source, int argc, char **argv) {
+	
+	if (source != vgafd) return;
+	if (argc != 4) return;
+	
+	if (!strcmp(argv[1], "resize")) {
+		resize_screen(atoi(argv[2]), atoi(argv[3]));
 	}
 }
 
 int main(int argc, char **argv) {
-	struct resource *root;
 	size_t width, height;
 
 	stdout = stderr = fopen("/dev/serial", "w");
@@ -275,11 +301,7 @@ int main(int argc, char **argv) {
 	}
 	mwait(PORT_CHILD, 0);
 
-	root        = calloc(sizeof(struct resource), 1);
-	root->type  = FS_TYPE_DIR;
-	root->size  = 0;
-	root->acl   = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
-	index_set(0, root);
+	index_set(0, resource_cons(FS_TYPE_DIR, PERM_READ | PERM_WRITE));
 
 	rcall_set("listmodes",      wmanager_rcall_listmodes);
 	rcall_set("createwindow",   wmanager_rcall_createwindow);
@@ -305,9 +327,12 @@ int main(int argc, char **argv) {
 
 	mousefd = fs_find("/dev/mouse");
 	kbdfd = fs_find("/dev/kbd");
-	event_register(mousefd, wmanager_event);
-	event_register(kbdfd, wmanager_event);
-	event_register(vgafd, wmanager_event);
+	event_register(mousefd);
+	event_register(kbdfd);
+	event_register(vgafd);
+	event_set("mouse", wmanager_mouse_event);
+	event_set("key", wmanager_key_event);
+	event_set("graph", wmanager_graph_event);
 
 	if (fork() < 0) {
 		exec("/sbin/fbterm");

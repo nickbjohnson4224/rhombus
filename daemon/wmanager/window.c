@@ -153,6 +153,8 @@ void draw_window(struct window_t *window, int x1, int y1, int x2, int y2) {
 }
 
 void resize_window(struct window_t *window, int width, int height, bool notify) {
+	char *event_str;
+
 	if (window->width == (size_t) width && window->height == (size_t) height) {
 		return;
 	}
@@ -175,8 +177,11 @@ void resize_window(struct window_t *window, int width, int height, bool notify) 
 	window->height = height;
 
 	if (notify && window->flags & LISTEN_EVENTS) {
-		event(RP_CONS(window->owner, 0), 0x3LL << 62 |
-				(window->width & 0xffff) << 16 | (window->height & 0xffff));
+		event_str = saprintf("graph resize %d %d", window->width, window->height);
+		event(RP_CONS(window->owner, 0), event_str);
+		free(event_str);
+//		event(RP_CONS(window->owner, 0), 0x3LL << 62 |
+//				(window->width & 0xffff) << 16 | (window->height & 0xffff));
 	}
 
 	mutex_free(&window->mutex);

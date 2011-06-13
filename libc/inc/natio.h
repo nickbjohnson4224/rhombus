@@ -79,11 +79,16 @@ struct event_list {
 struct event_list *event_list_add(struct event_list *list, uint64_t target);
 struct event_list *event_list_del(struct event_list *list, uint64_t target);
 
-int    event (uint64_t rp, uint64_t value);
-int    eventl(struct event_list *list, uint64_t value);
+int event_register(uint64_t rp);
+int event_deregister(uint64_t rp);
 
-typedef void (*event_handler_t)(uint64_t source, uint64_t value);
-int    event_register(uint64_t source, event_handler_t handler);
+int event (uint64_t rp, const char *value);
+int eventl(struct event_list *list, const char *value);
+
+typedef void (*event_t)(uint64_t src, int argc, char **argv);
+
+int     event_set(const char *event, event_t handler);
+event_t event_get(const char *event);
 
 /*****************************************************************************
  * resource types

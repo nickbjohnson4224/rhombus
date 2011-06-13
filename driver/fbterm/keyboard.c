@@ -138,25 +138,25 @@ char fbterm_getch(void) {
 	return c;
 }
 
-void keyboard_event(uint64_t value) {
+void keyboard_event(uint32_t code, bool press) {
 	char c;
 	static bool ctrl = false;
 
-	if (value & 0x00400000) {
-		if (value == 0x00C00001) {
+	if (!press) {
+		if (code == 0x00C00001) {
 			ctrl = false;
 		}
 		return;
 	}
 
-	if (value & 0x00800000) {
-		if (value == 0x00800001) {
+	if (code & 0x00800000) {
+		if (code == 0x00800001) {
 			ctrl = true;
 		}
 		return;
 	}
 
-	c = value;
+	c = code;
 
 	if (tolower(c) == 'c' && ctrl) {
 		kill(-getpid(), SIGINT);

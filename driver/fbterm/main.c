@@ -96,15 +96,28 @@ size_t fbterm_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size
 	return i;
 }
 
-void fbterm_event(uint64_t source, uint64_t value) {
-	int type = value >> 62;
-	int data = value & ~(0x3LL << 62);
+void fbterm_key_event(uint64_t source, int argc, char **argv) {
+	
+	if (argc != 3) return;
 
-	if (type == 0x0) {
-		keyboard_event(data);
+	if (!strcmp(argv[1], "press")) {
+		keyboard_event(atoi(argv[2]), true);
 	}
-	if (type == 0x3) {
-		fbterm_resize((data >> 16) & 0xffff, data & 0xffff);
+	else if (!strcmp(argv[1], "release")) {
+		keyboard_event(atoi(argv[2]), false);
+	}
+}
+
+void fbterm_graph_event(uint64_t source, int argc, char **argv) {
+	int w, h;
+	
+	if (argc != 4) return;
+
+	if (!strcmp(argv[1], "resize")) {
+		w = atoi(argv[2]);
+		h = atoi(argv[3]);
+
+		fbterm_resize(w, h);
 		screen_flip();
 	}
 }
@@ -163,10 +176,12 @@ int main(int argc, char **argv) {
 	fb_getmode(fb, &w, &h);
 	screen_resize(w, h);
 	screen_flip();
-	event_register(fb_dev, fbterm_event);
+	event_register(fb_dev);
+	event_set("graph", fbterm_graph_event);
 
 	// set up keyboard
-	event_register(kbd_dev, fbterm_event);
+	event_register(kbd_dev);
+	event_set("key", fbterm_key_event);
 
 	rcall_set("clear", fbterm_rcall_clear);
 	rcall_set("getfg", fbterm_rcall_getfg);

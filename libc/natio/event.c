@@ -25,25 +25,21 @@
  *
  * Asynchronous event protocol. Sends an 8-byte value to the given resource,
  * without waiting for a reply. Returns zero on success, nonzero on error.
- *
- * protocol:
- *   port: PORT_EVENT
- *
- *   event:
- *     uint64_t value
  */
 
-int event(uint64_t rp, uint64_t value) {
+int event(uint64_t rp, const char *value) {
 	struct msg *msg;
 
-	msg = aalloc(sizeof(struct msg) + sizeof(uint64_t), PAGESZ);
+	if (!value) value = "";
+
+	msg = aalloc(sizeof(struct msg) + strlen(value) + 1, PAGESZ);
 	if (!msg) return 1;
 	msg->source = RP_CONS(getpid(), 0);
 	msg->target = rp;
-	msg->length = sizeof(uint64_t);
+	msg->length = strlen(value) + 1;
 	msg->port   = PORT_EVENT;
 	msg->arch   = ARCH_NAT;
-	((uint64_t*) msg->data)[0] = value;
+	strcpy((char*) msg->data, value);
 
 	return msend(msg);
 }
@@ -55,7 +51,7 @@ int event(uint64_t rp, uint64_t value) {
  * success, nonzero on error.
  */
 
-int eventl(struct event_list *list, uint64_t value) {
+int eventl(struct event_list *list, const char *value) {
 	
 	while (list) {
 		event(list->target, value);
@@ -65,52 +61,96 @@ int eventl(struct event_list *list, uint64_t value) {
 	return 0;
 }
 
-static event_handler_t _event_handler;
-static void _event_wrapper(struct msg *msg);
-
-int event_register(uint64_t source, event_handler_t handler) {
+int event_register(uint64_t rp) {
 	char *reply;
 
-	if (handler) {
-		reply = rcall(source, "register");
+	reply = rcall(rp, "register");
 
-		if (!strcmp(reply, "T")) {
-			when(PORT_EVENT, _event_wrapper);
-			_event_handler = handler;
-			free(reply);
-			return 0;
-		}
-		else {
-			free(reply);
-			return 1;
-		}
-	}
-	else {
-		reply = rcall(source, "deregister");
-
-		if (!strcmp(reply, "T")) {
-			free(reply);
-			return 0;
-		}
-		else {
-			free(reply);
-			return 1;
-		}
-	}
+	if (!reply) return 1;
+	
+	free(reply);
+	return 0;
 }
 
-static void _event_wrapper(struct msg *msg) {
-	uint64_t value;
+int event_deregister(uint64_t rp) {
+	char *reply;
 
-	if (msg->length != sizeof(uint64_t)) {
-		return;
+	reply = rcall(rp, "deregister");
+
+	if (!reply) return 1;
+
+	free(reply);
+	return 0;
+}
+
+/*****************************************************************************
+ * _event_map
+ *
+ * Structure mapping events to their respective handlers.
+ *
+ * Notes:
+ * Currently, this is implemented as a linked list, which has terrible 
+ * scalability.
+ */
+
+static struct _event_map {
+	struct _event_map *next;
+
+	event_t handler;
+	char *key;
+} *_event_map = NULL;
+
+static void _event_handler(struct msg *msg);
+
+int event_set(const char *event, event_t handler) {
+	struct _event_map *node;
+
+	if (!_event_map) {
+		when(PORT_EVENT, _event_handler);
 	}
 
-	if (!_event_handler) {
-		return;
+	node = malloc(sizeof(struct _event_map));
+	node->next = _event_map;
+	node->handler = handler;
+	node->key = strdup(event);
+
+	_event_map = node;
+
+	return 0;
+}
+
+event_t event_get(const char *event) {
+	struct _event_map *node;
+
+	// get handler
+	for (node = _event_map; node; node = node->next) {
+		if (node->key && !strcmp(node->key, event)) {
+			return node->handler;
+		}
 	}
 
-	value = ((uint64_t*) msg->data)[0];
+	return NULL;
+}
 
-	_event_handler(msg->source, value);
+static void _event_handler(struct msg *msg) {
+	event_t handler;
+	char **argv;
+	char *args;
+	int argc;
+
+	// parse arguments
+	args = (char*) msg->data;
+	argv = strparse(args, " ");
+	for (argc = 0; argv[argc]; argc++);
+
+	handler = event_get(argv[0]);
+	if (!handler) return;
+
+	handler(msg->source, argc, argv);
+
+	for (argc = 0; argv[argc]; argc++) {
+		free(argv[argc]);
+	}
+	free(argv);
+	free(msg);
 }
