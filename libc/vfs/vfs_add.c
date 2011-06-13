@@ -17,6 +17,7 @@
 #include <driver.h>
 #include <stdlib.h>
 #include <string.h>
+#include <mutex.h>
 #include <proc.h>
 #include <vfs.h>
 
@@ -54,11 +55,12 @@ int vfs_add(struct resource *root, const char *path, struct resource *obj) {
 
 	/* push object into parent directory */
 	path1 = path_name(path);
-	obj->vfs = calloc(sizeof(struct vfs_node), 1);
-	obj->vfs->resource = obj;
-	obj->vfs->name = strdup(path1);
-	vfs_push(RP_CONS(getpid(), 0), dir, obj);
+	mutex_spin(&dir->vfs->mutex);
+	vfs_link(dir->vfs, path1, obj);
+	mutex_free(&dir->vfs->mutex);
 	free(path1);
+
+	index_set(obj->index, obj);
 
 	return 0;
 }

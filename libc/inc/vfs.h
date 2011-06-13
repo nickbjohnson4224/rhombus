@@ -88,6 +88,7 @@ struct resource {
 
 	/* directory structure */
 	struct vfs_node *vfs;
+	int vfs_refcount;
 
 	/* permissions */
 	struct vfs_acl *acl;
@@ -96,11 +97,15 @@ struct resource {
 	struct vfs_lock *lock;
 
 	/* link information */
-	uint64_t link;
+	char *symlink; // symbolic link
+	uint64_t link; // pointer link (obsolete)
 };
 
 struct resource *index_get(uint32_t index);
 struct resource *index_set(uint32_t index, struct resource *r);
+
+void resource_free(struct resource *r);
+struct resource *resource_cons(int type, int perm);
 
 /* virtual filesystem interface *********************************************/
 
@@ -123,11 +128,10 @@ struct vfs_node {
 int vfs_add(struct resource *root, const char *path, struct resource *obj);
 struct resource *vfs_find(struct vfs_node *root, const char *path, const char **tail);
 
-int vfs_link(struct vfs_node *root, const char *path, struct resource *obj);
-
-char *vfs_list(struct resource *dir, int entry);
-int   vfs_push(uint64_t source, struct resource *dir, struct resource *obj);
-int   vfs_pull(uint64_t source, struct resource *obj);
+int   vfs_link  (struct vfs_node *dir, const char *name, struct resource *r);
+int   vfs_unlink(struct vfs_node *entry);
+char *vfs_list  (struct resource *dir, int entry);
+int   vfs_pull  (uint64_t source, struct resource *obj);
 
 int vfs_init(void);
 

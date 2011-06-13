@@ -21,81 +21,149 @@
 #include <vfs.h>
 
 /*****************************************************************************
- * vfs_push
+ * vfs_link
  *
- * Add the filesystem object <robj> to the directory <dir>, giving it the
- * name <name>. Calls the active driver's push function and returns zero on 
- * success; returns nonzero on error.
+ * Create a hard link in the directory <dir> that points to the resource <r>,
+ * giving the hard link entry the name <name>. If the specified directory 
+ * entry already exists, it is modified to point to <r>. Returns zero on 
+ * success, nonzero on error.
+ *
+ * This function does not acquire a lock on the given directory or resource,
+ * but requires that neither be modified while it is running.
  */
 
-int vfs_push(uint64_t source, struct resource *dir, struct resource *robj) {
+int vfs_link(struct vfs_node *dir, const char *name, struct resource *r) {
+	struct vfs_node *entry;
 	struct vfs_node *sister;
-	struct vfs_node *obj;
 
-	if (!(dir && robj)) {
+	if (FS_IS_DIR(r->type) && r->vfs_refcount > 0) {
+		/* directory has already been linked: fail */
 		return 1;
 	}
 
-	obj = robj->vfs;
+	/* create new directory entry */
+	entry = calloc(sizeof(struct vfs_node), 1);
+	entry->mother   = dir;
+	entry->name     = strdup(name);
+	entry->resource = r;
 
-	if (!dir->vfs) {
-		dir->vfs = calloc(sizeof(struct vfs_node), 1);
-		dir->vfs->resource = dir;
-	}
-
-	mutex_spin(&dir->vfs->mutex);
-
-	obj->mutex    = 0;
-	obj->mother   = dir->vfs;
-	obj->daughter = NULL;
-	
-	sister = dir->vfs->daughter;
+	/* place entry into directory */
+	sister = dir->daughter;
 
 	if (!sister) {
-		/* only in the list, insert at top */
-		dir->vfs->daughter = obj;
-		obj->sister0 = NULL;
-		obj->sister1 = NULL;
+		/* no other entries: insert directly */
+		dir->daughter = entry;
 	}
 	else {
+		/* find the proper place in entry the list to insert */
 		while (sister->sister1) {
-			if (strcmp(sister->name, obj->name) > 0) {
+			if (strcmp(sister->name, name) > 0) {
+				break;
+			}
+			else if (strcmp(sister->name, name) == 0) {
 				break;
 			}
 			sister = sister->sister1;
 		}
 
-		/* insert */
-		if (strcmp(sister->name, obj->name) > 0) {
+		/* check if entry exists */
+		if (strcmp(sister->name, name) == 0) {
+		
+			/* free new entry */
+			free(entry->name);
+			free(entry);
+			entry = sister;
+
+			/* decrease displaced resource reference count */
+			entry->resource->vfs_refcount--;
+
+			/* modify old entry */
+			entry->resource->vfs = NULL;
+			entry->resource = r;
+		}
+
+		/* insert into list */
+		else if (strcmp(sister->name, name) > 0) {
+		
+			/* insert before sister */
 			if (sister->sister0) {
-				sister->sister0->sister1 = obj;
+				/* link to sister->sister0 */
+				sister->sister0->sister1 = entry;
 			}
 			else {
-				dir->vfs->daughter = obj;
+				/* first entry: new daughter */
+				dir->daughter = entry;
 			}
 
-			obj->sister0 = sister->sister0;
-			obj->sister1 = sister;
-			sister->sister0 = obj;
+			entry->sister0 = sister->sister0;
+			entry->sister1 = sister;
+			sister->sister0 = entry;
 		}
 		else {
-			sister->sister1 = obj;
-			obj->sister0 = sister;
-			obj->sister1 = NULL;
+
+			/* last entry: insert after sister */
+			sister->sister1 = entry;
+			entry->sister0 = sister;
 		}
 	}
 
-	mutex_free(&dir->vfs->mutex);
-
-	/* add to index */
-	index_set(robj->index, robj);
-
-	if (_vfs_sync) {
-		return _vfs_sync(source, robj);
+	if (FS_IS_DIR(r->type)) {
+		/* resource is a directory: add link back */
+		r->vfs = entry;
 	}
 	else {
-		return 0;
+		/* resource is a file: don't link back */
+		r->vfs = NULL;
 	}
+
+	/* increase resource reference count */
+	r->vfs_refcount++;
+
+	return 0;
+}
+
+/*****************************************************************************
+ * vfs_unlink
+ *
+ * Removes the directory entry <entry> from its parent directory and frees it. 
+ * Returns zero on success, nonzero on error.
+ *
+ * This function does not acquire a lock on either the given entry, its parent
+ * or its resource structure, but all three should not be modified while it
+ * is running.
+ */
+
+int vfs_unlink(struct vfs_node *entry) {
+
+	if (!entry->mother) {
+		/* entry is not in a directory at all: fail */
+		return 1;
+	}
+
+	if (entry->sister0) {
+		/* entry is not first */
+		entry->sister0->sister1 = entry->sister1;
+		if (entry->sister1) {
+			entry->sister1->sister0 = entry->sister0;
+		}
+	}
+	else {
+		/* entry is first */
+		entry->mother->daughter = entry->sister1;
+		if (entry->sister1) {
+			entry->sister1->sister0 = NULL;
+		}
+	}
+
+	/* decrese resource reference count */
+	entry->resource->vfs_refcount--;
+
+	/* free entry */
+	entry->resource->vfs = NULL;
+	free(entry->name);
+	free(entry);
+
+	return 0;
 }
 
 /*****************************************************************************
@@ -108,6 +176,8 @@ int vfs_push(uint64_t source, struct resource *dir, struct resource *robj) {
 
 int vfs_pull(uint64_t source, struct resource *robj) {
 	struct vfs_node *obj;
+
+	return 1;
 
 	if (!robj) {
 		return 1;

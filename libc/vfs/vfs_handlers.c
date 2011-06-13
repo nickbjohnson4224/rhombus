@@ -109,13 +109,13 @@ static char *_find_handler(uint64_t source, uint32_t index, int argc, char **arg
 }
 
 static char *_cons_handler(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct resource *dir, *new_fobj;
+	struct resource *dir, *new;
 	const char *name;
 	uint64_t rp;
 	int type;
 
 	/* check request */
-	if (argc <= 2) {
+	if (argc < 3) {
 		return NULL;
 	}
 
@@ -130,61 +130,57 @@ static char *_cons_handler(uint64_t source, uint32_t index, int argc, char **arg
 	/* get requested parent directory */
 	dir = index_get(index);
 
-	if (dir) {
-		/* check permissions */
-		if ((acl_get(dir->acl, getuser(RP_PID(source))) & PERM_WRITE) == 0) {
-			return strdup("! denied");
-		}
-		else if ((dir->type & FS_TYPE_DIR) == 0) {
-			return strdup("! type");
-		}
-		else {
-			
-			/* construct new object */
-			new_fobj = _vfs_cons(source, type);
-
-			if (new_fobj) {
-				
-				/* add new object to parent directory */
-				new_fobj->vfs = calloc(sizeof(struct vfs_node), 1);
-				new_fobj->vfs->resource = new_fobj;
-				new_fobj->vfs->name = strdup(name);
-				
-				if (vfs_push(source, dir, new_fobj)) {
-
-					/* free the new object */
-					free(new_fobj->vfs->name);
-					free(new_fobj->vfs);
-					if (_vfs_free) {
-						_vfs_free(source, new_fobj);
-					}
-					else {
-						acl_free(new_fobj->acl);
-						free(new_fobj);
-					}
-
-					return NULL;
-				}
-				else {
-					/* return pointer to new object on success */
-					rp = RP_CONS(getpid(), new_fobj->index);
-				}
-			}
-			else {
-				return strdup("! construct");
-			}
-		}
-	}
-	else {
+	if (!dir) {
 		return strdup("! nfound");
 	}
 
-	if (rp) {
-		return rtoa(rp);
+	mutex_spin(&dir->mutex);
+
+	/* check permissions */
+	if ((acl_get(dir->acl, getuser(RP_PID(source))) & PERM_WRITE) == 0) {
+		mutex_free(&dir->mutex);
+		return strdup("! denied");
+	}
+	else if ((dir->type & FS_TYPE_DIR) == 0) {
+		mutex_free(&dir->mutex);
+		return strdup("! type");
+	}
+
+	/* construct new object */
+	new = _vfs_cons(source, type);
+
+	if (!new) {
+		mutex_free(&dir->mutex);
+		return strdup("! construct");
+	}
+
+	/* add new resource to directory */
+	mutex_spin(&dir->vfs->mutex);
+	if (vfs_link(dir->vfs, name, new)) {
+		
+		/* failure: free the new object */
+		if (_vfs_free) {
+			_vfs_free(source, new);
+		}
+		else {
+			resource_free(new);
+		}
+
+		rp = 0;
 	}
 	else {
-		return NULL;
+		rp = RP_CONS(getpid(), new->index);
+		
+		/* add new resource to index */
+		index_set(new->index, new);
+
+		/* synchonize directory metadata */
+		if (_vfs_sync) _vfs_sync(source, dir);
 	}
+	mutex_free(&dir->vfs->mutex);
+	mutex_free(&dir->mutex);
+
+	return ((rp) ? rtoa(rp) : strdup("! link"));
 }
 
 static char *_remv_handler(uint64_t source, uint32_t index, int argc, char **argv) {
@@ -196,8 +192,7 @@ static char *_remv_handler(uint64_t source, uint32_t index, int argc, char **arg
 		mutex_spin(&r->mutex);
 
 		/* check all permissions */
-		if ((acl_get(r->acl, gettuser() & PERM_WRITE) == 0) ||
-			(acl_get(r->vfs->mother->resource->acl, gettuser()) & PERM_WRITE) == 0) {
+		if ((acl_get(r->acl, gettuser() & PERM_WRITE) == 0)) {
 			return strdup("! denied");
 		}
 
@@ -211,14 +206,11 @@ static char *_remv_handler(uint64_t source, uint32_t index, int argc, char **arg
 
 		if (_vfs_free) {
 			/* allow the driver to free the object */
-			if (_vfs_free(source, r)) {
-				return strdup("! unknown");
-			}
+			_vfs_free(source, r);
 		}
 		else {
 			/* free the object, assuming data is not allocated */
-			acl_free(r->acl);
-			free(r);
+			resource_free(r);
 		}
 
 		return strdup("T");

@@ -137,6 +137,9 @@ uint64_t fs_size (const char *path);
 
 uint64_t rp_size (uint64_t rp);
 int      rp_remv (uint64_t rp);
+int      rp_slnk (uint64_t rp, const char *link);
+int      rp_link (uint64_t rp, uint64_t link);
+int      rp_cons (uint64_t driver, int type);
 
 /*****************************************************************************
  * lock types

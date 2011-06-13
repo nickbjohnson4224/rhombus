@@ -125,12 +125,9 @@ int tmpfs_reset(uint64_t source, uint32_t index) {
  */
 
 int main(int argc, char **argv) {	
-	struct resource *root;
 
-	root = calloc(sizeof(struct resource), 1);
-	root->type = FS_TYPE_DIR;
-	root->acl = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
-	index_set(0, root);
+	/* create root directory */
+	index_set(0, resource_cons(FS_TYPE_DIR, PERM_READ | PERM_WRITE));
 
 	/* set interface */
 	di_wrap_read (tmpfs_read);
