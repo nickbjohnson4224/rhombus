@@ -74,7 +74,7 @@ uint64_t fs_find(const char *path) {
 		return 0;
 	}
 
-	if (reply[0] == '>' && reply[1] == '>' && reply[2] == ' ' && reply[3] == '@') {
+	if (reply[0] == '>' && reply[1] == '>' && reply[2] == ' ') {
 		rp = fs_find(&reply[3]);
 		free(reply);
 		return rp;

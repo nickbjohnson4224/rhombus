@@ -34,6 +34,11 @@
  *     cons -d <path>
  *     
  *     Creates an empty directory at the path <path>.
+ *
+ *     cons --link <path>
+ *     cons -l <path>
+ *
+ *     Creates a blank symbolic link at path <path>.
  */ 
 
 int main(int argc, char **argv) {
@@ -55,16 +60,7 @@ int main(int argc, char **argv) {
 		path = path_simplify(argv[1]);
 	}
 
-	switch (type) {
-	case 'f':
-		fobj = fs_cons(path, FS_TYPE_FILE);
-		break;
-	case 'd':
-		fobj = fs_cons(path, FS_TYPE_DIR);
-		break;
-	default:
-		fobj = 0;
-	}
+	fobj = fs_cons(path, typeflag(type));
 	
 	if (!fobj) {
 		fprintf(stderr, "%s: cannot construct %s: ", argv[0], path);

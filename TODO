@@ -37,7 +37,7 @@ For 0.9 Alpha:
 + move more functions to rcall (fs_*)
 + non-recursive fs_find
 + hard links
-- symlinks
++ symlinks
 - better event system (textual)
 - process tracker
 - file locking

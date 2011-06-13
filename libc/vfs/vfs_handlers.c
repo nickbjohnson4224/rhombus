@@ -30,6 +30,7 @@ static char *_link_handler(uint64_t source, uint32_t index, int argc, char **arg
 static char *_list_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_size_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_type_handler(uint64_t source, uint32_t index, int argc, char **argv);
+static char *_symlink_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_getperm_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_setperm_handler(uint64_t source, uint32_t index, int argc, char **argv);
 
@@ -49,6 +50,7 @@ int vfs_init(void) {
 	rcall_set("fs_link", _link_handler);
 	rcall_set("fs_type", _type_handler);
 	rcall_set("fs_size", _size_handler);
+	rcall_set("fs_symlink", _symlink_handler);
 	rcall_set("fs_getperm", _getperm_handler);
 	rcall_set("fs_setperm", _setperm_handler);
 
@@ -101,6 +103,9 @@ static char *_find_handler(uint64_t source, uint32_t index, int argc, char **arg
 
 	if (file->link && !(!tail && link)) {
 		return saprintf(">> %r%s", file->link, (tail) ? tail : "");
+	}
+	else if (file->symlink && !(!tail && link)) {
+		return saprintf(">> %s/%s", file->symlink, (tail) ? tail : "");
 	}
 	else {
 		return rtoa(RP_CONS(getpid(), file->index));
@@ -273,6 +278,41 @@ static char *_link_handler(uint64_t source, uint32_t index, int argc, char **arg
 
 		return strdup("T");
 	}
+}
+
+static char *_symlink_handler(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct resource *r;
+	char *symlink;
+
+	if (argc < 2) {
+		return NULL;
+	}
+
+	r = index_get(index);
+	if (!r) return strdup("! nfound");
+
+	symlink = argv[1];
+	
+	if (!FS_IS_LINK(r->type)) {
+		return strdup("! type");
+	}
+
+	mutex_spin(&r->mutex);
+
+	if ((acl_get(r->acl, gettuser()) & PERM_WRITE) == 0) {
+		mutex_free(&r->mutex);
+		return strdup("! denied");
+	}
+
+	if (r->symlink) {
+		free(r->symlink);
+	}
+	
+	r->symlink = strdup(symlink);
+
+	mutex_free(&r->mutex);
+
+	return strdup("T");
 }
 
 static char *_list_handler(uint64_t source, uint32_t index, int argc, char **argv) {

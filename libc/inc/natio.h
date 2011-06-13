@@ -91,15 +91,17 @@ int    event_register(uint64_t source, event_handler_t handler);
  * All resources must have exactly one of the following type flags:
  *   FS_TYPE_FILE					(f)
  *   FS_TYPE_DIR					(d)
+ *   FS_TYPE_LINK					(l)
  *
  * Files of may have zero or one of these type flag sets:
  *   FS_TYPE_GRAPH 					(g)
  *   FS_TYPE_CHAR  					(c)
- *   FS_TYPE_LINK 					(l)
  *   FS_TYPE_EVENT 					(e)
  *   FS_TYPE_EVENT | FS_TYPE_GRAPH	(w)
  *
  * Directories may not have any additional type flags.
+ *
+ * Links may not have any additional type flags.
  */
 
 int fs_type(const char *path);
@@ -118,6 +120,7 @@ int  typeflag(char type);
 
 #define FS_IS_FILE(t) (((t) & FS_TYPE_FILE) != 0)
 #define FS_IS_DIR(t) ((t) == FS_TYPE_DIR)
+#define FS_IS_LINK(t) ((t) == FS_TYPE_LINK)
 
 /* filesystem operations ****************************************************/
 
@@ -136,10 +139,8 @@ int      fs_plink(uint64_t link, uint64_t fobj);
 uint64_t fs_size (const char *path);
 
 uint64_t rp_size (uint64_t rp);
-int      rp_remv (uint64_t rp);
 int      rp_slink(uint64_t rp, const char *link);
 int      rp_link (uint64_t dir, const char *name, uint64_t link);
-int      rp_cons (uint64_t driver, int type);
 
 /*****************************************************************************
  * lock types

@@ -14,42 +14,48 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
 #include <natio.h>
+#include <errno.h>
 
 /*****************************************************************************
- * ln - create hard and symbolic links
+ * fs_slink
  *
- * SYNOPSIS
- *
- *   ln <target> <link_name>
- *
- *   Creates a new link to <target> at the path <link_name>.
- *
- *   ln -s <target> <link_name>
- *
- *   Creates a new symbolic link to <target> at the path <link_name>.
+ * Creates a new symbolic link to the path <link> at the path <path>. If this
+ * symbolic link already exists, it's path is updated. Returns zero on 
+ * success, nonzero on error.
  */
 
-int main(int argc, char **argv) {
-	
-	if (argc < 3) {
-		fprintf(stderr, "%s: missing operand\n", argv[0]);
+int fs_slink(const char *path, const char *link) {
+	uint64_t rp;
+
+	rp = fs_find(path);
+	if (!rp) rp = fs_cons(path, FS_TYPE_LINK);
+
+	return rp_slink(rp, link);
+}
+
+int rp_slink(uint64_t rp, const char *link) {
+	char *reply;
+
+	reply = rcallf(rp, "fs_symlink %s", link);
+
+	if (!reply) {
+		errno = ENOSYS;
 		return 1;
 	}
 
-	if (argc == 4) {
-		if (fs_slink(argv[3], argv[2])) {
-			fprintf(stderr, "%s: error: ", argv[0]);
-			perror(NULL);
-		}
-	}
-	else {
-		if (fs_link(argv[2], argv[1])) {
-			fprintf(stderr, "%s: error: ", argv[0]);
-			perror(NULL);
-		}
+	if (reply[0] == '!') {
+		if      (!strcmp(reply, "! nfound")) errno = ENOENT;
+		else if (!strcmp(reply, "! denied")) errno = EACCES;
+		else if (!strcmp(reply, "! type"))   errno = EINVAL;
+		else                                 errno = EUNK;
+		free(reply);
+		return 1;
 	}
 
+	free(reply);
 	return 0;
 }

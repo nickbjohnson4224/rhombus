@@ -46,6 +46,13 @@ struct resource *vfs_find(struct vfs_node *root, const char *path_str, const cha
 			return root->resource;
 		}
 
+		if (FS_IS_LINK(root->resource->type) && root->resource->symlink) {
+			path_prev(path);
+			if (tail) *tail = path_tail(path);
+			free(path);
+			return root->resource;
+		}
+
 		if (root->resource->link) {
 			path_prev(path);
 			if (tail) *tail = path_tail(path);

@@ -43,6 +43,12 @@ uint64_t fs_cons(const char *path, int type) {
 	char *reply;
 	char *dirname, *name;
 
+	/* check for existing files */
+	if (fs_find(path)) {
+		errno = EEXIST;
+		return 1;
+	}
+
 	/* find parent directory */
 	dirname = path_parent(path);
 	name    = path_name(path);

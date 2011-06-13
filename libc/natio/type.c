@@ -21,10 +21,10 @@ char typechar(int type) {
 	switch (type) {
 	case FS_TYPE_DIR:  return 'd';
 	case FS_TYPE_FILE: return 'f';
+	case FS_TYPE_LINK: return 'l';
 	case FS_TYPE_FILE | FS_TYPE_GRAPH: return 'g';
 	case FS_TYPE_FILE | FS_TYPE_CHAR:  return 'c';
 	case FS_TYPE_FILE | FS_TYPE_EVENT: return 'e';
-	case FS_TYPE_FILE | FS_TYPE_LINK:  return 'l';
 	case FS_TYPE_FILE | FS_TYPE_EVENT | FS_TYPE_GRAPH: return 'w';
 	}
 
@@ -36,10 +36,10 @@ int typeflag(char type) {
 	switch (type) {
 	case 'd': return FS_TYPE_DIR;
 	case 'f': return FS_TYPE_FILE;
+	case 'l': return FS_TYPE_LINK;
 	case 'g': return FS_TYPE_FILE | FS_TYPE_GRAPH;
 	case 'c': return FS_TYPE_FILE | FS_TYPE_CHAR;
 	case 'e': return FS_TYPE_FILE | FS_TYPE_EVENT;
-	case 'l': return FS_TYPE_FILE | FS_TYPE_LINK;
 	case 'w': return FS_TYPE_FILE | FS_TYPE_GRAPH | FS_TYPE_EVENT;
 	}
 
