@@ -225,20 +225,10 @@ int vfs_pull(uint64_t source, struct resource *robj) {
  * on error.
  */
 
-char *vfs_list(struct resource *rdir, int entry) {
+char *vfs_list(struct vfs_node *dir, int entry) {
 	struct vfs_node *daughter;
-	struct vfs_node *dir;
 
-	if (!rdir) {
-		return NULL;
-	}
-
-	dir = rdir->vfs;
 	if (!dir) {
-		return NULL;
-	}
-
-	if (entry < 0) {
 		return NULL;
 	}
 

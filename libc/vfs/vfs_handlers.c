@@ -186,6 +186,8 @@ static char *_cons_handler(uint64_t source, uint32_t index, int argc, char **arg
 static char *_remv_handler(uint64_t source, uint32_t index, int argc, char **argv) {
 	struct resource *r;
 
+	return strdup("! nosys");
+
 	r = index_get(index);
 
 	if (r) {
@@ -249,7 +251,9 @@ static char *_list_handler(uint64_t source, uint32_t index, int argc, char **arg
 		return strdup("! denied");
 	}
 
-	name = vfs_list(dir, entry);
+	mutex_spin(&dir->vfs->mutex);
+	name = vfs_list(dir->vfs, entry);
+	mutex_free(&dir->vfs->mutex);
 
 	if (!name) {
 		mutex_free(&dir->mutex);
