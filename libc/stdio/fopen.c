@@ -78,6 +78,9 @@ FILE *fopen(const char *path, const char *mode) {
 			errno = EACCES;
 			return NULL;
 		}
+
+		/* acquire write lock */
+		rp_lock_waitfor(fd, LOCK_WS);
 	}
 
 	/* reset the file contents */

@@ -137,7 +137,7 @@ int main() {
 
 	/* Temporary filesystem */
 	argv[0] = "tmpfs";
-	argv[1] = NULL;	
+	argv[1] = NULL;
 	file = tar_find(boot_image, "sbin/tmpfs");
 	fs_plink("/tmp", start(file, argv), NULL);
 

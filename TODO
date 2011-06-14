@@ -39,7 +39,7 @@ For 0.9 Alpha:
 + hard links
 + symlinks
 + better event system (textual)
-- process tracker
++ process tracker
 - file locking
 - top/ps equivalent
 - pipe driver

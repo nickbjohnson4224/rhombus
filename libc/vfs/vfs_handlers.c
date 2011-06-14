@@ -33,6 +33,8 @@ static char *_type_handler(uint64_t source, uint32_t index, int argc, char **arg
 static char *_symlink_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_getperm_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_setperm_handler(uint64_t source, uint32_t index, int argc, char **argv);
+static char *_getlock_handler(uint64_t source, uint32_t index, int argc, char **argv);
+static char *_setlock_handler(uint64_t source, uint32_t index, int argc, char **argv);
 
 /*****************************************************************************
  * vfs_init
@@ -42,8 +44,6 @@ static char *_setperm_handler(uint64_t source, uint32_t index, int argc, char **
  */
 
 int vfs_init(void) {
-	when(PORT_LINK, __link_wrapper);
-
 	rcall_set("fs_find", _find_handler);
 	rcall_set("fs_cons", _cons_handler);
 	rcall_set("fs_list", _list_handler);
@@ -53,6 +53,8 @@ int vfs_init(void) {
 	rcall_set("fs_symlink", _symlink_handler);
 	rcall_set("fs_getperm", _getperm_handler);
 	rcall_set("fs_setperm", _setperm_handler);
+	rcall_set("fs_getlock", _getlock_handler);
+	rcall_set("fs_setlock", _setlock_handler);
 
 	return 0;
 }
@@ -449,4 +451,71 @@ static char *_setperm_handler(uint64_t source, uint32_t index, int argc, char **
 	mutex_free(&r->mutex);
 
 	return strdup("T");
+}
+
+static char *_getlock_handler(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct resource *r;
+
+	r = index_get(index);
+	if (!r) return strdup("! nfound");
+
+	if (!r->lock) {
+		if ((acl_get(r->acl, gettuser()) & PERM_READ) == 0) {
+			// return LOCK_RS by default
+			return saprintf("%d", LOCK_RS);
+		}
+		else {
+			return saprintf("%d", LOCK_NO);
+		}
+	}
+
+	return saprintf("%d", vfs_lock_current(r->lock, RP_PID(source)));
+}
+
+static char *_setlock_handler(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct resource *r;
+	int locktype;
+	int err;
+
+	if (argc < 2) {
+		return NULL;
+	}
+
+	r = index_get(index);
+	if (!r) return strdup("! nfound");
+
+	locktype = atoi(argv[1]);
+
+	mutex_spin(&r->mutex);
+	if (!r->lock) {
+		r->lock = vfs_lock_cons();
+	}
+
+	if ((locktype == LOCK_RS || locktype == LOCK_RX) 
+		&& (acl_get(r->acl, gettuser()) & PERM_READ) == 0) {
+		mutex_free(&r->mutex);
+		return strdup("! denied");
+	}
+
+	if ((locktype == LOCK_WS || locktype == LOCK_WX || locktype == LOCK_PX) 
+		&& (acl_get(r->acl, gettuser()) & PERM_WRITE) == 0) {
+		mutex_free(&r->mutex);
+		return strdup("! denied");
+	}
+
+	if ((locktype == LOCK_RX || locktype == LOCK_WX || locktype == LOCK_PX) 
+		&& (acl_get(r->acl, gettuser()) & PERM_XLOCK) == 0) {
+		mutex_free(&r->mutex);
+		return strdup("! denied");
+	}
+
+	err = vfs_lock_acquire(r->lock, RP_PID(source), locktype);
+	mutex_free(&r->mutex);
+
+	if (err) {
+		return strdup("! locked");
+	}
+	else {
+		return strdup("T");
+	}
 }

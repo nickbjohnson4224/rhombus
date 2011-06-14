@@ -79,11 +79,6 @@ void _init() {
 	when(PORT_RCALL, reject);
 	when(PORT_EVENT, ignore);
 
-	when(PORT_LINK,  reject);
-	when(PORT_SIZE,  reject);
-	when(PORT_PERM,  reject);
-	when(PORT_AUTH,  reject);
-
 	/* unpack argument list */
 	pack = __pack_load(PACK_KEY_ARG, &length);
 	if (pack) {

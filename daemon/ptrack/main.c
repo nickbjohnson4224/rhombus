@@ -17,7 +17,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <driver.h>
-#include <ptrack.h>
 #include <natio.h>
 #include <mutex.h>
 #include <proc.h>
@@ -72,7 +71,7 @@ int main(int argc, char **argv) {
 	rcall_set("register", ptrack_register);
 	rcall_set("deregister", ptrack_deregister);
 
-	fs_plink(PTRACK_PATH, RP_CONS(getpid(), 0), NULL);
+	fs_plink("/sys/ptrack", RP_CONS(getpid(), 0), NULL);
 
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 	_done();
