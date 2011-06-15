@@ -30,15 +30,10 @@ void char_write(char c) {
 }
 
 size_t serial_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
-	struct resource *file;
 
-	file = index_get(index);
-
-	mutex_spin(&file->mutex);
 	for (size_t i = 0; i < size; i++) {
 		char_write(buffer[i]);
 	}
-	mutex_free(&file->mutex);
 	
 	return size;
 }

@@ -66,7 +66,6 @@ size_t tmpfs_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size,
 
 	file = index_get(index);
 
-	mutex_spin(&file->mutex);
 	if (!file->data) {
 		return 0;
 	}
@@ -80,7 +79,6 @@ size_t tmpfs_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size,
 	}
 
 	memcpy(buffer, &file->data[offset], size);
-	mutex_free(&file->mutex);
 	
 	return size;
 }
@@ -90,14 +88,12 @@ size_t tmpfs_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t size
 
 	file = index_get(index);
 
-	mutex_spin(&file->mutex);
 	if (offset + size >= file->size) {
 		file->data = realloc(file->data, offset + size);
 		file->size = offset + size;
 	}
 
 	memcpy(&file->data[offset], buffer, size);
-	mutex_free(&file->mutex);
 
 	return size;
 }

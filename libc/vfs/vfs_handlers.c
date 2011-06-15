@@ -101,10 +101,7 @@ static char *_find_handler(uint64_t source, uint32_t index, int argc, char **arg
 		return strdup("! nfound");
 	}
 
-	if (file->link && !(!tail && link)) {
-		return saprintf(">> %r%s", file->link, (tail) ? tail : "");
-	}
-	else if (file->symlink && !(!tail && link)) {
+	if (file->symlink && !(!tail && link)) {
 		return saprintf(">> %s/%s", file->symlink, (tail) ? tail : "");
 	}
 	else {
@@ -141,11 +138,12 @@ static char *_cons_handler(uint64_t source, uint32_t index, int argc, char **arg
 	mutex_spin(&dir->mutex);
 
 	/* check permissions */
-	if ((acl_get(dir->acl, getuser(RP_PID(source))) & PERM_WRITE) == 0) {
+	if (!vfs_permit(dir, source, PERM_WRITE)) {
 		mutex_free(&dir->mutex);
 		return strdup("! denied");
 	}
-	else if ((dir->type & FS_TYPE_DIR) == 0) {
+
+	if ((dir->type & FS_TYPE_DIR) == 0) {
 		mutex_free(&dir->mutex);
 		return strdup("! type");
 	}
@@ -207,7 +205,7 @@ static char *_link_handler(uint64_t source, uint32_t index, int argc, char **arg
 		return strdup("! type");
 	}
 
-	if ((acl_get(dir->acl, gettuser()) & PERM_WRITE) == 0) {
+	if (!vfs_permit(dir, source, PERM_WRITE)) {
 		/* permission denied */
 		return strdup("! denied");
 	}
@@ -299,7 +297,7 @@ static char *_symlink_handler(uint64_t source, uint32_t index, int argc, char **
 
 	mutex_spin(&r->mutex);
 
-	if ((acl_get(r->acl, gettuser()) & PERM_WRITE) == 0) {
+	if (!vfs_permit(r, source, PERM_WRITE)) {
 		mutex_free(&r->mutex);
 		return strdup("! denied");
 	}
@@ -340,7 +338,7 @@ static char *_list_handler(uint64_t source, uint32_t index, int argc, char **arg
 		return strdup("! notdir");
 	}
 
-	if ((acl_get(dir->acl, gettuser()) & PERM_READ) == 0) {
+	if (!vfs_permit(dir, source, PERM_READ)) {
 		mutex_free(&dir->mutex);
 		return strdup("! denied");
 	}
@@ -443,7 +441,7 @@ static char *_setperm_handler(uint64_t source, uint32_t index, int argc, char **
 
 	mutex_spin(&r->mutex);
 
-	if ((acl_get(r->acl, gettuser()) & PERM_ALTER) == 0) {
+	if (!vfs_permit(r, source, PERM_ALTER)) {
 		mutex_free(&r->mutex);
 		return strdup("! denied");
 	}

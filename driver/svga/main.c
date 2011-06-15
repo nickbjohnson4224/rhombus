@@ -127,23 +127,17 @@ char *svga_rcall_syncrect(uint64_t source, uint32_t index, int argc, char **argv
 }
 
 int svga_sync(uint64_t source, uint32_t index) {
-	struct resource *file;
 
 	if (!buffer) {
 		return -1;
 	}
 
-	file = index_get(index);
-
-	mutex_spin(&file->mutex);
 	svga_flip(buffer);
-	mutex_free(&file->mutex);
 
 	return 0;
 }
 
 int svga_share(uint64_t source, uint32_t index, uint8_t *_buffer, size_t size, uint64_t off) {
-	struct resource *file;
 
 	if (size != svga.w * svga.h * 4) {
 		return -1;
@@ -152,18 +146,12 @@ int svga_share(uint64_t source, uint32_t index, uint8_t *_buffer, size_t size, u
 		return -1;
 	}
 
-	file = index_get(index);
-
-	mutex_spin(&file->mutex);
-
 	if (buffer) {
 		page_free(buffer, msize(buffer));
 		free(buffer);
 	}
 
 	buffer = (uint32_t*) _buffer;
-
-	mutex_free(&file->mutex);
 
 	return 0;
 }

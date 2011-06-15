@@ -25,18 +25,13 @@
 #include <vfs.h>
 
 size_t fbterm_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
-	struct resource *file;
 	size_t i;
 
-	file = index_get(index);
-
-	mutex_spin(&file->mutex);
 	for (i = 0; i < size; i++) {
 		fbterm_print(buffer[i]);
 	}
 
 	screen_flip();
-	mutex_free(&file->mutex);
 
 	return size;
 }
@@ -78,12 +73,8 @@ char *fbterm_rcall_set_bgcolor(uint64_t source, uint32_t index, int argc, char *
 }
 
 size_t fbterm_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
-	struct resource *file;
 	size_t i;
 
-	file = index_get(index);
-
-	mutex_spin(&file->mutex);
 	for (i = 0; i < size; i++) {
 		buffer[i] = fbterm_getch();
 
@@ -91,7 +82,6 @@ size_t fbterm_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size
 			break;
 		}
 	}
-	mutex_free(&file->mutex);
 
 	return i;
 }

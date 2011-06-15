@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -37,12 +37,22 @@ void __sync_wrapper(struct msg *msg) {
 	}
 	
 	file = index_get(RP_INDEX(msg->target));
-	if (!file || !(acl_get(file->acl, getuser(RP_PID(msg->source))) & PERM_WRITE)) {
+	if (!file) {
+		merror(msg);
+		return;
+	}
+
+	mutex_spin(&file->mutex);
+
+	if (!vfs_permit(file, msg->source, PERM_WRITE)) {
+		mutex_free(&file->mutex);
 		merror(msg);
 		return;
 	}
 
 	_di_sync(msg->source, RP_INDEX(msg->target));
+
+	mutex_free(&file->mutex);
 
 	merror(msg); // errors are the same as valid replies
 }

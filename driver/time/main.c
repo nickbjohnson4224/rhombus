@@ -25,25 +25,15 @@
 
 #include "time.h"
 
-static bool m_time = false;
-
 size_t time_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
-	struct resource *file;
 	char *data;
-
-	file = index_get(index);
-
-	if (!file) return 0;
-	if (!(acl_get(file->acl, RP_INDEX(source)) & PERM_READ)) return 0;
 
 	if (size > 20) {
 		size = 20;
 	}
 
 	data = malloc(21);
-	mutex_spin(&m_time);
 	sprintf(data, "%d", get_time());
-	mutex_free(&m_time);
 	memcpy(buffer, data, size);
 	free(data);
 
@@ -51,13 +41,8 @@ size_t time_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, 
 }
 
 int main(int argc, char **argv) {
-	struct resource *root;
 
-	root       = calloc(sizeof(struct resource), 1);
-	root->type = FS_TYPE_FILE;
-	root->size = 0;
-	root->acl  = acl_set_default(root->acl, PERM_READ);
-	index_set(0, root);
+	index_set(0, resource_cons(FS_TYPE_FILE, PERM_READ));
 
 	di_wrap_read(time_read);
 	vfs_init();

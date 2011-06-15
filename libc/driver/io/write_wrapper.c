@@ -53,12 +53,21 @@ void __write_wrapper(struct msg *msg) {
 	}
 
 	file = index_get(RP_INDEX(msg->target));
-	if (!file || !(acl_get(file->acl, getuser(RP_PID(msg->source))) & PERM_WRITE)) {
+	if (!file) {
+		merror(msg);
+		return;
+	}
+
+	mutex_spin(&file->mutex);
+
+	if (!vfs_permit(file, msg->source, PERM_WRITE)) {
+		mutex_free(&file->mutex);
 		merror(msg);
 		return;
 	}
 
 	if (!(file->type & FS_TYPE_FILE)) {
+		mutex_free(&file->mutex);
 		merror(msg);
 		return;
 	}
@@ -68,6 +77,8 @@ void __write_wrapper(struct msg *msg) {
 	((uint32_t*) msg->data)[0] = _di_write(msg->source, RP_INDEX(msg->target), 
 		&msg->data[8], msg->length - 8, offset);
 	msg->length = sizeof(uint32_t);
+
+	mutex_free(&file->mutex);
 
 	mreply(msg);
 }

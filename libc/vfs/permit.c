@@ -41,14 +41,12 @@ int vfs_permit(struct resource *r, uint64_t source, int operation) {
 		return 0;
 	}
 
-	return 1;
-
 	/* check locks */
 	if (!r->lock) return 1;
 	mutex_spin(&r->lock->mutex);
 	switch (operation) {
 	case PERM_READ:
-		if (r->lock->exlock || r->lock->prlock) {
+		if (!r->lock->exlock && !r->lock->prlock) {
 			/* no exclusive lock acquired, success */
 			mutex_free(&r->lock->mutex);
 			return 1;

@@ -49,12 +49,21 @@ void __read_wrapper(struct msg *msg) {
 	index = RP_INDEX(msg->target);
 
 	file = index_get(index);
-	if (!file || !(acl_get(file->acl, getuser(RP_PID(msg->source))) & PERM_READ) & PERM_READ) {
+	if (!file) {
+		merror(msg);
+		return;
+	}
+
+	mutex_spin(&file->mutex);
+
+	if (!vfs_permit(file, msg->source, PERM_READ)) {
+		mutex_free(&file->mutex);
 		merror(msg);
 		return;
 	}
 
 	if (!(file->type & FS_TYPE_FILE)) {
+		mutex_free(&file->mutex);
 		merror(msg);
 		return;
 	}
@@ -73,6 +82,8 @@ void __read_wrapper(struct msg *msg) {
 	free(msg);
 
 	reply->length = _di_read(source, index, reply->data, size, offset);
+
+	mutex_free(&file->mutex);
 
 	msend(reply);
 }
