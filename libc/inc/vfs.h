@@ -19,7 +19,7 @@
 
 #include <natio.h>
 
-/* access control lists *****************************************************/
+/* access control lists and locks *******************************************/
 
 struct vfs_acl {
 	struct vfs_acl *next;
@@ -36,8 +36,6 @@ struct vfs_acl *acl_set_default(struct vfs_acl *acl, uint8_t permit);
 
 void acl_free(struct vfs_acl *acl);
 
-/* locks ********************************************************************/
-
 struct vfs_lock_list {
 	struct vfs_lock_list *next;
 	uint32_t pid;
@@ -51,17 +49,14 @@ struct vfs_lock_list *vfs_lock_list_free(struct vfs_lock_list *ll);
 struct vfs_lock {
 	bool mutex;
 
-	/* read-exclusive lock */
-	struct vfs_lock_list *rxlock;
+	/* shared lock */
+	struct vfs_lock_list *shlock;
 	
-	/* write-shared lock */
-	struct vfs_lock_list *wslock;
+	/* exclusive lock */
+	uint32_t exlock;
 
-	/* write-exlusive lock */
-	uint32_t wxlock;
-
-	/* private-exclusive lock */
-	uint32_t pxlock;
+	/* private lock */
+	uint32_t prlock;
 };
 
 struct vfs_lock *vfs_lock_cons(void);
@@ -106,6 +101,8 @@ struct resource *index_set(uint32_t index, struct resource *r);
 
 void resource_free(struct resource *r);
 struct resource *resource_cons(int type, int perm);
+
+int vfs_permit(struct resource *r, uint64_t source, int operation);
 
 /* virtual filesystem interface *********************************************/
 

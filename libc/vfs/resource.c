@@ -56,6 +56,7 @@ struct resource *resource_cons(int type, int perm) {
 	r = calloc(sizeof(struct resource), 1);
 	r->type = type;
 	r->acl  = acl_set_default(NULL, perm);
+	r->lock = vfs_lock_cons();
 
 	if (FS_IS_DIR(type)) {
 		r->vfs = calloc(sizeof(struct vfs_node), 1);

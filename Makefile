@@ -56,7 +56,6 @@ image:	all
 
 	@ - mkdir boot
 	@ - mkdir boot/bin
-	@ - mkdir boot/tmp
 	@ - mkdir boot/lib
 	@ - mkdir boot/sbin
 	@ - mkdir boot/etc

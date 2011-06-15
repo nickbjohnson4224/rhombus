@@ -27,12 +27,8 @@ void vfs_lock_free(struct vfs_lock *lock) {
 	
 	mutex_spin(&lock->mutex);
 
-	if (lock->wslock) {
-		vfs_lock_list_free(lock->wslock);
-	}
-
-	if (lock->rxlock) {
-		vfs_lock_list_free(lock->rxlock);
+	if (lock->shlock) {
+		vfs_lock_list_free(lock->shlock);
 	}
 
 	free(lock);
@@ -41,7 +37,7 @@ void vfs_lock_free(struct vfs_lock *lock) {
 int vfs_lock_acquire(struct vfs_lock *lock, uint32_t pid, int locktype) {
 	int err = 0;
 	int oldtype;
-	
+
 	oldtype = vfs_lock_current(lock, pid);
 
 	if (oldtype == locktype) {
@@ -52,18 +48,15 @@ int vfs_lock_acquire(struct vfs_lock *lock, uint32_t pid, int locktype) {
 
 	/* release old lock */
 	switch (oldtype) {
-	case LOCK_RS: case LOCK_NO: break;
-	case LOCK_RX:
-		lock->rxlock = vfs_lock_list_del(lock->rxlock, pid);
+	case LOCK_UN: break;
+	case LOCK_SH:
+		lock->shlock = vfs_lock_list_del(lock->shlock, pid);
 		break;
-	case LOCK_WS:
-		lock->wslock = vfs_lock_list_del(lock->wslock, pid);
+	case LOCK_EX:
+		lock->exlock = 0;
 		break;
-	case LOCK_WX:
-		lock->wxlock = 0;
-		break;
-	case LOCK_PX:
-		lock->pxlock = 0;
+	case LOCK_PR:
+		lock->prlock = 0;
 		break;
 	default:
 		err = 1;
@@ -76,37 +69,29 @@ int vfs_lock_acquire(struct vfs_lock *lock, uint32_t pid, int locktype) {
 
 	/* acquire the new lock */
 	switch (locktype) {
-	case LOCK_RS: break;
-	case LOCK_RX:
-		if (lock->wslock || lock->wxlock || lock->pxlock) {
+	case LOCK_UN: break;
+	case LOCK_SH:
+		if (lock->exlock || lock->prlock) {
 			err = 1;
 		}
 		else {
-			lock->rxlock = vfs_lock_list_add(lock->rxlock, pid);
+			lock->shlock = vfs_lock_list_add(lock->shlock, pid);
 		}
 		break;
-	case LOCK_WS:
-		if (lock->rxlock || lock->wxlock || lock->pxlock) {
+	case LOCK_EX:
+		if (lock->shlock || lock->exlock || lock->prlock) {
 			err = 1;
 		}
 		else {
-			lock->wslock = vfs_lock_list_add(lock->wslock, pid);
+			lock->exlock = pid;
 		}
 		break;
-	case LOCK_WX:
-		if (lock->rxlock || lock->wslock || lock->wxlock || lock->pxlock) {
+	case LOCK_PR:
+		if (lock->shlock || lock->exlock || lock->prlock) {
 			err = 1;
 		}
 		else {
-			lock->wxlock = pid;
-		}
-		break;
-	case LOCK_PX:
-		if (lock->rxlock || lock->wslock || lock->wxlock || lock->pxlock) {
-			err = 1;
-		}
-		else {
-			lock->pxlock = pid;
+			lock->prlock = pid;
 		}
 		break;
 	default:
@@ -118,48 +103,27 @@ int vfs_lock_acquire(struct vfs_lock *lock, uint32_t pid, int locktype) {
 	return err;
 }
 
-int vfs_lock_waitfor(struct vfs_lock *lock, uint32_t pid, int locktype) {
-	
-	while (1) {		
-		if (!vfs_lock_acquire(lock, pid, locktype)) {
-			return 0;
-		}
-
-		sleep();
-	}
-}
-
 int vfs_lock_current(struct vfs_lock *lock, uint32_t pid) {
 	
 	mutex_spin(&lock->mutex);
 
-	if (vfs_lock_list_tst(lock->rxlock, pid)) {
+	if (vfs_lock_list_tst(lock->shlock, pid)) {
 		mutex_free(&lock->mutex);
-		return LOCK_RX;
+		return LOCK_SH;
 	}
 
-	if (vfs_lock_list_tst(lock->wslock, pid)) {
+	if (lock->exlock == pid) {
 		mutex_free(&lock->mutex);
-		return LOCK_WS;
+		return LOCK_EX;
 	}
 
-	if (lock->wxlock == pid) {
+	if (lock->prlock == pid) {
 		mutex_free(&lock->mutex);
-		return LOCK_WX;
-	}
-
-	if (lock->pxlock == pid) {
-		mutex_free(&lock->mutex);
-		return LOCK_PX;
-	}
-
-	if (lock->pxlock) {
-		mutex_free(&lock->mutex);
-		return LOCK_NO;
+		return LOCK_PR;
 	}
 	
 	mutex_free(&lock->mutex);
-	return LOCK_RS;
+	return LOCK_UN;
 }
 
 struct vfs_lock_list *vfs_lock_list_add(struct vfs_lock_list *ll, uint32_t pid) {

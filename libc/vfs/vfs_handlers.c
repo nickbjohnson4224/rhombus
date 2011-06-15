@@ -33,8 +33,7 @@ static char *_type_handler(uint64_t source, uint32_t index, int argc, char **arg
 static char *_symlink_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_getperm_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_setperm_handler(uint64_t source, uint32_t index, int argc, char **argv);
-static char *_getlock_handler(uint64_t source, uint32_t index, int argc, char **argv);
-static char *_setlock_handler(uint64_t source, uint32_t index, int argc, char **argv);
+static char *_lock_handler(uint64_t source, uint32_t index, int argc, char **argv);
 
 /*****************************************************************************
  * vfs_init
@@ -53,8 +52,7 @@ int vfs_init(void) {
 	rcall_set("fs_symlink", _symlink_handler);
 	rcall_set("fs_getperm", _getperm_handler);
 	rcall_set("fs_setperm", _setperm_handler);
-	rcall_set("fs_getlock", _getlock_handler);
-	rcall_set("fs_setlock", _setlock_handler);
+	rcall_set("fs_lock", _lock_handler);
 
 	return 0;
 }
@@ -363,22 +361,26 @@ static char *_list_handler(uint64_t source, uint32_t index, int argc, char **arg
 
 static char *_size_handler(uint64_t source, uint32_t index, int argc, char **argv) {
 	struct resource *r;
+	uint64_t size;
 
 	r = index_get(index);
+	if (!r) return strdup("! nfound");
 
-	if (!r) {
-		return strdup("! nfound");
-	}
-
-	if ((acl_get(r->acl, gettuser()) & PERM_READ) == 0) {
+	mutex_spin(&r->mutex);
+	if (!vfs_permit(r, source, PERM_READ)) {
+		mutex_free(&r->mutex);
 		return strdup("! denied");
 	}
 
 	if ((r->type & FS_TYPE_FILE) == 0 || (r->type & FS_TYPE_CHAR) != 0) {
+		mutex_free(&r->mutex);
 		return strdup("! type");
 	}
 
-	return saprintf("%d:%d", (uint32_t) (r->size >> 32), (uint32_t) r->size);
+	size = r->size;
+	mutex_free(&r->mutex);
+
+	return saprintf("%d:%d", (uint32_t) (size >> 32), (uint32_t) size);
 }
 
 static char *_type_handler(uint64_t source, uint32_t index, int argc, char **argv) {
@@ -453,69 +455,34 @@ static char *_setperm_handler(uint64_t source, uint32_t index, int argc, char **
 	return strdup("T");
 }
 
-static char *_getlock_handler(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct resource *r;
-
-	r = index_get(index);
-	if (!r) return strdup("! nfound");
-
-	if (!r->lock) {
-		if ((acl_get(r->acl, gettuser()) & PERM_READ) == 0) {
-			// return LOCK_RS by default
-			return saprintf("%d", LOCK_RS);
-		}
-		else {
-			return saprintf("%d", LOCK_NO);
-		}
-	}
-
-	return saprintf("%d", vfs_lock_current(r->lock, RP_PID(source)));
-}
-
-static char *_setlock_handler(uint64_t source, uint32_t index, int argc, char **argv) {
+static char *_lock_handler(uint64_t source, uint32_t index, int argc, char **argv) {
 	struct resource *r;
 	int locktype;
-	int err;
 
 	if (argc < 2) {
 		return NULL;
 	}
 
+	locktype = atoi(argv[1]);
+	
 	r = index_get(index);
 	if (!r) return strdup("! nfound");
 
-	locktype = atoi(argv[1]);
-
 	mutex_spin(&r->mutex);
+	if (!vfs_permit(r, source, PERM_LOCK)) {
+		mutex_free(&r->mutex);
+		return strdup("! denied");
+	}
+
 	if (!r->lock) {
 		r->lock = vfs_lock_cons();
 	}
 
-	if ((locktype == LOCK_RS || locktype == LOCK_RX) 
-		&& (acl_get(r->acl, gettuser()) & PERM_READ) == 0) {
+	if (vfs_lock_acquire(r->lock, RP_PID(source), locktype)) {
 		mutex_free(&r->mutex);
-		return strdup("! denied");
-	}
-
-	if ((locktype == LOCK_WS || locktype == LOCK_WX || locktype == LOCK_PX) 
-		&& (acl_get(r->acl, gettuser()) & PERM_WRITE) == 0) {
-		mutex_free(&r->mutex);
-		return strdup("! denied");
-	}
-
-	if ((locktype == LOCK_RX || locktype == LOCK_WX || locktype == LOCK_PX) 
-		&& (acl_get(r->acl, gettuser()) & PERM_XLOCK) == 0) {
-		mutex_free(&r->mutex);
-		return strdup("! denied");
-	}
-
-	err = vfs_lock_acquire(r->lock, RP_PID(source), locktype);
-	mutex_free(&r->mutex);
-
-	if (err) {
 		return strdup("! locked");
 	}
-	else {
-		return strdup("T");
-	}
+
+	mutex_free(&r->mutex);
+	return strdup("T");
 }

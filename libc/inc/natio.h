@@ -170,59 +170,45 @@ int      rp_plink(uint64_t rp, uint64_t link_rp, const char *link_path);
 int      rp_link (uint64_t dir, const char *name, uint64_t link);
 
 /*****************************************************************************
- * lock types
+ * file locking
  *
- * There are five different basic types of resource locks, each providing a
- * different type of permission and/or exclusion. All locks are mandatory in
- * nature, meaning that the relevant operations can only be performed if a
- * lock is granted.
+ * Locks may be used to temporarily restrict access to files in order to
+ * ensure consistency.
  *
- * LOCK_RS - Read-Shared
+ * There are three types of locks:
  *
- * This is the default lock type (all files act as if LOCK_RS was aquired by
- * every process, unless LOCK_PX is aquired). It allows reading but not 
- * writing. It may be aquired at any point unless LOCK_PX is aquired. It does
- * not prevent any locks from being aquired, even LOCK_PX. It does not 
- * guarantee consistency of reads.
+ * LOCK_SH - shared lock
  *
- * LOCK_RX - Read-eXclusive
+ * Any number of processes may hold shared locks on a file, and shared locks
+ * prevent all write access to a file, but may only be acquired if no 
+ * exclusive or private locks are acquired. Additionally, the existence of a 
+ * shared lock prevents any exclusive or private lock from being acquired.
  *
- * This lock allows reading but not writing. It may be aquired unless LOCK_WS,
- * LOCK_WX, or LOCK_PX are aquired. It guarantees consistency of reads. This 
- * is similar to the shared lock used with flock().
+ * LOCK_EX - exclusive lock
  *
- * LOCK_WS - Write-Shared
+ * Only one process may hold an exclusive lock, which may only be acquired if
+ * no other locks are present on a file. Only the process holding the 
+ * exclusive lock may perform writes on that file, but read access remains
+ * unrestricted.
  *
- * This lock allows reading and writing. It may be aquired unless LOCK_WX,
- * LOCK_RX, or LOCK_PX are aquired. It does not guarantee consistency of 
- * reads or writes.
+ * LOCK_PR - private lock
  *
- * LOCK_WX - Write-eXclusive
+ * This is similar to an exclusive lock, but both read and write access are
+ * restricted to only the locking process. This is used for things that are
+ * bound to a particular process, like anonymous pipes and windows.
  *
- * This lock allows reading and writing. It may be aquired unless LOCK_RX,
- * LOCK_WS, LOCK_WX, or LOCK_PX are aquired. It guarantees consistency of 
- * reads and writes. This is similar to the exclusive lock used with flock().
+ * LOCK_UN represents no lock.
  *
- * LOCK_PX - Private-eXclusive
- *
- * This lock allows reading and writing. It may be aquired unless LOCK_RX,
- * LOCK_WS, LOCK_WX, or LOCK_PX are aquired. It prevents LOCK_RS from being
- * aquired as well, and invalidates all LOCK_RS locks while it is aquired.
- * It guarantees consistency of reads and writes as well as privacy of file 
- * contents. It is used for files that have "process owners", such as windows 
- * and nameless pipes.
+ * Changing a lock type is guaranteed to be atomic.
  */
 
-int rp_lock_acquire(uint64_t rp, int locktype);
-int rp_lock_waitfor(uint64_t rp, int locktype);
-int rp_lock_current(uint64_t rp);
+int rp_lock(uint64_t rp, int locktype);
 
-#define LOCK_NO		0x00
-#define LOCK_RS		0x01
-#define LOCK_RX		0x02
-#define LOCK_WS		0x03
-#define LOCK_WX		0x04
-#define LOCK_PX		0x05
+#define LOCK_UN		0x00	// no lock
+#define LOCK_SH		0x01	// "shared" (readers lock)
+#define LOCK_EX		0x02	// "exclusive" (writer lock)
+#define LOCK_PR		0x03	// "private" (excludes all other processes)
+#define LOCK_NB		0x04	// do not block
 
 /*****************************************************************************
  * permission bitmap
@@ -233,16 +219,15 @@ int rp_lock_current(uint64_t rp);
  *
  * PERM_READ
  *
- * This flag obstensibly gives read access. More correctly, it allows a user 
- * to aquire read locks (RS, RX) on a file. For directories, reading means 
- * listing contents and finding paths.
+ * This flag allows read access. For directories, this means finding and 
+ * listing. For files, this means reading file contents.
  *
  * PERM_WRITE
  *
- * This flag obstensibly gives write access. More correctly, it allows a user
- * to aquire write locks (WS, WX, PX) on a file. For directories, writing
- * means creating directory entries.
- *
+ * This flag allows write access. For directories, this means the creation and
+ * deletion of hard links. For files, this means writing, clearing, and 
+ * deleting files/file contents, as well as requesting file synchronization.
+ * 
  * PERM_ALTER
  *
  * This flag allows the permission bitmap to be modified. Some drivers simply
@@ -250,9 +235,9 @@ int rp_lock_current(uint64_t rp);
  * read-only) and this does not ensure that the permission bitmap will 
  * actually be modified as specified.
  *
- * PERM_XLOCK
+ * PERM_LOCK
  *
- * This flag allows a user to aquire exclusive locks (RX, WX, PX) on a file.
+ * This flag allows a user to acquire locks on a file.
  */
 
 uint8_t fs_getperm(const char *path, uint32_t user);
@@ -264,6 +249,6 @@ int     rp_setperm(uint64_t rp, uint32_t user, uint8_t perm);
 #define PERM_READ	0x01
 #define PERM_WRITE	0x02
 #define PERM_ALTER	0x04
-#define PERM_XLOCK	0x08
+#define PERM_LOCK	0x08
 
 #endif/*NATIO_H*/
