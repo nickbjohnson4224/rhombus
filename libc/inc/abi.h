@@ -40,6 +40,7 @@ uint32_t	_user(uint32_t pid);
 int			_auth(uint32_t pid, uint32_t user);
 int         _pgrp(uint32_t gid, uint32_t action, uint32_t target);
 int         _kill(uint32_t target, uint8_t signal);
+int         _name(char *name, uint32_t pid, uint32_t operation);
 
 #define GPID_SELF	0
 #define GPID_PARENT	1

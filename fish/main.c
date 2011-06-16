@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -68,7 +68,7 @@ int main() {
 				setenv("PWD", path);
 			}
 			else {
-				fprintf(stderr, "%s: %s: no such directory\n", getenv("NAME"), argv[1]);
+				fprintf(stderr, "%s: %s: no such directory\n", getname_s(), argv[1]);
 			}
 			continue;
 		}
@@ -79,7 +79,7 @@ int main() {
 
 			if (execv(argv[0], (char const **) argv)) {
 				if (errno == ENOENT) {
-					fprintf(stderr, "%s: %s: command not found\n", getenv("NAME"), argv[0]);
+					fprintf(stderr, "%s: %s: command not found\n", getname_s(), argv[0]);
 				}
 				else {
 					perror(argv[0]);

@@ -71,4 +71,10 @@ int      setpgid(uint32_t pid, int gid);
 int      getpgid(uint32_t pid);
 int      getpgrp(void);
 
+/* process names ***********************************************************/
+
+int      setname(const char *name);
+char    *getname(uint32_t pid);
+char    *getname_s();
+
 #endif/*PROC_H*/

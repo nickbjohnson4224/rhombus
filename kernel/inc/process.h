@@ -40,6 +40,7 @@ struct process {
 	uid_t    user;
 	gid_t    group;
 	intid_t  rirq;
+	char     name[16];
 
 	struct process *parent;
 

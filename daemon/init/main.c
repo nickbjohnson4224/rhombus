@@ -85,10 +85,10 @@ int main() {
 	stdout = stderr = fopen("/dev/serial", "w");
 
 	/* Process Tracker */
-	argv[0] = "ptrack";
-	argv[1] = NULL;
-	file = tar_find(boot_image, "sbin/ptrack");
-	temp = start(file, argv);
+//	argv[0] = "ptrack";
+//	argv[1] = NULL;
+//	file = tar_find(boot_image, "sbin/ptrack");
+//	temp = start(file, argv);
 
 	/* Keyboard Driver */
 	argv[0] = "kbd";
