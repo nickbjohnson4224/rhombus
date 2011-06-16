@@ -184,6 +184,7 @@ int main(int argc, char **argv) {
 	// launch shell
 	pid = fork();
 	if (pid < 0) {
+		setuser(getpid(), 1);
 		setenv("PATH", "/bin");
 		stdout = stderr = fdopen(RP_CONS(-pid, 0), "w");
 		stdin = fdopen(RP_CONS(-pid, 0), "r");

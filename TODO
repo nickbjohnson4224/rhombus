@@ -41,7 +41,8 @@ For 0.9 Alpha:
 + better event system (textual)
 + process tracker
 + file locking
-- top/ps equivalent
++ top/ps equivalent
+- proper session/controlling tty stuff
 - pipe driver
 - shell pipe support
 - stdio buffering

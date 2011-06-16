@@ -84,14 +84,12 @@ void _init() {
 	if (pack) {
 		argv = loadarg(pack);
 		for (argc = 0; argv[argc]; argc++);
-//		setenv("NAME", argv[0]);
-		setname(argv[0]);
+		setname(path_name(argv[0]));
 	}
 	else {
 		argv = NULL;
 		argc = 0;
-		setname("");
-//		setenv("NAME", "unknown");
+		setname("unknown");
 	}
 
 	__pack_reset();

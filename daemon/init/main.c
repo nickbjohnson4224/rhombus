@@ -141,7 +141,7 @@ int main() {
 	file = tar_find(boot_image, "sbin/time");
 	fs_plink("/dev/time", start(file, argv), NULL);
 
-	setenv("NAME", "init");
+	setname("init");
 	
 	mwait(PORT_CHILD, 0);
 
