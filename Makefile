@@ -51,6 +51,8 @@ clean:
 	@ rm $(shell find . -name "*.pp")
 	@ echo " CLEAN	" bin/*
 	@ rm bin/*
+	@ echo " CLEAN	" $(shell find ./boot)
+	@ rm -r boot/*
 
 image:	all
 
