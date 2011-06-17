@@ -100,6 +100,8 @@ int main(int argc, char **argv) {
 				}
 				if (buttons != prevbuttons) {
 					event = saprintf("mouse button %d", buttons);
+					eventl(event_list, event);
+					free(event);
 					prevbuttons = buttons;
 				}
 			}
