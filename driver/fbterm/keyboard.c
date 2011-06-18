@@ -138,6 +138,8 @@ char fbterm_getch(void) {
 	return c;
 }
 
+uint32_t fgjob_pid = 0;
+
 void keyboard_event(uint32_t code, bool press) {
 	char c;
 	static bool ctrl = false;
@@ -157,7 +159,9 @@ void keyboard_event(uint32_t code, bool press) {
 	c = code;
 
 	if (tolower(c) == 'c' && ctrl) {
-		kill(-getpid(), SIGINT);
+		if (fgjob_pid) {
+			kill(-fgjob_pid, SIGINT);
+		}
 
 		fbterm_print('^');
 		fbterm_print('C');

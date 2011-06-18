@@ -16,16 +16,16 @@
 
 section .text
 
-global _pgrp:function _pgrp.end-_pgrp
+global _proc:function _proc.end-_proc
 
-_pgrp:
-	push edi
+_proc:
+	push ebx
 
-	mov ecx, [esp+8]
-	mov edx, [esp+12]
-	mov edi, [esp+16]
+	mov edx, [esp+8]
+	mov ecx, [esp+12]
+	mov ebx, [esp+16]
 	int 0x50
 
-	pop edi
+	pop ebx
 	ret
 .end:

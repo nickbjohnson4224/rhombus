@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -38,7 +38,6 @@ struct process {
 	uint64_t tick;
 	pid_t    pid;
 	uid_t    user;
-	gid_t    group;
 	intid_t  rirq;
 	char     name[16];
 
@@ -62,10 +61,5 @@ void            process_freeze(struct process *proc);
 void            process_thaw  (struct process *proc);
 void            process_touch (pid_t pid);
 void            process_switch(struct process *proc);
-
-/* process group operations ************************************************/
-
-gid_t pgroup_alloc(void);
-int   pgroup_move (gid_t group, struct process *proc);
 
 #endif/*KERNEL_PROCESS_H*/

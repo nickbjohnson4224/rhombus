@@ -14,28 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdbool.h>
-#include <process.h>
-#include <string.h>
-#include <space.h>
+#include <proc.h>
+#include <abi.h>
 
-static bool pgroup_allocator[256];
-
-gid_t pgroup_alloc(void) {
-	int i;
-
-	for (i = 1; i < 256; i++) {
-		if (pgroup_allocator[i] == false) {
-			pgroup_allocator[i] = true;
-			return i;
-		}
-	}
-
-	return 0;
-}
-
-int pgroup_move(gid_t group, struct process *proc) {
-	proc->group = group;
-
-	return 0;
+int setparent(uint32_t pid, uint32_t ppid) {
+	return _proc(pid, PROC_WRITE_PPID, ppid);
 }

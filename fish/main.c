@@ -27,15 +27,10 @@ int main() {
 	char buffer[100];
 	size_t i, n;
 	int pid;
-	int fg_gid;
 	char *argv[100];
 	char *path;
 
 	setenv("PWD", "/");
-
-	path = rcall(stdin->fd, "getfg");
-	sscanf(path, "%i", &fg_gid);
-	free(path);
 
 	while (1) {
 		printf(getenv("PWD"));
@@ -75,7 +70,7 @@ int main() {
 
 		pid = fork();
 		if (pid < 0) {
-			setpgid(getpid(), fg_gid);
+			rcallf(stdin->fd, "set_fgjob %d", getpid());
 
 			if (execv(argv[0], (char const **) argv)) {
 				if (errno == ENOENT) {
@@ -89,6 +84,7 @@ int main() {
 			}
 		}
 		mwait(PORT_CHILD, RP_CONS(pid, 0));
+		rcallf(stdin->fd, "set_fgjob %d", 0);
 	}
 
 	return 0;

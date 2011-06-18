@@ -86,9 +86,9 @@ INTN	74	; stop
 INTN	75	; wake
 INTN	76	; gpid
 INTN	77	; time
-INTN	78	; user
-INTN	79	; auth
-INTN	80	; pgrp
+INTN	78	; user -- deprecated
+INTN	79	; auth -- deprecated
+INTN	80	; proc
 INTN	81	; kill
 INTN	82	; vm86
 INTN	83	; name

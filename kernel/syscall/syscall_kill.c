@@ -28,13 +28,19 @@
  * differences: first, process groups (specified by negative ID numbers for
  * <target>) are valid targets. Second, no packet can be sent.
  *
+ * If <target> is positive, the signal is sent to the PID <target>.
+ *
+ * If <target> is negative, the signal is sent to <target> and all of its
+ * offspring (recursively).
+ *
  * Returns zero on success, nonzero on error.
  */
+
+static void _signal_subtree(struct thread *image, pid_t root, uint8_t signal);
 
 struct thread *syscall_kill(struct thread *image) {
 	int32_t target = image->ecx;
 	uint8_t signal = image->edx;
-	int i;
 
 	/* fail if target is zero */
 	if (target == 0) {
@@ -59,15 +65,26 @@ struct thread *syscall_kill(struct thread *image) {
 	}
 	else {
 
-		/* send signals to all members of the group */
-		for (i = 0; i < MAX_PID; i++) {
-			if (process_get(i) && (int32_t) process_get(i)->group == -target) {
-				schedule_insert(thread_send(image, i, signal, NULL));
-			}
-		}
+		_signal_subtree(image, -target, signal);
 
 		image->eax = 0;
 	}
 
 	return image;
+}
+
+static void _signal_subtree(struct thread *image, pid_t root, uint8_t signal) {
+	struct process *proc;
+	int i;
+
+	proc = process_get(root);
+
+	for (i = 0; i < MAX_PID; i++) {
+		if (process_get(i) && process_get(i)->parent && process_get(i)->parent->pid == root) {
+			_signal_subtree(image, i, signal);
+		}
+	}
+
+	process_freeze(proc);
+	schedule_insert(thread_send(image, root, signal, NULL));
 }

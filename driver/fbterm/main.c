@@ -36,11 +36,16 @@ size_t fbterm_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t siz
 	return size;
 }
 
-char *fbterm_rcall_getfg(uint64_t source, uint32_t index, int argc, char **argv) {
-	char buffer[10];
+char *fbterm_rcall_set_fgjob(uint64_t source, uint32_t index, int argc, char **argv) {
+	extern uint32_t fgjob_pid;
+	
+	if (argc != 2) {
+		return NULL;
+	}
 
-	sprintf(buffer, "%d", getpid());
-	return strdup(buffer);
+	fgjob_pid = atoi(argv[1]);
+
+	return strdup("T");
 }
 
 char *fbterm_rcall_clear(uint64_t source, uint32_t index, int argc, char **argv) {
@@ -174,7 +179,7 @@ int main(int argc, char **argv) {
 	event_set("key", fbterm_key_event);
 
 	rcall_set("clear", fbterm_rcall_clear);
-	rcall_set("getfg", fbterm_rcall_getfg);
+	rcall_set("set_fgjob", fbterm_rcall_set_fgjob);
 	rcall_set("set_fgcolor", fbterm_rcall_set_fgcolor);
 	rcall_set("set_bgcolor", fbterm_rcall_set_bgcolor);
 	di_wrap_write(fbterm_write);
@@ -184,7 +189,6 @@ int main(int argc, char **argv) {
 	// launch shell
 	pid = fork();
 	if (pid < 0) {
-		setuser(getpid(), 1);
 		setenv("PATH", "/bin");
 		stdout = stderr = fdopen(RP_CONS(-pid, 0), "w");
 		stdin = fdopen(RP_CONS(-pid, 0), "r");

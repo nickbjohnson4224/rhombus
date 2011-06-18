@@ -36,9 +36,9 @@ void		_stop(uint32_t tid);
 void		_wake(uint32_t tid);
 uint32_t	_gpid(uint32_t selector);
 uint64_t	_time(uint32_t selector);
-uint32_t	_user(uint32_t pid);
-int			_auth(uint32_t pid, uint32_t user);
-int         _pgrp(uint32_t gid, uint32_t action, uint32_t target);
+//uint32_t	_user(uint32_t pid);
+//int			_auth(uint32_t pid, uint32_t user);
+int         _proc(uint32_t pid, uint32_t selector, uint32_t value);
 int         _kill(uint32_t target, uint8_t signal);
 int         _name(char *name, uint32_t pid, uint32_t operation);
 
@@ -57,5 +57,10 @@ int         _name(char *name, uint32_t pid, uint32_t operation);
 
 #define PGRP_SET	0
 #define PGRP_NEW	1
+
+#define PROC_READ_PPID	0
+#define PROC_WRITE_PPID	1
+#define PROC_READ_UID	2
+#define PROC_WRITE_UID	3
 
 #endif/*ABI_H*/

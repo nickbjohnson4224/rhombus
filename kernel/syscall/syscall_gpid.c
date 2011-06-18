@@ -30,7 +30,6 @@
  * If <selector> is 2, the current thread's tid is returned.
  * If <selector> is 3, the current thread's TLS/stack base is returned.
  * If <selector> is 4, the current thread's uid is returned.
- * If <selector> is 5, the current process' group id is returned.
  */
 
 struct thread *syscall_gpid(struct thread *image) {
@@ -41,7 +40,6 @@ struct thread *syscall_gpid(struct thread *image) {
 	case 2: image->eax = image->id; break;
 	case 3: image->eax = image->stack; break;
 	case 4: image->eax = image->user; break;
-	case 5: image->eax = image->proc->group; break;
 	}
 
 	return image;

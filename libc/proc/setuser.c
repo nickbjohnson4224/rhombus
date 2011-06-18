@@ -18,13 +18,5 @@
 #include <abi.h>
 
 int setuser(uint32_t pid, uint32_t user) {
-	return _auth(pid, user);
-}
-
-int setcuser(uint32_t user) {
-	return _auth(getpid(), user);
-}
-
-int settuser(uint32_t user) {
-	return _auth(0, user);
+	return _proc(pid, PROC_WRITE_UID, user);
 }

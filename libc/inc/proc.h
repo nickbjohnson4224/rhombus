@@ -56,20 +56,13 @@ uint32_t  getppid(void);
 uint32_t  gettid (void);
 uintptr_t gettls (void);
 
+uint32_t  getparent(uint32_t pid);
+int       setparent(uint32_t pid, uint32_t ppid);
+
 /* users and authorization *************************************************/
 
-uint32_t getuser (uint32_t pid);
-uint32_t getcuser(void);
-uint32_t gettuser(void);
-int      setuser (uint32_t pid, uint32_t user);
-int      setcuser(uint32_t user);
-int      settuser(uint32_t user);
-
-/* process groups **********************************************************/
-
-int      setpgid(uint32_t pid, int gid);
-int      getpgid(uint32_t pid);
-int      getpgrp(void);
+uint32_t  getuser(uint32_t pid);
+int       setuser(uint32_t pid, uint32_t user);
 
 /* process names ***********************************************************/
 

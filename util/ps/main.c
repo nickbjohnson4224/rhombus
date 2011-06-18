@@ -35,7 +35,7 @@ struct proc_info *get_proc_info(uint32_t pid) {
 	pi = malloc(sizeof(struct proc_info));
 	pi->pid  = pid;
 	pi->uid  = getuser(pid);
-	pi->gid  = getpgid(pid);
+	pi->gid  = getparent(pid);
 	pi->name = getname(pid);
 
 	return pi;
@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	printf("PID\tUID\tGID\tCMD\n");
+	printf("PID\tUID\tPPID\tCMD\n");
 	for (pid = 1; pid < MAX_PID; pid++) {
 		pi = get_proc_info(pid);
 

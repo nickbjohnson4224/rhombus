@@ -36,7 +36,7 @@
 #define SYSCALL_TIME	0x4D
 #define SYSCALL_USER	0x4E
 #define SYSCALL_AUTH	0x4F
-#define SYSCALL_PGRP	0x50
+#define SYSCALL_PROC	0x50
 #define SYSCALL_KILL	0x51
 #define SYSCALL_VM86	0x52
 #define SYSCALL_NAME	0x53
@@ -57,7 +57,7 @@ struct thread *syscall_gpid(struct thread *image);
 struct thread *syscall_time(struct thread *image);
 struct thread *syscall_user(struct thread *image);
 struct thread *syscall_auth(struct thread *image);
-struct thread *syscall_pgrp(struct thread *image);
+struct thread *syscall_proc(struct thread *image);
 struct thread *syscall_kill(struct thread *image);
 struct thread *syscall_vm86(struct thread *image);
 struct thread *syscall_name(struct thread *image);

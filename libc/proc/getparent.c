@@ -17,6 +17,6 @@
 #include <proc.h>
 #include <abi.h>
 
-int setpgid(uint32_t pid, int gid) {
-	return _pgrp(gid, PGRP_SET, pid);
+uint32_t getparent(uint32_t pid) {
+	return (uint32_t) _proc(pid, PROC_READ_PPID, 0);
 }

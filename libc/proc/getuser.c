@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,13 +18,5 @@
 #include <abi.h>
 
 uint32_t getuser(uint32_t pid) {
-	return _user(pid);
-}
-
-uint32_t getcuser(void) {
-	return _user(getpid());
-}
-
-uint32_t gettuser(void) {
-	return _user(0);
+	return (uint32_t) _proc(pid, PROC_READ_UID, 0);
 }
