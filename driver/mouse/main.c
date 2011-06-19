@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Jaagup Repän <jrepan@gmail.com>
+ * Copyright (C) 2011 Jaagup Repän <jrepan at gmail.com>
  * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail dot com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
