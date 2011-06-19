@@ -42,7 +42,7 @@ For 0.9 Alpha:
 + process tracker
 + file locking
 + top/ps equivalent
-- proper session/controlling tty stuff
++ proper session/controlling tty stuff
 - pipe driver
 - shell pipe support
 - stdio buffering

@@ -29,7 +29,6 @@
  */
 
 int fb_flip(struct fb *fb) {
-	char buf[40];
 	char *ret;
 
 	if (!fb) {
@@ -46,9 +45,8 @@ int fb_flip(struct fb *fb) {
 
 	if (fb->flags & FB_SHARED) {
 		// shared: just sync
-		sprintf(buf, "syncrect %d %d %d %d", fb->minx, fb->miny, 
+		ret = rcallf(fb->rp, "syncrect %d %d %d %d", fb->minx, fb->miny,
 			fb->maxx - fb->minx, fb->maxy - fb->miny);
-		ret = rcall(fb->rp, buf);
 		if (!ret || !strcmp(ret, "")) {
 			mutex_free(&fb->mutex);
 			return 1;

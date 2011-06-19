@@ -28,8 +28,6 @@
 
 int fork(void);		/* Spawn new process */
 
-int daemonize(void); /* Play dead and end main thread */
-
 /* thread management *******************************************************/
 
 void     stop  (void);               /* block current thread */
@@ -53,6 +51,7 @@ void      resetpid(void);
 
 uint32_t  getpid (void);
 uint32_t  getppid(void);
+int       setppid(uint32_t ppid);
 uint32_t  gettid (void);
 uintptr_t gettls (void);
 
@@ -63,6 +62,9 @@ int       setparent(uint32_t pid, uint32_t ppid);
 
 uint32_t  getuser(uint32_t pid);
 int       setuser(uint32_t pid, uint32_t user);
+
+uint32_t  getuid(void);
+int       setuid(uint32_t uid);
 
 /* process names ***********************************************************/
 

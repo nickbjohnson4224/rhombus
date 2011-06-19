@@ -38,6 +38,8 @@ int main() {
 
 		fgets(buffer, 100, stdin);
 
+		for (n = 0; n < 1000; n++) sleep();
+
 		for (i = 0; buffer[i]; i++) {
 			if (buffer[i] == '\n') {
 				buffer[i] = '\0';
@@ -70,7 +72,7 @@ int main() {
 
 		pid = fork();
 		if (pid < 0) {
-			rcallf(stdin->fd, "set_fgjob %d", getpid());
+			if (argv[n-1][0] == '&') argv[n-1] = NULL;
 
 			if (execv(argv[0], (char const **) argv)) {
 				if (errno == ENOENT) {
@@ -83,7 +85,15 @@ int main() {
 				abort();
 			}
 		}
-		mwait(PORT_CHILD, RP_CONS(pid, 0));
+
+		if (argv[n-1][0] != '&') {
+			rcallf(stdin->fd, "set_fgjob %d", pid);
+			mwait(PORT_CHILD, RP_CONS(pid, 0));
+		}
+		else {
+			fprintf(stderr, "[1] %d\n", pid);
+		}
+
 		rcallf(stdin->fd, "set_fgjob %d", 0);
 	}
 

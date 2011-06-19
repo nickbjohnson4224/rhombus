@@ -15,6 +15,7 @@
  */
 
 #include <interrupt.h>
+#include <debug.h>
 #include <timer.h>
 #include <ports.h>
 #include <irq.h>

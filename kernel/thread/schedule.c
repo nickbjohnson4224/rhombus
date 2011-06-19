@@ -123,7 +123,7 @@ struct thread *schedule_next(void) {
 			schedule_queue.in = thread;
 			thread->next = NULL;
 		}
-	} while (thread->frozen);		
+	} while (thread->frozen);
 
 	return thread;
 }

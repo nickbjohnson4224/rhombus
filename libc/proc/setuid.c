@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,29 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
 #include <proc.h>
 
-/****************************************************************************
- * fgets
- *
- * Reads at most (<size> - 1) characters from <stream> and stores them in
- * <s>. Stops after a newline or EOF character. Newlines are included in the
- * returned buffer.
- */
-
-char *fgets(char *s, int size, FILE *stream) {
-	size_t i;
-	int ch;
-
-	for (i = 0; i < (size_t) size - 1; i++) {
-		ch = fgetc(stream);
-		s[i] = ch;
-
-		if (ch == EOF) i--;
-		if (ch == EOF || ch == '\n') break;
-	}
-
-	s[i+1] = '\0';
-	return s;
+int setuid(uint32_t uid) {
+	return setuser(getpid(), uid);
 }
