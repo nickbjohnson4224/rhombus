@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Jaagup Repän <jrepan@gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,6 +20,7 @@
 #include <debug.h>
 #include <space.h>
 #include <cpu.h>
+#include <ports.h>
 
 int vm86_monitor_gpf(struct thread *);
 
@@ -135,6 +137,34 @@ int vm86_monitor_gpf(struct thread *image) {
 		image->eflags  = stack[2] | 0x20200;
 		image->vm86_if = (stack[2] & 0x200) ? 1 : 0;
 		image->useresp = (uint16_t) (image->useresp + 6);
+		return 0;
+	case 0xEC: /* INB */
+		image->eax &= ~0xff;
+		image->eax |= inb(image->edx & 0xffff);
+		image->eip = (uint16_t) (image->eip + 1);
+		return 0;
+	case 0xED: /* INW */
+		if (o32) {
+			image->eax = ind(image->edx & 0xffff);
+		}
+		else {
+			image->eax &= ~0xffff;
+			image->eax |= inw(image->edx & 0xffff);
+		}
+		image->eip = (uint16_t) (image->eip + 1);
+		return 0;
+	case 0xEE: /* OUTB */
+		outb(image->edx & 0xffff, image->eax & 0xff);
+		image->eip = (uint16_t) (image->eip + 1);
+		return 0;
+	case 0xEF: /* OUTW */
+		if (o32) {
+			outd(image->edx & 0xffff, image->eax);
+		}
+		else {
+			outw(image->edx & 0xffff, image->eax & 0xffff);
+		}
+		image->eip = (uint16_t) (image->eip + 1);
 		return 0;
 	case 0xFA: /* CLI */
 		image->vm86_if = 0;
