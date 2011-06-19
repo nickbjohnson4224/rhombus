@@ -20,14 +20,14 @@
 #include <graph.h>
 #include <stdio.h>
 
-//static bool mutex;
+static bool mutex;
 static int cursor = 0;
 static int c_base = 0;
 
 int fbterm_print(uint32_t c) {
 	uint32_t bg;
 
-//	mutex_spin(&mutex);
+	mutex_spin(&mutex);
 	
 	if (cursor > screen.w * screen.h - 2) {
 		screen_scroll();
@@ -66,7 +66,7 @@ int fbterm_print(uint32_t c) {
 	screen_print(cursor % screen.w, cursor / screen.w, ' ');
 	screen.bg = bg;
 	
-//	mutex_free(&mutex);
+	mutex_free(&mutex);
 
 	return 0;
 }

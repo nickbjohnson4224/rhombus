@@ -136,8 +136,7 @@ int main(int argc, char **argv) {
 
 	/* daemonize */
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
-	setppid(1);
-	done();
+	_done();
 
 	return 0;
 }

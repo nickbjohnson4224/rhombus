@@ -27,8 +27,6 @@
 size_t fbterm_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
 	size_t i;
 
-	printf("fbterm_write %r %d\n", source, index);
-
 	for (i = 0; i < size; i++) {
 		fbterm_print(buffer[i]);
 	}
@@ -81,8 +79,6 @@ char *fbterm_rcall_set_bgcolor(uint64_t source, uint32_t index, int argc, char *
 
 size_t fbterm_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
 	size_t i;
-
-	printf("fbterm_read %r %d\n", source, index);
 
 	for (i = 0; i < size; i++) {
 		buffer[i] = fbterm_getch();
@@ -199,8 +195,8 @@ int main(int argc, char **argv) {
 		exec("/bin/fish");
 	}
 
-	// do not exit
-	done();
+	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
+	_done();
 
 	return 0;
 }

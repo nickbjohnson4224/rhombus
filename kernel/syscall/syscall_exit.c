@@ -39,8 +39,6 @@ struct thread *syscall_exit(struct thread *image) {
 		debug_panic("init died");
 	}
 
-	debug_printf("%d died\n", pid);
-
 	process_switch(process_get(1));
 	process_kill(image->proc);
 
