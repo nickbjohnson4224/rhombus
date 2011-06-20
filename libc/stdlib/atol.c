@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Jaagup Repän <jrepan at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,20 +15,15 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef STDDEF_H
-#define STDDEF_H
+#include <stdlib.h>
 
-#include <stdint.h>
+/****************************************************************************
+ * atol
+ *
+ * Convert the contents of a string containing a decimal number to a signed
+ * integer.
+ */
 
-typedef intptr_t  ptrdiff_t;
-typedef uint32_t  wchar_t;
-
-#define PTRDIFF_MIN	INTPTR_MIN
-#define PTRDIFF_MAX	INTPTR_MAX
-
-#define WCHAR_MIN	0
-#define WCHAR_MAX	UINT32_MAX
-
-#define offsetof(type, member) __builtin_offsetof(type, member)
-
-#endif/*STDDEF_H*/
+int32_t atol(const char *nptr) {
+	return strtol(nptr, NULL, 10);
+}
