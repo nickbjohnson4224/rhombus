@@ -20,4 +20,4 @@ $(TARGET): $(SOURCES)
 	@ $(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	@ testmouse $(TARGET) $(SOURCES)
+	@ rm $(TARGET) $(SOURCES)
