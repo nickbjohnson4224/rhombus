@@ -50,9 +50,9 @@ void __sync_wrapper(struct msg *msg) {
 		return;
 	}
 
-	_di_sync(msg->source, RP_INDEX(msg->target));
-
 	mutex_free(&file->mutex);
+
+	_di_sync(msg->source, RP_INDEX(msg->target));
 
 	merror(msg); // errors are the same as valid replies
 }

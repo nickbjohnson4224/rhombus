@@ -30,7 +30,7 @@ static void _sigpanic(const char *message) {
 	_stop(-1);
 
 	fprintf(stderr,
-		"\n%s (pid %d \"%s\" terminated)\n", message, getpid(), getenv("NAME"));
+		"\n%s (pid %d \"%s\" terminated)\n", message, getpid(), getname_s());
 
 	abort();
 }

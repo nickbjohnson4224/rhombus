@@ -42,6 +42,7 @@ int main(int argc, char **argv) {
 	if (!dest) {
 		printf("cp: cannot open %s: ", argv[2]);
 		perror(NULL);
+		fclose(src);
 		return EXIT_FAILURE;
 	}
 
@@ -54,9 +55,13 @@ int main(int argc, char **argv) {
 		if (!size) {
 			printf("error writing to %s: ", argv[2]);
 			perror(NULL);
+			fclose(src);
+			fclose(dest);
 			return EXIT_FAILURE;
 		}
 	}
 
+	fclose(src);
+	fclose(dest);
 	return EXIT_SUCCESS;
 }

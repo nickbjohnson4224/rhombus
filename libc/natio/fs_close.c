@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,35 +14,40 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <stdint.h>
 #include <string.h>
-#include <ctype.h>
+#include <stdlib.h>
+#include <natio.h>
+#include <errno.h>
 
-#define CHUNK_SIZE 1
+/*****************************************************************************
+ * rp_close
+ */
 
-static char buffer[CHUNK_SIZE];
+int rp_close(uint64_t file) {
+	char *reply;
 
-int main(int argc, char **argv) {
-	size_t n, i;
-	FILE *file;
-
-	for (n = 1; n < (size_t) argc; n++) {
-		file = fopen(argv[n], "r");
-
-		if (!file) {
-			printf("cat: %s: ", argv[n]);
-			perror(NULL);
-		}
-
-		while (1) {
-			i = fread(buffer, sizeof(char), CHUNK_SIZE, file);
-			if (i == 0) break;
-			fwrite(buffer, sizeof(char), i, stdout);
-		}
+	if (!file) {
+		return 0;
 	}
 
-	fclose(file);
+	reply = rcall(file, "fs_open");
+
+	if (!reply) {
+		errno = ENOSYS;
+		return 1;
+	}
+
+	if (reply[0] == '!') {
+		if      (!strcmp(reply, "! nfound")) errno = ENOENT;
+		else                                 errno = EUNK;
+		free(reply);
+		return 1;
+	}
 
 	return 0;
+}
+
+int fs_close(const char *path) {
+	return rp_close(fs_find(path));
 }

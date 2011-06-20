@@ -34,6 +34,8 @@ static char *_symlink_handler(uint64_t source, uint32_t index, int argc, char **
 static char *_getperm_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_setperm_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_lock_handler(uint64_t source, uint32_t index, int argc, char **argv);
+static char *_open_handler(uint64_t source, uint32_t index, int argc, char **argv);
+static char *_close_handler(uint64_t source, uint32_t index, int argc, char **argv);
 
 /*****************************************************************************
  * vfs_init
@@ -53,6 +55,8 @@ int vfs_init(void) {
 	rcall_set("fs_getperm", _getperm_handler);
 	rcall_set("fs_setperm", _setperm_handler);
 	rcall_set("fs_lock", _lock_handler);
+	rcall_set("fs_open", _open_handler);
+	rcall_set("fs_close", _close_handler);
 
 	return 0;
 }
@@ -482,5 +486,47 @@ static char *_lock_handler(uint64_t source, uint32_t index, int argc, char **arg
 	}
 
 	mutex_free(&r->mutex);
+	return strdup("T");
+}
+
+static char *_open_handler(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct resource *r;
+
+	if (argc != 1) {
+		return NULL;
+	}
+
+	r = index_get(index);
+	if (!r) return strdup("! nfound");
+
+	mutex_spin(&r->mutex);
+	r->open_refcount++;
+	r->vfs_refcount++;
+
+	if (_vfs_open) _vfs_open(source, r);
+	mutex_free(&r->mutex);
+
+	return strdup("T");
+}
+
+static char *_close_handler(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct resource *r;
+
+	if (argc != 1) {
+		return NULL;
+	}
+
+	r = index_get(index);
+	if (!r) return strdup("! nfound");
+
+	mutex_spin(&r->mutex);
+	if (r->open_refcount) {
+		r->open_refcount--;
+		r->vfs_refcount--;
+	}
+
+	if (_vfs_close) _vfs_close(source, r);
+	mutex_free(&r->mutex);
+
 	return strdup("T");
 }

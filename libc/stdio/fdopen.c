@@ -54,5 +54,7 @@ FILE *fdopen(uint64_t fd, const char *mode) {
 	stream->revbuf   = EOF;
 	stream->flags    = FILE_NBF | FILE_READ | FILE_WRITE;
 
+	rp_open(fd);
+
 	return stream;
 }

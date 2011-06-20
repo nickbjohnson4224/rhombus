@@ -72,13 +72,13 @@ void __write_wrapper(struct msg *msg) {
 		return;
 	}
 
+	mutex_free(&file->mutex);
+
 	offset = ((uint64_t*) msg->data)[0];
 
 	((uint32_t*) msg->data)[0] = _di_write(msg->source, RP_INDEX(msg->target), 
 		&msg->data[8], msg->length - 8, offset);
 	msg->length = sizeof(uint32_t);
-
-	mutex_free(&file->mutex);
 
 	mreply(msg);
 }

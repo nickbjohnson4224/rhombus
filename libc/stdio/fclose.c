@@ -15,6 +15,7 @@
  */
 
 #include <stdlib.h>
+#include <natio.h>
 #include <stdio.h>
 #include <mutex.h>
 
@@ -32,6 +33,8 @@
 int fclose(FILE *stream) {
 
 	fflush(stream);
+
+	rp_close(stream->fd);
 	
 	mutex_spin(&stream->mutex);
 

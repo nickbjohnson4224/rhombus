@@ -135,9 +135,13 @@ uint64_t fs_lfind(const char *path);
 uint64_t fs_cons (const char *path, int type);
 char    *fs_list (const char *path, int entry);
 uint64_t fs_size (const char *path);
+int      fs_open (const char *path);
+int      fs_close(const char *path);
 
 uint64_t rp_size (uint64_t rp);
 char    *rp_list (uint64_t dir, int entry);
+int      rp_open (uint64_t rp);
+int      rp_close(uint64_t rp);
 
 /*****************************************************************************
  * links

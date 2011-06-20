@@ -50,9 +50,9 @@ void __reset_wrapper(struct msg *msg) {
 		return;
 	}
 
-	_di_reset(msg->source, RP_INDEX(msg->target));
-
 	mutex_free(&file->mutex);
+
+	_di_reset(msg->source, RP_INDEX(msg->target));
 
 	merror(msg); // errors are the same as valid replies
 }

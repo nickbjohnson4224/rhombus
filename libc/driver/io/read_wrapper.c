@@ -68,6 +68,8 @@ void __read_wrapper(struct msg *msg) {
 		return;
 	}
 
+	mutex_free(&file->mutex);
+
 	offset = ((uint64_t*) msg->data)[0];
 	size   = ((uint32_t*) msg->data)[2];
 	
@@ -82,8 +84,6 @@ void __read_wrapper(struct msg *msg) {
 	free(msg);
 
 	reply->length = _di_read(source, index, reply->data, size, offset);
-
-	mutex_free(&file->mutex);
 
 	msend(reply);
 }
