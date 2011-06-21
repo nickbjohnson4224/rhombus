@@ -103,8 +103,6 @@ FILE *fopen(const char *path, const char *mode) {
 	stream->revbuf   = EOF;
 	stream->flags    = FILE_NBF | FILE_READ;
 
-	rp_open(fd);
-
 	if (mode[0] == 'w' || mode[0] == 'a' || mode[1] == '+') {
 		stream->flags |= FILE_WRITE;
 	}

@@ -78,7 +78,7 @@ size_t tmpfs_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size,
 		size = file->size - offset;
 	}
 
-	memcpy(buffer, &((uint8_t*) file->data)[offset], size);
+	memcpy(buffer, &file->data[offset], size);
 	
 	return size;
 }
@@ -93,7 +93,7 @@ size_t tmpfs_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t size
 		file->size = offset + size;
 	}
 
-	memcpy(&((uint8_t*) file->data)[offset], buffer, size);
+	memcpy(&file->data[offset], buffer, size);
 
 	return size;
 }

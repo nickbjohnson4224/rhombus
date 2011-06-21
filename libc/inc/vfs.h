@@ -70,14 +70,11 @@ int vfs_lock_current(struct vfs_lock *lock, uint32_t pid);
 
 struct resource {
 	int type;
-
-	/* this mutex concerns RESOURCE METADATA ONLY, not file contents or 
-	 * VFS structure */
 	bool mutex;
 
 	/* file information */
 	uint64_t size;
-	void *data;
+	uint8_t *data;
 
 	/* index lookup table */
 	uint32_t index;
@@ -87,7 +84,6 @@ struct resource {
 	/* directory structure */
 	struct vfs_node *vfs;
 	int vfs_refcount;
-	int open_refcount;
 
 	/* permissions */
 	struct vfs_acl *acl;
@@ -165,30 +161,14 @@ void __link_wrapper(struct msg *msg);
  * structure and ACL, which is only appropriate if no other memory is in any
  * way allocated to the resource (which is rare except for directories in 
  * tmpfs)
- *
- * _vfs_open (set by vfs_set_open)
- *
- * This function being called indicates that the given resource is needed by
- * the caller. This is purely advisory: processes may access resources without
- * opening them, and may open resources without accessing them later.
- *
- * _vfs_close (set by vfs_set_close)
- *
- * This function being called indicates that the given resource is no longer
- * needed by the caller. This is purely advisory: processes may access
- * resources after closing them.
  */
 
-int vfs_set_cons (struct resource *(*vfs_cons)(uint64_t source, int type));
-int vfs_set_sync (int (*vfs_sync) (uint64_t source, struct resource *obj));
-int vfs_set_free (int (*vfs_free) (uint64_t source, struct resource *obj));
-int vfs_set_open (int (*vfs_open) (uint64_t source, struct resource *obj));
-int vfs_set_close(int (*vfs_close)(uint64_t source, struct resource *obj));
+int vfs_set_cons(struct resource *(*vfs_cons)(uint64_t source, int type));
+int vfs_set_sync(int (*vfs_sync)(uint64_t source, struct resource *obj));
+int vfs_set_free(int (*vfs_free)(uint64_t source, struct resource *obj));
 
-extern struct resource *(*_vfs_cons) (uint64_t source, int type);
-extern int              (*_vfs_sync) (uint64_t source, struct resource *obj);
-extern int              (*_vfs_free) (uint64_t source, struct resource *obj);
-extern int              (*_vfs_open) (uint64_t source, struct resource *obj);
-extern int              (*_vfs_close)(uint64_t source, struct resource *obj);
+extern struct resource *(*_vfs_cons)(uint64_t source, int type);
+extern int              (*_vfs_sync)(uint64_t source, struct resource *obj);
+extern int              (*_vfs_free)(uint64_t source, struct resource *obj);
 
 #endif/*VFS_H*/

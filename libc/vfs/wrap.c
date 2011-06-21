@@ -20,11 +20,9 @@
 
 /* wrapper function pointers ************************************************/
 
-struct resource *(*_vfs_cons) (uint64_t source, int type);
-int              (*_vfs_sync) (uint64_t source, struct resource *r);
-int              (*_vfs_free) (uint64_t source, struct resource *r);
-int              (*_vfs_open) (uint64_t source, struct resource *r);
-int              (*_vfs_close)(uint64_t source, struct resource *r);
+struct resource *(*_vfs_cons)(uint64_t source, int type);
+int              (*_vfs_sync)(uint64_t source, struct resource *r);
+int              (*_vfs_free)(uint64_t source, struct resource *r);
 
 /* wrapper registering functions ********************************************/
 
@@ -40,15 +38,5 @@ int vfs_set_sync(int (*vfs_sync)(uint64_t source, struct resource *obj)) {
 
 int vfs_set_free(int (*vfs_free)(uint64_t source, struct resource *obj)) {
 	_vfs_free = vfs_free;
-	return 0;
-}
-
-int vfs_set_open(int (*vfs_open) (uint64_t source, struct resource *obj)) {
-	_vfs_open = vfs_open;
-	return 0;
-}
-
-int vfs_set_close(int (*vfs_close)(uint64_t source, struct resource *obj)) {
-	_vfs_close = vfs_close;
 	return 0;
 }
