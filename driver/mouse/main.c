@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Jaagup Repän <jrepan@gmail.com>
+ * Copyright (C) 2011 Jaagup Repän <jrepan at gmail.com>
  * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail dot com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
@@ -113,6 +113,10 @@ int main(int argc, char **argv) {
 
 		if (curbyte == 1) {
 			buttons = bytes[0] & 0x7;
+			if (!(bytes[0] & 0x08)) {
+				// Out of sync
+				curbyte = 0;
+			}
 		}
 		if (curbyte == 3) {
 			curbyte = 0;

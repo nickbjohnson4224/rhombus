@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
- * Copyright (C) 2011 Jaagup Repan <jrepan at gmail.com>
+ * Copyright (C) 2011 Jaagup Repän <jrepan at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,34 +14,32 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdlib.h>
+#include <exec.h>
 #include <natio.h>
 #include <proc.h>
-#include <ipc.h>
+#include <stdio.h>
 
-/****************************************************************************
- * sync
- *
- * "Synchronizes" the given resource. The specifics of this are very 
- * dependent on the resource, but in general, the operation flushes caches of
- * some sort and guarantees pending writes are performed.
- */
+void mouse_event(uint64_t source, int argc, char **argv) {
+	int i;
 
-int sync(uint64_t file) {
-	struct msg *msg;
+	for (i = 0; i < argc; i++) {
+		printf("%s ", argv[i]);
+	}
+	printf("\n");
+}
 
-	msg = aalloc(sizeof(struct msg), PAGESZ);
-	if (!msg) return 1;
-	msg->source = RP_CONS(getpid(), 0);
-	msg->target = file;
-	msg->length = 0;
-	msg->port   = PORT_SYNC;
-	msg->arch   = ARCH_NAT;
+int main(int argc, char **argv) {
+	uint64_t mousefd;
 
-	if (msend(msg)) return 1;
-	msg = mwait(PORT_REPLY, file);
+	mousefd = fs_find("/dev/mouse");
+	if (!mousefd) {
+		fprintf(stderr, "%s: couldn't find mouse\n", argv[0]);
+		return 1;
+	}
 
-	free(msg);
+	event_register(mousefd);
+	event_set("mouse", mouse_event);
+
+	_done();
 	return 0;
 }
