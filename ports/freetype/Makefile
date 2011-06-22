@@ -6,7 +6,7 @@ all: $(DIR)
 	@ make -s -C $(DIR)
 
 $(SOURCE):
-	@ echo " DL	 FreeType"
+	@ echo " DL	" $(SOURCE)
 	@ wget -c http://download.savannah.gnu.org/releases/freetype/$(SOURCE)
 
 $(DIR): $(SOURCE)

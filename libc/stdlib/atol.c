@@ -24,6 +24,6 @@
  * integer.
  */
 
-int32_t atol(const char *nptr) {
+long int atol(const char *nptr) {
 	return strtol(nptr, NULL, 10);
 }
