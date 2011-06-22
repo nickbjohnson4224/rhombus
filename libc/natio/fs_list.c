@@ -27,14 +27,14 @@
  * Returns a copy of that string on success, NULL on failure.
  */
 
-char *rp_list(uint64_t di) {
+char *rp_list(uint64_t dir, int entry) {
 	char *reply;
 
-	reply = rcall(dir, "fs_list");
+	reply = rcallf(dir, "fs_list %d\n", entry);
 	
 	if (!reply) {
 		errno = ENOSYS;
-		return NULL;
+		return 0;
 	}
 
 	if (reply[0] == '!') {
@@ -43,13 +43,13 @@ char *rp_list(uint64_t di) {
 		else if (!strcmp(reply, "! nosys"))		errno = ENOSYS;
 		else									errno = EUNK;
 		free(reply);
-		return NULL;
+		return 0;
 	}
 	
 	return reply;
 }
 
-char *fs_list(const char *path) {
+char *fs_list (const char *path, int entry) {
 	uint64_t dir;
 
 	if (path) {

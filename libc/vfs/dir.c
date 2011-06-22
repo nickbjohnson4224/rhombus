@@ -242,27 +242,35 @@ int vfs_pull(uint64_t source, struct resource *robj) {
 /*****************************************************************************
  * vfs_list
  *
- * Returns a tab-separated list of directory entry names as a single string.
- * Returns null on error.
+ * Return a copy of the <entry>th entry in the directory <dir>. Returns null
+ * on error.
  */
 
-char *vfs_list(struct vfs_node *dir) {
+char *vfs_list(struct vfs_node *dir, int entry) {
 	struct vfs_node *daughter;
-	char *list = strdup("");
-	char *old;
 
 	if (!dir) {
 		return NULL;
 	}
-	
+
 	daughter = dir->daughter;
+
+	/* select the <entry>th daughter node */
 	while (daughter) {
-		old = list;
-		if (list[0]) list = strvcat(list, "\t", daughter->name, NULL);
-		else list = strcpy(daughter->name);
-		free(old);
-		daughter = daughter->sister1;
+		if (entry <= 0) {
+			break;
+		}
+		else {
+			daughter = daughter->sister1;
+			entry--;
+		}
 	}
 
-	return list;
+	if (daughter) {
+		/* return name of selected daughter */
+		return strdup(daughter->name);
+	}
+	else {
+		return NULL;
+	}
 }

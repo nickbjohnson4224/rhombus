@@ -133,11 +133,11 @@ extern uint64_t fs_root;
 uint64_t fs_find (const char *path);
 uint64_t fs_lfind(const char *path);
 uint64_t fs_cons (const char *path, int type);
-char    *fs_list (const char *path);
+char    *fs_list (const char *path, int entry);
 uint64_t fs_size (const char *path);
 
 uint64_t rp_size (uint64_t rp);
-char    *rp_list (uint64_t dir);
+char    *rp_list (uint64_t dir, int entry);
 
 /*****************************************************************************
  * links

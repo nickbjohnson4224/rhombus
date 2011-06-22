@@ -313,9 +313,10 @@ static char *_symlink_handler(uint64_t source, uint32_t index, int argc, char **
 
 static char *_list_handler(uint64_t source, uint32_t index, int argc, char **argv) {
 	struct resource *dir;
-	char *list;
+	uint32_t entry;
+	char *name;
 
-	if (argc != 1) {
+	if (argc <= 1) {
 		return NULL;
 	}
 
@@ -325,6 +326,8 @@ static char *_list_handler(uint64_t source, uint32_t index, int argc, char **arg
 	if (!dir) {
 		return strdup("! nfound");
 	}
+
+	entry = atoi(argv[1]);
 
 	mutex_spin(&dir->mutex);
 
@@ -339,17 +342,17 @@ static char *_list_handler(uint64_t source, uint32_t index, int argc, char **arg
 	}
 
 	mutex_spin(&dir->vfs->mutex);
-	list = vfs_list(dir->vfs);
+	name = vfs_list(dir->vfs, entry);
 	mutex_free(&dir->vfs->mutex);
 
-	if (!list) {
+	if (!name) {
 		mutex_free(&dir->mutex);
 		return strdup("! nfound");
 	}
 
 	mutex_free(&dir->mutex);
 
-	return list;
+	return name;
 }
 
 static char *_size_handler(uint64_t source, uint32_t index, int argc, char **argv) {
