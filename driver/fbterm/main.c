@@ -118,7 +118,6 @@ void fbterm_graph_event(uint64_t source, int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-	struct resource *root;
 	struct font *font;
 	uint64_t kbd_dev;
 	uint64_t fb_dev;
@@ -158,11 +157,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	root = calloc(sizeof(struct resource), 1);
-	root->type = FS_TYPE_FILE | FS_TYPE_CHAR;
-	root->size = 0;
-	root->acl = acl_set_default(root->acl, PERM_WRITE | PERM_READ);
-	index_set(0, root);
+	index_set(0, resource_cons(FS_TYPE_FILE | FS_TYPE_CHAR, PERM_READ | PERM_WRITE));
 
 	// set up screen
 	fb = fb_cons(fb_dev);

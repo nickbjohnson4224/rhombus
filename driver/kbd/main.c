@@ -150,7 +150,6 @@ void kbd_irq(struct msg *msg) {
 			event = saprintf("key release %d\n", code);
 			eventl(event_list, event);
 			free(event);
-//			eventl(event_list, code | RELEASE);
 		}
 	}
 	else {
@@ -162,19 +161,13 @@ void kbd_irq(struct msg *msg) {
 			event = saprintf("key press %d\n", code);
 			eventl(event_list, event);
 			free(event);
-//			eventl(event_list, code);
 		}
 	}
 }
 
 int main(int argc, char **argv) {
-	struct resource *root;
 
-	root = calloc(sizeof(struct resource), 1);
-	root->type = FS_TYPE_FILE | FS_TYPE_EVENT;
-	root->size = 0;
-	root->acl = acl_set_default(root->acl, 0);
-	index_set(0, root);
+	index_set(0, resource_cons(FS_TYPE_FILE | FS_TYPE_EVENT, PERM_READ));
 
 	rcall_set  ("register",   kbd_rcall_register);
 	rcall_set  ("deregister", kbd_rcall_deregister);

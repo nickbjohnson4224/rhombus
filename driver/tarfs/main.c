@@ -111,7 +111,8 @@ size_t tarfs_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size,
 
 int main(int argc, char **argv) {
 	struct tar_block *block;
-	struct resource *file, *root;
+	struct resource *root;
+	struct resource *file;
 	size_t i, n;
 
 	/* reject if no parent is speicified */
@@ -132,10 +133,8 @@ int main(int argc, char **argv) {
 	}
 
 	/* create root directory */
-	root = calloc(sizeof(struct resource), 1);
-	root->type = FS_TYPE_DIR;
-	root->acl = acl_set_default(root->acl, PERM_READ);
-	index_set(0, root);
+	index_set(0, resource_cons(FS_TYPE_DIR, PERM_READ | PERM_WRITE));
+	root = index_get(0);
 
 	/* allocate buffer space for header block */
 	block = malloc(512);
@@ -155,22 +154,18 @@ int main(int argc, char **argv) {
 
 			/* add directory to VFS */
 			block->filename[strlen(block->filename) - 1] = 0;
-			file        = calloc(sizeof(struct resource), 1);
-			file->type  = FS_TYPE_DIR;
+			file        = resource_cons(FS_TYPE_DIR, PERM_READ | PERM_WRITE);
 			file->index = n;
-			file->acl   = acl_set_default(file->acl, PERM_READ | PERM_WRITE);
 			vfs_add(root, block->filename, file);
 
 		}
 		else {
 
 			/* add file to VFS */
-			file        = calloc(sizeof(struct resource), 1);
-			file->type  = FS_TYPE_FILE;
+			file        = resource_cons(FS_TYPE_FILE, PERM_READ);
 			file->index = n;
 			file->data  = (uint8_t*) (i + 512);
 			file->size  = getvalue(block->filesize, 12);
-			file->acl   = acl_set_default(file->acl, PERM_READ);
 			vfs_add(root, block->filename, file);
 
 		}

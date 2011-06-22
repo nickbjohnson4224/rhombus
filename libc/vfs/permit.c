@@ -34,9 +34,9 @@
 
 int vfs_permit(struct resource *r, uint64_t source, int operation) {
 	uint32_t pid = RP_PID(source);
-	
+
 	/* check permissions */
-	if ((acl_get(r->acl, getuser(pid)) & operation) == 0) {
+	if ((id_hash_get(&r->acl, getuser(pid)) & operation) == 0) {
 		/* permission denied */
 		return 0;
 	}

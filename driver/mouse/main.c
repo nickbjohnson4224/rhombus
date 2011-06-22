@@ -61,7 +61,6 @@ char *mouse_deregister(uint64_t source, uint32_t index, int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-	struct resource *root;
 	uint8_t bytes[3];
 	size_t curbyte = 0;
 	bool first;
@@ -75,11 +74,7 @@ int main(int argc, char **argv) {
 	command(0xf3);  // set sample rate:
 	outb(0x60, 10); // 10 samples per second
 
-	root        = calloc(sizeof(struct resource), 1);
-	root->type  = FS_TYPE_EVENT;
-	root->size  = 0;
-	root->acl   = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
-	index_set(0, root);
+	index_set(0, resource_cons(FS_TYPE_FILE | FS_TYPE_EVENT, PERM_READ | PERM_WRITE));
 
 	rcall_set("register",   mouse_register);
 	rcall_set("deregister", mouse_deregister);

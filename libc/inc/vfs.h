@@ -44,21 +44,6 @@ void     id_hash_free (struct id_hash *h);
 
 /* access control lists and locks *******************************************/
 
-struct vfs_acl {
-	struct vfs_acl *next;
-
-	uint32_t user;
-	uint8_t permit;
-};
-
-uint8_t         acl_get(struct vfs_acl *acl, uint32_t user);
-struct vfs_acl *acl_set(struct vfs_acl *acl, uint32_t user, uint8_t permit);
-
-uint8_t         acl_get_default(struct vfs_acl *acl);
-struct vfs_acl *acl_set_default(struct vfs_acl *acl, uint8_t permit);
-
-void acl_free(struct vfs_acl *acl);
-
 struct vfs_lock {
 	bool mutex;
 
@@ -96,7 +81,7 @@ struct resource {
 	int vfs_refcount;
 
 	/* permissions */
-	struct vfs_acl *acl;
+	struct id_hash acl;
 
 	/* locks */
 	struct vfs_lock *lock;

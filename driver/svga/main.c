@@ -157,16 +157,11 @@ int svga_share(uint64_t source, uint32_t index, uint8_t *_buffer, size_t size, u
 }
 
 int main(int argc, char **argv) {
-	struct resource *root;
 	char *modesstr0;
 	char *modestr;
 	int i;
 
-	root       = calloc(sizeof(struct resource), 1);
-	root->type = FS_TYPE_FILE | FS_TYPE_GRAPH;
-	root->size = 0;
-	root->acl  = acl_set_default(root->acl, PERM_READ | PERM_WRITE);
-	index_set(0, root);
+	index_set(0, resource_cons(FS_TYPE_FILE | FS_TYPE_GRAPH, PERM_READ | PERM_WRITE));
 
 	svga_init();
 

@@ -415,7 +415,7 @@ static char *_getperm_handler(uint64_t source, uint32_t index, int argc, char **
 	}
 
 	mutex_spin(&r->mutex);
-	perm = acl_get(r->acl, user);
+	perm = id_hash_get(&r->acl, user);
 	mutex_free(&r->mutex);
 
 	return saprintf("%d", perm);
@@ -446,7 +446,7 @@ static char *_setperm_handler(uint64_t source, uint32_t index, int argc, char **
 		return strdup("! denied");
 	}
 
-	r->acl = acl_set(r->acl, user, perm);
+	id_hash_set(&r->acl, user, perm);
 
 	mutex_free(&r->mutex);
 

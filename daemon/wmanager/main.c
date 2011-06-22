@@ -205,14 +205,10 @@ struct resource *wmanager_cons(uint64_t source, int type) {
 	}
 
 	if (FS_IS_FILE(type)) {
-		fobj        = calloc(sizeof(struct resource), 1);
-		fobj->type  = FS_TYPE_FILE | FS_TYPE_GRAPH | FS_TYPE_EVENT;
+		fobj        = resource_cons(FS_TYPE_FILE | FS_TYPE_GRAPH | FS_TYPE_EVENT, PERM_READ | PERM_WRITE);
 		fobj->size  = 0;
-		fobj->link  = 0;
 		fobj->data  = NULL;
 		fobj->index = next_index++;
-		fobj->acl   = acl_set_default(fobj->acl, PERM_READ | PERM_WRITE);
-
 		add_window(fobj->index);
 	}
 	
