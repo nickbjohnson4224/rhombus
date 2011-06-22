@@ -99,7 +99,7 @@ struct resource *vfs_find(struct vfs_node *root, const char *path, const char **
 
 int   vfs_link  (struct vfs_node *dir, const char *name, struct resource *r);
 int   vfs_unlink(struct vfs_node *dir, const char *name);
-char *vfs_list  (struct vfs_node *dir, int entry);
+char *vfs_list  (struct vfs_node *dir);
 int   vfs_pull  (uint64_t source, struct resource *obj);
 
 int vfs_init(void);
