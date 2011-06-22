@@ -30,10 +30,6 @@ void resource_free(struct resource *r) {
 
 	id_hash_free(&r->acl);
 
-	if (r->lock) {
-		free(r->lock);
-	}
-
 	if (r->symlink) {
 		free(r->symlink);
 	}
@@ -52,9 +48,8 @@ struct resource *resource_cons(int type, int perm) {
 	struct resource *r;
 
 	r = calloc(sizeof(struct resource), 1);
-	r->type = type;
+	r->type    = type;
 	r->acl.nil = perm;
-	r->lock = vfs_lock_cons();
 
 	if (FS_IS_DIR(type)) {
 		r->vfs = calloc(sizeof(struct vfs_node), 1);

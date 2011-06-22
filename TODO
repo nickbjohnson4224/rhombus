@@ -43,6 +43,7 @@ For 0.9 Alpha:
 + file locking
 + top/ps equivalent
 - proper session/controlling tty stuff
+- file opening/closing
 - pipe driver
 - shell pipe support
 - stdio buffering
@@ -50,6 +51,7 @@ For 0.9 Alpha:
 For 0.10 Alpha:
 
 - better shared memory architecture
+- 
 - write fenv.h, tgmath.h
 - copy-on-write
 - dynamic linking

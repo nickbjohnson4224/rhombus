@@ -42,8 +42,6 @@ int main(int argc, char **argv) {
 
 	list[0] = '\0';
 
-	rp_lock(dir, LOCK_SH);
-
 	for (i = 0;; i++) {
 		name = rp_list(dir, i);
 
@@ -60,7 +58,6 @@ int main(int argc, char **argv) {
 			free(name);
 		}
 		else {
-			rp_lock(dir, LOCK_UN);
 			if (errno == ENOTDIR) {
 				fprintf(stderr, "%s: ", path);
 				perror(NULL);

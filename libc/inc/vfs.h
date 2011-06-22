@@ -42,32 +42,13 @@ int      id_hash_test (struct id_hash *h, uint32_t id);
 int      id_hash_count(struct id_hash *h);
 void     id_hash_free (struct id_hash *h);
 
-/* access control lists and locks *******************************************/
-
-struct vfs_lock {
-	bool mutex;
-
-	/* shared lock */
-	struct id_hash shlock;
-
-	/* exclusive lock */
-	uint32_t exlock;
-};
-
-struct vfs_lock *vfs_lock_cons(void);
-void vfs_lock_free(struct vfs_lock *lock);
-
-int vfs_lock_acquire(struct vfs_lock *lock, uint32_t pid, int locktype);
-int vfs_lock_waitfor(struct vfs_lock *lock, uint32_t pid, int locktype);
-int vfs_lock_current(struct vfs_lock *lock, uint32_t pid);
-
 /* resource structure *******************************************************/
 
 struct resource {
-	int type;
 	bool mutex;
 
 	/* file information */
+	int      type;
 	uint64_t size;
 	uint8_t *data;
 
@@ -83,19 +64,15 @@ struct resource {
 	/* permissions */
 	struct id_hash acl;
 
-	/* locks */
-	struct vfs_lock *lock;
-
 	/* link information */
 	char *symlink; // symbolic link
-	uint64_t link; // pointer link (obsolete)
 };
+
+struct resource *resource_cons(int type, int perm);
+void             resource_free(struct resource *r);
 
 struct resource *index_get(uint32_t index);
 struct resource *index_set(uint32_t index, struct resource *r);
-
-void resource_free(struct resource *r);
-struct resource *resource_cons(int type, int perm);
 
 int vfs_permit(struct resource *r, uint64_t source, int operation);
 
