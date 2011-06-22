@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Jaagup Repan
+ * Copyright (C) 2011 Jaagup Repan <jrepan at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
