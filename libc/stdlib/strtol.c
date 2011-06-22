@@ -25,7 +25,7 @@
  * last character parsed is stored in it.
  */
 
-int32_t strtol(const char *nptr, char **endptr, int base) {
+long int strtol(const char *nptr, char **endptr, int base) {
 	size_t i;
 	int32_t sum;
 	bool neg;

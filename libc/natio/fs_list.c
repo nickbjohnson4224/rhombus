@@ -27,7 +27,7 @@
  * Returns a copy of that string on success, NULL on failure.
  */
 
-char *rp_list(uint64_t di) {
+char *rp_list(uint64_t dir) {
 	char *reply;
 
 	reply = rcall(dir, "fs_list");
@@ -63,5 +63,5 @@ char *fs_list(const char *path) {
 		dir = fs_root;
 	}
 
-	return rp_list(dir, entry);
+	return rp_list(dir);
 }

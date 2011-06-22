@@ -21,8 +21,7 @@
 #include <errno.h>
 
 int main(int argc, char **argv) {
-	char *name, *path, list[1000];
-	size_t i, l = 0;
+	char *list, *path;
 	uint64_t dir;
 
 	if (argc == 1) {
@@ -40,35 +39,13 @@ int main(int argc, char **argv) {
 		abort();
 	}
 
-	list[0] = '\0';
-
-	for (i = 0;; i++) {
-		name = rp_list(dir, i);
-
-		if (name) {
-			strlcat(list, name, 1000);
-			l += 8 * ((strlen(name) / 8) + 1);
-			if (l > 48) {
-				strlcat(list, "\n", 1000);
-				l = 0;
-			}
-			else {
-				strlcat(list, "\t", 1000);
-			}
-			free(name);
-		}
-		else {
-			if (errno == ENOTDIR) {
-				fprintf(stderr, "%s: ", path);
-				perror(NULL);
-				abort();
-			}
-
-			printf("%s", list);
-			if (l) printf("\n");
-			return EXIT_SUCCESS;
-		}
+	list = rp_list(dir);
+	if (!list) {
+		fprintf(stderr, "%s: ", path);
+		perror(NULL);
+		abort();
 	}
 
-	return 0;
+	printf("%s\n", list);
+	return EXIT_SUCCESS;
 }

@@ -259,7 +259,7 @@ char *vfs_list(struct vfs_node *dir) {
 	while (daughter) {
 		old = list;
 		if (list[0]) list = strvcat(list, "\t", daughter->name, NULL);
-		else list = strcpy(daughter->name);
+		else list = strdup(daughter->name);
 		free(old);
 		daughter = daughter->sister1;
 	}
