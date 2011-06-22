@@ -36,16 +36,16 @@ int posix_memalign(void **ptr, size_t align, size_t size);
 
 int  __digit(char digit, int base);
 
-int     atoi(const char *nptr);
-double  atof(const char *nptr);
-int32_t atol(const char *nptr);
+int      atoi(const char *nptr);
+double   atof(const char *nptr);
+long int atol(const char *nptr);
 
 double      strtod (const char *nptr, char **endptr);
 float       strtof (const char *nptr, char **endptr);
 long double strtold(const char *nptr, char **endptr);
 
-int32_t  strtol (const char *nptr, char **endptr, int base);
-uint32_t strtoul(const char *nptr, char **endptr, int base);
+long int          strtol(const char *nptr, char **endptr, int base);
+unsigned long int strtoul(const char *nptr, char **endptr, int base);
 
 /* random number generaton *************************************************/
 

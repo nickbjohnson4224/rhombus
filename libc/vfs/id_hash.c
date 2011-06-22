@@ -40,6 +40,7 @@ void id_hash_set(struct id_hash *h, uint32_t id, uint32_t value) {
 			if (node->next) node->next->prev = node->prev;
 			if (node->prev) node->prev->next = node->next;
 			else h->table[id % h->size] = node->next;
+			h->count--;
 		}
 	}
 	else if (test) {
@@ -70,6 +71,7 @@ void id_hash_set(struct id_hash *h, uint32_t id, uint32_t value) {
 		node->next = h->table[id];
 		node->prev = NULL;
 		h->table[id] = node;
+		h->count++;
 	}
 	mutex_free(&h->mutex);
 }
