@@ -19,60 +19,36 @@
 
 #include <natio.h>
 
-/* access control lists and locks *******************************************/
+/* general-purpose PID/UID to integer hashtable *****************************/
 
-struct vfs_acl {
-	struct vfs_acl *next;
-
-	uint32_t user;
-	uint8_t permit;
+struct id_hash_list {
+	struct id_hash_list *next;
+	struct id_hash_list *prev;
+	uint32_t id;
+	uint32_t value;
 };
 
-uint8_t         acl_get(struct vfs_acl *acl, uint32_t user);
-struct vfs_acl *acl_set(struct vfs_acl *acl, uint32_t user, uint8_t permit);
-
-uint8_t         acl_get_default(struct vfs_acl *acl);
-struct vfs_acl *acl_set_default(struct vfs_acl *acl, uint8_t permit);
-
-void acl_free(struct vfs_acl *acl);
-
-struct vfs_lock_list {
-	struct vfs_lock_list *next;
-	uint32_t pid;
-};
-
-struct vfs_lock_list *vfs_lock_list_add (struct vfs_lock_list *ll, uint32_t pid);
-struct vfs_lock_list *vfs_lock_list_del (struct vfs_lock_list *ll, uint32_t pid);
-int                   vfs_lock_list_tst (struct vfs_lock_list *ll, uint32_t pid);
-struct vfs_lock_list *vfs_lock_list_free(struct vfs_lock_list *ll);
-
-struct vfs_lock {
+struct id_hash {
 	bool mutex;
-
-	/* shared lock */
-	struct vfs_lock_list *shlock;
-	
-	/* exclusive lock */
-	uint32_t exlock;
-
-	/* private lock */
-	uint32_t prlock;
+	struct id_hash_list **table;
+	int size;
+	int count;
+	uint32_t nil;
 };
 
-struct vfs_lock *vfs_lock_cons(void);
-void vfs_lock_free(struct vfs_lock *lock);
-
-int vfs_lock_acquire(struct vfs_lock *lock, uint32_t pid, int locktype);
-int vfs_lock_waitfor(struct vfs_lock *lock, uint32_t pid, int locktype);
-int vfs_lock_current(struct vfs_lock *lock, uint32_t pid);
+void     id_hash_set  (struct id_hash *h, uint32_t id, uint32_t value);
+uint32_t id_hash_get  (struct id_hash *h, uint32_t id);
+int      id_hash_test (struct id_hash *h, uint32_t id);
+int      id_hash_count(struct id_hash *h);
+void     id_hash_free (struct id_hash *h);
 
 /* resource structure *******************************************************/
 
 struct resource {
-	int type;
 	bool mutex;
 
 	/* file information */
+	int      type;
 	uint64_t size;
 	uint8_t *data;
 
@@ -86,21 +62,17 @@ struct resource {
 	int vfs_refcount;
 
 	/* permissions */
-	struct vfs_acl *acl;
-
-	/* locks */
-	struct vfs_lock *lock;
+	struct id_hash acl;
 
 	/* link information */
 	char *symlink; // symbolic link
-	uint64_t link; // pointer link (obsolete)
 };
+
+struct resource *resource_cons(int type, int perm);
+void             resource_free(struct resource *r);
 
 struct resource *index_get(uint32_t index);
 struct resource *index_set(uint32_t index, struct resource *r);
-
-void resource_free(struct resource *r);
-struct resource *resource_cons(int type, int perm);
 
 int vfs_permit(struct resource *r, uint64_t source, int operation);
 
@@ -127,7 +99,7 @@ struct resource *vfs_find(struct vfs_node *root, const char *path, const char **
 
 int   vfs_link  (struct vfs_node *dir, const char *name, struct resource *r);
 int   vfs_unlink(struct vfs_node *dir, const char *name);
-char *vfs_list  (struct vfs_node *dir, int entry);
+char *vfs_list  (struct vfs_node *dir);
 int   vfs_pull  (uint64_t source, struct resource *obj);
 
 int vfs_init(void);

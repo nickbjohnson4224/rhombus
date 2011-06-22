@@ -133,11 +133,11 @@ extern uint64_t fs_root;
 uint64_t fs_find (const char *path);
 uint64_t fs_lfind(const char *path);
 uint64_t fs_cons (const char *path, int type);
-char    *fs_list (const char *path, int entry);
+char    *fs_list (const char *path);
 uint64_t fs_size (const char *path);
 
 uint64_t rp_size (uint64_t rp);
-char    *rp_list (uint64_t dir, int entry);
+char    *rp_list (uint64_t dir);
 
 /*****************************************************************************
  * links
@@ -161,55 +161,14 @@ char    *rp_list (uint64_t dir, int entry);
  * using fs_slink (and fs_plink, which is a more flexible form.)
  */
 
-int      fs_slink(const char *path, const char *link);
-int      fs_plink(const char *path, uint64_t link_rp, const char *link_path);
-int      fs_link (const char *path, const char *link);
-int      fs_ulink(const char *path);
+int fs_slink(const char *path, const char *link);
+int fs_plink(const char *path, uint64_t link_rp, const char *link_path);
+int fs_link (const char *path, const char *link);
+int fs_ulink(const char *path);
 
-int      rp_slink(uint64_t rp, const char *link);
-int      rp_plink(uint64_t rp, uint64_t link_rp, const char *link_path);
-int      rp_link (uint64_t dir, const char *name, uint64_t link);
-
-/*****************************************************************************
- * file locking
- *
- * Locks may be used to temporarily restrict access to files in order to
- * ensure consistency.
- *
- * There are three types of locks:
- *
- * LOCK_SH - shared lock
- *
- * Any number of processes may hold shared locks on a file, and shared locks
- * prevent all write access to a file, but may only be acquired if no 
- * exclusive or private locks are acquired. Additionally, the existence of a 
- * shared lock prevents any exclusive or private lock from being acquired.
- *
- * LOCK_EX - exclusive lock
- *
- * Only one process may hold an exclusive lock, which may only be acquired if
- * no other locks are present on a file. Only the process holding the 
- * exclusive lock may perform writes on that file, but read access remains
- * unrestricted.
- *
- * LOCK_PR - private lock
- *
- * This is similar to an exclusive lock, but both read and write access are
- * restricted to only the locking process. This is used for things that are
- * bound to a particular process, like anonymous pipes and windows.
- *
- * LOCK_UN represents no lock.
- *
- * Changing a lock type is guaranteed to be atomic.
- */
-
-int rp_lock(uint64_t rp, int locktype);
-
-#define LOCK_UN		0x00	// no lock
-#define LOCK_SH		0x01	// "shared" (readers lock)
-#define LOCK_EX		0x02	// "exclusive" (writer lock)
-#define LOCK_PR		0x03	// "private" (excludes all other processes)
-#define LOCK_NB		0x04	// do not block
+int rp_slink(uint64_t rp, const char *link);
+int rp_plink(uint64_t rp, uint64_t link_rp, const char *link_path);
+int rp_link (uint64_t dir, const char *name, uint64_t link);
 
 /*****************************************************************************
  * permission bitmap
@@ -235,10 +194,6 @@ int rp_lock(uint64_t rp, int locktype);
  * do not allow certain operations (usually writing, if the filesystem is
  * read-only) and this does not ensure that the permission bitmap will 
  * actually be modified as specified.
- *
- * PERM_LOCK
- *
- * This flag allows a user to acquire locks on a file.
  */
 
 uint8_t fs_getperm(const char *path, uint32_t user);
@@ -250,6 +205,5 @@ int     rp_setperm(uint64_t rp, uint32_t user, uint8_t perm);
 #define PERM_READ	0x01
 #define PERM_WRITE	0x02
 #define PERM_ALTER	0x04
-#define PERM_LOCK	0x08
 
 #endif/*NATIO_H*/

@@ -33,7 +33,6 @@ static char *_type_handler(uint64_t source, uint32_t index, int argc, char **arg
 static char *_symlink_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_getperm_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_setperm_handler(uint64_t source, uint32_t index, int argc, char **argv);
-static char *_lock_handler(uint64_t source, uint32_t index, int argc, char **argv);
 
 /*****************************************************************************
  * vfs_init
@@ -52,7 +51,6 @@ int vfs_init(void) {
 	rcall_set("fs_symlink", _symlink_handler);
 	rcall_set("fs_getperm", _getperm_handler);
 	rcall_set("fs_setperm", _setperm_handler);
-	rcall_set("fs_lock", _lock_handler);
 
 	return 0;
 }
@@ -315,10 +313,9 @@ static char *_symlink_handler(uint64_t source, uint32_t index, int argc, char **
 
 static char *_list_handler(uint64_t source, uint32_t index, int argc, char **argv) {
 	struct resource *dir;
-	uint32_t entry;
-	char *name;
+	char *list;
 
-	if (argc <= 1) {
+	if (argc != 1) {
 		return NULL;
 	}
 
@@ -328,8 +325,6 @@ static char *_list_handler(uint64_t source, uint32_t index, int argc, char **arg
 	if (!dir) {
 		return strdup("! nfound");
 	}
-
-	entry = atoi(argv[1]);
 
 	mutex_spin(&dir->mutex);
 
@@ -344,17 +339,17 @@ static char *_list_handler(uint64_t source, uint32_t index, int argc, char **arg
 	}
 
 	mutex_spin(&dir->vfs->mutex);
-	name = vfs_list(dir->vfs, entry);
+	list = vfs_list(dir->vfs);
 	mutex_free(&dir->vfs->mutex);
 
-	if (!name) {
+	if (!list) {
 		mutex_free(&dir->mutex);
 		return strdup("! nfound");
 	}
 
 	mutex_free(&dir->mutex);
 
-	return name;
+	return list;
 }
 
 static char *_size_handler(uint64_t source, uint32_t index, int argc, char **argv) {
@@ -415,7 +410,7 @@ static char *_getperm_handler(uint64_t source, uint32_t index, int argc, char **
 	}
 
 	mutex_spin(&r->mutex);
-	perm = acl_get(r->acl, user);
+	perm = id_hash_get(&r->acl, user);
 	mutex_free(&r->mutex);
 
 	return saprintf("%d", perm);
@@ -446,41 +441,9 @@ static char *_setperm_handler(uint64_t source, uint32_t index, int argc, char **
 		return strdup("! denied");
 	}
 
-	r->acl = acl_set(r->acl, user, perm);
+	id_hash_set(&r->acl, user, perm);
 
 	mutex_free(&r->mutex);
 
-	return strdup("T");
-}
-
-static char *_lock_handler(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct resource *r;
-	int locktype;
-
-	if (argc < 2) {
-		return NULL;
-	}
-
-	locktype = atoi(argv[1]);
-	
-	r = index_get(index);
-	if (!r) return strdup("! nfound");
-
-	mutex_spin(&r->mutex);
-	if (!vfs_permit(r, source, PERM_LOCK)) {
-		mutex_free(&r->mutex);
-		return strdup("! denied");
-	}
-
-	if (!r->lock) {
-		r->lock = vfs_lock_cons();
-	}
-
-	if (vfs_lock_acquire(r->lock, RP_PID(source), locktype)) {
-		mutex_free(&r->mutex);
-		return strdup("! locked");
-	}
-
-	mutex_free(&r->mutex);
 	return strdup("T");
 }

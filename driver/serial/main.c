@@ -39,13 +39,8 @@ size_t serial_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t siz
 }
 
 int main(int argc, char **argv) {
-	struct resource *root;
 
-	root = calloc(sizeof(struct resource), 1);
-	root->type = FS_TYPE_FILE | FS_TYPE_CHAR;
-	root->size = 0;
-	root->acl = acl_set_default(root->acl, PERM_WRITE);
-	index_set(0, root);
+	index_set(0, resource_cons(FS_TYPE_FILE | FS_TYPE_CHAR, PERM_WRITE));
 
 	outb(PORT + 1, 0x00);
 	outb(PORT + 3, 0x80);

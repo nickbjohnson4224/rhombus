@@ -53,13 +53,6 @@ struct resource *vfs_find(struct vfs_node *root, const char *path_str, const cha
 			return root->resource;
 		}
 
-		if (root->resource->link) {
-			path_prev(path);
-			if (tail) *tail = path_tail(path);
-			free(path);
-			return root->resource;
-		}
-
 		child = root->daughter;
 		while (child) {
 			if (!strcmp(child->name, name)) {

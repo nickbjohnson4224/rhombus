@@ -31,19 +31,14 @@ struct resource *tmpfs_cons(uint64_t source, int type) {
 	struct resource *fobj = NULL;
 
 	if (FS_IS_FILE(type)) {
-		fobj        = calloc(sizeof(struct resource), 1);
-		fobj->type  = FS_TYPE_FILE;
+		fobj        = resource_cons(FS_TYPE_FILE, PERM_READ | PERM_WRITE);
 		fobj->size  = 0;
 		fobj->data  = NULL;
 		fobj->index = tmpfs_index_top++;
-		fobj->acl   = acl_set_default(fobj->acl, PERM_READ | PERM_WRITE);
 	}
 	else if (FS_IS_DIR(type)) {
-		fobj        = calloc(sizeof(struct resource), 1);
-		fobj->type  = FS_TYPE_DIR;
+		fobj        = resource_cons(FS_TYPE_DIR, PERM_READ | PERM_WRITE);
 		fobj->index = tmpfs_index_top++;
-		fobj->acl   = acl_set_default(fobj->acl, PERM_READ | PERM_WRITE);
-		fobj->link  = 0;
 	}
 	else if (FS_IS_LINK(type)) {
 		fobj        = resource_cons(FS_TYPE_LINK, PERM_READ | PERM_WRITE);

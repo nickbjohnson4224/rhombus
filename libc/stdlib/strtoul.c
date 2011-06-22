@@ -25,7 +25,7 @@
  * after the last character parsed is stored in it.
  */
 
-uint32_t strtoul(const char *nptr, char **endptr, int base) {
+unsigned long int strtoul(const char *nptr, char **endptr, int base) {
 	size_t i;
 	uint32_t sum;
 	bool neg;

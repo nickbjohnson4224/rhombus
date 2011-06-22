@@ -52,11 +52,9 @@ size_t initrd_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size
 void initrd_init(void) {
 	struct resource *root;
 
-	root = calloc(sizeof(struct resource), 1);
-	root->type = FS_TYPE_FILE;
+	root = resource_cons(FS_TYPE_FILE, PERM_READ);
 	root->data = (void*) BOOT_IMAGE;
 	root->size = tar_size(root->data);
-	root->acl  = acl_set_default(root->acl, PERM_READ);
 	index_set(0, root);
 
 	di_wrap_read(initrd_read);

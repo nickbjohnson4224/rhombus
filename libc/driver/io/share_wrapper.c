@@ -47,7 +47,7 @@ void __share_wrapper(struct msg *msg) {
 		return;
 	}
 
-	if (!(acl_get(file->acl, RP_PID(msg->source)) & PERM_WRITE)) {
+	if (!vfs_permit(file, msg->source, PERM_WRITE)) {
 		merror(msg);
 		return;
 	}
