@@ -176,7 +176,7 @@ int      rp_link (uint64_t dir, const char *name, uint64_t link);
  * Locks may be used to temporarily restrict access to files in order to
  * ensure consistency.
  *
- * There are three types of locks:
+ * There are two types of locks:
  *
  * LOCK_SH - shared lock
  *
@@ -192,12 +192,6 @@ int      rp_link (uint64_t dir, const char *name, uint64_t link);
  * exclusive lock may perform writes on that file, but read access remains
  * unrestricted.
  *
- * LOCK_PR - private lock
- *
- * This is similar to an exclusive lock, but both read and write access are
- * restricted to only the locking process. This is used for things that are
- * bound to a particular process, like anonymous pipes and windows.
- *
  * LOCK_UN represents no lock.
  *
  * Changing a lock type is guaranteed to be atomic.
@@ -208,7 +202,6 @@ int rp_lock(uint64_t rp, int locktype);
 #define LOCK_UN		0x00	// no lock
 #define LOCK_SH		0x01	// "shared" (readers lock)
 #define LOCK_EX		0x02	// "exclusive" (writer lock)
-#define LOCK_PR		0x03	// "private" (excludes all other processes)
 #define LOCK_NB		0x04	// do not block
 
 /*****************************************************************************

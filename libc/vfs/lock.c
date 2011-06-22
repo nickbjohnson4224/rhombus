@@ -27,9 +27,7 @@ void vfs_lock_free(struct vfs_lock *lock) {
 	
 	mutex_spin(&lock->mutex);
 
-	if (lock->shlock) {
-		vfs_lock_list_free(lock->shlock);
-	}
+	id_hash_free(&lock->shlock);
 
 	free(lock);
 }
@@ -50,13 +48,10 @@ int vfs_lock_acquire(struct vfs_lock *lock, uint32_t pid, int locktype) {
 	switch (oldtype) {
 	case LOCK_UN: break;
 	case LOCK_SH:
-		lock->shlock = vfs_lock_list_del(lock->shlock, pid);
+		id_hash_set(&lock->shlock, pid, 0);
 		break;
 	case LOCK_EX:
 		lock->exlock = 0;
-		break;
-	case LOCK_PR:
-		lock->prlock = 0;
 		break;
 	default:
 		err = 1;
@@ -71,27 +66,19 @@ int vfs_lock_acquire(struct vfs_lock *lock, uint32_t pid, int locktype) {
 	switch (locktype) {
 	case LOCK_UN: break;
 	case LOCK_SH:
-		if (lock->exlock || lock->prlock) {
+		if (lock->exlock) {
 			err = 1;
 		}
 		else {
-			lock->shlock = vfs_lock_list_add(lock->shlock, pid);
+			id_hash_set(&lock->shlock, pid, 1);
 		}
 		break;
 	case LOCK_EX:
-		if (lock->shlock || lock->exlock || lock->prlock) {
+		if (id_hash_count(&lock->shlock) || lock->exlock) {
 			err = 1;
 		}
 		else {
 			lock->exlock = pid;
-		}
-		break;
-	case LOCK_PR:
-		if (lock->shlock || lock->exlock || lock->prlock) {
-			err = 1;
-		}
-		else {
-			lock->prlock = pid;
 		}
 		break;
 	default:
@@ -107,7 +94,7 @@ int vfs_lock_current(struct vfs_lock *lock, uint32_t pid) {
 	
 	mutex_spin(&lock->mutex);
 
-	if (vfs_lock_list_tst(lock->shlock, pid)) {
+	if (id_hash_get(&lock->shlock, pid)) {
 		mutex_free(&lock->mutex);
 		return LOCK_SH;
 	}
@@ -117,63 +104,6 @@ int vfs_lock_current(struct vfs_lock *lock, uint32_t pid) {
 		return LOCK_EX;
 	}
 
-	if (lock->prlock == pid) {
-		mutex_free(&lock->mutex);
-		return LOCK_PR;
-	}
-	
 	mutex_free(&lock->mutex);
 	return LOCK_UN;
-}
-
-struct vfs_lock_list *vfs_lock_list_add(struct vfs_lock_list *ll, uint32_t pid) {
-	struct vfs_lock_list *new;
-
-	new = malloc(sizeof(struct vfs_lock_list));
-	new->pid = pid;
-	new->next = ll;
-
-	return new;
-}
-
-struct vfs_lock_list *vfs_lock_list_del(struct vfs_lock_list *ll, uint32_t pid) {
-	struct vfs_lock_list *next;
-	
-	if (!ll) {
-		return NULL;
-	}
-
-	if (ll->pid == pid) {
-		next = ll->next;
-		free(ll);
-		return ll->next;
-	}
-
-	ll->next = vfs_lock_list_del(ll->next, pid);
-
-	return ll;
-}
-
-int vfs_lock_list_tst(struct vfs_lock_list *ll, uint32_t pid) {
-	
-	if (!ll) {
-		return 0;
-	}
-
-	if (ll->pid == pid) {
-		return 1;
-	}
-
-	return vfs_lock_list_tst(ll->next, pid);
-}
-
-struct vfs_lock_list *vfs_lock_list_free(struct vfs_lock_list *ll) {
-	
-	if (!ll) {
-		return NULL;
-	}
-
-	vfs_lock_list_free(ll->next);
-	free(ll);
-	return NULL;
 }

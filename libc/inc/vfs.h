@@ -19,6 +19,29 @@
 
 #include <natio.h>
 
+/* general-purpose PID/UID to integer hashtable *****************************/
+
+struct id_hash_list {
+	struct id_hash_list *next;
+	struct id_hash_list *prev;
+	uint32_t id;
+	uint32_t value;
+};
+
+struct id_hash {
+	bool mutex;
+	struct id_hash_list **table;
+	int size;
+	int count;
+	uint32_t nil;
+};
+
+void     id_hash_set  (struct id_hash *h, uint32_t id, uint32_t value);
+uint32_t id_hash_get  (struct id_hash *h, uint32_t id);
+int      id_hash_test (struct id_hash *h, uint32_t id);
+int      id_hash_count(struct id_hash *h);
+void     id_hash_free (struct id_hash *h);
+
 /* access control lists and locks *******************************************/
 
 struct vfs_acl {
@@ -36,27 +59,14 @@ struct vfs_acl *acl_set_default(struct vfs_acl *acl, uint8_t permit);
 
 void acl_free(struct vfs_acl *acl);
 
-struct vfs_lock_list {
-	struct vfs_lock_list *next;
-	uint32_t pid;
-};
-
-struct vfs_lock_list *vfs_lock_list_add (struct vfs_lock_list *ll, uint32_t pid);
-struct vfs_lock_list *vfs_lock_list_del (struct vfs_lock_list *ll, uint32_t pid);
-int                   vfs_lock_list_tst (struct vfs_lock_list *ll, uint32_t pid);
-struct vfs_lock_list *vfs_lock_list_free(struct vfs_lock_list *ll);
-
 struct vfs_lock {
 	bool mutex;
 
 	/* shared lock */
-	struct vfs_lock_list *shlock;
-	
+	struct id_hash shlock;
+
 	/* exclusive lock */
 	uint32_t exlock;
-
-	/* private lock */
-	uint32_t prlock;
 };
 
 struct vfs_lock *vfs_lock_cons(void);

@@ -46,7 +46,7 @@ int vfs_permit(struct resource *r, uint64_t source, int operation) {
 	mutex_spin(&r->lock->mutex);
 	switch (operation) {
 	case PERM_READ:
-		if (!r->lock->exlock && !r->lock->prlock) {
+		if (!r->lock->exlock) {
 			/* no exclusive lock acquired, success */
 			mutex_free(&r->lock->mutex);
 			return 1;
@@ -54,8 +54,7 @@ int vfs_permit(struct resource *r, uint64_t source, int operation) {
 		else {
 			/* exclusive lock acquired */
 			mutex_free(&r->lock->mutex);
-			if (vfs_lock_current(r->lock, pid) != LOCK_EX 
-				&& vfs_lock_current(r->lock, pid) != LOCK_PR) {
+			if (vfs_lock_current(r->lock, pid) != LOCK_EX) {
 				/* exclusive lock is for someone else */
 				return 0;
 			}
@@ -66,16 +65,15 @@ int vfs_permit(struct resource *r, uint64_t source, int operation) {
 		}
 		break;
 	case PERM_WRITE:
-		if (r->lock->shlock) {
+		if (id_hash_count(&r->lock->shlock)) {
 			/* shared lock, no writing */
 			mutex_free(&r->lock->mutex);
 			return 0;
 		}
 
-		if (r->lock->exlock || r->lock->prlock) {
+		if (r->lock->exlock) {
 			mutex_free(&r->lock->mutex);
-			if (vfs_lock_current(r->lock, pid) == LOCK_EX 
-				|| vfs_lock_current(r->lock, pid) == LOCK_PR) {
+			if (vfs_lock_current(r->lock, pid) == LOCK_EX) {
 				/* exclusive lock is ours */
 				return 1;
 			}
