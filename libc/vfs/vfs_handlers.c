@@ -25,9 +25,9 @@
 #include <vfs.h>
 
 static char *_find_handler(uint64_t source, uint32_t index, int argc, char **argv);
-static char *_cons_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_link_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_list_handler(uint64_t source, uint32_t index, int argc, char **argv);
+static char *_cons_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_size_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_type_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_symlink_handler(uint64_t source, uint32_t index, int argc, char **argv);
@@ -62,9 +62,7 @@ static char *_find_handler(uint64_t source, uint32_t index, int argc, char **arg
 	const char *tail;
 	bool link;
 
-	if (argc <= 1) {
-		return NULL;
-	}
+	if (argc <= 1) return NULL;
 
 	// check for follow link flag
 	if (argc == 2) {
@@ -81,10 +79,7 @@ static char *_find_handler(uint64_t source, uint32_t index, int argc, char **arg
 
 	// find root node
 	root = index_get(index);
-
-	if (!root) {
-		return strdup("! nfound");
-	}
+	if (!root) return strdup("! nfound");
 
 	// find resource
 	if (!root->vfs && (path[0] == '\0' || (path[0] == '/' && path[1] == '\0'))) {
@@ -95,9 +90,7 @@ static char *_find_handler(uint64_t source, uint32_t index, int argc, char **arg
 		file = vfs_find(root->vfs, path, &tail);
 	}
 
-	if (!file) {
-		return strdup("! nfound");
-	}
+	if (!file) return strdup("! nfound");
 
 	if (file->symlink && !(!tail && link)) {
 		return saprintf(">> %s/%s", file->symlink, (tail) ? tail : "");
@@ -108,6 +101,23 @@ static char *_find_handler(uint64_t source, uint32_t index, int argc, char **arg
 }
 
 static char *_cons_handler(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct resource *new;
+	int type;
+
+	if (argc != 2) return NULL;
+	if (!_vfs_cons) return strdup("! nosys");
+
+	type = typeflag(argv[1][0]);
+	new = _vfs_cons(source, type);
+
+	if (!new) return strdup("! construct");
+
+	index_set(new->index, new);
+
+	return rtoa(RP_CONS(getpid(), new->index));
+}
+
+static char *__cons_handler(uint64_t source, uint32_t index, int argc, char **argv) {
 	struct resource *dir, *new;
 	const char *name;
 	uint64_t rp;
@@ -224,8 +234,8 @@ static char *_link_handler(uint64_t source, uint32_t index, int argc, char **arg
 		r = index_get(RP_INDEX(link));
 		if (!r) return strdup("! nfound");
 
-		if (FS_IS_DIR(r->type)) {
-			/* cannot link directories */
+		if (FS_IS_DIR(r->type) && r->vfs_refcount) {
+			/* cannot link directories that are already linked */
 			return strdup("! type");
 		}
 

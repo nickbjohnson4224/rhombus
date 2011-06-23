@@ -21,12 +21,11 @@
 
 /* I/O request wrapper ******************************************************/
 
-int di_wrap_read (size_t   (*di_read) (uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off));
-int di_wrap_write(size_t   (*di_write)(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off));
-int di_wrap_reset(int      (*di_reset)(uint64_t source, uint32_t index));
-int di_wrap_sync (int      (*di_sync) (uint64_t source, uint32_t index));
-int di_wrap_size (uint64_t (*di_size) (uint64_t source, uint32_t index));
-int di_wrap_share(int      (*di_share)(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off));
+int di_wrap_read (size_t (*di_read) (uint64_t src, uint32_t index, uint8_t *buffer, size_t size, uint64_t off));
+int di_wrap_write(size_t (*di_write)(uint64_t src, uint32_t index, uint8_t *buffer, size_t size, uint64_t off));
+int di_wrap_reset(int    (*di_reset)(uint64_t src, uint32_t index));
+int di_wrap_sync (int    (*di_sync) (uint64_t src, uint32_t index));
+int di_wrap_share(int    (*di_share)(uint64_t src, uint32_t index, uint8_t *buffer, size_t size, uint64_t off));
 
 void __read_wrapper (struct msg *msg);
 void __write_wrapper(struct msg *msg);
@@ -34,12 +33,11 @@ void __sync_wrapper (struct msg *msg);
 void __reset_wrapper(struct msg *msg);
 void __share_wrapper(struct msg *msg);
 
-extern size_t   (*_di_read) (uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off);
-extern size_t   (*_di_write)(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off);
-extern int      (*_di_reset)(uint64_t source, uint32_t index);
-extern int      (*_di_sync) (uint64_t source, uint32_t index);
-extern uint64_t (*_di_size) (uint64_t source, uint32_t index);
-extern int      (*_di_share)(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off);
+extern size_t (*_di_read) (uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off);
+extern size_t (*_di_write)(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off);
+extern int    (*_di_reset)(uint64_t source, uint32_t index);
+extern int    (*_di_sync) (uint64_t source, uint32_t index);
+extern int    (*_di_share)(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off);
 
 /* port access **************************************************************/
 

@@ -32,15 +32,11 @@
  * <type> should only be FS_TYPE_FILE, FS_TYPE_DIR, or FS_TYPE_FILE | 
  * FS_TYPE_LINK. The driver will fill in the appropriate flags for its files
  * beyond that.
- *
- * If the creation is successful, the process will recieve either a RX or WX
- * lock on the resource depending on write access.
  */
 
 uint64_t fs_cons(const char *path, int type) {
 	uint64_t dir;
 	uint64_t rp;
-	char *reply;
 	char *dirname, *name;
 
 	/* check for existing files */
@@ -51,18 +47,31 @@ uint64_t fs_cons(const char *path, int type) {
 
 	/* find parent directory */
 	dirname = path_parent(path);
-	name    = path_name(path);
 
 	dir = fs_find(dirname);
 	free(dirname);
 
-	if (!dir) {
+	if (!dir) return RP_NULL;
+
+	rp = rp_cons(dir, type);
+	if (!rp) return RP_NULL;
+	
+	name = path_name(path);
+
+	if (rp_link(dir, name, rp)) {
 		free(name);
 		return RP_NULL;
 	}
 
-	reply = rcallf(dir, "fs_cons %s %d", name, type);
 	free(name);
+	return rp;
+}
+
+uint64_t rp_cons(uint64_t driver, int type) {
+	uint64_t rp;
+	char *reply;
+
+	reply = rcallf(driver, "fs_cons %c", typechar(type));
 
 	if (!reply) {
 		errno = ENOSYS;

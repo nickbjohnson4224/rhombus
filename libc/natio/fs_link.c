@@ -79,7 +79,7 @@ int rp_link(uint64_t dir, const char *name, uint64_t link) {
 		else if (!strcmp(reply, "! notempty")) errno = ENOTEMPTY;
 		else                                   errno = EUNK;
 		free(reply);
-		return 1;
+		return reply[2];
 	}
 
 	free(reply);
