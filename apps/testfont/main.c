@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Jaagup Repän <jrepan at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
@@ -14,20 +14,27 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef STDDEF_H
-#define STDDEF_H
+#include <graph.h>
+#include <natio.h>
+#include <proc.h>
 
-#include <stdint.h>
+int main(int argc, char **argv) {
+	uint64_t wmanager = fs_find("/sys/wmanager");
+	uint64_t rp;
+	struct fb *fb;
 
-typedef intptr_t  ptrdiff_t;
-typedef uint32_t  wchar_t;
+	if (!wmanager) {
+		fprintf(stderr, "%s: couldn't find wmanager\n", argv[0]);
+		return 1;
+	}
 
-#define PTRDIFF_MIN	INTPTR_MIN
-#define PTRDIFF_MAX	INTPTR_MAX
+	rp = ator(rcall(wmanager, "createwindow"));
+	fb = fb_cons(rp);
 
-#define WCHAR_MIN	0
-#define WCHAR_MAX	UINT32_MAX
+	fb_write(fb, 5, 5, 20, "Hello,", 6, COLOR_WHITE, COLOR_BLACK);
+	fb_write(fb, 10, 30, 50, "world!", 6, COLOR_NBLUE, COLOR_NDGRAY);
+	fb_flip(fb);
 
-#define offsetof(type, member) __builtin_offsetof(type, member)
-
-#endif/*STDDEF_H*/
+	_done();
+	return 0;
+}
