@@ -1,6 +1,6 @@
 BUILDDIR=$(PWD)
 
-LIB_DIRS  = libc dl
+LIB_DIRS  = libc dl librdi
 
 DRIVERS  := $(shell find driver -mindepth 1 -maxdepth 1)
 DAEMONS  := $(shell find daemon -mindepth 1 -maxdepth 1)
@@ -53,6 +53,8 @@ clean:
 	@ rm bin/*
 	@ echo " CLEAN	" $(shell find ./boot)
 	@ rm -r boot/*
+	@ echo " CLEAN	" $(shell find ./inc)
+	@ rm -r inc/*
 
 image:	all
 

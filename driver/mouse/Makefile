@@ -3,7 +3,7 @@ SOURCES += $(BUILDDIR)/lib/c0.o
 TARGET  := mouse
 SUBDIR	:= driver/mouse
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -lc
+LDFLAGS += -lrdi -lc
 ASFLAGS += -felf
 
 .PHONY: clean install

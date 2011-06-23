@@ -4,7 +4,7 @@ SOURCES += $(BUILDDIR)/lib/c0.o
 SUBDIR	:= util/halt
 TARGET	:= halt
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -lc
+LDFLAGS += -lrdi -lc
 ASFLAGS := -felf
 
 all: $(TARGET)
