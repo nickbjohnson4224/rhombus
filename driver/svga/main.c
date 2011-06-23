@@ -22,7 +22,7 @@
 #include <page.h>
 #include <proc.h>
 #include <ipc.h>
-#include <vfs.h>
+#include <rdi/vfs.h>
 
 #include "svga.h"
 

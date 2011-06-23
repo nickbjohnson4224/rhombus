@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,41 +14,33 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifndef _RDI_UTIL_H
+#define _RDI_UTIL_H
+
 #include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <driver.h>
-#include <mutex.h>
-#include <natio.h>
-#include <proc.h>
-#include <rdi/vfs.h>
+#include <stdbool.h>
 
-#include "time.h"
+/* general-purpose PID/UID to integer hashtable *****************************/
 
-size_t time_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
-	char *data;
+struct id_hash_list {
+	struct id_hash_list *next;
+	struct id_hash_list *prev;
+	uint32_t id;
+	uint32_t value;
+};
 
-	if (size > 20) {
-		size = 20;
-	}
+struct id_hash {
+	bool mutex;
+	struct id_hash_list **table;
+	int size;
+	int count;
+	uint32_t nil;
+};
 
-	data = malloc(21);
-	sprintf(data, "%d", get_time());
-	memcpy(buffer, data, size);
-	free(data);
+void     id_hash_set  (struct id_hash *h, uint32_t id, uint32_t value);
+uint32_t id_hash_get  (struct id_hash *h, uint32_t id);
+int      id_hash_test (struct id_hash *h, uint32_t id);
+int      id_hash_count(struct id_hash *h);
+void     id_hash_free (struct id_hash *h);
 
-	return size;
-}
-
-int main(int argc, char **argv) {
-
-	index_set(0, resource_cons(FS_TYPE_FILE, PERM_READ));
-
-	di_wrap_read(time_read);
-	vfs_init();
-
-	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
-	_done();
-
-	return 0;
-}
+#endif/*_RDI_UTIL_H*/

@@ -14,11 +14,19 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <rdi/util.h>
+
 #include <stdlib.h>
 #include <mutex.h>
-#include <vfs.h>
 
 #define HASHSIZE 127
+
+/*****************************************************************************
+ * id_hash_set
+ *
+ * Sets the value <value> to be associated with id <id> in <h>. If <value> is
+ * <h>->nil, the value previously associated with <id> is removed.
+ */
 
 void id_hash_set(struct id_hash *h, uint32_t id, uint32_t value) {
 	struct id_hash_list *node;
@@ -76,6 +84,13 @@ void id_hash_set(struct id_hash *h, uint32_t id, uint32_t value) {
 	mutex_free(&h->mutex);
 }
 
+/*****************************************************************************
+ * id_hash_get
+ *
+ * Returns the value associated with <id> in <h>. If no value is associated
+ * with <id>, this function returns <h>->nil.
+ */
+
 uint32_t id_hash_get(struct id_hash *h, uint32_t id) {
 	struct id_hash_list *node;
 	uint32_t value;
@@ -100,6 +115,13 @@ uint32_t id_hash_get(struct id_hash *h, uint32_t id) {
 
 	return value;
 }
+
+/*****************************************************************************
+ * id_hash_test
+ *
+ * Returns nonzero if the given id has an entry in <h>, and zero if it does
+ * not.
+ */
 
 int id_hash_test(struct id_hash *h, uint32_t id) {
 	struct id_hash_list *node;

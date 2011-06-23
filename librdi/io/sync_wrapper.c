@@ -14,13 +14,15 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <rdi/core.h>
+#include <rdi/access.h>
+
 #include <driver.h>
 #include <stdlib.h>
 #include <mutex.h>
 #include <natio.h>
 #include <proc.h>
 #include <ipc.h>
-#include <vfs.h>
 
 /*****************************************************************************
  * __sync_wrapper

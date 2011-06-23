@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,49 +14,31 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <driver.h>
-#include <string.h>
-#include <stdio.h>
 #include <natio.h>
 #include <mutex.h>
 #include <proc.h>
-#include <ipc.h>
 #include <rdi/vfs.h>
 
-#include "initrd.h"
-#include "inc/tar.h"
+/*****************************************************************************
+ * vfs_permit
+ *
+ * Decide whether a particular operation is permitted upon a resource. The
+ * valid arguments for <operation> are PERM_READ, PERM_WRITE, and PERM_ALTER.
+ *
+ * Returns zero if the given operation is illegal, nonzero if it is legal.
+ *
+ * This function does not acquire a lock on <r>, but <r> must not be modified 
+ * while this function is running.
+ */
 
-size_t initrd_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
-	struct resource *file;
+int vfs_permit(struct resource *r, uint64_t source, int operation) {
+	uint32_t pid = RP_PID(source);
 
-	file = index_get(index);
-
-	if (!file->data) {
+	/* check permissions */
+	if ((id_hash_get(&r->acl, getuser(pid)) & operation) == 0) {
+		/* permission denied */
 		return 0;
 	}
 
-	if (offset >= file->size) {
-		return 0;
-	}
-
-	if (offset + size >= file->size) {
-		size = file->size - offset;
-	}
-
-	memcpy(buffer, &file->data[offset], size);
-	
-	return size;
-}
-
-void initrd_init(void) {
-	struct resource *root;
-
-	root = resource_cons(FS_TYPE_FILE, PERM_READ);
-	root->data = (void*) BOOT_IMAGE;
-	root->size = tar_size(root->data);
-	index_set(0, root);
-
-	di_wrap_read(initrd_read);
-	vfs_init();
+	return 1;
 }

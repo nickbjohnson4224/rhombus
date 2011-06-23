@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <proc.h>
 #include <exec.h>
-#include <vfs.h>
+#include <rdi/vfs.h>
 
 size_t fbterm_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
 	size_t i;

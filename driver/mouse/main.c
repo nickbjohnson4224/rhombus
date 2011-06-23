@@ -20,7 +20,7 @@
 #include <string.h>
 #include <mutex.h>
 #include <proc.h>
-#include <vfs.h>
+#include <rdi/vfs.h>
 
 struct event_list *event_list;
 

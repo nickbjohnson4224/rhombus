@@ -1,18 +1,22 @@
 SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
 SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
-HEADERS := $(shell find . -name "*.h")
+HEADERS := $(shell find inc -name "*.h")
 SUBDIR	:= librdi
 STATIC	:= librdi.a
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
 ASFLAGS := -felf
 
-.PHONY: $(HEADERS) clean
+.PHONY: headers_dir $(HEADERS) clean
 
 all: $(STATIC)
 
-$(HEADERS):
+headers_dir:
+	@ echo " MKDIR	" $(BUILDDIR)/inc/rdi
+	@ mkdir -p $(BUILDDIR)/inc/rdi	
+
+$(HEADERS): headers_dir
 	@ echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/inc
-	@ cp $@ $(BUILDDIR)/inc
+	@ cp $@ $(BUILDDIR)/$@
 
 $(STATIC): $(HEADERS) $(SOURCES)
 	@ echo " AR	" $(SUBDIR)/$(STATIC)

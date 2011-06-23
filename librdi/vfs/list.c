@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,47 +14,38 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <rdi/vfs.h>
+
+#include <string.h>
 #include <stdlib.h>
-#include <vfs.h>
 
 /*****************************************************************************
- * resource_free
+ * vfs_list
  *
- * Free a resource structure, including all allocated memory in standard 
- * fields.
+ * Returns a tab-separated list of directory entry names as a single string.
+ * Returns null on error.
+ *
+ * This function does not acquire a lock on the directory, but the directory
+ * and its entry structure may not be modified while this function is running.
  */
 
-void resource_free(struct resource *r) {
+char *vfs_list(struct vfs_node *dir) {
+	struct vfs_node *daughter;
+	char *list = strdup("");
+	char *old;
 
-	index_set(r->index, NULL);
-
-	id_hash_free(&r->acl);
-
-	if (r->symlink) {
-		free(r->symlink);
+	if (!dir) {
+		return NULL;
+	}
+	
+	daughter = dir->daughter;
+	while (daughter) {
+		old = list;
+		if (list[0]) list = strvcat(list, "\t", daughter->name, NULL);
+		else list = strdup(daughter->name);
+		free(old);
+		daughter = daughter->sister1;
 	}
 
-	free(r);
-}
-
-/*****************************************************************************
- * resource_cons
- *
- * Create a new resource structure of type <type> with default permission
- * bitmap <perm>. Only the critical fields are set; all others are zeroed.
- */
-
-struct resource *resource_cons(int type, int perm) {
-	struct resource *r;
-
-	r = calloc(sizeof(struct resource), 1);
-	r->type    = type;
-	r->acl.nil = perm;
-
-	if (FS_IS_DIR(type)) {
-		r->vfs = calloc(sizeof(struct vfs_node), 1);
-		r->vfs->resource = r;
-	}
-
-	return r;
+	return list;
 }

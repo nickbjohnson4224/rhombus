@@ -14,6 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <rdi/vfs.h>
+#include <rdi/access.h>
+
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
@@ -22,7 +25,6 @@
 #include <mutex.h>
 #include <proc.h>
 #include <ipc.h>
-#include <vfs.h>
 
 static char *_find_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_link_handler(uint64_t source, uint32_t index, int argc, char **argv);

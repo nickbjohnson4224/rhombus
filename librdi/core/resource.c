@@ -14,31 +14,47 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <natio.h>
-#include <mutex.h>
-#include <proc.h>
-#include <vfs.h>
+#include <stdlib.h>
+#include <rdi/vfs.h>
 
 /*****************************************************************************
- * vfs_permit
+ * resource_free
  *
- * Decide whether a particular operation is permitted upon a resource. The
- * valid arguments for <operation> are PERM_READ, PERM_WRITE, and PERM_ALTER.
- *
- * Returns zero if the given operation is illegal, nonzero if it is legal.
- *
- * This function does not acquire a lock on <r>, but <r> must not be modified 
- * while this function is running.
+ * Free a resource structure, including all allocated memory in standard 
+ * fields.
  */
 
-int vfs_permit(struct resource *r, uint64_t source, int operation) {
-	uint32_t pid = RP_PID(source);
+void resource_free(struct resource *r) {
 
-	/* check permissions */
-	if ((id_hash_get(&r->acl, getuser(pid)) & operation) == 0) {
-		/* permission denied */
-		return 0;
+	index_set(r->index, NULL);
+
+	id_hash_free(&r->acl);
+
+	if (r->symlink) {
+		free(r->symlink);
 	}
 
-	return 1;
+	free(r);
+}
+
+/*****************************************************************************
+ * resource_cons
+ *
+ * Create a new resource structure of type <type> with default permission
+ * bitmap <perm>. Only the critical fields are set; all others are zeroed.
+ */
+
+struct resource *resource_cons(int type, int perm) {
+	struct resource *r;
+
+	r = calloc(sizeof(struct resource), 1);
+	r->type    = type;
+	r->acl.nil = perm;
+
+	if (FS_IS_DIR(type)) {
+		r->vfs = calloc(sizeof(struct vfs_node), 1);
+		r->vfs->resource = r;
+	}
+
+	return r;
 }

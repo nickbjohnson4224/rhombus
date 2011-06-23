@@ -17,64 +17,9 @@
 #ifndef VFS_H
 #define VFS_H
 
+#include <rdi/util.h>
+#include <rdi/core.h>
 #include <natio.h>
-
-/* general-purpose PID/UID to integer hashtable *****************************/
-
-struct id_hash_list {
-	struct id_hash_list *next;
-	struct id_hash_list *prev;
-	uint32_t id;
-	uint32_t value;
-};
-
-struct id_hash {
-	bool mutex;
-	struct id_hash_list **table;
-	int size;
-	int count;
-	uint32_t nil;
-};
-
-void     id_hash_set  (struct id_hash *h, uint32_t id, uint32_t value);
-uint32_t id_hash_get  (struct id_hash *h, uint32_t id);
-int      id_hash_test (struct id_hash *h, uint32_t id);
-int      id_hash_count(struct id_hash *h);
-void     id_hash_free (struct id_hash *h);
-
-/* resource structure *******************************************************/
-
-struct resource {
-	bool mutex;
-
-	/* file information */
-	int      type;
-	uint64_t size;
-	uint8_t *data;
-
-	/* index lookup table */
-	uint32_t index;
-	struct resource *next;
-	struct resource *prev;
-
-	/* directory structure */
-	struct vfs_node *vfs;
-	int vfs_refcount;
-
-	/* permissions */
-	struct id_hash acl;
-
-	/* link information */
-	char *symlink; // symbolic link
-};
-
-struct resource *resource_cons(int type, int perm);
-void             resource_free(struct resource *r);
-
-struct resource *index_get(uint32_t index);
-struct resource *index_set(uint32_t index, struct resource *r);
-
-int vfs_permit(struct resource *r, uint64_t source, int operation);
 
 /* virtual filesystem interface *********************************************/
 
@@ -94,17 +39,14 @@ struct vfs_node {
 	struct vfs_node *daughter;
 };
 
-int vfs_add(struct resource *root, const char *path, struct resource *obj);
-struct resource *vfs_find(struct vfs_node *root, const char *path, const char **tail);
+struct resource *vfs_find  (struct vfs_node *root, const char *path, const char **tail);
+char            *vfs_list  (struct vfs_node *dir);
+int              vfs_link  (struct vfs_node *dir, const char *name, struct resource *r);
+int              vfs_unlink(struct vfs_node *dir, const char *name);
 
-int   vfs_link  (struct vfs_node *dir, const char *name, struct resource *r);
-int   vfs_unlink(struct vfs_node *dir, const char *name);
-char *vfs_list  (struct vfs_node *dir);
-int   vfs_pull  (uint64_t source, struct resource *obj);
+int vfs_add(struct resource *root, const char *path, struct resource *obj);
 
 int vfs_init(void);
-
-void __link_wrapper(struct msg *msg);
 
 /* virtual filesystem request wrapper ****************************************
  *

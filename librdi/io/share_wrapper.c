@@ -14,6 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <rdi/core.h>
+#include <rdi/access.h>
+
 #include <driver.h>
 #include <stdlib.h>
 #include <mutex.h>
@@ -21,7 +24,6 @@
 #include <proc.h>
 #include <page.h>
 #include <ipc.h>
-#include <vfs.h>
 
 void __share_wrapper(struct msg *msg) {
 	struct resource *file;

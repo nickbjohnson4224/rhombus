@@ -14,11 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <rdi/vfs.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <mutex.h>
 #include <proc.h>
-#include <vfs.h>
 
 /*****************************************************************************
  * vfs_link
@@ -120,149 +121,4 @@ int vfs_link(struct vfs_node *dir, const char *name, struct resource *r) {
 	r->vfs_refcount++;
 
 	return 0;
-}
-
-/*****************************************************************************
- * vfs_unlink
- *
- * Removes the directory entry <entry> from its parent directory and frees it. 
- * Returns zero on success, nonzero on error.
- *
- * This function does not acquire a lock on either the given entry, its parent
- * or its resource structure, but all three should not be modified while it
- * is running.
- */
-
-int vfs_unlink(struct vfs_node *dir, const char *name) {
-	struct vfs_node *entry;
-
-	if (!dir || !dir->daughter) {
-		/* entry is not in a directory at all: fail */
-		return 1;
-	}
-
-	/* find entry */
-	entry = dir->daughter;
-	while (entry->sister1) {
-		if (strcmp(entry->name, name) == 0) {
-			break;
-		}
-		entry = entry->sister1;
-	}
-
-	if (strcmp(entry->name, name)) {
-		/* entry is not in the directory */
-		return 2;
-	}
-
-	if (entry->daughter) {
-		/* entry is a non-empty directory: fail */
-		return 3;
-	}
-
-	/* remove entry from directory */
-	if (entry->sister0) {
-		/* entry is not first */
-		entry->sister0->sister1 = entry->sister1;
-		if (entry->sister1) {
-			entry->sister1->sister0 = entry->sister0;
-		}
-	}
-	else {
-		/* entry is first */
-		entry->mother->daughter = entry->sister1;
-		if (entry->sister1) {
-			entry->sister1->sister0 = NULL;
-		}
-	}
-
-	/* decrese resource reference count */
-	entry->resource->vfs_refcount--;
-
-	/* free entry */
-	entry->resource->vfs = NULL;
-	free(entry->name);
-	free(entry);
-
-	return 0;
-}
-
-/*****************************************************************************
- * vfs_pull
- *
- * Remove the filesystem object <robj> from its parent directory. Calls the 
- * active driver's pull function and returns zero on success; returns nonzero 
- * on error.
- */
-
-int vfs_pull(uint64_t source, struct resource *robj) {
-	struct vfs_node *obj;
-
-	return 1;
-
-	if (!robj) {
-		return 1;
-	}
-
-	obj = robj->vfs;
-
-	mutex_spin(&obj->mutex);
-
-	free(obj->name);
-	
-	if (obj->mother) {
-		mutex_spin(&obj->mother->mutex);
-		if (obj->mother->daughter == obj) {
-			obj->mother->daughter = obj->sister1;
-			if (obj->sister1) {
-				obj->sister1->sister0 = NULL;
-			}
-		}
-		else {
-			if (obj->sister0) {
-				obj->sister0->sister1 = obj->sister1;
-			}
-			if (obj->sister1) {
-				obj->sister1->sister0 = obj->sister0;
-			}
-		}
-		mutex_free(&obj->mother->mutex);
-	}
-
-	mutex_free(&obj->mutex);
-
-	if (_vfs_sync) {
-		return _vfs_sync(source, robj);
-	}
-	else {
-		return 0;
-	}
-}
-
-/*****************************************************************************
- * vfs_list
- *
- * Returns a tab-separated list of directory entry names as a single string.
- * Returns null on error.
- */
-
-char *vfs_list(struct vfs_node *dir) {
-	struct vfs_node *daughter;
-	char *list = strdup("");
-	char *old;
-
-	if (!dir) {
-		return NULL;
-	}
-	
-	daughter = dir->daughter;
-	while (daughter) {
-		old = list;
-		if (list[0]) list = strvcat(list, "\t", daughter->name, NULL);
-		else list = strdup(daughter->name);
-		free(old);
-		daughter = daughter->sister1;
-	}
-
-	return list;
 }

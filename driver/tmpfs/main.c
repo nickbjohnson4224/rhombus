@@ -21,7 +21,7 @@
 #include <proc.h>
 #include <ipc.h>
 #include <abi.h>
-#include <vfs.h>
+#include <rdi/vfs.h>
 
 #include "tmpfs.h"
 

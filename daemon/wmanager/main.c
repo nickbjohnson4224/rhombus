@@ -23,7 +23,7 @@
 #include <exec.h>
 #include <proc.h>
 #include <page.h>
-#include <vfs.h>
+#include <rdi/vfs.h>
 
 #include "wmanager.h"
 
