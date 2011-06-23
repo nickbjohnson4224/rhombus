@@ -4,7 +4,7 @@ SOURCES += $(BUILDDIR)/lib/c0.o
 SUBDIR	:= wmanager
 TARGET	:= wmanager
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -lc
+LDFLAGS += -lrdi -lc
 ASFLAGS := -felf
 
 all: $(TARGET)

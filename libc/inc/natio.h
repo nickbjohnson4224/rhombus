@@ -58,37 +58,8 @@ int    sync (uint64_t rp);
 int    reset(uint64_t rp);
 int    share(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot);
 
-/* rcall ********************************************************************/
-
-typedef char *(*rcall_t)(uint64_t src, uint32_t index, int argc, char **argv);
-
-char   *rcall    (uint64_t rp, const char *args);
-char   *rcallf   (uint64_t rp, const char *fmt, ...);
-
-int     rcall_set(const char *call, rcall_t handler);
-rcall_t rcall_get(const char *call);
-
-/* event ********************************************************************/
-
-struct event_list {
-	uint64_t target;
-	struct event_list *next;
-	struct event_list *prev;
-};
-
-struct event_list *event_list_add(struct event_list *list, uint64_t target);
-struct event_list *event_list_del(struct event_list *list, uint64_t target);
-
-int event_register(uint64_t rp);
-int event_deregister(uint64_t rp);
-
-int event (uint64_t rp, const char *value);
-int eventl(struct event_list *list, const char *value);
-
-typedef void (*event_t)(uint64_t src, int argc, char **argv);
-
-int     event_set(const char *event, event_t handler);
-event_t event_get(const char *event);
+uint64_t rp_cons (uint64_t driver, int type);
+uint64_t rp_size (uint64_t rp);
 
 /*****************************************************************************
  * resource types
@@ -107,6 +78,15 @@ event_t event_get(const char *event);
  * Directories may not have any additional type flags.
  *
  * Links may not have any additional type flags.
+ *
+ * Therefore, the following type values are valid:
+ *   FS_TYPE_FILE    (f)  (FS_TYPE_FILE)
+ *   FS_TYPE_DIR     (d)  (FS_TYPE_DIR)
+ *   FS_TYPE_LINK    (l)  (FS_TYPE_LINK)
+ *   FS_TYPE_GRAPHF  (g)  (FS_TYPE_FILE | FS_TYPE_GRAPH)
+ *   FS_TYPE_EVENTF  (e)  (FS_TYPE_FILE | FS_TYPE_EVENT)
+ *   FS_TYPE_WINDOW  (w)  (FS_TYPE_FILE | FS_TYPE_GRAPH | FS_TYPE_EVENT)
+ *   FS_TYPE_CHARF   (c)  (FS_TYPE_FILE | FS_TYPE_CHAR)
  */
 
 int fs_type(const char *path);
@@ -115,12 +95,17 @@ int rp_type(uint64_t rp);
 char typechar(int type);
 int  typeflag(char type);
 
-#define FS_TYPE_FILE	0x01	// file (allows read, write, reset)
-#define FS_TYPE_DIR		0x02	// directory (allows find, link, list, etc.)
-#define FS_TYPE_LINK	0x04	// symbolic link
-#define FS_TYPE_EVENT	0x10	// event source (allows register, deregister)
-#define FS_TYPE_GRAPH	0x20	// graphics file (allows various)
-#define FS_TYPE_CHAR	0x40	// character device (disallows size, offsets)
+#define FS_TYPE_FILE   0x01 // file (allows read, write, reset)
+#define FS_TYPE_DIR    0x02 // directory (allows find, link, list, etc.)
+#define FS_TYPE_LINK   0x04 // symbolic link
+#define FS_TYPE_EVENT  0x10 // event source flag (allows register, deregister)
+#define FS_TYPE_GRAPH  0x20 // graphics file flag (allows various)
+#define FS_TYPE_CHAR   0x40 // character device flag (disallows size, offsets)
+
+#define FS_TYPE_GRAPHF 0x21 // graphics file
+#define FS_TYPE_EVENTF 0x11 // event source
+#define FS_TYPE_WINDOW 0x31 // window
+#define FS_TYPE_CHARF  0x41 // character file
 
 #define FS_IS_FILE(t) (((t) & FS_TYPE_FILE) != 0)
 #define FS_IS_DIR(t) ((t) == FS_TYPE_DIR)
@@ -136,7 +121,6 @@ uint64_t fs_cons (const char *path, int type);
 char    *fs_list (const char *path);
 uint64_t fs_size (const char *path);
 
-uint64_t rp_size (uint64_t rp);
 char    *rp_list (uint64_t dir);
 
 /*****************************************************************************
@@ -205,5 +189,37 @@ int     rp_setperm(uint64_t rp, uint32_t user, uint8_t perm);
 #define PERM_READ	0x01
 #define PERM_WRITE	0x02
 #define PERM_ALTER	0x04
+
+/* rcall ********************************************************************/
+
+typedef char *(*rcall_t)(uint64_t src, uint32_t index, int argc, char **argv);
+
+char   *rcall    (uint64_t rp, const char *args);
+char   *rcallf   (uint64_t rp, const char *fmt, ...);
+
+int     rcall_set(const char *call, rcall_t handler);
+rcall_t rcall_get(const char *call);
+
+/* event ********************************************************************/
+
+struct event_list {
+	uint64_t target;
+	struct event_list *next;
+	struct event_list *prev;
+};
+
+struct event_list *event_list_add(struct event_list *list, uint64_t target);
+struct event_list *event_list_del(struct event_list *list, uint64_t target);
+
+int event_register(uint64_t rp);
+int event_deregister(uint64_t rp);
+
+int event (uint64_t rp, const char *value);
+int eventl(struct event_list *list, const char *value);
+
+typedef void (*event_t)(uint64_t src, int argc, char **argv);
+
+int     event_set(const char *event, event_t handler);
+event_t event_get(const char *event);
 
 #endif/*NATIO_H*/

@@ -51,7 +51,6 @@ For 0.9 Alpha:
 For 0.10 Alpha:
 
 - better shared memory architecture
-- 
 - write fenv.h, tgmath.h
 - copy-on-write
 - dynamic linking
