@@ -1,0 +1,131 @@
+diff -ruN freetype-2.4.4/fb_write.c myft/fb_write.c
+--- freetype-2.4.4/fb_write.c	1970-01-01 03:00:00.000000000 +0300
++++ myft/fb_write.c	2011-06-20 21:44:07.000000000 +0300
+@@ -0,0 +1,58 @@
++/*
++ * Copyright (C) 2011 Jaagup Repän <jrepan at gmail.com>
++ * 
++ * Permission to use, copy, modify, and distribute this software for any
++ * purpose with or without fee is hereby granted, provided that the above
++ * copyright notice and this permission notice appear in all copies.
++ * 
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
++ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ */
++
++#include <graph.h>
++#include <ft2build.h>
++#include FT_FREETYPE_H
++
++int fb_write(struct fb *fb, int x, int y, int height, const char *text, size_t length, uint32_t foreground, uint32_t background) {
++	static FT_Library library;
++	static FT_Face face;
++	static bool init_done = false;
++	uint32_t red, green, blue;
++	double alpha;
++	size_t i;
++	int cursorx = 0;
++
++	if (!init_done) {
++		FT_Init_FreeType(&library);
++		FT_New_Face(library, "/etc/font.ttf", 0, &face);
++		init_done = true;
++	}
++
++	if (FT_Set_Pixel_Sizes(face, 0, height)) {
++		return 1;
++	}
++
++	for (i = 0; i < length; i++) {
++		if (FT_Load_Char(face, text[i], FT_LOAD_RENDER)) {
++			continue;
++		}
++		FT_Bitmap *bitmap = &face->glyph->bitmap;
++		for (int j = 0; j < bitmap->rows; j++) {
++			for (int i = 0; i < bitmap->width; i++) {
++				alpha = bitmap->buffer[j * bitmap->width + i] / 255.0;
++				red   = alpha * PIX_R(foreground) + (1 - alpha) * PIX_R(background);
++				green = alpha * PIX_G(foreground) + (1 - alpha) * PIX_G(background);
++				blue  = alpha * PIX_B(foreground) + (1 - alpha) * PIX_B(background);
++				fb_plot(fb, x + cursorx + i , y + j + (height - bitmap->rows), COLOR(red, green, blue));
++			}
++		}
++		cursorx += face->glyph->advance.x >> 6;
++	}
++
++	return 0;
++}
+diff -ruN freetype-2.4.4/Makefile myft/Makefile
+--- freetype-2.4.4/Makefile	2009-03-14 15:45:26.000000000 +0200
++++ myft/Makefile	2011-06-22 14:08:46.000000000 +0300
+@@ -1,34 +1,32 @@
+-#
+-# FreeType 2 build system -- top-level Makefile
+-#
++SOURCES := src/base/ftsystem.o src/base/ftinit.o src/base/ftdebug.o src/base/ftbase.o
++SOURCES += src/base/ftbbox.o src/base/ftglyph.o
++SOURCES += src/base/ftbdf.o src/base/ftbitmap.o src/base/ftcid.o src/base/ftfstype.o src/base/ftgasp.o src/base/ftgxval.o src/base/ftlcdfil.o src/base/ftmm.o src/base/ftotval.o src/base/ftpatent.o src/base/ftpfr.o src/base/ftstroke.o src/base/ftsynth.o src/base/fttype1.o src/base/ftwinfnt.o
++SOURCES += src/bdf/bdf.o src/cff/cff.o src/cid/type1cid.o src/pcf/pcf.o src/pfr/pfr.o src/sfnt/sfnt.o src/truetype/truetype.o src/type1/type1.o src/type42/type42.o src/winfonts/winfnt.o
++SOURCES += src/raster/raster.o src/smooth/smooth.o
++SOURCES += src/autofit/autofit.o src/cache/ftcache.o src/gzip/ftgzip.o src/lzw/ftlzw.o src/gxvalid/gxvalid.o src/otvalid/otvalid.o src/psaux/psaux.o src/pshinter/pshinter.o src/psnames/psnames.o
++SOURCES += fb_write.o
++HEADERS := include/freetype include/ft2build.h
++SUBDIR	:= ports/freetype/freetype-2.4.4
++STATIC	:= libfreetype.a
++CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/include -DFT2_BUILD_LIBRARY -w
++
++.PHONY: $(HEADERS) clean
++
++all: $(STATIC)
++
++$(HEADERS):
++	@ echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/inc
++	@ cp -r $@ $(BUILDDIR)/inc
++
++$(STATIC): $(HEADERS) $(SOURCES)
++	@ echo " AR	" $(SUBDIR)/$(STATIC)
++	@ $(AR) $(ARFLAGS) $(STATIC) $(SOURCES)
++	@ echo " CP	" $(SUBDIR)/$(STATIC) "->" $(BUILDDIR)/lib
++	@ cp $(STATIC) $(BUILDDIR)/lib
++
++%.o: %.c
++	@ echo " CC	" $(SUBDIR)/$<
++	@ $(CC) $(CFLAGS) -c $< -o $@
+ 
+-
+-# Copyright 1996-2000, 2002, 2006 by
+-# David Turner, Robert Wilhelm, and Werner Lemberg.
+-#
+-# This file is part of the FreeType project, and may only be used, modified,
+-# and distributed under the terms of the FreeType project license,
+-# LICENSE.TXT.  By continuing to use, modify, or distribute this file you
+-# indicate that you have read the license and understand and accept it
+-# fully.
+-
+-
+-# Project names
+-#
+-PROJECT       := freetype
+-PROJECT_TITLE := FreeType
+-
+-# The variable TOP_DIR holds the path to the topmost directory in the project
+-# engine source hierarchy.  If it is not defined, default it to `.'.
+-#
+-TOP_DIR ?= .
+-
+-# The variable OBJ_DIR gives the location where object files and the
+-# FreeType library are built.
+-#
+-OBJ_DIR ?= $(TOP_DIR)/objs
+-
+-
+-include $(TOP_DIR)/builds/toplevel.mk
+-
+-# EOF
++clean:
++	@ rm $(STATIC) $(SOURCES)
