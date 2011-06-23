@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -22,7 +22,9 @@
 
 int main(int argc, char **argv) {
 	char *list, *path;
+	char **listv;
 	uint64_t dir;
+	int i;
 
 	if (argc == 1) {
 		path = (char*) getenv("PWD");
@@ -46,6 +48,13 @@ int main(int argc, char **argv) {
 		abort();
 	}
 
-	printf("%s\n", list);
+	listv = strparse(list, "\t");
+
+	for (i = 0; listv[i]; i++) {
+		printf("%s\t", listv[i]);
+		if (i % 8 == 7 && listv[i+1]) printf("\n");
+	}
+	printf("\n");
+
 	return EXIT_SUCCESS;
 }

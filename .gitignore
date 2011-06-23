@@ -14,3 +14,4 @@
 /bin
 /sbin
 /tools/*
+/ports/freetype/freetype-*
