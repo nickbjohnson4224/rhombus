@@ -14,7 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
+#include <rdi/arch.h>
+
 #include <string.h>
 #include <page.h>
 

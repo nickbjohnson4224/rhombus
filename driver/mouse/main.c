@@ -15,12 +15,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
 #include <stdlib.h>
 #include <string.h>
 #include <mutex.h>
 #include <proc.h>
+
 #include <rdi/vfs.h>
+#include <rdi/arch.h>
 
 struct event_list *event_list;
 

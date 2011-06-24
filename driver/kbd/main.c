@@ -19,7 +19,9 @@
 #include <string.h>
 #include <mutex.h>
 #include <proc.h>
+
 #include <rdi/vfs.h>
+#include <rdi/arch.h>
 
 struct event_list *event_list;
 
@@ -171,7 +173,7 @@ int main(int argc, char **argv) {
 
 	rcall_set  ("register",   kbd_rcall_register);
 	rcall_set  ("deregister", kbd_rcall_deregister);
-	di_wrap_irq(1, kbd_irq);
+	rdi_set_irq(1, kbd_irq);
 	vfs_init();
 
 	fs_plink("/dev/kbd", RP_CONS(getpid(), 0), NULL);

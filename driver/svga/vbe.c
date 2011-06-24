@@ -14,10 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "svga.h"
+
 #include <string.h>
 #include <stdlib.h>
 #include <driver.h>
-#include "svga.h"
+#include <rdi/arch.h>
 
 struct vbe_ctrlinfo *svga_ctrl = (void*) 0x10000;
 struct vbe_modeinfo *svga_mode = (void*) 0x20000;

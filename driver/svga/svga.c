@@ -14,12 +14,15 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "svga.h"
+
 #include <string.h>
 #include <stdlib.h>
 #include <driver.h>
 #include <graph.h>
 #include <page.h>
-#include "svga.h"
+
+#include <rdi/arch.h>
 
 struct svga svga;
 struct svga_mode *modelist;

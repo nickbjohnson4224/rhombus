@@ -18,7 +18,9 @@
 #include <driver.h>
 #include <mutex.h>
 #include <proc.h>
+
 #include <rdi/vfs.h>
+#include <rdi/arch.h>
 
 #define PORT 0x3f8 // COM1
 

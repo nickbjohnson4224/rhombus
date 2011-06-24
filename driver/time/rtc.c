@@ -17,6 +17,8 @@
 #include <stdint.h>
 #include <driver.h>
 
+#include <rdi/arch.h>
+
 #include "time.h"
 
 static int from_bcd(uint8_t datum) {

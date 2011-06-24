@@ -21,7 +21,9 @@
 #include <mutex.h>
 #include <natio.h>
 #include <proc.h>
+
 #include <rdi/vfs.h>
+#include <rdi/arch.h>
 
 #include "time.h"
 

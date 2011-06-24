@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,27 +14,29 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <rdi/arch.h>
+
 #include <stdint.h>
 #include <stdlib.h>
-#include <driver.h>
 #include <abi.h>
 #include <ipc.h>
 
 /****************************************************************************
- * di_wrap_irq
+ * rdi_set_irq
  *
- * Registers <irq_wrapper> as an IRQ handler for IRQ number <irq>. If
- * <irq_wrapper> is null, the IRQs are queued as messages (so it is possible
- * to mwait() for them). Returns zero on success, nonzero on error.
+ * Registers <_irq> as an IRQ callback for IRQ number <irq>. If <_irq> is 
+ * null, the IRQs are queued as messages (so it is possible to mwait() for 
+ * them).
  */
 
-int di_wrap_irq(uint8_t irq, void (*irq_handler)(struct msg *msg)) {
+void rdi_set_irq(uint8_t irq, void (*_irq)(struct msg *msg)) {
 	
 	/* register IRQ redirect with kernel */
 	_rirq(irq);
 
 	/* register IRQ handler */
-	when(PORT_IRQ, irq_handler);
-
-	return 0;
+	when(PORT_IRQ, _irq);
+	_rdi_callback_irq = _irq;
 }
+
+void (*_rdi_callback_irq)(struct msg *msg);

@@ -19,7 +19,7 @@
 
 #include <rdi/util.h>
 
-/* resource structure *******************************************************/
+/* RDI resource structure ****************************************************/
 
 struct resource {
 	bool mutex;
@@ -57,7 +57,7 @@ struct resource *resource_cons(int type, int access);
 void             resource_free(struct resource *r);
 
 /******************************************************************************
- * resource indexing
+ * RDI resource indexing
  *
  * A central part of the RDI is the resource index. It is a table that maps
  * every resource to an index number, which is part of the resource pointer
@@ -81,7 +81,7 @@ struct resource *index_set(uint32_t index, struct resource *r);
 uint32_t         index_new(void);
 
 /******************************************************************************
- * driver callbacks
+ * RDI core driver callbacks
  *
  * Drivers that use RDI register their functionality with RDI by using these
  * functions. The functions set here are global for the driver, but may be
@@ -91,7 +91,6 @@ uint32_t         index_new(void);
  * to use adequate synchonization.
  */
 
-/* Core callbacks */
 void rdi_set_cons (struct resource *(*_cons)(uint64_t src, int type));
 void rdi_set_open (int (*_open) (uint64_t src, struct resource *obj));
 void rdi_set_close(int (*_close)(uint64_t src, struct resource *obj));
@@ -126,5 +125,16 @@ extern void (*_rdi_callback_lnksync)(struct resource *obj);
 void rdi_set_aclsync(void (*_aclsync)(struct resource *obj));
 
 extern void (*_rdi_callback_aclsync)(struct resource *obj);
+
+/*****************************************************************************
+ * RDI core handlers
+ */
+
+void rdi_init_core();
+void rdi_init_all();
+
+char *__rdi_cons_handler (uint64_t src, uint32_t idx, int argc, char **argv);
+char *__rdi_open_handler (uint64_t src, uint32_t idx, int argc, char **argv);
+char *__rdi_close_handler(uint64_t src, uint32_t idx, int argc, char **argv);
 
 #endif/*_RDI_CORE_H*/

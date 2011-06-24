@@ -29,8 +29,8 @@ int vfs_permit(struct resource *r, uint64_t source, int operation);
  * The RDI security model uses a series of access control lists. Each ACL
  * corresponds to a property of the caller, in this case PID and UID. There is
  * also a default access bitmap that is always in effect. The effective access
- * bitmap of a caller on a file is the access bitmaps of all ACLs ANDed 
- * together.
+ * bitmap of a caller on a file is the max access bitmaps of all ACLs ANDed
+ * together with the min access bitmaps of all ACLs ORed together.
  *
  * For example, if a driver wanted to grant write access to a file to a
  * specific set of users, the default access bitmap would be 
@@ -59,6 +59,12 @@ int vfs_permit(struct resource *r, uint64_t source, int operation);
  *
  *   rdi_set_dfl_access sets the default access bitmap for the resource.
  *
+ * Access bitmaps have two different fields: a max field and a min field. The
+ * max field indicates the maximum permissions that may be given in a situation,
+ * and the min field indicates the minimum permissions that may be given in a 
+ * situation. If the minimum is greater than the maximum, the minimum takes
+ * precedence.
+ *
  * Access bitmaps generally only contain three relevant bits: PERM_READ, 
  * PERM_WRITE, and PERM_ALTER (defined in <natio.h>.) However, it is 
  * guaranteed that RDI can accept up to eight bits total in an access bitmap.
@@ -68,10 +74,10 @@ int vfs_permit(struct resource *r, uint64_t source, int operation);
 
 int  rdi_access(struct resource *r, uint64_t source, int operation);
 
-void rdi_set_uid_access    (struct resource *r, uint32_t uid, int access);
-void rdi_set_uid_access_dfl(struct resource *r, int access);
-void rdi_set_pid_access    (struct resource *r, uint32_t pid, int access);
-void rdi_set_pid_access_dfl(struct resource *r, int access);
-void rdi_set_dfl_access    (struct resource *r, int access);
+void rdi_set_uid_access    (struct resource *r, uint32_t uid, int access_max, int access_min);
+void rdi_set_uid_access_dfl(struct resource *r, int access_max, int access_min);
+void rdi_set_pid_access    (struct resource *r, uint32_t pid, int access_max, int access_min);
+void rdi_set_pid_access_dfl(struct resource *r, int access_max, int access_min);
+void rdi_set_dfl_access    (struct resource *r, int access_max, int access_min);
 
 #endif/*_RDI_ACCESS_H*/

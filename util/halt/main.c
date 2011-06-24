@@ -14,11 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#include <rdi/arch.h>
 
 int main(int argc, char **argv) {
 	outb(0x64, 0xFE);
