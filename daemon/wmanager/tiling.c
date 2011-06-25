@@ -62,7 +62,7 @@ void update_tiling() {
 		width = main_window->width;
 	}
 	else {
-		resize_window(main_window, others ? (size_t) width : screen_width, screen_height, true);
+		resize_window(main_window, others ? width : screen_width, screen_height, true);
 	}
 
 	for (window = windows; window; window = window->next) {

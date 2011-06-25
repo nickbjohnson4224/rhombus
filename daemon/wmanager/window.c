@@ -118,30 +118,30 @@ void draw_window(struct window_t *window, int x1, int y1, int x2, int y2) {
 	}
 		
 	/* decorations */
-	for (size_t x = window->x > x1 ? window->x - 1 : x1;
-			(x < (window->x + window->width + 1)) && (x < (size_t) x2); x++) {
+	for (int x = window->x > x1 ? window->x - 1 : x1;
+			(x < (window->x + window->width + 1)) && (x < x2); x++) {
 		if (window->y > y1) {
 			for (int c = 0; c < 3; c++) {
 				screen[(x + (window->y - 1) * screen_width) * 4 + c] =
 					(window == active_window && c != 2) ? 0 : 0xff;
 			}
 		}
-		if (window->y + window->height < (size_t) y2) {
+		if (window->y + window->height < y2) {
 			for (int c = 0; c < 3; c++) {
 				screen[(x + (window->y + window->height) * screen_width) * 4 + c] =
 					(window == active_window && c != 2) ? 0 : 0xff;
 			}
 		}
 	}
-	for (size_t y = window->y >= y1 ? window->y : y1;
-			(y < (window->y + window->height)) && (y < (size_t) y2); y++) {
+	for (int y = window->y >= y1 ? window->y : y1;
+			(y < (window->y + window->height)) && (y < y2); y++) {
 		if (window->x > x1) {
 			for (int c = 0; c < 3; c++) {
 				screen[(window->x - 1 + y * screen_width) * 4 + c] =
 					(window == active_window && c != 2) ? 0 : 0xff;
 			}
 		}
-		if (window->x + window->width < (size_t) x2) {
+		if (window->x + window->width < x2) {
 			for (int c = 0; c < 3; c++) {
 				screen[(window->x + window->width + y * screen_width) * 4 + c] =
 					(window == active_window && c != 2) ? 0 : 0xff;
@@ -155,7 +155,7 @@ void draw_window(struct window_t *window, int x1, int y1, int x2, int y2) {
 void resize_window(struct window_t *window, int width, int height, bool notify) {
 	char *event_str;
 
-	if (window->width == (size_t) width && window->height == (size_t) height) {
+	if (window->width == width && window->height == height) {
 		return;
 	}
 

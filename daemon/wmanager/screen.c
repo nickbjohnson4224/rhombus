@@ -21,9 +21,9 @@
 #include <string.h>
 
 uint8_t *screen;
-size_t screen_width, screen_height;
+int screen_width, screen_height;
 
-void resize_screen(size_t width, size_t height) {
+void resize_screen(int width, int height) {
 	free(screen);
 
 	screen_width = width;
@@ -42,8 +42,8 @@ void update_screen(int x1, int y1, int x2, int y2) {
 
 	if (x1 < 0) x1 = 0;
 	if (y1 < 0) y1 = 0;
-	if (x2 > (int) screen_width) x2 = screen_width;
-	if (y2 > (int) screen_height) y2 = screen_height;
+	if (x2 > screen_width) x2 = screen_width;
+	if (y2 > screen_height) y2 = screen_height;
 	if (x1 > x2) return;
 	if (y1 > y2) return;
 
@@ -64,11 +64,11 @@ void update_screen(int x1, int y1, int x2, int y2) {
 	rcallf(vgafd, "syncrect %i %i %i %i", x1, y1, x2 - x1, y2 - y1);
 }
 
-void blit_bitmap(const uint8_t *bitmap, int tox, int toy, size_t width, size_t height, int x1, int y1, int x2, int y2) {
-	for (size_t y = toy >= y1 ? toy : y1; y < toy + height && y < (size_t) y2; y++) {
-		for (size_t x = tox >= x1 ? tox : x1; x < tox + width && x < (size_t) x2; x++) {
-			size_t screen_index = (x + y * screen_width) * 4;
-			size_t bitmap_index = ((x - tox) + (y - toy) * width) * 4;
+void blit_bitmap(const uint8_t *bitmap, int tox, int toy, int width, int height, int x1, int y1, int x2, int y2) {
+	for (int y = toy >= y1 ? toy : y1; y < toy + height && y < y2; y++) {
+		for (int x = tox >= x1 ? tox : x1; x < tox + width && x < x2; x++) {
+			int screen_index = (x + y * screen_width) * 4;
+			int bitmap_index = ((x - tox) + (y - toy) * width) * 4;
 			double alpha = bitmap[bitmap_index + 3] / 255.0;
 			for (int c = 0; c < 3; c++) {
 				screen[screen_index + c] = (1 - alpha) * screen[screen_index + c] +
