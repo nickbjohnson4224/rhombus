@@ -78,6 +78,7 @@ int add_window(uint32_t id) {
 	window->mutex = false;
 
 	add_to_list(window);
+	main_window = window;
 	update_tiling();
 
 	return 0;
