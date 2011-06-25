@@ -175,7 +175,7 @@ int wmanager_share(uint64_t source, uint32_t index, uint8_t *buffer, size_t size
 	if (!window) {
 		return -1;
 	}
-	if (size != window->width * window->height * 4) {
+	if ((int) size != window->width * window->height * 4) {
 		return -1;
 	}
 
@@ -288,7 +288,7 @@ void wmanager_graph_event(uint64_t source, int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-	size_t width, height;
+	int width, height;
 
 	stdout = stderr = fopen("/dev/serial", "w");
 

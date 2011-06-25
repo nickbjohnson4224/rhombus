@@ -33,9 +33,9 @@ void debug_char(char c) {
 		if (c == '\n') debug_char('\r');
 	#endif/*SCREEN == SERIAL*/
 
-	#if (SCREEN == VGA_FULL) || (SCREEN == VGA_LEFT)
+	#if (SCREEN == VGA_FULL) || (SCREEN == VGA_RIGHT)
 
-	#if SCREEN == VGA_LEFT
+	#if SCREEN == VGA_RIGHT
 		if (__vga_cursor_pos % 80 < 40) {
 			__vga_cursor_pos += 40;
 		}

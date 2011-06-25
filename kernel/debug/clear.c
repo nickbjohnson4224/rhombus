@@ -25,7 +25,7 @@
  */
 
 void debug_clear(void) {
-	#if (SCREEN == VGA_FULL) || (SCREEN == VGA_LEFT)
+	#if (SCREEN == VGA_FULL) || (SCREEN == VGA_RIGHT)
 	size_t i, j;
 	#endif
 	
@@ -36,7 +36,7 @@ void debug_clear(void) {
 			}
 		}
 	#endif
-	#if SCREEN == VGA_LEFT
+	#if SCREEN == VGA_RIGHT
 		for (i = 0; i < 25; i++) {
 			for (j = 40; j < 80; j++) {
 				__vga_video_mem[i*80+j] = (__vga_cursor_attr << 8) | ' ';
