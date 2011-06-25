@@ -35,8 +35,8 @@ void mouse_move(int16_t dx, int16_t dy) {
 
 	if (mousex + dx < 0) dx = -mousex;
 	if (mousey + dy < 0) dy = -mousey;
-	if (mousex + dx >= (int) screen_width) dx = screen_width - mousex - 1;
-	if (mousey + dy >= (int) screen_height) dy = screen_height - mousey - 1;
+	if (mousex + dx >= screen_width) dx = screen_width - mousex - 1;
+	if (mousey + dy >= screen_height) dy = screen_height - mousey - 1;
 
 	mousex += dx;
 	mousey += dy;
@@ -121,8 +121,8 @@ void activate_window() {
 
 	active_window = NULL;
 	for (window = windows; window; window = window->next) {
-		if (window->x - 1 <= mousex && mousex <= window->x + (int) window->width &&
-			window->y - 1 <= mousey && mousey <= window->y + (int) window->height) {
+		if (window->x - 1 <= mousex && mousex <= window->x + window->width &&
+			window->y - 1 <= mousey && mousey <= window->y + window->height) {
 			active_window = window;
 		}
 	}

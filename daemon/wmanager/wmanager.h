@@ -31,7 +31,7 @@ struct window_t {
 	uint32_t owner;
 	int flags;
 	int x, y;
-	size_t width, height;
+	int width, height;
 	uint8_t *bitmap;
 	bool mutex;
 	struct window_t *next, *prev;
@@ -39,7 +39,7 @@ struct window_t {
 
 extern uint64_t vgafd;
 extern uint8_t *screen;
-extern size_t screen_width, screen_height;
+extern int screen_width, screen_height;
 extern struct window_t *windows;
 extern struct window_t *active_window;
 extern struct window_t *main_window;
@@ -53,9 +53,9 @@ void resize_window(struct window_t *window, int width, int height, bool notify);
 void bring_to_front(struct window_t *window);
 void update_decorations(struct window_t *window);
 
-void resize_screen(size_t width, size_t height);
+void resize_screen(int width, int height);
 void update_screen(int x1, int y1, int x2, int y2);
-void blit_bitmap(const uint8_t *bitmap, int tox, int toy, size_t width, size_t height, int x1, int y1, int x2, int y2);
+void blit_bitmap(const uint8_t *bitmap, int tox, int toy, int width, int height, int x1, int y1, int x2, int y2);
 
 void mouse_move(int16_t dx, int16_t dy);
 void mouse_buttons(int buttons);

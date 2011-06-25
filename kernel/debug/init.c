@@ -36,7 +36,7 @@ void debug_init(void) {
 		outb(0x3FC, 0x0B);
 	#endif
 
-	#if (SCREEN == VGA_FULL) || (SCREEN == VGA_LEFT)
+	#if (SCREEN == VGA_FULL) || (SCREEN == VGA_RIGHT)
 		__vga_video_mem = (void*) (KSPACE + 0xB8000);
 		
 		__vga_cursor_base = 0;

@@ -31,9 +31,6 @@ void update_tiling() {
 			if (!main_window) {
 				main_window = window;
 			}
-			else {
-				others = true;
-			}
 			if (window != main_window) {
 				if (window->flags & CONSTANT_SIZE) {
 					height -= window->height + 2;
@@ -45,6 +42,7 @@ void update_tiling() {
 					last = window;
 					count++;
 				}
+				others = true;
 			}
 		}
 	}
@@ -62,7 +60,7 @@ void update_tiling() {
 		width = main_window->width;
 	}
 	else {
-		resize_window(main_window, others ? (size_t) width : screen_width, screen_height, true);
+		resize_window(main_window, others ? width : screen_width, screen_height, true);
 	}
 
 	for (window = windows; window; window = window->next) {
