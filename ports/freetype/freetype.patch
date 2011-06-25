@@ -33,7 +33,7 @@ diff -ruN freetype-2.4.4/fb_write.c myft/fb_write.c
 +
 +	if (!init_done) {
 +		FT_Init_FreeType(&library);
-+		FT_New_Face(library, "/etc/font.ttf", 0, &face);
++		FT_New_Face(library, "/etc/dejavu.ttf", 0, &face);
 +		init_done = true;
 +	}
 +
