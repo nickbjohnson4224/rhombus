@@ -180,8 +180,6 @@ void resize_window(struct window_t *window, int width, int height, bool notify) 
 		event_str = saprintf("graph resize %d %d", window->width, window->height);
 		event(RP_CONS(window->owner, 0), event_str);
 		free(event_str);
-//		event(RP_CONS(window->owner, 0), 0x3LL << 62 |
-//				(window->width & 0xffff) << 16 | (window->height & 0xffff));
 	}
 
 	mutex_free(&window->mutex);
