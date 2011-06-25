@@ -24,7 +24,7 @@
 
 void debug_scroll(size_t lines) {
 	
-	#if (SCREEN == VGA_FULL) || (SCREEN == VGA_LEFT)
+	#if (SCREEN == VGA_FULL) || (SCREEN == VGA_RIGHT)
 	size_t i, j;
 
 	for (i = 0; i <= 24 - lines; i++) {
@@ -32,7 +32,7 @@ void debug_scroll(size_t lines) {
 			for (j = 0; j < 80; j++) {
 				__vga_video_mem[i*80+j] = __vga_video_mem[(i+lines)*80+j];
 			}
-		#elif SCREEN == VGA_LEFT
+		#elif SCREEN == VGA_RIGHT
 			for (j = 40; j < 80; j++) {
 				__vga_video_mem[i*80+j] = __vga_video_mem[(i+lines)*80+j];
 			}
@@ -44,7 +44,7 @@ void debug_scroll(size_t lines) {
 			for (j = 0; j < 80; j++) {
 				__vga_video_mem[i*80+j] = 0;
 			}
-		#elif SCREEN == VGA_LEFT
+		#elif SCREEN == VGA_RIGHT
 			for (j = 40; j < 80; j++) {
 				__vga_video_mem[i*80+j] = 0;
 			}

@@ -24,7 +24,7 @@
 
 void debug_color(uint32_t color) {
 	
-	#if (SCREEN == VGA_FULL) || (SCREEN == VGA_LEFT)
+	#if (SCREEN == VGA_FULL) || (SCREEN == VGA_RIGHT)
 		__vga_cursor_attr = (COLOR_BLACK << 4) | color;
 	#endif
 

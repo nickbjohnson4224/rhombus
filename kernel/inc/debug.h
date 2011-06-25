@@ -26,20 +26,20 @@
  * possible settings:
  * NONE     - do not output from the kernel
  * VGA_FULL - use whole VGA text console for kernel output
- * VGA_LEFT - use (and scroll) only left half of VGA text console
+ * VGA_RIGHT - use (and scroll) only left half of VGA text console
  * SERIAL	- output via serial port
  */
 
 #define NONE 		1
 #define VGA_FULL	2
-#define VGA_LEFT	3
+#define VGA_RIGHT	3
 #define SERIAL		4
 
 #define SCREEN SERIAL
 
 /* debug screen state ******************************************************/
 
-#if (SCREEN == VGA_FULL) || (SCREEN == VGA_LEFT)
+#if (SCREEN == VGA_FULL) || (SCREEN == VGA_RIGHT)
 
 	extern uint16_t *__vga_video_mem;
 
@@ -79,7 +79,7 @@ void debug_color (uint32_t color);
 
 #endif
 
-#if (SCREEN == VGA_FULL) || (SCREEN == VGA_LEFT)
+#if (SCREEN == VGA_FULL) || (SCREEN == VGA_RIGHT)
 
 	#define COLOR_BLACK		0x00
 	#define COLOR_DBLUE		0x01

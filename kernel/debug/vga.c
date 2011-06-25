@@ -17,7 +17,7 @@
 #include <debug.h>
 #include <stdint.h>
 
-#if SCREEN == VGA_FULL || SCREEN == VGA_LEFT
+#if SCREEN == VGA_FULL || SCREEN == VGA_RIGHT
 
 /****************************************************************************
  * __vga_video_mem
