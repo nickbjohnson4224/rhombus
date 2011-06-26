@@ -99,21 +99,6 @@ extern struct resource *(*_rdi_callback_cons)(uint64_t src, int type);
 extern int (*_rdi_callback_open) (uint64_t src, struct resource *obj);
 extern int (*_rdi_callback_close)(uint64_t src, struct resource *obj);
 
-/* I/O callbacks */
-void rdi_set_read (size_t (*_read) (uint64_t src, uint32_t idx, uint8_t *buf, size_t size, uint64_t off));
-void rdi_set_write(size_t (*_write)(uint64_t src, uint32_t idx, uint8_t *buf, size_t size, uint64_t off));
-void rdi_set_reset(void   (*_reset)(uint64_t src, uint32_t idx));
-void rdi_set_sync (void   (*_sync) (uint64_t src, uint32_t idx));
-void rdi_set_share(void   (*_share)(uint64_t src, uint32_t idx, uint8_t *buf, size_t size, uint64_t off));
-void rdi_set_mmap (void  *(*_mmap) (uint64_t src, uint32_t idx, size_t size, uint64_t off, int prot));
-
-extern size_t (*_rdi_callback_read) (uint64_t src, uint32_t idx, uint8_t *buf, size_t size, uint64_t off);
-extern size_t (*_rdi_callback_write)(uint64_t src, uint32_t idx, uint8_t *buf, size_t size, uint64_t off);
-extern void   (*_rdi_callback_reset)(uint64_t src, uint32_t idx);
-extern void   (*_rdi_callback_sync) (uint64_t src, uint32_t idx);
-extern void   (*_rdi_callback_share)(uint64_t src, uint32_t idx);
-extern void   (*_rdi_callback_mmap) (uint64_t src, uint32_t idx, size_t size, uint64_t off, int prot);
-
 /* VFS callbacks */
 void rdi_set_dirsync(void (*_dirsync)(struct resource *obj));
 void rdi_set_lnksync(void (*_lnksync)(struct resource *obj));

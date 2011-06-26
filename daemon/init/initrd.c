@@ -15,14 +15,15 @@
  */
 
 #include <stdlib.h>
-#include <driver.h>
 #include <string.h>
 #include <stdio.h>
 #include <natio.h>
 #include <mutex.h>
 #include <proc.h>
 #include <ipc.h>
+
 #include <rdi/vfs.h>
+#include <rdi/io.h>
 
 #include "initrd.h"
 #include "inc/tar.h"
@@ -57,6 +58,6 @@ void initrd_init(void) {
 	root->size = tar_size(root->data);
 	index_set(0, root);
 
-	di_wrap_read(initrd_read);
+	rdi_set_read(initrd_read);
 	vfs_init();
 }

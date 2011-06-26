@@ -22,7 +22,9 @@
 #include <mutex.h>
 #include <proc.h>
 #include <ipc.h>
+
 #include <rdi/vfs.h>
+#include <rdi/io.h>
 
 #include "tarfs.h"
 
@@ -178,7 +180,7 @@ int main(int argc, char **argv) {
 	free(block);
 
 	/* set up interface */
-	di_wrap_read(tarfs_read);
+	rdi_set_read(tarfs_read);
 	vfs_set_cons(tarfs_cons);
 	vfs_init();
 

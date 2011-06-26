@@ -21,7 +21,9 @@
 #include <proc.h>
 #include <ipc.h>
 #include <abi.h>
+
 #include <rdi/vfs.h>
+#include <rdi/io.h>
 
 #include "tmpfs.h"
 
@@ -122,7 +124,7 @@ int main(int argc, char **argv) {
 	index_set(0, resource_cons(FS_TYPE_DIR, PERM_READ | PERM_WRITE));
 
 	/* set interface */
-	di_wrap_read (tmpfs_read);
+	rdi_set_read (tmpfs_read);
 	di_wrap_write(tmpfs_write);
 	di_wrap_reset(tmpfs_reset);
 	vfs_set_cons (tmpfs_cons);

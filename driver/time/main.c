@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -24,6 +24,7 @@
 
 #include <rdi/vfs.h>
 #include <rdi/arch.h>
+#include <rdi/io.h>
 
 #include "time.h"
 
@@ -46,7 +47,7 @@ int main(int argc, char **argv) {
 
 	index_set(0, resource_cons(FS_TYPE_FILE, PERM_READ));
 
-	di_wrap_read(time_read);
+	rdi_set_read(time_read);
 	vfs_init();
 
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);

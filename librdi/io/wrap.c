@@ -20,7 +20,6 @@
 
 /* wrapper function pointers ************************************************/
 
-size_t   (*_di_read) (uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off);
 size_t   (*_di_write)(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off);
 int      (*_di_reset)(uint64_t source, uint32_t index);
 int      (*_di_sync) (uint64_t source, uint32_t index);
@@ -28,13 +27,6 @@ uint64_t (*_di_size) (uint64_t source, uint32_t index);
 int      (*_di_share)(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off);
 
 /* wrapper registering functions ********************************************/
-
-int di_wrap_read(size_t (*di_read)
-		(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off)) {
-	when(PORT_READ, __read_wrapper);
-	_di_read = di_read;
-	return 0;
-}
 
 int di_wrap_write(size_t (*di_write)
 		(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off)) {

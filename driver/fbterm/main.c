@@ -22,7 +22,9 @@
 #include <stdio.h>
 #include <proc.h>
 #include <exec.h>
+
 #include <rdi/vfs.h>
+#include <rdi/io.h>
 
 size_t fbterm_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
 	size_t i;
@@ -178,7 +180,7 @@ int main(int argc, char **argv) {
 	rcall_set("set_fgcolor", fbterm_rcall_set_fgcolor);
 	rcall_set("set_bgcolor", fbterm_rcall_set_bgcolor);
 	di_wrap_write(fbterm_write);
-	di_wrap_read (fbterm_read);
+	rdi_set_read(fbterm_read);
 	vfs_init();
 
 	// launch shell
