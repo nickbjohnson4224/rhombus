@@ -18,7 +18,6 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <driver.h>
 #include <stdio.h>
 #include <proc.h>
 #include <exec.h>
@@ -179,8 +178,8 @@ int main(int argc, char **argv) {
 	rcall_set("set_fgjob", fbterm_rcall_set_fgjob);
 	rcall_set("set_fgcolor", fbterm_rcall_set_fgcolor);
 	rcall_set("set_bgcolor", fbterm_rcall_set_bgcolor);
-	di_wrap_write(fbterm_write);
-	rdi_set_read(fbterm_read);
+	rdi_set_write(fbterm_write);
+	rdi_set_read (fbterm_read);
 	vfs_init();
 
 	// launch shell

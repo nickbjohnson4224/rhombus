@@ -15,12 +15,12 @@
  */
 
 #include <stdlib.h>
-#include <driver.h>
 #include <mutex.h>
 #include <proc.h>
 
 #include <rdi/vfs.h>
 #include <rdi/arch.h>
+#include <rdi/io.h>
 
 #define PORT 0x3f8 // COM1
 
@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
 	outb(PORT + 2, 0xC7); // Enable FIFO, clear them, with 14-byte threshold
 	outb(PORT + 4, 0x0B);
 
-	di_wrap_write(serial_write);
+	rdi_set_write(serial_write);
 	vfs_init();
 
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);

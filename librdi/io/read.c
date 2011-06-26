@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -31,7 +31,7 @@
  * <_m_callback_read>. Do not modify directly.
  */
 
-size_t (*_rdi_callback_read)(uint64_t src, uint32_t idx, uint8_t *buf, size_t size, uint64_t off);
+static size_t (*_rdi_callback_read)(uint64_t src, uint32_t idx, uint8_t *buf, size_t size, uint64_t off);
 static bool _m_callback_read;
 
 /*****************************************************************************

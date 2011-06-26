@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
 
 	/* set interface */
 	rdi_set_read (tmpfs_read);
-	di_wrap_write(tmpfs_write);
+	rdi_set_write(tmpfs_write);
 	di_wrap_reset(tmpfs_reset);
 	vfs_set_cons (tmpfs_cons);
 	vfs_set_free (tmpfs_free);

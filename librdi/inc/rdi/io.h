@@ -29,13 +29,6 @@ void rdi_set_sync (void   (*_sync) (uint64_t src, uint32_t idx));
 void rdi_set_share(void   (*_share)(uint64_t src, uint32_t idx, uint8_t *buf, size_t size, uint64_t off));
 void rdi_set_mmap (void  *(*_mmap) (uint64_t src, uint32_t idx, size_t size, uint64_t off, int prot));
 
-extern size_t (*_rdi_callback_read) (uint64_t src, uint32_t idx, uint8_t *buf, size_t size, uint64_t off);
-extern size_t (*_rdi_callback_write)(uint64_t src, uint32_t idx, uint8_t *buf, size_t size, uint64_t off);
-extern void   (*_rdi_callback_reset)(uint64_t src, uint32_t idx);
-extern void   (*_rdi_callback_sync) (uint64_t src, uint32_t idx);
-extern void   (*_rdi_callback_share)(uint64_t src, uint32_t idx);
-extern void   (*_rdi_callback_mmap) (uint64_t src, uint32_t idx, size_t size, uint64_t off, int prot);
-
 /* RDI I/O handlers *********************************************************/
 
 void rdi_init_io();
