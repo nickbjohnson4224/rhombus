@@ -43,56 +43,43 @@ For 0.9 Alpha:
 + file locking
 + top/ps equivalent
 + proper session/controlling tty stuff
-- file opening/closing
+- RDI
+	+ I/O interface
+	- VFS interface
+	- core interface
+	- security interface
+	- event interface
 - pipe driver
 - shell pipe support
 - stdio buffering
-
-For 0.10 Alpha:
-
 - better shared memory architecture
-- write fenv.h, tgmath.h
-- copy-on-write
 - dynamic linking
 - device manager (PCI)
-- finalize VFS security
 - ATA/ATAPI driver
 - iso9660 driver
 - ext2 driver
 - FAT32 driver
-- curses port
-
-For 0.11 Alpha:
-
-- finalize RNG API
-- finalize mutex API
-- user/password manager
-- login manager
-- decent shell (POSIX-compliant)
-- finalize native I/O API
-- finalize driver API
-- libc documentation
-- kernel documentation
-- driver writing manual
-- user manual
-
-For 0.12 Alpha:
-
-- text editor (port vim?)
-- finalize core utilities
-- installer
-- POSIX compatibility
-- self-hosting toolchain (port GCC?)
-- installer
-- real hardware testing
 
 For 1.0 Beta:
 
+- curses port
+- user/password manager
+- login manager
+- decent shell (POSIX-compliant)
+- libc documentation
+- kernel documentation
+- driver writing manual
+- text editor (port vim?)
+- self-hosting toolchain (port GCC?)
+- installer
+- real hardware testing
 - window manager
-- window manager API finalized
 - GUI toolkit
-- GUI and window manager documentation
 - port SDL
+
+For 1.1 Beta:
+
+- POSIX compatibility
 - networking stack
 - native networking API
 - POSIX socket API
