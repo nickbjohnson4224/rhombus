@@ -26,8 +26,6 @@
 #include <rdi/vfs.h>
 #include <rdi/io.h>
 
-#include "tarfs.h"
-
 static FILE *parent = NULL;
 
 /****************************************************************************
@@ -182,7 +180,7 @@ int main(int argc, char **argv) {
 	/* set up interface */
 	rdi_set_read(tarfs_read);
 	vfs_set_cons(tarfs_cons);
-	vfs_init();
+	rdi_init_all();
 
 	/* daemonize */
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);

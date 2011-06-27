@@ -17,11 +17,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <driver.h>
 #include <mutex.h>
 #include <natio.h>
 #include <proc.h>
 
+#include <rdi/core.h>
 #include <rdi/vfs.h>
 #include <rdi/arch.h>
 #include <rdi/io.h>
@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
 	index_set(0, resource_cons(FS_TYPE_FILE, PERM_READ));
 
 	rdi_set_read(time_read);
-	vfs_init();
+	rdi_init_all();
 
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 	_done();

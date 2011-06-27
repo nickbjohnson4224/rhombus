@@ -16,15 +16,16 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <driver.h>
 #include <stdio.h>
 #include <mutex.h>
 #include <page.h>
 #include <proc.h>
 #include <ipc.h>
 
+#include <rdi/core.h>
 #include <rdi/vfs.h>
 #include <rdi/arch.h>
+#include <rdi/io.h>
 
 #include "svga.h"
 
@@ -128,15 +129,8 @@ char *svga_rcall_syncrect(uint64_t source, uint32_t index, int argc, char **argv
 	return strdup("T");
 }
 
-int svga_sync(uint64_t source, uint32_t index) {
-
-	if (!buffer) {
-		return -1;
-	}
-
+void svga_sync(uint64_t source, uint32_t index) {
 	svga_flip(buffer);
-
-	return 0;
 }
 
 int svga_share(uint64_t source, uint32_t index, uint8_t *_buffer, size_t size, uint64_t off) {
@@ -188,9 +182,9 @@ int main(int argc, char **argv) {
 	rcall_set("register",   svga_rcall_register);
 	rcall_set("deregister", svga_rcall_deregister);
 	rcall_set("syncrect",   svga_rcall_syncrect);
-	di_wrap_sync (svga_sync);
-	di_wrap_share(svga_share);
-	vfs_init();
+	rdi_set_sync (svga_sync);
+	rdi_set_share(svga_share);
+	rdi_init_all();
 
 	/* register the driver as /dev/svga0 */
 	fs_plink("/dev/svga0", RP_CONS(getpid(), 0), NULL);

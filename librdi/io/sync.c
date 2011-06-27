@@ -25,58 +25,51 @@
 #include <ipc.h>
 
 /*****************************************************************************
- * _rdi_callback_write
+ * _rdi_callback_sync
  *
- * Write callback currently registered by the driver. Protected by the mutex
- * <_m_callback_write>. Do not modify directly.
+ * Sync callback currently registered by the driver. Protected by the mutex
+ * <_m_callback_sync>. Do not modify directly.
  */
 
-static size_t (*_rdi_callback_write)(uint64_t src, uint32_t idx, uint8_t *buf, size_t size, uint64_t off);
-static bool _m_callback_write;
+static void (*_rdi_callback_sync)(uint64_t src, uint32_t idx);
+static bool _m_callback_sync;
 
 /*****************************************************************************
- * rdi_set_write
+ * rdi_set_sync
  *
- * Set the write callback in a thread-safe manner.
+ * Set the sync callback in a thread-safe manner.
  */
 
-void rdi_set_write(size_t (*_write)(uint64_t src, uint32_t idx, uint8_t *buf, size_t size, uint64_t off)) {
+void rdi_set_sync(void (*_sync)(uint64_t src, uint32_t idx)) {
 	
-	mutex_spin(&_m_callback_write);
-	_rdi_callback_write = _write;
-	mutex_free(&_m_callback_write);
+	mutex_spin(&_m_callback_sync);
+	_rdi_callback_sync = _sync;
+	mutex_free(&_m_callback_sync);
 }
 
 /*****************************************************************************
- * __rdi_write_handler
+ * __rdi_sync_handler
  *
- * Handles and redirects write requests to the write callback. See 
- * natio/write.c for protocol details.
+ * Handles and redirects sync requests to the sync callback. See natio/sync.c 
+ * for protocol details.
  */
 
-void __rdi_write_handler(struct msg *msg) {
+void __rdi_sync_handler(struct msg *msg) {
 	struct resource *file;
-	uint64_t offset;
 
-	if (msg->length < sizeof(uint64_t)) {
-		/* message is the wrong length */
+	mutex_spin(&_m_callback_sync);
+
+	if (!_rdi_callback_sync) {
+		/* no sync callback */
+		mutex_free(&_m_callback_sync);
 		merror(msg);
 		return;
 	}
-
-	mutex_spin(&_m_callback_write);
-
-	if (!_rdi_callback_write) {
-		/* no write callback */
-		mutex_free(&_m_callback_write);
-		merror(msg);
-		return;
-	}
-
+	
 	file = index_get(RP_INDEX(msg->target));
 	if (!file) {
 		/* file not found */
-		mutex_free(&_m_callback_write);
+		mutex_free(&_m_callback_sync);
 		merror(msg);
 		return;
 	}
@@ -85,30 +78,26 @@ void __rdi_write_handler(struct msg *msg) {
 
 	if (!vfs_permit(file, msg->source, PERM_WRITE)) {
 		/* access denied */
-		mutex_free(&_m_callback_write);
+		mutex_free(&_m_callback_sync);
 		mutex_free(&file->mutex);
 		merror(msg);
 		return;
 	}
 
-	if (!(file->type & FS_TYPE_FILE)) {
+	if (!FS_IS_FILE(file->type)) {
 		/* resource is not a file */
-		mutex_free(&_m_callback_write);
+		mutex_free(&_m_callback_sync);
 		mutex_free(&file->mutex);
 		merror(msg);
 		return;
 	}
 
-	/* extract parameter */
-	offset = ((uint64_t*) msg->data)[0];
+	/* call sync callback */
+	_rdi_callback_sync(msg->source, RP_INDEX(msg->target));
 
-	/* call write callback */
-	((uint32_t*) msg->data)[0] = _rdi_callback_write(msg->source, RP_INDEX(msg->target), 
-		&msg->data[8], msg->length - 8, offset);
-	msg->length = sizeof(uint32_t);
-
-	mutex_free(&_m_callback_write);
+	mutex_free(&_m_callback_sync);
 	mutex_free(&file->mutex);
 
-	mreply(msg);
+	/* note: errors are the same as valid replies */
+	merror(msg);
 }

@@ -18,6 +18,7 @@
 #include <mutex.h>
 #include <proc.h>
 
+#include <rdi/core.h>
 #include <rdi/vfs.h>
 #include <rdi/arch.h>
 #include <rdi/io.h>
@@ -53,7 +54,7 @@ int main(int argc, char **argv) {
 	outb(PORT + 4, 0x0B);
 
 	rdi_set_write(serial_write);
-	vfs_init();
+	rdi_init_all();
 
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 	_done();

@@ -17,13 +17,14 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <driver.h>
 #include <mutex.h>
 #include <stdio.h>
 #include <exec.h>
 #include <proc.h>
 #include <page.h>
+
 #include <rdi/vfs.h>
+#include <rdi/io.h>
 
 #include "wmanager.h"
 
@@ -188,13 +189,10 @@ int wmanager_share(uint64_t source, uint32_t index, uint8_t *buffer, size_t size
 	return 0;
 }
 
-int wmanager_sync(uint64_t source, uint32_t index) {
+void wmanager_sync(uint64_t source, uint32_t index) {
 	struct window_t *window = find_window(index, RP_PID(source));
-	if (!window) {
-		return -1;
-	}
+
 	update_screen(window->x - 1, window->y - 1, window->x + window->width + 1, window->y + window->height + 1);
-	return 0;
 }
 
 struct resource *wmanager_cons(uint64_t source, int type) {
@@ -310,10 +308,10 @@ int main(int argc, char **argv) {
 	rcall_set("setwindowflags", wmanager_rcall_setwindowflags);
 	rcall_set("syncrect",       wmanager_rcall_syncrect);
 
-	di_wrap_share(wmanager_share);
-	di_wrap_sync (wmanager_sync);
-	vfs_set_cons(wmanager_cons);
-	vfs_init();
+	rdi_set_share(wmanager_share);
+	rdi_set_sync (wmanager_sync);
+	vfs_set_cons (wmanager_cons);
+	rdi_init_all();
 
 	fs_plink("/sys/wmanager", RP_CONS(getpid(), 0), NULL);
 

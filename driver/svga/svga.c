@@ -18,7 +18,6 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <driver.h>
 #include <graph.h>
 #include <page.h>
 
@@ -136,7 +135,6 @@ int svga_set_mode(int mode) {
 	eventl(event_list, event);
 	free(event);
 	
-//	eventl(event_list, 0x3LL << 62 | svga.w << 16 | svga.h);
 	return 0;
 }
 

@@ -22,6 +22,7 @@
 #include <proc.h>
 #include <ipc.h>
 
+#include <rdi/core.h>
 #include <rdi/vfs.h>
 #include <rdi/io.h>
 
@@ -59,5 +60,5 @@ void initrd_init(void) {
 	index_set(0, root);
 
 	rdi_set_read(initrd_read);
-	vfs_init();
+	rdi_init_all();
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,6 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
-#include <string.h>
-#include <stdlib.h>
+#include <rdi/core.h>
+#include <rdi/io.h>
+
+#include <ipc.h>
+
+void rdi_init_io() {
+
+	/* set all message handlers */
+	when(PORT_READ,  __rdi_read_handler);
+	when(PORT_WRITE, __rdi_write_handler);
+	when(PORT_RESET, __rdi_reset_handler);
+	when(PORT_SYNC,  __rdi_sync_handler);
+	when(PORT_SHARE, __rdi_share_handler);
+}

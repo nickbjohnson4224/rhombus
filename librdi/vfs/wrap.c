@@ -14,7 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
+#include <rdi/core.h>
+#include <rdi/vfs.h>
+
 #include <stdint.h>
 #include <ipc.h>
 

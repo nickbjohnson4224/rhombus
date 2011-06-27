@@ -22,6 +22,7 @@
 #include <proc.h>
 #include <exec.h>
 
+#include <rdi/core.h>
 #include <rdi/vfs.h>
 #include <rdi/io.h>
 
@@ -180,7 +181,7 @@ int main(int argc, char **argv) {
 	rcall_set("set_bgcolor", fbterm_rcall_set_bgcolor);
 	rdi_set_write(fbterm_write);
 	rdi_set_read (fbterm_read);
-	vfs_init();
+	rdi_init_all();
 
 	// launch shell
 	pid = fork();

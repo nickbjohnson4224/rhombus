@@ -16,16 +16,14 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <driver.h>
 #include <mutex.h>
 #include <proc.h>
 #include <ipc.h>
 #include <abi.h>
 
+#include <rdi/core.h>
 #include <rdi/vfs.h>
 #include <rdi/io.h>
-
-#include "tmpfs.h"
 
 uint8_t tmpfs_index_top = 1;
 
@@ -95,7 +93,7 @@ size_t tmpfs_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t size
 	return size;
 }
 
-int tmpfs_reset(uint64_t source, uint32_t index) {
+void tmpfs_reset(uint64_t source, uint32_t index) {
 	struct resource *file;
 
 	file = index_get(index);
@@ -105,8 +103,6 @@ int tmpfs_reset(uint64_t source, uint32_t index) {
 		file->size = 0;
 		file->data = NULL;
 	}
-
-	return 0;
 }
 
 /****************************************************************************
@@ -126,10 +122,10 @@ int main(int argc, char **argv) {
 	/* set interface */
 	rdi_set_read (tmpfs_read);
 	rdi_set_write(tmpfs_write);
-	di_wrap_reset(tmpfs_reset);
+	rdi_set_reset(tmpfs_reset);
 	vfs_set_cons (tmpfs_cons);
 	vfs_set_free (tmpfs_free);
-	vfs_init();
+	rdi_init_all();
 
 	/* daemonize */
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);

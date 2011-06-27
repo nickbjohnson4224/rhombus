@@ -17,8 +17,6 @@
 #ifndef INIT_INITRD_H
 #define INIT_INITRD_H
 
-#include <driver.h>
-
 void initrd_init(void);
 
 #endif/*INIT_INITRD_H*/

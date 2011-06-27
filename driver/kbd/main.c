@@ -14,12 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <driver.h>
 #include <stdlib.h>
 #include <string.h>
 #include <mutex.h>
 #include <proc.h>
 
+#include <rdi/core.h>
 #include <rdi/vfs.h>
 #include <rdi/arch.h>
 
@@ -174,7 +174,7 @@ int main(int argc, char **argv) {
 	rcall_set  ("register",   kbd_rcall_register);
 	rcall_set  ("deregister", kbd_rcall_deregister);
 	rdi_set_irq(1, kbd_irq);
-	vfs_init();
+	rdi_init_all();
 
 	fs_plink("/dev/kbd", RP_CONS(getpid(), 0), NULL);
 

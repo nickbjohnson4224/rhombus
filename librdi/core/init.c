@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,45 +16,20 @@
 
 #include <rdi/core.h>
 #include <rdi/access.h>
+#include <rdi/vfs.h>
+#include <rdi/io.h>
 
-#include <driver.h>
-#include <stdlib.h>
-#include <mutex.h>
 #include <natio.h>
-#include <proc.h>
-#include <ipc.h>
 
-/*****************************************************************************
- * __sync_wrapper
- *
- * Handles and redirects sync requests to the current active driver.
- */
-
-void __sync_wrapper(struct msg *msg) {
-	struct resource *file;
-
-	if (!_di_sync) {
-		merror(msg);
-		return;
-	}
+void rdi_init_core() {
 	
-	file = index_get(RP_INDEX(msg->target));
-	if (!file) {
-		merror(msg);
-		return;
-	}
+//	rcall_set("cons",  __rdi_cons_handler);
+//	rcall_set("open",  __rdi_open_handler);
+//	rcall_set("close", __rdi_close_handler);
+}
 
-	mutex_spin(&file->mutex);
-
-	if (!vfs_permit(file, msg->source, PERM_WRITE)) {
-		mutex_free(&file->mutex);
-		merror(msg);
-		return;
-	}
-
-	_di_sync(msg->source, RP_INDEX(msg->target));
-
-	mutex_free(&file->mutex);
-
-	merror(msg); // errors are the same as valid replies
+void rdi_init_all() {
+	
+	rdi_init_io();
+	vfs_init();
 }

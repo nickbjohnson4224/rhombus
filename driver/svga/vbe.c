@@ -18,7 +18,7 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <driver.h>
+
 #include <rdi/arch.h>
 
 struct vbe_ctrlinfo *svga_ctrl = (void*) 0x10000;

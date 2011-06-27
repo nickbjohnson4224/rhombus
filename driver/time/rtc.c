@@ -15,7 +15,6 @@
  */
 
 #include <stdint.h>
-#include <driver.h>
 
 #include <rdi/arch.h>
 

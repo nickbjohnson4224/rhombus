@@ -45,9 +45,6 @@ void rdi_set_read(size_t (*_read)(uint64_t src, uint32_t idx, uint8_t *buf, size
 	mutex_spin(&_m_callback_read);
 	_rdi_callback_read = _read;
 	mutex_free(&_m_callback_read);
-
-	/* also make sure the read handler is registered */
-	when(PORT_READ, __rdi_read_handler);
 }
 
 /*****************************************************************************

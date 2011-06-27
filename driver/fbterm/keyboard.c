@@ -20,7 +20,6 @@
 #include <signal.h>
 #include <string.h>
 #include <stdlib.h>
-#include <driver.h>
 #include <mutex.h>
 #include <proc.h>
 

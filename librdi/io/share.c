@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,17 +15,47 @@
  */
 
 #include <rdi/core.h>
+#include <rdi/io.h>
 #include <rdi/access.h>
 
-#include <driver.h>
 #include <stdlib.h>
-#include <mutex.h>
 #include <natio.h>
+#include <mutex.h>
 #include <proc.h>
 #include <page.h>
 #include <ipc.h>
 
-void __share_wrapper(struct msg *msg) {
+/*****************************************************************************
+ * _rdi_callback_share
+ *
+ * Share callback currently registered by the driver. Protected by the mutex
+ * <_m_callback_share>. Do not modify directly.
+ */
+
+static int (*_rdi_callback_share)(uint64_t src, uint32_t idx, uint8_t *buf, size_t size, uint64_t off);
+static bool _m_callback_share;
+
+/*****************************************************************************
+ * rdi_set_share
+ *
+ * Set the share callback in a thread-safe manner.
+ */
+
+void rdi_set_share(int (*_share)(uint64_t src, uint32_t idx, uint8_t *buf, size_t size, uint64_t off)) {
+	
+	mutex_spin(&_m_callback_share);
+	_rdi_callback_share = _share;
+	mutex_free(&_m_callback_share);
+}
+
+/*****************************************************************************
+ * __rdi_share_handler
+ *
+ * Handles and redirects share requests to the share callback. See 
+ * libc/natio/share.c for protocol details.
+ */
+
+void __rdi_share_handler(struct msg *msg) {
 	struct resource *file;
 	uint64_t offset;
 	uint8_t err;
@@ -37,19 +67,29 @@ void __share_wrapper(struct msg *msg) {
 		return;
 	}
 
-	if (!_di_share) {
+	mutex_spin(&_m_callback_share);
+
+	if (!_rdi_callback_share) {
+		/* no share callback */
+		mutex_free(&_m_callback_share);
 		merror(msg);
 		return;
 	}
 
 	file = index_get(RP_INDEX(msg->target));
-
 	if (!file) {
+		/* file not found */
+		mutex_free(&_m_callback_share);
 		merror(msg);
 		return;
 	}
 
+	mutex_spin(&file->mutex);
+
 	if (!vfs_permit(file, msg->source, PERM_WRITE)) {
+		/* access denied */
+		mutex_free(&_m_callback_share);
+		mutex_free(&file->mutex);
 		merror(msg);
 		return;
 	}
@@ -59,9 +99,14 @@ void __share_wrapper(struct msg *msg) {
 	pages = aalloc(msg->length - PAGESZ + sizeof(struct msg), PAGESZ);
 	page_self(&msg->data[PAGESZ - sizeof(struct msg)], pages, msg->length - PAGESZ + sizeof(struct msg));
 
-	err = _di_share(msg->source, RP_INDEX(msg->target), 
+	/* call share callback */
+	err = _rdi_callback_share(msg->source, RP_INDEX(msg->target),
 		pages, msg->length - PAGESZ + sizeof(struct msg), offset);
 
+	mutex_free(&_m_callback_share);
+	mutex_free(&file->mutex);
+	
+	/* reply with error code */
 	msg->data[0] = err;
 	msg->length = 1;
 	mreply(msg);
