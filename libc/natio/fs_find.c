@@ -56,7 +56,7 @@ uint64_t fs_find(const char *path) {
 	path_s = path_simplify(path);
 	if (!path_s) return 0;
 
-	reply = rcallf(root, "fs_find %s", path_s);
+	reply = rcallf(root, "find %s", path_s);
 	free(path_s);
 
 	if (!reply) {

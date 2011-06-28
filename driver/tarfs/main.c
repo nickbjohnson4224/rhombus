@@ -179,7 +179,7 @@ int main(int argc, char **argv) {
 
 	/* set up interface */
 	rdi_set_read(tarfs_read);
-	vfs_set_cons(tarfs_cons);
+	rdi_set_cons(tarfs_cons);
 	rdi_init_all();
 
 	/* daemonize */

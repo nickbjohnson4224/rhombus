@@ -65,7 +65,7 @@ int rp_link(uint64_t dir, const char *name, uint64_t link) {
 		return 1;
 	}
 
-	reply = rcallf(dir, "fs_link %s %r", name, link);
+	reply = rcallf(dir, "link %s %r", name, link);
 
 	if (!reply) {
 		errno = ENOSYS;

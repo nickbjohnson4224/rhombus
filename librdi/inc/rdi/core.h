@@ -95,16 +95,9 @@ void rdi_set_cons (struct resource *(*_cons)(uint64_t src, int type));
 void rdi_set_open (int (*_open) (uint64_t src, struct resource *obj));
 void rdi_set_close(int (*_close)(uint64_t src, struct resource *obj));
 
-extern struct resource *(*_rdi_callback_cons)(uint64_t src, int type);
-extern int (*_rdi_callback_open) (uint64_t src, struct resource *obj);
-extern int (*_rdi_callback_close)(uint64_t src, struct resource *obj);
-
-/* VFS callbacks */
-void rdi_set_dirsync(void (*_dirsync)(struct resource *obj));
-void rdi_set_lnksync(void (*_lnksync)(struct resource *obj));
-
-extern void (*_rdi_callback_dirsync)(struct resource *obj);
-extern void (*_rdi_callback_lnksync)(struct resource *obj);
+extern struct resource *(*__rdi_callback_cons)(uint64_t src, int type);
+extern int (*__rdi_callback_open) (uint64_t src, struct resource *obj);
+extern int (*__rdi_callback_close)(uint64_t src, struct resource *obj);
 
 /* Access callbacks */
 void rdi_set_aclsync(void (*_aclsync)(struct resource *obj));
@@ -115,11 +108,13 @@ extern void (*_rdi_callback_aclsync)(struct resource *obj);
  * RDI core handlers
  */
 
-void rdi_init_core();
-void rdi_init_all();
+void rdi_init_core(void);
+void rdi_init_all(void);
 
 char *__rdi_cons_handler (uint64_t src, uint32_t idx, int argc, char **argv);
 char *__rdi_open_handler (uint64_t src, uint32_t idx, int argc, char **argv);
 char *__rdi_close_handler(uint64_t src, uint32_t idx, int argc, char **argv);
+char *__rdi_type_handler (uint64_t src, uint32_t idx, int argc, char **argv);
+char *__rdi_size_handler (uint64_t src, uint32_t idx, int argc, char **argv);
 
 #endif/*_RDI_CORE_H*/

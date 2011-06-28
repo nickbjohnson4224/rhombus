@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef VFS_H
-#define VFS_H
+#ifndef _RDI_VFS_H
+#define _RDI_VFS_H
 
 #include <rdi/util.h>
 #include <rdi/core.h>
@@ -28,7 +28,6 @@ struct vfs_node {
 
 	// associated resource (i.e. hard link)
 	struct resource *resource;
-
 	// name
 	char *name;
 
@@ -46,43 +45,26 @@ int              vfs_unlink(struct vfs_node *dir, const char *name);
 
 int vfs_add(struct resource *root, const char *path, struct resource *obj);
 
-int vfs_init(void);
-
-/* virtual filesystem request wrapper ****************************************
- *
- * The VFS request wrapper contains three functions that may be provided by
- * the driver for use by the VFS. Their behavior is as follows:
- *
- * _vfs_cons (set by vfs_set_free)
- *
- * This function creates a new resource of the given type <type> and returns
- * a pointer to the resource structure on success (NULL on failure). This is
- * used by the VFS when a request for a new file, directory, etc. is recieved.
- *
- * _vfs_sync (set by vfs_set_sync)
- *
- * This function synchronizes the contents of a VFS directory structure
- * with its corresponding directory resource. If there are any differences
- * between the VFS directory structure of the given resource and the
- * directory contents of that resource, the resource's version is modified.
- * This is used by the VFS whenever a directory structure is modified by
- * a request, but not when it is modified internally, i.e. by vfs_add.
- *
- * _vfs_free (set by vfs_set_free)
- *
- * This function destroys the given resource. If this function is not defined
- * by the driver, the VFS instead free()'s the resource and it's directory
- * structure and ACL, which is only appropriate if no other memory is in any
- * way allocated to the resource (which is rare except for directories in 
- * tmpfs)
+/*****************************************************************************
+ * RDI VFS driver callbacks
  */
 
-int vfs_set_cons(struct resource *(*vfs_cons)(uint64_t source, int type));
-int vfs_set_sync(int (*vfs_sync)(uint64_t source, struct resource *obj));
-int vfs_set_free(int (*vfs_free)(uint64_t source, struct resource *obj));
+void rdi_set_dirsync(void (*_dirsync)(struct resource *obj));
+void rdi_set_lnksync(void (*_dirsync)(struct resource *obj));
 
-extern struct resource *(*_vfs_cons)(uint64_t source, int type);
-extern int              (*_vfs_sync)(uint64_t source, struct resource *obj);
-extern int              (*_vfs_free)(uint64_t source, struct resource *obj);
+extern void (*__rdi_callback_dirsync)(struct resource *obj);
+extern void (*__rdi_callback_lnksync)(struct resource *obj);
 
-#endif/*VFS_H*/
+/*****************************************************************************
+ * RDI VFS handlers
+ */
+
+void rdi_init_vfs(void);
+int vfs_init(void);
+
+char *__rdi_find_handler   (uint64_t src, uint32_t idx, int argc, char **argv);
+char *__rdi_link_handler   (uint64_t src, uint32_t idx, int argc, char **argv);
+char *__rdi_list_handler   (uint64_t src, uint32_t idx, int argc, char **argv);
+char *__rdi_symlink_handler(uint64_t src, uint32_t idx, int argc, char **argv);
+
+#endif/*_RDI_VFS_H*/

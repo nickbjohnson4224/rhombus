@@ -14,24 +14,23 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <rdi/core.h>
-#include <rdi/access.h>
-#include <rdi/vfs.h>
 #include <rdi/io.h>
+#include <rdi/vfs.h>
 
-#include <natio.h>
+/*****************************************************************************
+ * __rdi_callback_dirsync
+ *
+ * Directory sync callback currently registered by the driver.
+ */
 
-void rdi_init_core() {
-	
-	rcall_set("cons",  __rdi_cons_handler);
-//	rcall_set("open",  __rdi_open_handler);
-//	rcall_set("close", __rdi_close_handler);
-}
+void (*__rdi_callback_dirsync)(struct resource *obj);
 
-void rdi_init_all() {
+/*****************************************************************************
+ * rdi_set_dirsync
+ *
+ * Set the directory sync callback.
+ */
 
-	rdi_init_core();
-	rdi_init_io();
-	rdi_init_vfs();
-	vfs_init();
+void rdi_set_dirsync(void (*_dirsync)(struct resource *obj)) {	
+	__rdi_callback_dirsync = _dirsync;
 }

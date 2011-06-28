@@ -14,10 +14,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <rdi/core.h>
 #include <rdi/vfs.h>
+#include <rdi/access.h>
 
 #include <stdlib.h>
 #include <string.h>
+#include <natio.h>
 #include <mutex.h>
 #include <proc.h>
 
@@ -121,4 +124,102 @@ int vfs_link(struct vfs_node *dir, const char *name, struct resource *r) {
 	r->vfs_refcount++;
 
 	return 0;
+}
+
+/*****************************************************************************
+ * __rdi_link_handler
+ */
+
+char *__rdi_link_handler(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct resource *dir;
+	struct resource *r;
+	const char *name;
+	uint64_t link;
+	int err;
+
+	if (argc < 3) {
+		return NULL;
+	}
+
+	/* find directory */
+	dir = index_get(index);
+	if (!dir) return strdup("! nfound");
+
+	if (!FS_IS_DIR(dir->type) || !dir->vfs) {
+		/* dir is not a directory */
+		return strdup("! type");
+	}
+
+	if (!vfs_permit(dir, source, PERM_WRITE)) {
+		/* permission denied */
+		return strdup("! denied");
+	}
+
+	/* parse arguments */
+	name = argv[1];
+	link = ator(argv[2]);
+
+	if (link) {
+		/* create new link */
+		
+		if (RP_PID(link) != getpid()) {
+			/* link is outside current driver */
+			return strdup("! extern");
+		}
+
+		/* find resource to be linked */
+		r = index_get(RP_INDEX(link));
+		if (!r) return strdup("! nfound");
+
+		if (FS_IS_DIR(r->type) && r->vfs_refcount) {
+			/* cannot link directories that are already linked */
+			return strdup("! type");
+		}
+
+		/* create link */
+		mutex_spin(&dir->vfs->mutex);
+		mutex_spin(&r->mutex);
+		err = vfs_link(dir->vfs, name, r);
+		mutex_free(&r->mutex);
+
+		if (err) {
+			mutex_free(&dir->vfs->mutex);
+			return strdup("! link");
+		}
+
+		/* synchronize with driver */
+		mutex_spin(&dir->mutex);
+		if (__rdi_callback_dirsync) __rdi_callback_dirsync(dir);
+		mutex_free(&dir->mutex);
+		mutex_free(&dir->vfs->mutex);
+
+		return strdup("T");
+	}
+	else {
+
+		/* find linked resource */
+		r = vfs_find(dir->vfs, name, NULL);
+		
+		/* delete link */
+		mutex_spin(&dir->vfs->mutex);
+		err = vfs_unlink(dir->vfs, name);
+		mutex_free(&dir->vfs->mutex);
+
+		switch (err) {
+		case 0: break;
+		case 1: return strdup("! type");
+		case 2: return strdup("! nfound");
+		case 3: return strdup("! notempty");
+		default: return NULL;
+		}
+
+		/* if refcount is zero, free resource */
+		if (r->vfs_refcount == 0) {
+			/* this should be replaced with a close from source 0 */
+//			if (_vfs_free) _vfs_free(source, r);
+//			else resource_free(r);
+		}
+
+		return strdup("T");
+	}
 }

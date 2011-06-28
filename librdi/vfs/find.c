@@ -69,3 +69,54 @@ struct resource *vfs_find(struct vfs_node *root, const char *path_str, const cha
 
 	return NULL;
 }
+
+/*****************************************************************************
+ * __rdi_find_handler
+ */
+
+char *__rdi_find_handler(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct resource *root;
+	struct resource *file;
+	const char *path;
+	const char *tail;
+	bool link;
+
+	if (argc <= 1) return NULL;
+
+	// check for follow link flag
+	if (argc == 2) {
+		link = false;
+		path = argv[1];
+	}
+	else if (!strcmp(argv[1], "-L")) {
+		link = true;
+		path = argv[2];
+	}
+	else {
+		return NULL;
+	}
+
+	// find root node
+	root = index_get(index);
+	if (!root) return strdup("! nfound");
+
+	// find resource
+	if (!root->vfs && (path[0] == '\0' || (path[0] == '/' && path[1] == '\0'))) {
+		file = root;
+		tail = NULL;
+	}
+	else {
+		file = vfs_find(root->vfs, path, &tail);
+	}
+
+	if (!file) return strdup("! nfound");
+
+	if (file->symlink && !(!tail && link)) {
+		/* return redirect to symlink */
+		return saprintf(">> %s/%s", file->symlink, (tail) ? tail : "");
+	}
+	else {
+		/* return resource pointer */
+		return rtoa(RP_CONS(getpid(), file->index));
+	}
+}

@@ -14,53 +14,58 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <rdi/core.h>
+#include <rdi/vfs.h>
+#include <rdi/access.h>
+
 #include <stdlib.h>
+#include <string.h>
+#include <mutex.h>
 #include <natio.h>
-#include <errno.h>
 
 /*****************************************************************************
- * fs_list
- *
- * Gives the name of the entry of number <entry> in the directory <dir>.
- * Returns a copy of that string on success, NULL on failure.
+ * __rdi_symlink_handler
  */
 
-char *rp_list(uint64_t dir) {
-	char *reply;
+char *__rdi_symlink_handler(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct resource *r;
+	char *symlink;
 
-	reply = rcall(dir, "list");
-	
-	if (!reply) {
-		return strdup("");
-	}
-
-	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! denied"))	errno = EACCES;
-		else if (!strcmp(reply, "! nfound"))	errno = ENOENT;
-		else if (!strcmp(reply, "! nosys"))		errno = ENOSYS;
-		else									errno = EUNK;
-		free(reply);
+	if (argc < 2) {
 		return NULL;
 	}
+
+	r = index_get(index);
+	if (!r) {
+		/* link not found */
+		return strdup("! nfound");
+	}
+
+	/* get arguments */
+	symlink = argv[1];
+
+	mutex_spin(&r->mutex);
 	
-	return reply;
-}
-
-char *fs_list(const char *path) {
-	uint64_t dir;
-
-	if (path) {
-		dir = fs_find(path);
-
-		if (!dir) {
-			return NULL;
-		}
-	}
-	else {
-		dir = fs_root;
+	if (!FS_IS_LINK(r->type)) {
+		/* not a link */
+		mutex_free(&r->mutex);
+		return strdup("! type");
 	}
 
-	return rp_list(dir);
+	if (!vfs_permit(r, source, PERM_WRITE)) {
+		/* access denied */
+		mutex_free(&r->mutex);
+		return strdup("! denied");
+	}
+
+	/* replace symlink contents */
+	if (r->symlink) free(r->symlink);
+	r->symlink = strdup(symlink);
+
+	/* notify driver of change */
+	if (__rdi_callback_lnksync) __rdi_callback_lnksync(r);
+
+	mutex_free(&r->mutex);
+
+	return strdup("T");
 }

@@ -14,24 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <rdi/core.h>
-#include <rdi/access.h>
 #include <rdi/vfs.h>
-#include <rdi/io.h>
 
 #include <natio.h>
 
-void rdi_init_core() {
+void rdi_init_vfs(void) {
 	
-	rcall_set("cons",  __rdi_cons_handler);
-//	rcall_set("open",  __rdi_open_handler);
-//	rcall_set("close", __rdi_close_handler);
-}
-
-void rdi_init_all() {
-
-	rdi_init_core();
-	rdi_init_io();
-	rdi_init_vfs();
-	vfs_init();
+	rcall_set("find", __rdi_find_handler);
+	rcall_set("link", __rdi_link_handler);
+	rcall_set("list", __rdi_list_handler);
+	rcall_set("symlink", __rdi_symlink_handler);
 }

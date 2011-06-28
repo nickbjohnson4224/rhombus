@@ -310,7 +310,7 @@ int main(int argc, char **argv) {
 
 	rdi_set_share(wmanager_share);
 	rdi_set_sync (wmanager_sync);
-	vfs_set_cons (wmanager_cons);
+	rdi_set_cons (wmanager_cons);
 	rdi_init_all();
 
 	fs_plink("/sys/wmanager", RP_CONS(getpid(), 0), NULL);

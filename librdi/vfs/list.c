@@ -14,10 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <rdi/core.h>
 #include <rdi/vfs.h>
+#include <rdi/access.h>
 
 #include <string.h>
 #include <stdlib.h>
+#include <natio.h>
+#include <mutex.h>
 
 /*****************************************************************************
  * vfs_list
@@ -46,6 +50,47 @@ char *vfs_list(struct vfs_node *dir) {
 		free(old);
 		daughter = daughter->sister1;
 	}
+
+	return list;
+}
+
+/*****************************************************************************
+ * __rdi_list_handler
+ */
+
+char *__rdi_list_handler(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct resource *dir;
+	char *list;
+
+	if (argc != 1) {
+		return NULL;
+	}
+
+	/* find directory */
+	dir = index_get(index);
+
+	if (!dir) {
+		return strdup("! nfound");
+	}
+
+	mutex_spin(&dir->mutex);
+
+	if (!(dir->type & FS_TYPE_DIR)) {
+		/* not a directory */
+		mutex_free(&dir->mutex);
+		return strdup("! notdir");
+	}
+
+	if (!vfs_permit(dir, source, PERM_READ)) {
+		/* permission denied */
+		mutex_free(&dir->mutex);
+		return strdup("! denied");
+	}
+
+	mutex_spin(&dir->vfs->mutex);
+	list = vfs_list(dir->vfs);
+	mutex_free(&dir->vfs->mutex);
+	mutex_free(&dir->mutex);
 
 	return list;
 }

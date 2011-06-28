@@ -48,14 +48,6 @@ struct resource *tmpfs_cons(uint64_t source, int type) {
 	return fobj;
 }
 
-int tmpfs_free(uint64_t source, struct resource *obj) {
-
-	if (obj->data) free(obj->data);
-	resource_free(obj);
-
-	return 0;
-}
-
 size_t tmpfs_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
 	struct resource *file;
 
@@ -123,8 +115,7 @@ int main(int argc, char **argv) {
 	rdi_set_read (tmpfs_read);
 	rdi_set_write(tmpfs_write);
 	rdi_set_reset(tmpfs_reset);
-	vfs_set_cons (tmpfs_cons);
-	vfs_set_free (tmpfs_free);
+	rdi_set_cons (tmpfs_cons);
 	rdi_init_all();
 
 	/* daemonize */
