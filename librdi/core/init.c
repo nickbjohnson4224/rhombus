@@ -26,6 +26,8 @@ void rdi_init_core() {
 	rcall_set("cons",  __rdi_cons_handler);
 //	rcall_set("open",  __rdi_open_handler);
 //	rcall_set("close", __rdi_close_handler);
+	rcall_set("type",  __rdi_type_handler);
+	rcall_set("size",  __rdi_size_handler);
 }
 
 void rdi_init_all() {

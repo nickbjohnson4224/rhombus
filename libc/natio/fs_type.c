@@ -34,7 +34,7 @@ int rp_type(uint64_t fobj) {
 		return 0;
 	}
 
-	reply = rcall(fobj, "fs_type");
+	reply = rcall(fobj, "type");
 
 	if (!reply) {
 		errno = ENOSYS;

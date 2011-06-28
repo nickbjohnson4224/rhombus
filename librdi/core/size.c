@@ -14,53 +14,48 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
+#include <rdi/core.h>
+#include <rdi/access.h>
+
 #include <string.h>
-#include <stdlib.h>
-#include <natio.h>
-#include <errno.h>
+#include <mutex.h>
 
 /*****************************************************************************
- * rp_size
+ * __rdi_size_handler
  *
- * Returns the file size of <file>. If this value is zero, the file may not
- * exist, be the wrong type, or be a character device. fs_type can be used to 
- * differentiate between these cases.
+ * Notes:
+ *
+ * XXX:
+ * This function returns the size as two colon-separated decimal integers,
+ * due to the current printf's inability to print 64-bit unsigned integers.
+ * When it is capable, this should be fixed.
  */
 
-uint64_t rp_size(uint64_t file) {
+char *__rdi_size_handler(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct resource *r;
 	uint64_t size;
-	uint32_t size0, size1;
-	char *reply;
 
-	if (!file) {
-		return 0;
+	r = index_get(index);
+	if (!r) {
+		/* file not found */
+		return strdup("! nfound");
 	}
 
-	reply = rcall(file, "size");
-
-	if (!reply) {
-		errno = ENOSYS;
-		return 0;
+	mutex_spin(&r->mutex);
+	if (!vfs_permit(r, source, PERM_READ)) {
+		/* permission denied */
+		mutex_free(&r->mutex);
+		return strdup("! denied");
 	}
 
-	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nfound")) errno = ENOENT;
-		else if (!strcmp(reply, "! nosys"))  errno = ENOSYS;
-		else if (!strcmp(reply, "! denied")) errno = EACCES;
-		else                                 errno = EUNK;
-		free(reply);
-		return 0;
+	if (!FS_IS_FILE(r->type) || (r->type & FS_TYPE_CHAR) != 0) {
+		/* is not a file or is a character file */
+		mutex_free(&r->mutex);
+		return strdup("! type");
 	}
 
-	size0 = 0;
-	sscanf(reply, "%u:%u", &size0, &size1);
-	size = size1 | (uint64_t) size0 << 32;
-	free(reply);
+	size = r->size;
+	mutex_free(&r->mutex);
 
-	return size;
-}
-
-uint64_t fs_size(const char *path) {
-	return rp_size(fs_find(path));
+	return saprintf("%d:%d", (uint32_t) (size >> 32), (uint32_t) size);
 }

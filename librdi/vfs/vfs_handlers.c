@@ -27,7 +27,6 @@
 #include <ipc.h>
 
 static char *_size_handler(uint64_t source, uint32_t index, int argc, char **argv);
-static char *_type_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_getperm_handler(uint64_t source, uint32_t index, int argc, char **argv);
 static char *_setperm_handler(uint64_t source, uint32_t index, int argc, char **argv);
 
@@ -40,7 +39,6 @@ static char *_setperm_handler(uint64_t source, uint32_t index, int argc, char **
 
 int vfs_init(void) {
 
-	rcall_set("fs_type", _type_handler);
 	rcall_set("fs_size", _size_handler);
 	rcall_set("fs_getperm", _getperm_handler);
 	rcall_set("fs_setperm", _setperm_handler);
@@ -70,23 +68,6 @@ static char *_size_handler(uint64_t source, uint32_t index, int argc, char **arg
 	mutex_free(&r->mutex);
 
 	return saprintf("%d:%d", (uint32_t) (size >> 32), (uint32_t) size);
-}
-
-static char *_type_handler(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct resource *r;
-	char *reply;
-
-	r = index_get(index);
-
-	if (!r) {
-		return strdup("! nfound");
-	}
-
-	reply = malloc(sizeof(char) * 2);
-	reply[1] = '\0';
-	reply[0] = typechar(r->type);
-
-	return reply;
 }
 
 static char *_getperm_handler(uint64_t source, uint32_t index, int argc, char **argv) {
