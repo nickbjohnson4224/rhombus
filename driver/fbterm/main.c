@@ -129,7 +129,7 @@ int main(int argc, char **argv) {
 	int pid;
 
 	if (argc < 3) {
-		wmanager = fs_find("/sys/wmanager");
+		wmanager = fs_open("/sys/wmanager");
 		if (!wmanager) {
 			fprintf(stderr, "%s: couldn't find wmanager\n", argv[0]);
 			return 1;
@@ -145,8 +145,8 @@ int main(int argc, char **argv) {
 		}
 	}
 	else {
-		kbd_dev = fs_find(argv[1]);
-		fb_dev  = fs_find(argv[2]);
+		kbd_dev = fs_open(argv[1]);
+		fb_dev  = fs_open(argv[2]);
 
 		if (!kbd_dev) {
 			fprintf(stderr, "%s: %s: keyboard not found\n", argv[0], argv[1]);

@@ -80,6 +80,9 @@ FILE *fopen(const char *path, const char *mode) {
 		}
 	}
 
+	/* set file as open */
+	rp_open(fd);
+
 	/* reset the file contents */
 	if (mode[0] == 'w') {
 		reset(fd);
