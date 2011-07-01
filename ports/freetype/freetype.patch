@@ -56,7 +56,7 @@ diff -ruN freetype-2.4.4/fb_write.c myft/fb_write.c
 +				red   = alpha * PIX_R(foreground) + (1 - alpha) * PIX_R(background);
 +				green = alpha * PIX_G(foreground) + (1 - alpha) * PIX_G(background);
 +				blue  = alpha * PIX_B(foreground) + (1 - alpha) * PIX_B(background);
-+				fb_plot(fb, x + cursorx + i , y + j + (height - bitmap->rows), COLOR(red, green, blue));
++				fb_plot(fb, x + cursorx + i + face->glyph->bitmap_left, y + j + (height - face->glyph->bitmap_top), COLOR(red, green, blue));
 +			}
 +		}
 +		cursorx += face->glyph->advance.x >> 6;
