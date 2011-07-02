@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -196,7 +196,7 @@ frame_t frame_new(void) {
  *
  * Note: This function uses the kernel heap, even though the frame allocator
  * is not set up when it is called. The boot pool hack in frame_new takes
- * care of this, allocating permanent frames from the lower 4 MB instead of
+ * care of this, allocating permanent frames from the lower 8 MB instead of
  * ones in the real allocator. Once this function is called (i.e. once the
  * allocator contains at least one real frame) the real allocator is 
  * initialized.
@@ -205,8 +205,8 @@ frame_t frame_new(void) {
 void frame_add(frame_t frame) {
 	struct frame_struct *fs;
 
-	/* reject frames from below 4 MB */
-	if (frame / PAGESZ <= 1024) {
+	/* reject frames within the kernel boot region */
+	if (frame >= KERNEL_BOOT && frame < KERNEL_BOOT_END) {
 		return;
 	}
 
