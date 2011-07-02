@@ -121,8 +121,8 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	}
 
 	/* touch pages for the kernel heap */
-	for (i = KSPACE; i < KERNEL_HEAP_END; i += SEGSZ) {
-		page_touch(i);
+	for (i = KSPACE; i < KERNEL_HEAP_END; i += PAGESZ) {
+		page_set(i, page_fmt(i - KSPACE, PF_PRES | PF_RW));
 	}
 
 	/* parse the multiboot memory map to find the size of memory */
