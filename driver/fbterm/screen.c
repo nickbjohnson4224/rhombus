@@ -22,7 +22,7 @@
 #include <graph.h>
 
 struct screen screen = {
-	NULL,
+	8,
 	NULL,
 	COLOR_WHITE,
 	COLOR_BLACK,
@@ -42,8 +42,8 @@ int screen_resize(uint32_t x, uint32_t y) {
 	old_w = screen.w;
 	old_h = screen.h;
 
-	screen.w = x / screen.font->w;
-	screen.h = y / screen.font->h;
+	screen.w = x / screen.font_size;
+	screen.h = y / screen.font_size;
 	screen.cell = malloc(sizeof(struct cell) * screen.w * screen.h);
 
 	fb_resize(fb, x, y);
@@ -122,8 +122,8 @@ int screen_flip(void) {
 
 	for (i = 0; i < screen.w * screen.h; i++) {
 		if (screen.cell[i].dirty) {
-			draw_cell(screen.font, &screen.cell[i], 
-				(i % screen.w) * screen.font->w, (i / screen.w) * screen.font->h);
+			draw_cell(&screen.cell[i], 
+				(i % screen.w) * screen.font_size, (i / screen.w) * screen.font_size);
 			screen.cell[i].dirty = 0;
 		}
 	}
@@ -137,8 +137,8 @@ int screen_sync(void) {
 	int i;
 
 	for (i = 0; i < screen.w * screen.h; i++) {
-		draw_cell(screen.font, &screen.cell[i], 
-			(i % screen.w) * screen.font->w, (i / screen.w) * screen.font->h);
+		draw_cell(&screen.cell[i], 
+			(i % screen.w) * screen.font_size, (i / screen.w) * screen.font_size);
 		screen.cell[i].dirty = 0;
 	}
 

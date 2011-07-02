@@ -22,38 +22,18 @@
 
 struct fb *fb = NULL;
 
-int draw_cell(struct font *font, struct cell *c, int x, int y) {
-	struct glyph *glyph;
-	uint32_t *bitmap;
-	int i;
+int draw_cell(struct cell *c, int x, int y) {
+	int i, j;
 
-	if (!font || !c) {
-		return 1;
-	}
-
-	if (c->ch >= font->count) {
-		glyph = font->def_glyph;
-	}
-	else {
-		glyph = font->glyph[c->ch];
-
-		if (!glyph) {
-			glyph = font->def_glyph;
-			if (!glyph) {
-				return 1;
-			}
+	for (j = y; j < y + screen.font_size; j++) {
+		for (i = x; i < x + screen.font_size; i++) {
+			fb_plot(fb, i, j, c->bg);
 		}
 	}
 
-	// construct bitmap
-	bitmap = malloc(sizeof(uint32_t) * glyph->w * glyph->h);
-	for (i = 0; i < glyph->w * glyph->h; i++) {
-		bitmap[i] = (glyph->value[i]) ? c->fg : c->bg;
+	if (c->ch == ' ') {
+		return 0;
 	}
 
-	// blit onto framebuffer
-	fb_blit(fb, bitmap, x, y, glyph->w, glyph->h);
-	free(bitmap);
-
-	return 0;
+	return fb_write(fb, x, y, screen.font_size, (char*) &c->ch, 1, c->fg, c->bg);
 }

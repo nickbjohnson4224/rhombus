@@ -120,7 +120,6 @@ void fbterm_graph_event(uint64_t source, int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-	struct font *font;
 	uint64_t kbd_dev;
 	uint64_t fb_dev;
 	uint64_t wmanager;
@@ -163,8 +162,6 @@ int main(int argc, char **argv) {
 
 	// set up screen
 	fb = fb_cons(fb_dev);
-	font = font_load("builtin");
-	screen.font = font;
 	fb_getmode(fb, &w, &h);
 	screen_resize(w, h);
 	screen_flip();

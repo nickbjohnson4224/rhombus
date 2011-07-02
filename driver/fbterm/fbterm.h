@@ -26,18 +26,6 @@ extern struct fb *fb;
 
 /* font rendering ***********************************************************/
 
-struct glyph {
-	int w, h; 		 // width/height of glyph
-	uint8_t value[]; // contents of glyph (alpha channel)
-};
-
-struct font {
-	int w, h;					// width/height of glyphs (maximum)
-	uint32_t count;				// size of glyph vector
-	struct glyph *def_glyph;	// default glyph
-	struct glyph *glyph[];		// glyphs in order
-};
-
 struct cell {
 	uint32_t fg; // foreground color
 	uint32_t bg; // background color
@@ -45,14 +33,12 @@ struct cell {
 	uint32_t dirty;
 };
 
-int draw_cell(struct font *font, struct cell *c, int x, int y);
-
-struct font *font_load(const char *path);
+int draw_cell(struct cell *c, int x, int y);
 
 /* screen contents **********************************************************/
 
 extern struct screen {
-	struct font *font;
+	int font_size;
 	struct cell *cell;
 	uint32_t fg;
 	uint32_t bg;
