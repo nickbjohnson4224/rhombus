@@ -167,8 +167,14 @@ int main(int argc, char **argv) {
 	index_set(0, resource_cons(FS_TYPE_FILE | FS_TYPE_CHAR, PERM_READ | PERM_WRITE));
 
 	// get font size
-	FT_Init_FreeType(&library);
-	FT_New_Face(library, "/etc/dejavu.ttf", 0, &face);
+	if (FT_Init_FreeType(&library)) {
+		fprintf(stderr, "%s: initing FreeType failed\n", argv[0]);
+		return 1;
+	}
+	if (FT_New_Face(library, "/etc/dejavu.ttf", 0, &face)) {
+		fprintf(stderr, "%s: loading font /etc/dejavu.ttf failed\n", argv[0]);
+		return 1;
+	}
 	screen.cell_width  = ceil(face->max_advance_width  / (double) face->units_per_EM * screen.font_size) + 1;
 	screen.cell_height = ceil(face->max_advance_height / (double) face->units_per_EM * screen.font_size) + 1;
 	FT_Done_FreeType(library);
