@@ -45,8 +45,9 @@
 	#define KERNEL_HEAP     (KSPACE + 0x01000000)
 	#define KERNEL_HEAP_END (KSPACE + 0x08000000)
 
-	/* physical address of emergency frames */
-	#define BOOT_POOL	0x00400000
+	/* physical address of kernel boot frames */
+	#define KERNEL_BOOT		0x00000000
+	#define KERNEL_BOOT_END	0x00800000
 
 	/** These must remain in order **/
 	#define SSPACE	0x80000000	/* Stack space */

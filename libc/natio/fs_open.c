@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,53 +14,60 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include <natio.h>
 #include <errno.h>
 
 /*****************************************************************************
- * rp_size
+ * rp_open
  *
- * Returns the file size of <file>. If this value is zero, the file may not
- * exist, be the wrong type, or be a character device. fs_type can be used to 
- * differentiate between these cases.
+ * Indicates to the driver that the resource <rp> is in use by this process.
+ * Returns zero on success, nonzero on error.
  */
 
-uint64_t rp_size(uint64_t file) {
-	uint64_t size;
-	uint32_t size0, size1;
+int rp_open(uint64_t rp) {
 	char *reply;
 
-	if (!file) {
-		return 0;
-	}
-
-	reply = rcall(file, "size");
+	reply = rcall(rp, "open");
 
 	if (!reply) {
 		errno = ENOSYS;
-		return 0;
+		return 1;
 	}
 
 	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nfound")) errno = ENOENT;
-		else if (!strcmp(reply, "! nosys"))  errno = ENOSYS;
-		else if (!strcmp(reply, "! denied")) errno = EACCES;
-		else                                 errno = EUNK;
+		if      (!strcmp(reply, "! nosys"))		errno = ENOSYS;
+		else if (!strcmp(reply, "! denied"))	errno = EACCES;
+		else if (!strcmp(reply, "! nfound"))	errno = ENOENT;
+		else									errno = EUNK;
 		free(reply);
+		return 1;
+	}
+
+	free(reply);
+	return 0;
+}
+
+/*****************************************************************************
+ * fs_open
+ *
+ * Attempt to open the resource at <path>. Returns a pointer to the opened
+ * resource on success, zero on error.
+ */
+
+uint64_t fs_open(const char *path) {
+	uint64_t rp;
+
+	rp = fs_find(path);
+
+	if (!rp) {
 		return 0;
 	}
 
-	size0 = 0;
-	sscanf(reply, "%u:%u", &size0, &size1);
-	size = size1 | (uint64_t) size0 << 32;
-	free(reply);
+	if (rp_open(rp)) {
+		return 0;
+	}
 
-	return size;
-}
-
-uint64_t fs_size(const char *path) {
-	return rp_size(fs_find(path));
+	return rp;
 }

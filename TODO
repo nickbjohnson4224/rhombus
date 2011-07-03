@@ -45,7 +45,7 @@ For 0.9 Alpha:
 + proper session/controlling tty stuff
 - RDI
 	+ I/O interface
-	- VFS interface
+	+ VFS interface
 	- core interface
 	- security interface
 	- event interface

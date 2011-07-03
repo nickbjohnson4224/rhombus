@@ -125,6 +125,11 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 		page_set(i, page_fmt(i - KSPACE, PF_PRES | PF_RW));
 	}
 
+	/* identity map kernel boot frames */
+	for (i = KSPACE + KERNEL_BOOT; i < KSPACE + KERNEL_BOOT_END; i += PAGESZ) {
+		page_set(i, page_fmt(i - KSPACE, PF_PRES | PF_RW));
+	}
+
 	/* parse the multiboot memory map to find the size of memory */
 	mem_map       = (void*) (mboot->mmap_addr + KSPACE);
 	mem_map_count = mboot->mmap_length / sizeof(struct memory_map);

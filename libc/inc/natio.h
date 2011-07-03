@@ -60,6 +60,8 @@ int    share(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot);
 
 uint64_t rp_cons (uint64_t driver, int type);
 uint64_t rp_size (uint64_t rp);
+int      rp_open (uint64_t rp);
+int      rp_close(uint64_t rp);
 
 /*****************************************************************************
  * resource types
@@ -120,6 +122,7 @@ uint64_t fs_lfind(const char *path);
 uint64_t fs_cons (const char *path, int type);
 char    *fs_list (const char *path);
 uint64_t fs_size (const char *path);
+uint64_t fs_open (const char *path);
 
 char    *rp_list (uint64_t dir);
 

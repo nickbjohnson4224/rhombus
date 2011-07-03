@@ -40,6 +40,7 @@ char *rp_list(uint64_t dir) {
 		if      (!strcmp(reply, "! denied"))	errno = EACCES;
 		else if (!strcmp(reply, "! nfound"))	errno = ENOENT;
 		else if (!strcmp(reply, "! nosys"))		errno = ENOSYS;
+		else if (!strcmp(reply, "! type"))		errno = ENOTDIR;
 		else									errno = EUNK;
 		free(reply);
 		return NULL;
