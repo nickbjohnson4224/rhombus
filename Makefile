@@ -9,7 +9,7 @@ PORTS    := $(shell find ports  -mindepth 1 -maxdepth 1)
 APPS     := $(shell find apps   -mindepth 1 -maxdepth 1)
 
 BIN_DIRS  = kernel fish
-BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS) $(PORTS) $(APPS)
+BIN_DIRS += $(PORTS) $(DRIVERS) $(DAEMONS) $(UTILS) $(APPS)
 
 CC := clang -m32
 LD := i586-pc-rhombus-ld
