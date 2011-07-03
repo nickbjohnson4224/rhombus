@@ -94,35 +94,14 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	debug_init();
 	debug_printf("Rhombus Operating System Kernel v0.8a\n");
 
-	/* register fault handlers */
-	int_set_handler(FAULT_DE, fault_float);
-	int_set_handler(FAULT_DB, fault_generic);
-	int_set_handler(FAULT_NI, fault_generic);
-	int_set_handler(FAULT_BP, fault_generic);
-	int_set_handler(FAULT_OF, fault_generic);
-	int_set_handler(FAULT_BR, fault_generic);
-	int_set_handler(FAULT_UD, fault_generic);
-	int_set_handler(FAULT_NM, fault_nomath);
-	int_set_handler(FAULT_DF, fault_double);
-	int_set_handler(FAULT_CO, fault_float);
-	int_set_handler(FAULT_TS, fault_generic);
-	int_set_handler(FAULT_NP, fault_generic);
-	int_set_handler(FAULT_SS, fault_generic);
-	int_set_handler(FAULT_GP, fault_gpf);
-	int_set_handler(FAULT_PF, fault_page);
-	int_set_handler(FAULT_MF, fault_float);
-	int_set_handler(FAULT_AC, fault_generic);
-	int_set_handler(FAULT_MC, fault_generic);
-	int_set_handler(FAULT_XM, fault_nomath);
-
 	/* check multiboot header */
 	if (mboot_magic != 0x2BADB002) {
 		debug_panic("bootloader is not multiboot compliant");
 	}
 
 	/* touch pages for the kernel heap */
-	for (i = KSPACE; i < KERNEL_HEAP_END; i += PAGESZ) {
-		page_set(i, page_fmt(i - KSPACE, PF_PRES | PF_RW));
+	for (i = KSPACE; i < KERNEL_HEAP_END; i += SEGSZ) {
+		page_touch(i);
 	}
 
 	/* identity map kernel boot frames */
@@ -206,6 +185,27 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	int_set_handler(SYSCALL_KILL, syscall_kill);
 	int_set_handler(SYSCALL_VM86, syscall_vm86);
 	int_set_handler(SYSCALL_NAME, syscall_name);
+
+	/* register fault handlers */
+	int_set_handler(FAULT_DE, fault_float);
+	int_set_handler(FAULT_DB, fault_generic);
+	int_set_handler(FAULT_NI, fault_generic);
+	int_set_handler(FAULT_BP, fault_generic);
+	int_set_handler(FAULT_OF, fault_generic);
+	int_set_handler(FAULT_BR, fault_generic);
+	int_set_handler(FAULT_UD, fault_generic);
+	int_set_handler(FAULT_NM, fault_nomath);
+	int_set_handler(FAULT_DF, fault_double);
+	int_set_handler(FAULT_CO, fault_float);
+	int_set_handler(FAULT_TS, fault_generic);
+	int_set_handler(FAULT_NP, fault_generic);
+	int_set_handler(FAULT_SS, fault_generic);
+	int_set_handler(FAULT_GP, fault_gpf);
+	int_set_handler(FAULT_PF, fault_page);
+	int_set_handler(FAULT_MF, fault_float);
+	int_set_handler(FAULT_AC, fault_generic);
+	int_set_handler(FAULT_MC, fault_generic);
+	int_set_handler(FAULT_XM, fault_nomath);
 
 	/* start timer (for preemption) */
 	timer_set_freq(256);
