@@ -21,10 +21,14 @@
 #include <stdio.h>
 #include <proc.h>
 #include <exec.h>
+#include <math.h>
 
 #include <rdi/core.h>
 #include <rdi/vfs.h>
 #include <rdi/io.h>
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 size_t fbterm_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
 	size_t i;
@@ -120,7 +124,8 @@ void fbterm_graph_event(uint64_t source, int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-	struct font *font;
+	FT_Library library;
+	FT_Face face;
 	uint64_t kbd_dev;
 	uint64_t fb_dev;
 	uint64_t wmanager;
@@ -161,10 +166,15 @@ int main(int argc, char **argv) {
 
 	index_set(0, resource_cons(FS_TYPE_FILE | FS_TYPE_CHAR, PERM_READ | PERM_WRITE));
 
+	// get font size
+	FT_Init_FreeType(&library);
+	FT_New_Face(library, "/etc/dejavu.ttf", 0, &face);
+	screen.cell_width  = ceil(face->max_advance_width  / (double) face->units_per_EM * screen.font_size) + 1;
+	screen.cell_height = ceil(face->max_advance_height / (double) face->units_per_EM * screen.font_size) + 1;
+	FT_Done_FreeType(library);
+
 	// set up screen
 	fb = fb_cons(fb_dev);
-	font = font_load("builtin");
-	screen.font = font;
 	fb_getmode(fb, &w, &h);
 	screen_resize(w, h);
 	screen_flip();
