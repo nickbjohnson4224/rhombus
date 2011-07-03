@@ -25,8 +25,8 @@ struct fb *fb = NULL;
 int draw_cell(struct cell *c, int x, int y) {
 	int i, j;
 
-	for (j = y; j < y + screen.font_size; j++) {
-		for (i = x; i < x + screen.font_size; i++) {
+	for (j = y; j < y + screen.cell_height; j++) {
+		for (i = x; i < x + screen.cell_width; i++) {
 			fb_plot(fb, i, j, c->bg);
 		}
 	}

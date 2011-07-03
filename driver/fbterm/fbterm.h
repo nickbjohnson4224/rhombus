@@ -39,6 +39,8 @@ int draw_cell(struct cell *c, int x, int y);
 
 extern struct screen {
 	int font_size;
+	int cell_width;
+	int cell_height;
 	struct cell *cell;
 	uint32_t fg;
 	uint32_t bg;

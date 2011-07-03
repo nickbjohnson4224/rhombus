@@ -23,6 +23,8 @@
 
 struct screen screen = {
 	8,
+	0,
+	0,
 	NULL,
 	COLOR_WHITE,
 	COLOR_BLACK,
@@ -42,8 +44,8 @@ int screen_resize(uint32_t x, uint32_t y) {
 	old_w = screen.w;
 	old_h = screen.h;
 
-	screen.w = x / screen.font_size;
-	screen.h = y / screen.font_size;
+	screen.w = x / screen.cell_width;
+	screen.h = y / screen.cell_height;
 	screen.cell = malloc(sizeof(struct cell) * screen.w * screen.h);
 
 	fb_resize(fb, x, y);
@@ -123,7 +125,7 @@ int screen_flip(void) {
 	for (i = 0; i < screen.w * screen.h; i++) {
 		if (screen.cell[i].dirty) {
 			draw_cell(&screen.cell[i], 
-				(i % screen.w) * screen.font_size, (i / screen.w) * screen.font_size);
+				(i % screen.w) * screen.cell_width, (i / screen.w) * screen.cell_height);
 			screen.cell[i].dirty = 0;
 		}
 	}
@@ -138,7 +140,7 @@ int screen_sync(void) {
 
 	for (i = 0; i < screen.w * screen.h; i++) {
 		draw_cell(&screen.cell[i], 
-			(i % screen.w) * screen.font_size, (i / screen.w) * screen.font_size);
+			(i % screen.w) * screen.cell_width, (i / screen.w) * screen.cell_height);
 		screen.cell[i].dirty = 0;
 	}
 
