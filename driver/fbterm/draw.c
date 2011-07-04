@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Jaagup Repän <jrepat at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -42,6 +43,7 @@ int draw_cell(struct cell *c, int x, int y) {
 	for (ptr = cache; ptr; ptr = ptr->next) {
 		if (c->ch == ptr->ch && c->fg == ptr->fg && c->bg == ptr->bg) {
 			if (ptr != cache) {
+				// Most recent bitmaps are kept in the beginning of the cache
 				if (ptr == last) {
 					last = ptr->prev;
 				}
@@ -85,6 +87,7 @@ int draw_cell(struct cell *c, int x, int y) {
 	}
 	cache_size++;
 	if (cache_size > max_cache_size) {
+		// Remove the least recent bitmap
 		last = last->prev;
 		free(last->next->bitmap);
 		free(last->next);
