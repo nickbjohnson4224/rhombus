@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
- * Copyright (C) 2011 Jaagup Repän <jrepat at gmail.com>
+ * Copyright (C) 2011 Jaagup Repän <jrepan at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -85,6 +85,7 @@ int draw_cell(struct cell *c, int x, int y) {
 	if (!last) {
 		last = ptr;
 	}
+
 	cache_size++;
 	if (cache_size > max_cache_size) {
 		// Remove the least recent bitmap
