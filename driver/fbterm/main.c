@@ -27,8 +27,7 @@
 #include <rdi/vfs.h>
 #include <rdi/io.h>
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+FT_Face face;
 
 size_t fbterm_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
 	size_t i;
@@ -125,7 +124,6 @@ void fbterm_graph_event(uint64_t source, int argc, char **argv) {
 
 int main(int argc, char **argv) {
 	FT_Library library;
-	FT_Face face;
 	uint64_t kbd_dev;
 	uint64_t fb_dev;
 	uint64_t wmanager;
@@ -175,9 +173,12 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "%s: loading font /etc/dejavu.ttf failed\n", argv[0]);
 		return 1;
 	}
+	if (FT_Set_Pixel_Sizes(face, 0, screen.font_size)) {
+		fprintf(stderr, "%s: setting font size to %i failed\n", argv[0], screen.font_size);
+		return 1;
+	}
 	screen.cell_width  = ceil(face->max_advance_width  / (double) face->units_per_EM * screen.font_size) + 1;
 	screen.cell_height = ceil(face->max_advance_height / (double) face->units_per_EM * screen.font_size) + 1;
-	FT_Done_FreeType(library);
 
 	// set up screen
 	fb = fb_cons(fb_dev);
