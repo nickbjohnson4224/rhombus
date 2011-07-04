@@ -24,11 +24,14 @@ struct cache {
 	uint32_t *bitmap;
 	uint32_t ch;
 	uint32_t fg, bg;
-	struct cache *next;
+	struct cache *prev, *next;
 };
 
+const size_t max_cache_size = 100;
+
 struct fb *fb = NULL;
-struct cache *cache;
+struct cache *cache, *last;
+size_t cache_size;
 
 int draw_cell(struct cell *c, int x, int y) {
 	FT_Bitmap *bitmap;
@@ -38,6 +41,19 @@ int draw_cell(struct cell *c, int x, int y) {
 
 	for (ptr = cache; ptr; ptr = ptr->next) {
 		if (c->ch == ptr->ch && c->fg == ptr->fg && c->bg == ptr->bg) {
+			if (ptr != cache) {
+				if (ptr == last) {
+					last = ptr->prev;
+				}
+				ptr->prev->next = ptr->next;
+				if (ptr->next) {
+					ptr->next->prev = ptr->prev;
+				}
+				ptr->prev = NULL;
+				ptr->next = cache;
+				cache->prev = ptr;
+				cache = ptr;
+			}
 			return fb_blit(fb, ptr->bitmap, x, y, screen.cell_width, screen.cell_height);
 		}
 	}
@@ -58,8 +74,23 @@ int draw_cell(struct cell *c, int x, int y) {
 	ptr->ch = c->ch;
 	ptr->fg = c->fg;
 	ptr->bg = c->bg;
+	ptr->prev = NULL;
 	ptr->next = cache;
+	if (cache) {
+		cache->prev = ptr;
+	}
 	cache = ptr;
+	if (!last) {
+		last = ptr;
+	}
+	cache_size++;
+	if (cache_size > max_cache_size) {
+		last = last->prev;
+		free(last->next->bitmap);
+		free(last->next);
+		last->next = NULL;
+		cache_size--;
+	}
 
 	bitmap = &face->glyph->bitmap;
 	for (int j = 0; j < screen.cell_height; j++) {
