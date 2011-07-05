@@ -20,6 +20,9 @@
 #include <stdint.h>
 #include <graph.h>
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 /* graphics device **********************************************************/
 
 extern struct fb *fb;
@@ -32,6 +35,8 @@ struct cell {
 	uint32_t ch; // code point of character
 	uint32_t dirty;
 };
+
+extern FT_Face face;
 
 int draw_cell(struct cell *c, int x, int y);
 
