@@ -191,6 +191,10 @@ int wmanager_share(uint64_t source, uint32_t index, uint8_t *buffer, size_t size
 
 void wmanager_sync(uint64_t source, uint32_t index) {
 	struct window_t *window = find_window(index, RP_PID(source));
+	
+	if (!window) {
+		return;
+	}
 
 	update_screen(window->x - 1, window->y - 1, window->x + window->width + 1, window->y + window->height + 1);
 }
