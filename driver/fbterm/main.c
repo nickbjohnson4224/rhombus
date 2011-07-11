@@ -126,41 +126,8 @@ int main(int argc, char **argv) {
 	FT_Library library;
 	uint64_t kbd_dev;
 	uint64_t fb_dev;
-	uint64_t wmanager;
-	char *ret;
 	int w, h;
 	int pid;
-
-	if (argc < 3) {
-		wmanager = fs_open("/sys/wmanager");
-		if (!wmanager) {
-			fprintf(stderr, "%s: couldn't find wmanager\n", argv[0]);
-			return 1;
-		}
-
-		ret = rcall(wmanager, "createwindow");
-		kbd_dev = fb_dev = ator(ret);
-		free(ret);
-
-		if (!fb_dev) {
-			fprintf(stderr, "%s: creating window failed\n", argv[0]);
-			return 1;
-		}
-	}
-	else {
-		kbd_dev = fs_open(argv[1]);
-		fb_dev  = fs_open(argv[2]);
-
-		if (!kbd_dev) {
-			fprintf(stderr, "%s: %s: keyboard not found\n", argv[0], argv[1]);
-			return 1;
-		}
-
-		if (!fb_dev) {
-			fprintf(stderr, "%s: %s: graphics device not found\n", argv[0], argv[2]);
-			return 1;
-		}
-	}
 
 	index_set(0, resource_cons(FS_TYPE_FILE | FS_TYPE_CHAR, PERM_READ | PERM_WRITE));
 
@@ -181,7 +148,30 @@ int main(int argc, char **argv) {
 	screen.cell_height = ceil(face->max_advance_height / (double) face->units_per_EM * screen.font_size) + 1;
 
 	// set up screen
-	fb = fb_cons(fb_dev);
+	if (argc >= 3) {
+		kbd_dev = fs_open(argv[1]);
+		fb_dev  = fs_open(argv[2]);
+
+		if (!kbd_dev) {
+			fprintf(stderr, "%s: %s: keyboard not found\n", argv[0], argv[1]);
+			return 1;
+		}
+
+		if (!fb_dev) {
+			fprintf(stderr, "%s: %s: graphics device not found\n", argv[0], argv[2]);
+			return 1;
+		}
+		
+		fb = fb_cons(fb_dev);
+	}
+	else {
+		fb = fb_createwindow();
+	}
+	if (!fb) {
+		fprintf(stderr, "%s: setting up framebuffer failed\n", argv[0]);
+		return 1;
+	}
+	
 	fb_getmode(fb, &w, &h);
 	screen_resize(w, h);
 	screen_flip();

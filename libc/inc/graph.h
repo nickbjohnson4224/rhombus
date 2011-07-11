@@ -89,6 +89,7 @@ struct fb {
 
 // constructors/destructors
 struct fb *fb_cons(uint64_t rp);
+struct fb *fb_createwindow();
 void       fb_free(struct fb *fb);
 
 // mode setting
