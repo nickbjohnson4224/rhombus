@@ -166,6 +166,7 @@ int main(int argc, char **argv) {
 	}
 	else {
 		fb = fb_createwindow();
+		kbd_dev = fb->rp;
 	}
 	if (!fb) {
 		fprintf(stderr, "%s: setting up framebuffer failed\n", argv[0]);
