@@ -88,7 +88,7 @@ struct widget *add_widget(const char *name, int x, int y, int w, int h) {
 
 	mutex_spin(&mutex);
 
-	filename = saprintf("/etc/%s.lua", name);
+	filename = saprintf("/etc/widgets/%s.lua", name);
 	if (luaL_loadfile(L, filename)) {
 		free(widget);
 		free(filename);

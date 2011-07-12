@@ -1,5 +1,6 @@
 SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
 HEADERS := $(shell find inc -name "*.h")
+WIDGETS := $(shell find widgets -name "*.lua")
 SUBDIR	:= libtoolkit
 STATIC	:= libtoolkit.a
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
@@ -10,13 +11,21 @@ all: $(STATIC)
 
 headers_dir:
 	@ echo " MKDIR	" $(BUILDDIR)/inc/toolkit
-	@ mkdir -p $(BUILDDIR)/inc/toolkit	
+	@ mkdir -p $(BUILDDIR)/inc/toolkit
+
+widgets_dir:
+	@ echo " MKDIR	" $(BUILDDIR)/etc/widgets
+	@ mkdir -p $(BUILDDIR)/etc/widgets
 
 $(HEADERS): headers_dir
 	@ echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/inc
 	@ cp $@ $(BUILDDIR)/inc/toolkit/
 
-$(STATIC): $(HEADERS) $(SOURCES)
+$(WIDGETS): widgets_dir
+	@ echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/etc/widgets
+	@ cp $@ $(BUILDDIR)/etc/widgets
+
+$(STATIC): $(WIDGETS) $(HEADERS) $(SOURCES)
 	@ echo " AR	" $(SUBDIR)/$(STATIC)
 	@ $(AR) $(ARFLAGS) $(STATIC) $(SOURCES)
 	@ echo " CP	" $(SUBDIR)/$(STATIC) "->" $(BUILDDIR)/lib
