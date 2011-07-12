@@ -1,5 +1,5 @@
 SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
-HEADERS := $(shell find inc -name "*.h")
+HEADERS := $(shell find inc -name "*.h" | grep -v private)
 WIDGETS := $(shell find widgets -name "*.lua")
 SUBDIR	:= libtoolkit
 STATIC	:= libtoolkit.a

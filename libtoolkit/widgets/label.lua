@@ -1,4 +1,4 @@
-function setattribute(name, value)
+function set_attribute(name, value)
 	if (name == "size") then
 		size = value
 	end
@@ -19,7 +19,7 @@ function setattribute(name, value)
 	end
 end
 
-function getattribute(name)
+function get_attribute(name)
 	if (name == "size") then
 		return(size)
 	end
