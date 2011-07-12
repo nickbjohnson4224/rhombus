@@ -5,11 +5,11 @@ function set_attribute(name, value)
 	if (name == "text") then
 		text = value
 	end
-	if (name == "fg") then
-		fg = value
+	if (name == "foreground") then
+		foreground = value
 	end
-	if (name == "bg") then
-		bg = value
+	if (name == "background") then
+		background = value
 	end
 	if (name == "width") then
 		width = value
@@ -26,11 +26,11 @@ function get_attribute(name)
 	if (name == "text") then
 		return(text)
 	end
-	if (name == "fg") then
-		return(fg)
+	if (name == "foreground") then
+		return(foreground)
 	end
-	if (name == "bg") then
-		return(bg)
+	if (name == "background") then
+		return(background)
 	end
 	if (name == "width") then
 		return(width)
@@ -42,13 +42,13 @@ function get_attribute(name)
 end
 
 function draw()
-	write_text(0, 0, size, text, fg, bg)
+	write_text(0, 0, size, text, foreground, background)
 	update()
 end
 
 size = 12
 text = ""
-fg = 0xffffffff
-bg = 0xff000000
+foreground = 0xffffffff
+background = 0xff000000
 width = 0
 height = 0

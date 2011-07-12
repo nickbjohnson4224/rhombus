@@ -1,10 +1,19 @@
 #include "widget.h"
 #include <string.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 #include <lua.h>
 #include <lauxlib.h>
 #include "private.h"
 
 struct widget *__rtk_curwidget;
+static FT_Library library;
+static FT_Face face;
+
+static void init_freetype() {
+	FT_Init_FreeType(&library);
+	FT_New_Face(library, "/etc/dejavu.ttf", 0, &face); //todo: configure font
+}
 
 static int update(lua_State *__rtk_L) {
 	fb_flip(__rtk_fb);
@@ -12,9 +21,14 @@ static int update(lua_State *__rtk_L) {
 }
 
 static int write_text(lua_State *__rtk_L) {
-	int x, y, size, fg, bg;
+	FT_Bitmap *bitmap;
 	const char *text;
+	uint32_t red, green, blue;
+	double alpha;
+	int x, y, size, foreground, background;
 	int ret = 0;
+	int advance = 0;
+	int cursorx, cursory;
 
 	if (!lua_isnumber(__rtk_L, 1)) ret = 1;
 	if (!lua_isnumber(__rtk_L, 2)) ret = 1;
@@ -28,10 +42,33 @@ static int write_text(lua_State *__rtk_L) {
 		y = lua_tonumber(__rtk_L, 2);
 		size = lua_tonumber(__rtk_L, 3);
 		text = lua_tostring(__rtk_L, 4);
-		fg = lua_tonumber(__rtk_L, 5);
-		bg = lua_tonumber(__rtk_L, 6);
+		foreground = lua_tonumber(__rtk_L, 5);
+		background = lua_tonumber(__rtk_L, 6);
 
-		ret = fb_write(__rtk_fb, __rtk_curwidget->x + x, __rtk_curwidget->y + y, size, text, strlen(text), fg, bg);
+		if (FT_Set_Pixel_Sizes(face, 0, size)) {
+			ret = 1;
+		}
+		else {
+			for (size_t c = 0; c < strlen(text) && advance < __rtk_curwidget->width; c++) {
+				if (FT_Load_Char(face, text[c], FT_LOAD_RENDER)) {
+					continue;
+				}
+				bitmap = &face->glyph->bitmap;
+				cursory = y + (size - face->glyph->bitmap_top);
+				for (int j = 0; j < bitmap->rows && cursory < __rtk_curwidget->height; j++, cursory++) {
+					cursorx = x + advance + face->glyph->bitmap_left;
+					for (int i = 0; i < bitmap->width && cursorx < __rtk_curwidget->width; i++, cursorx++) {
+						alpha = bitmap->buffer[j * bitmap->width + i] / 255.0;
+						red   = alpha * PIX_R(foreground) + (1 - alpha) * PIX_R(background);
+						green = alpha * PIX_G(foreground) + (1 - alpha) * PIX_G(background);
+						blue  = alpha * PIX_B(foreground) + (1 - alpha) * PIX_B(background);
+						fb_plot(__rtk_fb, __rtk_curwidget->x + cursorx, __rtk_curwidget->y + cursory,
+								COLOR(red, green, blue));
+					}
+				}
+				advance += face->glyph->advance.x >> 6;
+			}
+		}
 	}
 	
 	lua_pushboolean(__rtk_L, ret);
@@ -43,6 +80,7 @@ static int write_text(lua_State *__rtk_L) {
     lua_setglobal(__rtk_L, #x);
 
 void __rtk_init_drawing_functions() {
+	init_freetype();
 	EXPORT_FUNC(update);
 	EXPORT_FUNC(write_text);
 }

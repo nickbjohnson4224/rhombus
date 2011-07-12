@@ -1,15 +1,14 @@
 BUILDDIR=$(PWD)
 
-LIB_DIRS  = libc dl librdi libtoolkit
+LIB_DIRS  = libc dl librdi ports/freetype ports/lua libtoolkit
 
 DRIVERS  := $(shell find driver -mindepth 1 -maxdepth 1)
 DAEMONS  := $(shell find daemon -mindepth 1 -maxdepth 1)
 UTILS    := $(shell find util   -mindepth 1 -maxdepth 1)
-PORTS    := $(shell find ports  -mindepth 1 -maxdepth 1)
 APPS     := $(shell find apps   -mindepth 1 -maxdepth 1)
 
 BIN_DIRS  = kernel fish
-BIN_DIRS += $(PORTS) $(DRIVERS) $(DAEMONS) $(UTILS) $(APPS)
+BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS) $(APPS)
 
 CC := clang -m32
 LD := i586-pc-rhombus-ld

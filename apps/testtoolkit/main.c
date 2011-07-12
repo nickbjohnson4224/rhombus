@@ -33,8 +33,8 @@ int main(int argc, char **argv) {
 	fb_getmode(fb, &width, &height);
 
 	widget = add_widget("label", 10, 10, width - 20, height - 20);
-	set_attribute_int(widget, "fg", COLOR_WHITE); //fixme: default value
-	set_attribute_int(widget, "bg", COLOR_BLACK);
+	set_attribute_int(widget, "foreground", COLOR_WHITE); //fixme: default value
+	set_attribute_int(widget, "background", COLOR_BLACK);
 	set_attribute_string(widget, "text", "Hello, world!");
 	draw_widget(widget);
 

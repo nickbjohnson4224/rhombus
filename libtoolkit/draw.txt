@@ -1,0 +1,7 @@
+add_child_widget
+set/get_child_attribute
+draw_pixel
+blit
+fill
+line?
+circle jms??
