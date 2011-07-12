@@ -85,8 +85,6 @@ struct widget *add_widget(const char *name, int x, int y, int w, int h) {
 
 	widget->x = x;
 	widget->y = y;
-	widget->width = w;
-	widget->height = h;
 
 	mutex_spin(&mutex);
 
@@ -104,6 +102,8 @@ struct widget *add_widget(const char *name, int x, int y, int w, int h) {
 	lua_pcall(L, 0, 0, 0);
 
 	mutex_free(&mutex);
+
+	set_size(widget, w, h);
 
 	return widget;
 }
