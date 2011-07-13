@@ -1,9 +1,9 @@
 SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
 SOURCES += $(BUILDDIR)/lib/c0.o
-SUBDIR	:= apps/testfont
-TARGET	:= testfont
+SUBDIR	:= apps/testtoolkit
+TARGET	:= testtoolkit
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -lfreetype -lc
+LDFLAGS += -ltoolkit -lfreetype -llua -lc
 ASFLAGS := -felf
 
 all: $(TARGET)

@@ -89,6 +89,7 @@ struct fb {
 
 // constructors/destructors
 struct fb *fb_cons(uint64_t rp);
+struct fb *fb_createwindow();
 void       fb_free(struct fb *fb);
 
 // mode setting
@@ -99,7 +100,6 @@ int        fb_getmode(struct fb *fb, int *xdim, int *ydim);
 int        fb_flip (struct fb *fb);
 int        fb_plot (struct fb *fb, int x, int y, uint32_t color);
 int        fb_blit (struct fb *fb, uint32_t *bitmap, int x, int y, int w, int h);
-int        fb_write(struct fb *fb, int x, int y, int height, const char *text, size_t length, uint32_t foreground, uint32_t background); // needs to be linked with FreeType
 
 // raw bitmap access
 int        fb_lock  (struct fb *fb);

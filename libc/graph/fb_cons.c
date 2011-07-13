@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Jaagup Repän <jrepan at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -72,4 +73,17 @@ struct fb *fb_cons(uint64_t rp) {
 	fb->maxy = 0;
 
 	return fb;
+}
+
+struct fb *fb_createwindow() {
+	uint64_t wmanager;
+	char *ret;
+	
+	wmanager = fs_find("/sys/wmanager/");
+	if (!wmanager) {
+		return NULL;
+	}
+	
+	ret = rcall(wmanager, "createwindow");
+	return fb_cons(ator(ret));
 }
