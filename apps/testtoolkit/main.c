@@ -15,25 +15,28 @@
  */
 
 #include <graph.h>
-#include <natio.h>
 #include <proc.h>
+#include <stdio.h>
+#include <toolkit/widget.h>
 
 int main(int argc, char **argv) {
-	uint64_t wmanager = fs_find("/sys/wmanager");
-	uint64_t rp;
-	struct fb *fb;
+	struct fb *fb = fb_createwindow();
+	struct widget *widget;
+	int width, height;
 
-	if (!wmanager) {
-		fprintf(stderr, "%s: couldn't find wmanager\n", argv[0]);
+	if (!fb) {
+		fprintf(stderr, "%s: creating window failed\n", argv[0]);
 		return 1;
 	}
 
-	rp = ator(rcall(wmanager, "createwindow"));
-	fb = fb_cons(rp);
+	init_toolkit(fb);
+	fb_getmode(fb, &width, &height);
 
-	fb_write(fb, 5, 5, 20, "Hello,", 6, COLOR_WHITE, COLOR_BLACK);
-	fb_write(fb, 10, 30, 50, "world!", 6, COLOR_NBLUE, COLOR_NDGRAY);
-	fb_flip(fb);
+	widget = add_widget("label", 10, 10, width - 20, height - 20);
+	set_attribute_int(widget, "foreground", COLOR_WHITE); //fixme: default value
+	set_attribute_int(widget, "background", COLOR_BLACK);
+	set_attribute_string(widget, "text", "Hello, world!");
+	draw_widget(widget);
 
 	_done();
 	return 0;

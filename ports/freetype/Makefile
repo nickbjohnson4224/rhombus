@@ -12,8 +12,8 @@ $(SOURCE):
 $(DIR): $(SOURCE)
 	@ echo " UNPACK	" $(SOURCE)
 	@ tar -xkf $(SOURCE)
-	@ echo " PATCH	" $(PATCH)
-	@ patch -p0 < $(PATCH)
+	@ echo " CP	Makefile2 $(DIR)/Makefile"
+	@ cp Makefile2 $(DIR)/Makefile
 
 clean:
 	@ rm -r $(DIR)
