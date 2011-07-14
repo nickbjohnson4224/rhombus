@@ -15,19 +15,8 @@
  */
 
 #include "toolkit.h"
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
 #include "private.h"
 
-lua_State *__rtk_L;
-
 void init_toolkit() {
-	__rtk_L = lua_open();
-	luaL_openlibs(__rtk_L);
-	__rtk_init_drawing_functions();
-}
-
-void close_toolkit() {
-	lua_close(__rtk_L);
+	__rtk_init_freetype();
 }

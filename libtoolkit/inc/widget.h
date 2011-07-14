@@ -17,13 +17,14 @@
 #ifndef _TOOLKIT_WIDGET_H
 #define _TOOLKIT_WIDGET_H
 
+#include <lua.h>
 #include <stdbool.h>
 
 struct window;
 struct fb;
 
 struct widget {
-	int ref;
+	lua_State *L;
 	struct window *window;
 	bool dirty, child_dirty;
 

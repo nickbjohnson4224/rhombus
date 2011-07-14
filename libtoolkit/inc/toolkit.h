@@ -21,7 +21,6 @@
 #include <toolkit/window.h>
 
 void init_toolkit();
-void close_toolkit();
 
 #endif
 

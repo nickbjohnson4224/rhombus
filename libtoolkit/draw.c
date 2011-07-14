@@ -25,14 +25,19 @@
 #include "window.h"
 #include "private.h"
 
-struct widget *__rtk_curwidget;
 static FT_Library library;
 static FT_Face face;
+static bool mutex;
 int __rtk_curx, __rtk_cury, __rtk_curwidth, __rtk_curheight;
 
-static void init_freetype() {
+void __rtk_init_freetype() {
 	FT_Init_FreeType(&library);
 	FT_New_Face(library, "/etc/dejavu.ttf", 0, &face); //todo: configure font
+}
+
+struct widget *get_widget(lua_State *L) {
+		lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+		return lua_touserdata(L, -1);
 }
 
 void mark_child_dirty(struct widget *widget) {
@@ -42,16 +47,19 @@ void mark_child_dirty(struct widget *widget) {
 	}
 }
 static int request_redraw(lua_State *L) {
-	__rtk_curwidget->dirty = true;
-	if (__rtk_curwidget->parent) {
-		mark_child_dirty(__rtk_curwidget->parent);
+	struct widget *widget = get_widget(L);
+
+	widget->dirty = true;
+	if (widget->parent) {
+		mark_child_dirty(widget->parent);
 	}
 	return 0;
 }
 
 static int add_child(lua_State *L) {
 	bool error = false;
-	struct widget *widget = NULL;
+	struct widget *child = NULL;
+	struct widget *widget = get_widget(L);
 	const char *type;
 	int x, y, width, height;
 
@@ -68,18 +76,16 @@ static int add_child(lua_State *L) {
 		width = lua_tonumber(L, 2);
 		height = lua_tonumber(L, 3);
 
-		mutex_free(&__rtk_mutex);
-		widget = add_widget(type, __rtk_curwidget, __rtk_curwidget->window, x, y, width, height);
-		assert(mutex_lock(&__rtk_mutex));
+		child = add_widget(type, widget, widget->window, x, y, width, height);
 	}
 
-	lua_pushlightuserdata(L, widget);
+	lua_pushlightuserdata(L, child);
 	return 1;
 }
 
 static int set_child_attribute(lua_State *L) {
-	struct widget *widget = lua_touserdata(L, 1);
-	const char *name;
+	struct widget *child = lua_touserdata(L, 1);
+	const char *name, *data;
 	int value = 0;
 	int ret = 0;
 
@@ -88,26 +94,29 @@ static int set_child_attribute(lua_State *L) {
 		return 1;
 	}
 	name = lua_tostring(L, 2);
+	data = lua_tostring(L, 3);
 	if (lua_isnumber(L, 3)) {
 		value = lua_tonumber(L, 3);
 	}
 	
 	if (!strcmp(name, "x")) {
-		widget->x = value;
+		child->x = value;
 	}
 	else if (!strcmp(name, "y")) {
-		widget->y = value;
+		child->y = value;
 	}
 	else {
-		ret = __rtk_set_attribute(widget);
+		lua_pushstring(child->L, name);
+		lua_pushstring(child->L, data);
+		ret = __rtk_set_attribute(child);
 	}
 
 	if (!ret) {
 		if (!strcmp(name, "width")) {
-			widget->width = value;
+			child->width = value;
 		}
 		if (!strcmp(name, "height")) {
-			widget->height = value;
+			child->height = value;
 		}
 	}
 
@@ -116,8 +125,8 @@ static int set_child_attribute(lua_State *L) {
 }
 
 static int get_child_attribute(lua_State *L) {
-	struct widget *widget = lua_touserdata(L, 1);
-	const char *name;
+	struct widget *child = lua_touserdata(L, 1);
+	const char *name, *value;
 
 	if (!lua_isstring(L, 2)) {
 		lua_pushnumber(L, 0);
@@ -126,24 +135,32 @@ static int get_child_attribute(lua_State *L) {
 	name = lua_tostring(L, 2);
 
 	if (!strcmp(name, "x")) {
-		lua_pushnumber(L, widget->x);
+		lua_pushnumber(L, child->x);
 	}
 	else if (!strcmp(name, "y")) {
-		lua_pushnumber(L, widget->y);
+		lua_pushnumber(L, child->y);
 	}
 	else if (!strcmp(name, "width")) {
-		lua_pushnumber(L, widget->width);
+		lua_pushnumber(L, child->width);
 	}
 	else if (!strcmp(name, "height")) {
-		lua_pushnumber(L, widget->height);
+		lua_pushnumber(L, child->height);
 	}
-	else if (__rtk_get_attribute(widget)) {
-		lua_pushnumber(L, 0);
+	else {
+		lua_pushstring(child->L, name);
+		if (__rtk_get_attribute(child)) {
+			lua_pushnumber(L, 0);
+		}
+		else {
+			value = lua_tostring(child->L, -1);
+			lua_pushstring(L, value);
+		}
 	}
 	return 1;
 }
 
 static int write_text(lua_State *L) {
+	struct widget *widget = get_widget(L);
 	FT_Bitmap *bitmap;
 	const char *text;
 	uint32_t red, green, blue;
@@ -170,6 +187,8 @@ static int write_text(lua_State *L) {
 
 		foreground = COLOR_WHITE; //fixme: default value
 
+		mutex_spin(&mutex);
+
 		if (FT_Set_Pixel_Sizes(face, 0, size)) {
 			ret = 1;
 		}
@@ -187,13 +206,15 @@ static int write_text(lua_State *L) {
 						red   = alpha * PIX_R(foreground) + (1 - alpha) * PIX_R(background);
 						green = alpha * PIX_G(foreground) + (1 - alpha) * PIX_G(background);
 						blue  = alpha * PIX_B(foreground) + (1 - alpha) * PIX_B(background);
-						fb_plot(__rtk_curwidget->window->fb, __rtk_curwidget->x + cursorx + __rtk_curx,
-								__rtk_curwidget->y + cursory + __rtk_cury, COLOR(red, green, blue));
+						fb_plot(widget->window->fb, widget->x + cursorx + __rtk_curx,
+								widget->y + cursory + __rtk_cury, COLOR(red, green, blue));
 					}
 				}
 				advance += face->glyph->advance.x >> 6;
 			}
 		}
+
+		mutex_free(&mutex);
 	}
 	
 	lua_pushboolean(L, ret);
@@ -201,12 +222,10 @@ static int write_text(lua_State *L) {
 }
 
 #define EXPORT_FUNC(x) \
-    lua_pushcfunction(__rtk_L, x); \
-    lua_setglobal(__rtk_L, #x);
+    lua_pushcfunction(L, x); \
+    lua_setglobal(L, #x);
 
-void __rtk_init_drawing_functions() {
-	init_freetype();
-
+void __rtk_init_drawing_functions(lua_State *L) {
 	EXPORT_FUNC(request_redraw);
 
 	EXPORT_FUNC(add_child);
