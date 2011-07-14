@@ -14,7 +14,20 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-extern lua_State *__rtk_L;
-extern struct widget *__rtk_curwidget;
+#include "toolkit.h"
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+#include "private.h"
 
-void __rtk_init_drawing_functions();
+lua_State *__rtk_L;
+
+void init_toolkit() {
+	__rtk_L = lua_open();
+	luaL_openlibs(__rtk_L);
+	__rtk_init_drawing_functions();
+}
+
+void close_toolkit() {
+	lua_close(__rtk_L);
+}

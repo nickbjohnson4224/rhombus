@@ -17,26 +17,23 @@
 #include <graph.h>
 #include <proc.h>
 #include <stdio.h>
-#include <toolkit/widget.h>
+#include <toolkit/toolkit.h>
 
 int main(int argc, char **argv) {
-	struct fb *fb = fb_createwindow();
-	struct widget *widget;
-	int width, height;
+	struct window *window;
 
-	if (!fb) {
+	init_toolkit();
+
+	window = create_window("label");
+	if (!window) {
 		fprintf(stderr, "%s: creating window failed\n", argv[0]);
 		return 1;
 	}
 
-	init_toolkit(fb);
-	fb_getmode(fb, &width, &height);
-
-	widget = add_widget("label", 10, 10, width - 20, height - 20);
-	set_attribute_int(widget, "foreground", COLOR_WHITE); //fixme: default value
-	set_attribute_int(widget, "background", COLOR_BLACK);
-	set_attribute_string(widget, "text", "Hello, world!");
-	draw_widget(widget);
+	set_attribute_int(window->widget, "foreground", COLOR_WHITE); //fixme: default value
+	set_attribute_int(window->widget, "background", COLOR_BLACK);
+	set_attribute_string(window->widget, "text", "Hello, world!");
+	draw_widget(window->widget);
 
 	_done();
 	return 0;

@@ -21,25 +21,11 @@
 #include <stdlib.h>
 #include <lua.h>
 #include <lauxlib.h>
-#include <lualib.h>
 #include "private.h"
 
 static bool mutex;
-struct fb *__rtk_fb;
-lua_State *__rtk_L;
 
-void init_toolkit(struct fb *fb) {
-	__rtk_fb = fb;
-	__rtk_L = lua_open();
-	luaL_openlibs(__rtk_L);
-	__rtk_init_drawing_functions();
-}
-
-void close_toolkit() {
-	lua_close(__rtk_L);
-}
-
-struct widget *add_widget(const char *name, int x, int y, int w, int h) {
+struct widget *add_widget(const char *name, struct window *window, int x, int y, int w, int h) {
 	struct widget *widget = malloc(sizeof(struct widget));
 	char *filename;
 
@@ -47,6 +33,7 @@ struct widget *add_widget(const char *name, int x, int y, int w, int h) {
 		return NULL;
 	}
 
+	widget->window = window;
 	widget->x = x;
 	widget->y = y;
 

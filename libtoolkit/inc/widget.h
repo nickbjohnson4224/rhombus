@@ -17,18 +17,17 @@
 #ifndef _TOOLKIT_WIDGET_H
 #define _TOOLKIT_WIDGET_H
 
-#include <graph.h>
+struct window;
+struct fb;
 
 struct widget {
 	int ref;
 	int x, y;
 	int width, height;
+	struct window *window;
 };
 
-void init_toolkit(struct fb *fb);
-void close_toolkit();
-
-struct widget *add_widget(const char *widget, int x, int y, int width, int height);
+struct widget *add_widget(const char *widget, struct window *window, int x, int y, int width, int height);
 void free_widget(struct widget *widget);
 int draw_widget(struct widget *widget);
 
@@ -36,6 +35,7 @@ void set_position(struct widget *widget, int x, int y);
 void get_position(struct widget *widget, int *x, int *y);
 int set_size(struct widget *widget, int width, int height);
 void get_size(struct widget *widget, int *width, int *height);
+
 int set_attribute_int(struct widget *widget, const char *name, int value);
 int set_attribute_double(struct widget *widget, const char *name, double value);
 int set_attribute_string(struct widget *widget, const char *name, const char *value);

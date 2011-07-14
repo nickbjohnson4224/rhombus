@@ -14,7 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-extern lua_State *__rtk_L;
-extern struct widget *__rtk_curwidget;
+#ifndef _TOOLKIT_H
+#define _TOOLKIT_H
 
-void __rtk_init_drawing_functions();
+#include <toolkit/widget.h>
+#include <toolkit/window.h>
+
+void init_toolkit();
+void close_toolkit();
+
+#endif
+

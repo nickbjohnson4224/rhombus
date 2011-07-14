@@ -14,7 +14,38 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-extern lua_State *__rtk_L;
-extern struct widget *__rtk_curwidget;
+#include "window.h"
+#include <graph.h>
+#include <stdlib.h>
+#include "widget.h"
 
-void __rtk_init_drawing_functions();
+struct window *create_window(const char *widget) {
+	struct window *window = malloc(sizeof(struct window));
+	int width, height;
+
+	if (!window) {
+		return NULL;
+	}
+
+	window->fb = fb_createwindow();
+	if (!window->fb) {
+		free(window);
+		return NULL;
+	}
+	fb_getmode(window->fb, &width, &height);
+
+	window->widget = add_widget(widget, window, 0, 0, width, height);
+	if (!window->widget) {
+		free(window);
+		return NULL;
+	}
+	draw_widget(window->widget);
+
+	return window;
+}
+
+void destroy_window(struct window *window) {
+	free_widget(window->widget);
+	fb_free(window->fb);
+	free(window);
+}

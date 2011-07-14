@@ -14,7 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-extern lua_State *__rtk_L;
-extern struct widget *__rtk_curwidget;
+#ifndef _TOOLKIT_WINDOW_H
+#define _TOOLKIT_WINDOW_H
 
-void __rtk_init_drawing_functions();
+struct widget;
+
+struct window {
+	struct fb *fb;
+	struct widget *widget;
+};
+
+struct window *create_window(const char *widget);
+void destroy_window(struct window *window);
+
+#endif

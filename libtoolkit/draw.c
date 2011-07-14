@@ -1,9 +1,27 @@
-#include "widget.h"
+/*
+ * Copyright (C) 2011 Jaagup Repän <jrepan at gmail.com>
+ * 
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+#include <graph.h>
 #include <string.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <lua.h>
 #include <lauxlib.h>
+#include "widget.h"
+#include "window.h"
 #include "private.h"
 
 struct widget *__rtk_curwidget;
@@ -16,7 +34,7 @@ static void init_freetype() {
 }
 
 static int update(lua_State *__rtk_L) {
-	fb_flip(__rtk_fb);
+	fb_flip(__rtk_curwidget->window->fb);
 	return 0;
 }
 
@@ -62,7 +80,7 @@ static int write_text(lua_State *__rtk_L) {
 						red   = alpha * PIX_R(foreground) + (1 - alpha) * PIX_R(background);
 						green = alpha * PIX_G(foreground) + (1 - alpha) * PIX_G(background);
 						blue  = alpha * PIX_B(foreground) + (1 - alpha) * PIX_B(background);
-						fb_plot(__rtk_fb, __rtk_curwidget->x + cursorx, __rtk_curwidget->y + cursory,
+						fb_plot(__rtk_curwidget->window->fb, __rtk_curwidget->x + cursorx, __rtk_curwidget->y + cursory,
 								COLOR(red, green, blue));
 					}
 				}
