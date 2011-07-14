@@ -30,6 +30,7 @@ struct widget {
 
 	int x, y;
 	int width, height;
+	int realx, realy, realwidth, realheight;
 
 	struct widget *parent, *children;
 	struct widget *prev, *next;
@@ -38,6 +39,7 @@ struct widget {
 struct widget *add_widget(const char *widget, struct widget *parent, struct window *window, int x, int y, int width, int height);
 void free_widget(struct widget *widget);
 int draw_widget(struct widget *widget, bool force);
+void update_widget();
 
 void set_position(struct widget *widget, int x, int y);
 void get_position(struct widget *widget, int *x, int *y);

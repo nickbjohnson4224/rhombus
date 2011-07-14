@@ -28,7 +28,6 @@
 static FT_Library library;
 static FT_Face face;
 static bool mutex;
-int __rtk_curx, __rtk_cury, __rtk_curwidth, __rtk_curheight;
 
 void __rtk_init_freetype() {
 	FT_Init_FreeType(&library);
@@ -73,8 +72,8 @@ static int add_child(lua_State *L) {
 		type = lua_tostring(L, 1);
 		x = lua_tonumber(L, 2);
 		y = lua_tonumber(L, 3);
-		width = lua_tonumber(L, 2);
-		height = lua_tonumber(L, 3);
+		width = lua_tonumber(L, 4);
+		height = lua_tonumber(L, 5);
 
 		child = add_widget(type, widget, widget->window, x, y, width, height);
 	}
@@ -101,9 +100,11 @@ static int set_child_attribute(lua_State *L) {
 	
 	if (!strcmp(name, "x")) {
 		child->x = value;
+		update_widget(child);
 	}
 	else if (!strcmp(name, "y")) {
 		child->y = value;
+		update_widget(child);
 	}
 	else {
 		lua_pushstring(child->L, name);
@@ -114,9 +115,11 @@ static int set_child_attribute(lua_State *L) {
 	if (!ret) {
 		if (!strcmp(name, "width")) {
 			child->width = value;
+			update_widget(child);
 		}
 		if (!strcmp(name, "height")) {
 			child->height = value;
+			update_widget(child);
 		}
 	}
 
@@ -193,21 +196,21 @@ static int write_text(lua_State *L) {
 			ret = 1;
 		}
 		else {
-			for (size_t c = 0; c < strlen(text) && advance < __rtk_curwidth; c++) {
+			for (size_t c = 0; c < strlen(text) && advance < widget->realwidth; c++) {
 				if (FT_Load_Char(face, text[c], FT_LOAD_RENDER)) {
 					continue;
 				}
 				bitmap = &face->glyph->bitmap;
 				cursory = y + (size - face->glyph->bitmap_top);
-				for (int j = 0; j < bitmap->rows && cursory < __rtk_curheight; j++, cursory++) {
+				for (int j = 0; j < bitmap->rows && cursory < widget->realheight; j++, cursory++) {
 					cursorx = x + advance + face->glyph->bitmap_left;
-					for (int i = 0; i < bitmap->width && cursorx < __rtk_curwidth; i++, cursorx++) {
+					for (int i = 0; i < bitmap->width && cursorx < widget->realwidth; i++, cursorx++) {
 						alpha = bitmap->buffer[j * bitmap->width + i] / 255.0;
 						red   = alpha * PIX_R(foreground) + (1 - alpha) * PIX_R(background);
 						green = alpha * PIX_G(foreground) + (1 - alpha) * PIX_G(background);
 						blue  = alpha * PIX_B(foreground) + (1 - alpha) * PIX_B(background);
-						fb_plot(widget->window->fb, widget->x + cursorx + __rtk_curx,
-								widget->y + cursory + __rtk_cury, COLOR(red, green, blue));
+						fb_plot(widget->window->fb, widget->x + cursorx + widget->realx,
+								widget->y + cursory + widget->realy, COLOR(red, green, blue));
 					}
 				}
 				advance += face->glyph->advance.x >> 6;

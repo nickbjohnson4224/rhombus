@@ -19,8 +19,6 @@
 #include <stdlib.h>
 #include "widget.h"
 
-static bool mutex;
-
 struct window *create_window(const char *widget) {
 	struct window *window = malloc(sizeof(struct window));
 	int width, height;
@@ -55,9 +53,7 @@ void destroy_window(struct window *window) {
 }
 
 static void draw_window(struct window *window, bool force) {
-	mutex_spin(&mutex);
 	draw_widget(window->widget, force);
-	mutex_free(&mutex);
 	fb_flip(window->fb);
 }
 
