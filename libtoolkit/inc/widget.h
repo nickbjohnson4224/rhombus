@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef WIDGET_H
-#define WIDGET_H
+#ifndef _TOOLKIT_WIDGET_H
+#define _TOOLKIT_WIDGET_H
 
 #include <graph.h>
 
@@ -33,7 +33,9 @@ void free_widget(struct widget *widget);
 int draw_widget(struct widget *widget);
 
 void set_position(struct widget *widget, int x, int y);
+void get_position(struct widget *widget, int *x, int *y);
 int set_size(struct widget *widget, int width, int height);
+void get_size(struct widget *widget, int *width, int *height);
 int set_attribute_int(struct widget *widget, const char *name, int value);
 int set_attribute_double(struct widget *widget, const char *name, double value);
 int set_attribute_string(struct widget *widget, const char *name, const char *value);

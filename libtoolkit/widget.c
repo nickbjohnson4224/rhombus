@@ -103,12 +103,22 @@ void set_position(struct widget *widget, int x, int y) {
 	widget->y = y;
 }
 
+void get_position(struct widget *widget, int *x, int *y) {
+	*x = widget->x;
+	*y = widget->y;
+}
+
 int set_size(struct widget *widget, int width, int height) {
 	widget->width = width;
 	widget->height = height;
 
 	return set_attribute_int(widget, "width", width) ||
 	       set_attribute_int(widget, "height", height);
+}
+
+void get_size(struct widget *widget, int *width, int *height) {
+	*width = widget->width;
+	*height = widget->height;
 }
 
 #define ATTRIBUTE_FUNCS(ctype,typename,luatype) \
