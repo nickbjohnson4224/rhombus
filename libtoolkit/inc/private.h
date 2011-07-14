@@ -16,5 +16,9 @@
 
 extern lua_State *__rtk_L;
 extern struct widget *__rtk_curwidget;
+extern bool __rtk_mutex;
+extern int __rtk_curx, __rtk_cury, __rtk_curwidth, __rtk_curheight;
 
 void __rtk_init_drawing_functions();
+int __rtk_set_attribute(struct widget *widget);
+int __rtk_get_attribute(struct widget *widget);

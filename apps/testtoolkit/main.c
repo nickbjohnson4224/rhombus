@@ -24,16 +24,11 @@ int main(int argc, char **argv) {
 
 	init_toolkit();
 
-	window = create_window("label");
+	window = create_window("testwidget");
 	if (!window) {
 		fprintf(stderr, "%s: creating window failed\n", argv[0]);
 		return 1;
 	}
-
-	set_attribute_int(window->widget, "foreground", COLOR_WHITE); //fixme: default value
-	set_attribute_int(window->widget, "background", COLOR_BLACK);
-	set_attribute_string(window->widget, "text", "Hello, world!");
-	draw_widget(window->widget);
 
 	_done();
 	return 0;

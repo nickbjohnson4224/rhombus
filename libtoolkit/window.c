@@ -34,12 +34,14 @@ struct window *create_window(const char *widget) {
 	}
 	fb_getmode(window->fb, &width, &height);
 
-	window->widget = add_widget(widget, window, 0, 0, width, height);
+	window->widget = add_widget(widget, NULL, window, 0, 0, width, height);
 	if (!window->widget) {
 		free(window);
 		return NULL;
 	}
-	draw_widget(window->widget);
+	window->widget->window = window;
+
+	redraw_window(window);
 
 	return window;
 }
@@ -48,4 +50,14 @@ void destroy_window(struct window *window) {
 	free_widget(window->widget);
 	fb_free(window->fb);
 	free(window);
+}
+
+void redraw_window(struct window *window) {
+	draw_widget(window->widget, true);
+	fb_flip(window->fb);
+}
+
+void update_window(struct window *window) {
+	draw_widget(window->widget, false);
+	fb_flip(window->fb);
 }
