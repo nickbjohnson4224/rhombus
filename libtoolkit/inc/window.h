@@ -4,7 +4,7 @@
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
@@ -14,22 +14,19 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <graph.h>
-#include <proc.h>
-#include <stdio.h>
-#include <toolkit/toolkit.h>
+#ifndef _TOOLKIT_WINDOW_H
+#define _TOOLKIT_WINDOW_H
 
-int main(int argc, char **argv) {
-	struct window *window;
+struct widget;
 
-	init_toolkit();
+struct window {
+	struct fb *fb;
+	struct widget *widget;
+};
 
-	window = create_window("testwidget");
-	if (!window) {
-		fprintf(stderr, "%s: creating window failed\n", argv[0]);
-		return 1;
-	}
+struct window *create_window(const char *widget);
+void destroy_window(struct window *window);
+void redraw_window(struct window *window);
+void update_window(struct window *window);
 
-	_done();
-	return 0;
-}
+#endif

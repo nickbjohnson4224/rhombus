@@ -20,26 +20,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <lua.h>
-#include <lauxlib.h>
 #include <lualib.h>
+#include <lauxlib.h>
 #include "private.h"
 
-static bool mutex;
-struct fb *__rtk_fb;
-lua_State *__rtk_L;
+#define DEBUG 1
 
-void init_toolkit(struct fb *fb) {
-	__rtk_fb = fb;
-	__rtk_L = lua_open();
-	luaL_openlibs(__rtk_L);
-	__rtk_init_drawing_functions();
-}
-
-void close_toolkit() {
-	lua_close(__rtk_L);
-}
-
-struct widget *add_widget(const char *name, int x, int y, int w, int h) {
+struct widget *add_widget(const char *name, struct widget *parent, struct window *window, int x, int y, int w, int h) {
 	struct widget *widget = malloc(sizeof(struct widget));
 	char *filename;
 
@@ -47,25 +34,38 @@ struct widget *add_widget(const char *name, int x, int y, int w, int h) {
 		return NULL;
 	}
 
-	widget->x = x;
-	widget->y = y;
+	widget->window = window;
+	widget->parent = parent;
+	widget->children = NULL;
+	widget->prev = widget->next = NULL;
+	widget->width = w;
+	widget->height = h;
+	set_position(widget, x, y);
 
-	mutex_spin(&mutex);
+	widget->L = lua_open();
+	luaL_openlibs(widget->L);
+	lua_pushlightuserdata(widget->L, widget);
+	lua_rawseti(widget->L, LUA_REGISTRYINDEX, 1);
+	__rtk_init_drawing_functions(widget->L);
 
 	filename = saprintf("/etc/widgets/%s.lua", name);
-	if (luaL_loadfile(__rtk_L, filename)) {
+	if (luaL_loadfile(widget->L, filename)) {
+		lua_close(widget->L);
 		free(widget);
 		free(filename);
-		mutex_free(&mutex);
 		return NULL;
 	}
 	free(filename);
 
-	lua_pushvalue(__rtk_L,-1);
-	widget->ref = luaL_ref(__rtk_L, LUA_REGISTRYINDEX);
-	lua_pcall(__rtk_L, 0, 0, 0);
+	if (parent) {
+		if (parent->children) {
+			parent->children->prev = widget;
+		}
+		widget->next = parent->children;
+		parent->children = widget;
+	}
 
-	mutex_free(&mutex);
+	lua_pcall(widget->L, 0, 0, 0);
 
 	set_size(widget, w, h);
 
@@ -73,86 +73,158 @@ struct widget *add_widget(const char *name, int x, int y, int w, int h) {
 }
 
 void free_widget(struct widget *widget) {
-	mutex_spin(&mutex);
-	luaL_unref(__rtk_L, LUA_REGISTRYINDEX, widget->ref);
-	mutex_free(&mutex);
+	struct widget *ptr;
+	
+	for (ptr = widget->children; ptr; ptr = ptr->next) {
+		free_widget(ptr);
+	}
+
+	if (widget->parent) {
+		widget->parent->children = widget->next;
+	}
+	if (widget->next) {
+		widget->next->prev = widget->prev;
+	}
+	if (widget->prev) {
+		widget->prev->next = widget->next;
+	}
+
+	lua_close(widget->L);
 	free(widget);
 }
 
-int draw_widget(struct widget *widget) {
-	mutex_spin(&mutex);
+int draw_widget(struct widget *widget, bool force) {
+	struct widget *ptr;
 
-	__rtk_curwidget = widget;
-
-	lua_rawgeti(__rtk_L, LUA_REGISTRYINDEX, widget->ref);
-	lua_getglobal(__rtk_L, "draw");
-	if (lua_pcall(__rtk_L, 0, 0, 0)) {
-		lua_pop(__rtk_L, -1);
-		return 1;
+	if (force || widget->dirty) {
+		lua_getglobal(widget->L, "draw");
+		if (lua_pcall(widget->L, 0, 0, 0)) {
+#if DEBUG
+			fprintf(stderr, "Toolkit Lua error: %s\n", lua_tostring(widget->L, -1));
+#else
+			lua_pop(widget->L, -1);
+#endif
+			return 1;
+		}
 	}
 
-	__rtk_curwidget = NULL;
+	if (force || widget->child_dirty) {
+		for (ptr = widget->children; ptr; ptr = ptr->next) {
+			if (force || ptr->dirty || ptr->child_dirty) {
+				draw_widget(ptr, force);
+			}
+		}
+	}
 
-	mutex_free(&mutex);
+	widget->dirty = false;
+	widget->child_dirty = false;
 
 	return 0;
+}
+
+void update_widget(struct widget *widget) {
+	struct widget *ptr;
+
+	if (widget->parent) {
+		widget->realx = widget->parent->realx + widget->x;
+		widget->realy = widget->parent->realy + widget->y;
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+		widget->realwidth = MIN(widget->parent->width - widget->x, widget->width);
+		widget->realheight = MIN(widget->parent->height - widget->y, widget->height);
+#undef MIN
+	}
+	else {
+		widget->realx = widget->x;
+		widget->realy = widget->y;
+		widget->realwidth = widget->width;
+		widget->realheight = widget->height;
+	}
+
+	for (ptr = widget->children; ptr; ptr = ptr->next) {
+		update_widget(ptr);
+	}
 }
 
 void set_position(struct widget *widget, int x, int y) {
 	widget->x = x;
 	widget->y = y;
+	update_widget(widget);
+}
+
+void get_position(struct widget *widget, int *x, int *y) {
+	*x = widget->x;
+	*y = widget->y;
 }
 
 int set_size(struct widget *widget, int width, int height) {
 	widget->width = width;
 	widget->height = height;
 
+	update_widget(widget);
+
 	return set_attribute_int(widget, "width", width) ||
 	       set_attribute_int(widget, "height", height);
 }
 
+void get_size(struct widget *widget, int *width, int *height) {
+	*width = widget->width;
+	*height = widget->height;
+	update_widget(widget);
+}
+
+int __rtk_set_attribute(struct widget *widget) {
+	lua_getglobal(widget->L, "set_attribute");
+	lua_insert(widget->L, -3);
+	if (lua_pcall(widget->L, 2, 0, 0)) {
+#if DEBUG
+		fprintf(stderr, "Toolkit Lua error: %s\n", lua_tostring(widget->L, -1));
+#else
+		lua_pop(widget->L, -1);
+#endif
+		return 1;
+	}
+	return 0;
+} 
+
+int __rtk_get_attribute(struct widget *widget) {
+	lua_getglobal(widget->L, "get_attribute");
+	lua_insert(widget->L, -2);
+	if (lua_pcall(widget->L, 1, 1, 0)) {
+#if DEBUG
+		fprintf(stderr, "Toolkit Lua error: %s\n", lua_tostring(widget->L, -1));
+#else
+		lua_pop(widget->L, -1);
+#endif
+		return 1;
+	}
+	return 0;
+}
+
 #define ATTRIBUTE_FUNCS(ctype,typename,luatype) \
 	int set_attribute_##typename(struct widget *widget, const char *name, ctype value) { \
-		mutex_spin(&mutex); \
-		\
-		lua_rawgeti(__rtk_L, LUA_REGISTRYINDEX, widget->ref); \
-		lua_getglobal(__rtk_L, "set_attribute"); \
-		lua_pushstring(__rtk_L, name); \
-		lua_push##luatype(__rtk_L, value); \
-		if (lua_pcall(__rtk_L, 2, 0, 0)) { \
-			lua_pop(__rtk_L, -1); \
-			mutex_free(&mutex); \
+		lua_pushstring(widget->L, name); \
+		lua_push##luatype(widget->L, value); \
+		if (__rtk_set_attribute(widget)) { \
 			return 1; \
 		} \
-		\
-		mutex_free(&mutex); \
 		return 0; \
 	} \
 	\
 	ctype get_attribute_##typename(struct widget *widget, const char *name) { \
 		ctype ret; \
 		\
-		mutex_spin(&mutex); \
-		\
-		lua_rawgeti(__rtk_L, LUA_REGISTRYINDEX, widget->ref); \
-		lua_getglobal(__rtk_L, "get_attribute"); \
-		lua_pushstring(__rtk_L, name); \
-		if (lua_pcall(__rtk_L, 1, 1, 0)) { \
-			mutex_free(&mutex); \
+		lua_pushstring(widget->L, name); \
+		if (__rtk_get_attribute(widget)) { \
 			return 0; \
 		} \
-		if (!lua_is##luatype(__rtk_L, -1)) { \
-			lua_pop(__rtk_L, -1); \
-			mutex_free(&mutex); \
+		if (!lua_is##luatype(widget->L, -1)) { \
+			lua_pop(widget->L, -1); \
 			return 0; \
 		} \
-		ret = lua_to##luatype(__rtk_L, -1); \
-		\
-		mutex_free(&mutex); \
+		ret = lua_to##luatype(widget->L, -1); \
 		\
 		return ret; \
 	}
-
 
 ATTRIBUTE_FUNCS(int, int, number)
 ATTRIBUTE_FUNCS(double, double, number)

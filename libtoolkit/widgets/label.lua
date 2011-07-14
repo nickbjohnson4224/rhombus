@@ -1,4 +1,10 @@
 function set_attribute(name, value)
+	if (name == "width") then
+		width = value
+	end
+	if (name == "height") then
+		height = value
+	end
 	if (name == "size") then
 		size = value
 	end
@@ -11,15 +17,15 @@ function set_attribute(name, value)
 	if (name == "background") then
 		background = value
 	end
-	if (name == "width") then
-		width = value
-	end
-	if (name == "height") then
-		height = value
-	end
 end
 
 function get_attribute(name)
+	if (name == "width") then
+		return(width)
+	end
+	if (name == "height") then
+		return(height)
+	end
 	if (name == "size") then
 		return(size)
 	end
@@ -32,18 +38,11 @@ function get_attribute(name)
 	if (name == "background") then
 		return(background)
 	end
-	if (name == "width") then
-		return(width)
-	end
-	if (name == "height") then
-		return(height)
-	end
 	return(0)
 end
 
 function draw()
 	write_text(0, 0, size, text, foreground, background)
-	update()
 end
 
 size = 12
