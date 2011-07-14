@@ -14,26 +14,38 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef WIDGET_H
-#define WIDGET_H
+#ifndef _TOOLKIT_WIDGET_H
+#define _TOOLKIT_WIDGET_H
 
-#include <graph.h>
+#include <lua.h>
+#include <stdbool.h>
+
+struct window;
+struct fb;
 
 struct widget {
-	int ref;
+	lua_State *L;
+	struct window *window;
+	bool dirty, child_dirty;
+
 	int x, y;
 	int width, height;
+	int realx, realy, realwidth, realheight;
+
+	struct widget *parent, *children;
+	struct widget *prev, *next;
 };
 
-void init_toolkit(struct fb *fb);
-void close_toolkit();
-
-struct widget *add_widget(const char *widget, int x, int y, int width, int height);
+struct widget *add_widget(const char *widget, struct widget *parent, struct window *window, int x, int y, int width, int height);
 void free_widget(struct widget *widget);
-int draw_widget(struct widget *widget);
+int draw_widget(struct widget *widget, bool force);
+void update_widget();
 
 void set_position(struct widget *widget, int x, int y);
+void get_position(struct widget *widget, int *x, int *y);
 int set_size(struct widget *widget, int width, int height);
+void get_size(struct widget *widget, int *width, int *height);
+
 int set_attribute_int(struct widget *widget, const char *name, int value);
 int set_attribute_double(struct widget *widget, const char *name, double value);
 int set_attribute_string(struct widget *widget, const char *name, const char *value);
