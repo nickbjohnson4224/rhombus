@@ -34,12 +34,24 @@ void toolkit_graph_event(uint64_t source, int argc, char **argv) {
 
 void toolkit_key_event(uint64_t source, int argc, char **argv) {
 	if (source != wmanager) return;
-//	widget_key_event(__rtk_window->widget, argc, argv);
+
+	if (!strcmp(argv[1], "press") && argc == 3) {
+		widget_event(__rtk_window->widget, "key_press", argc - 2, argv + 2);
+	}
+	if (!strcmp(argv[1], "release") && argc == 3) {
+		widget_event(__rtk_window->widget, "key_release", argc - 2, argv + 2);
+	}
 }
 
 void toolkit_mouse_event(uint64_t source, int argc, char **argv) {
 	if (source != wmanager) return;
-//	widget_mouse_event(__rtk_window->widget, argc, argv);
+
+	if (!strcmp(argv[1], "delta") && argc == 4) {
+		widget_event(__rtk_window->widget, "mouse_move", argc - 2, argv + 2);
+	}
+	if (!strcmp(argv[1], "button") && argc == 3) {
+		widget_event(__rtk_window->widget, "mouse_button", argc - 2, argv + 2);
+	}
 }
 
 int init_toolkit() {

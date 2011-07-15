@@ -40,6 +40,7 @@ struct widget *add_widget(const char *widget, struct widget *parent, struct wind
 void free_widget(struct widget *widget);
 int draw_widget(struct widget *widget, bool force);
 void update_widget();
+int widget_event(struct widget *widget, const char *event, int argc, char **argv);
 
 void set_position(struct widget *widget, int x, int y);
 void get_position(struct widget *widget, int *x, int *y);

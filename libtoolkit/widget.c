@@ -16,6 +16,7 @@
 
 #include "widget.h"
 #include <graph.h>
+#include <natio.h>
 #include <mutex.h>
 #include <string.h>
 #include <stdlib.h>
@@ -25,7 +26,13 @@
 #include "window.h"
 #include "private.h"
 
-#define DEBUG 1
+static int call_lua_function(lua_State *L, int args, int ret) {
+	if (lua_pcall(L, args, ret, 0)) {
+		lua_pop(L, -1);
+		return 1;
+	}
+	return 0;
+}
 
 struct widget *add_widget(const char *name, struct widget *parent, struct window *window, int x, int y, int w, int h) {
 	struct widget *widget = malloc(sizeof(struct widget));
@@ -66,7 +73,10 @@ struct widget *add_widget(const char *name, struct widget *parent, struct window
 		parent->children = widget;
 	}
 
-	lua_pcall(widget->L, 0, 0, 0);
+	if (call_lua_function(widget->L, 0, 0)) {
+		free_widget(widget);
+		return NULL;
+	}
 
 	set_size(widget, w, h);
 
@@ -99,12 +109,7 @@ int draw_widget(struct widget *widget, bool force) {
 
 	if (force || widget->dirty) {
 		lua_getglobal(widget->L, "draw");
-		if (lua_pcall(widget->L, 0, 0, 0)) {
-#if DEBUG
-			fprintf(stderr, "Toolkit Lua error: %s\n", lua_tostring(widget->L, -1));
-#else
-			lua_pop(widget->L, -1);
-#endif
+		if (call_lua_function(widget->L, 0, 0)) {
 			return 1;
 		}
 	}
@@ -148,6 +153,42 @@ void update_widget(struct widget *widget) {
 	}
 }
 
+static int __widget_event(struct widget *widget, const char *event, int argc, char **argv, int mousex, int mousey) {
+	struct widget *ptr;
+
+	for (ptr = widget->children; ptr; ptr = ptr->next) {
+		if ((ptr->realx <= mousex && mousex <= ptr->realx + ptr->realwidth) &&
+				(ptr->realy <= mousey && mousey <= ptr->realy + ptr->realheight)) {
+			if (!widget_event(ptr, event, argc, argv)) {
+				return 0;
+			}
+		}
+	}
+
+	lua_getglobal(widget->L, event);
+	lua_pushnumber(widget->L, mousex - widget->realx);
+	lua_pushnumber(widget->L, mousey - widget->realy);
+	for (int i = 0; i < argc; i++) {
+		lua_pushstring(widget->L, argv[i]);
+	}
+	return call_lua_function(widget->L, argc + 2, 0);
+}
+
+int widget_event(struct widget *widget, const char *event, int argc, char **argv) {
+	int mousex, mousey;
+	char *ret = rcall(widget->window->fb->rp, "getmouse");
+
+	if (!ret) {
+		return 1;
+	}
+
+	if (sscanf(ret, "%i %i", &mousex, &mousey) != 2) {
+		return 1;
+	}
+
+	return __widget_event(widget, event, argc, argv, mousex, mousey);
+}
+
 void set_position(struct widget *widget, int x, int y) {
 	widget->x = x;
 	widget->y = y;
@@ -178,29 +219,13 @@ void get_size(struct widget *widget, int *width, int *height) {
 int __rtk_set_attribute(struct widget *widget) {
 	lua_getglobal(widget->L, "set_attribute");
 	lua_insert(widget->L, -3);
-	if (lua_pcall(widget->L, 2, 0, 0)) {
-#if DEBUG
-		fprintf(stderr, "Toolkit Lua error: %s\n", lua_tostring(widget->L, -1));
-#else
-		lua_pop(widget->L, -1);
-#endif
-		return 1;
-	}
-	return 0;
+	return call_lua_function(widget->L, 2, 0);
 } 
 
 int __rtk_get_attribute(struct widget *widget) {
 	lua_getglobal(widget->L, "get_attribute");
 	lua_insert(widget->L, -2);
-	if (lua_pcall(widget->L, 1, 1, 0)) {
-#if DEBUG
-		fprintf(stderr, "Toolkit Lua error: %s\n", lua_tostring(widget->L, -1));
-#else
-		lua_pop(widget->L, -1);
-#endif
-		return 1;
-	}
-	return 0;
+	return call_lua_function(widget->L, 1, 1);
 }
 
 #define ATTRIBUTE_FUNCS(ctype,typename,luatype) \

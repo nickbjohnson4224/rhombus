@@ -21,6 +21,10 @@ function draw()
 	write_text(50, 0, 10, "hello:", 0xffffffff, 0);
 end
 
+function mouse_button(absx, absy, button)
+	print(absx .. ";" .. absy .. ": " .. button)
+end
+
 width = 0
 height = 0
 label1 = add_child("label", 0, 15, 100, 15)
