@@ -27,19 +27,11 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	window = create_window("layout");
+	window = create_window_from_store("testwindow");
 	if (!window) {
 		fprintf(stderr, "%s: creating window failed\n", argv[0]);
 		return 1;
 	}
-
-	widget_call(window->widget, "add_widget", "label", "100", "20", NULL);
-	widget_call(window->widget, "add_widget", "label", "100", "20", NULL);
-	widget_call(window->widget, "add_widget", "label", "100", "20", NULL);
-	set_attribute_string(window->widget->children, "text", "111");
-	set_attribute_string(window->widget->children->next, "text", "222");
-	set_attribute_string(window->widget->children->next->next, "text", "333");
-	draw_window(window);
 
 	_done();
 	return 0;

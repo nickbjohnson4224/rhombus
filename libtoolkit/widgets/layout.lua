@@ -30,8 +30,8 @@ function get_attribute(name)
 	return (0)
 end
 
-function add_widget(widgettype, width, height)
-	widget = add_child(widgettype, 0, 0, width, height)
+function add_widget(widgettype)
+	widget = add_child(widgettype, 0, 0, 100, 100)
 	table.insert(children, widget)
 	update_layout(-height, widget)
 end

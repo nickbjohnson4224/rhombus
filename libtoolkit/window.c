@@ -15,14 +15,18 @@
  */
 
 #include "window.h"
+#include <ctype.h>
 #include <graph.h>
 #include <natio.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "widget.h"
 
 struct window *__rtk_window; //todo: support for multiple windows
+static const int stack_size = 16;
 
-struct window *create_window(const char *widget) {
+struct window *create_window_from_widget(const char *widget) {
 	struct window *window = malloc(sizeof(struct window));
 	int width, height;
 
@@ -49,6 +53,98 @@ struct window *create_window(const char *widget) {
 
 	__rtk_window = window;
 	return window;
+}
+
+struct window *create_window_from_file(const char *filename) {
+	FILE *file = fopen(filename, "r");
+	struct window *window;
+	struct widget *stack[stack_size + 1];
+	struct widget **stack_ptr = stack - 1;
+	char buffer[256], name[256], value[256];
+	char *start, *end, *middle;
+	bool first = true;
+
+	if (!file) {
+		return NULL;
+	}
+
+	while (stack_ptr >= stack || first) {
+		fgets(buffer, sizeof(buffer), file);
+
+		start = buffer;
+		while (isspace(*start))
+			start++;
+		end = strchr(buffer, ' ');
+		if (!end) {
+			end = buffer + strlen(buffer) - 1;
+		}
+
+		if (!strcmp(start, "end\n")) {
+			stack_ptr--;
+		}
+		else {
+			strncpy(name, start, end - start);
+			name[end - start] = 0;
+
+			if (first) {
+				window = create_window_from_widget(name);
+				if (!window) {
+					fclose(file);
+					return NULL;
+				}
+
+				*(++stack_ptr) = window->widget;
+				first = false;
+			}
+			else {
+				widget_call(*stack_ptr, "add_widget", name, NULL);
+				*(stack_ptr + 1) = (*stack_ptr)->children;
+				stack_ptr++;
+			}
+
+			
+			if (stack_ptr - stack >= stack_size) {
+				fclose(file);
+				destroy_window(window);
+				return NULL;
+			}
+			
+			while (1) {
+				start = end + 1;
+				if (start >= buffer + strlen(buffer)) {
+					break;
+				}
+
+				middle = strchr(start, '=') + 1;
+				if (!middle) {
+					break;
+				}
+
+				end = strchr(middle, ' ');
+				if (!end) {
+					end = buffer + strlen(buffer) - 1;
+				}
+
+				strncpy(name, start, middle - start - 1);
+				strncpy(value, middle, end - middle);
+				name[middle - start - 1] = 0;
+				value[end - middle] = 0;
+
+				set_attribute_string(*stack_ptr, name, value);
+			}
+		}
+	}
+
+	fclose(file);
+	draw_window(window);
+	return window;
+}
+
+struct window *create_window_from_store(const char *window) {
+	char *filename = saprintf("/etc/windows/%s.txt", window);
+	struct window *ret = create_window_from_file(filename);
+	free(filename);
+	return ret;
 }
 
 void destroy_window(struct window *window) {
