@@ -210,8 +210,8 @@ static int write_text(lua_State *L) {
 						red   = alpha * PIX_R(foreground) + (1 - alpha) * PIX_R(background);
 						green = alpha * PIX_G(foreground) + (1 - alpha) * PIX_G(background);
 						blue  = alpha * PIX_B(foreground) + (1 - alpha) * PIX_B(background);
-						fb_plot(widget->window->fb, widget->x + cursorx + widget->realx,
-								widget->y + cursory + widget->realy, COLOR(red, green, blue));
+						fb_plot(widget->window->fb, cursorx + widget->realx,
+								cursory + widget->realy, COLOR(red, green, blue));
 					}
 				}
 				advance += face->glyph->advance.x >> 6;
