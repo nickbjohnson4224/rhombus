@@ -231,6 +231,7 @@ static int write_text(lua_State *L) {
 
 void __rtk_init_drawing_functions(lua_State *L) {
 	EXPORT_FUNC(request_redraw);
+//todo: call
 
 	EXPORT_FUNC(add_child);
 	EXPORT_FUNC(set_child_attribute);

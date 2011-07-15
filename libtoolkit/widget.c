@@ -109,9 +109,7 @@ int draw_widget(struct widget *widget, bool force) {
 
 	if (force || widget->dirty) {
 		lua_getglobal(widget->L, "draw");
-		if (call_lua_function(widget->L, 0, 0)) {
-			return 1;
-		}
+		call_lua_function(widget->L, 0, 0);
 	}
 
 	if (force || widget->child_dirty) {
@@ -147,6 +145,8 @@ void update_widget(struct widget *widget) {
 	widget->realwidth = MIN(parent_width - widget->x, widget->width);
 	widget->realheight = MIN(parent_height - widget->y, widget->height);
 #undef MIN
+	widget->dirty = true;
+	widget->child_dirty = true;
 
 	for (ptr = widget->children; ptr; ptr = ptr->next) {
 		update_widget(ptr);
@@ -187,6 +187,26 @@ int widget_event(struct widget *widget, const char *event, int argc, char **argv
 	}
 
 	return __widget_event(widget, event, argc, argv, mousex, mousey);
+}
+
+int widget_call(struct widget *widget, const char *func, ...) {
+	va_list vl;
+	const char *arg;
+	int argc = 0;
+
+	lua_getglobal(widget->L, func);
+
+	va_start(vl, func);
+	do {
+		arg = va_arg(vl, const char*);
+		if (arg) {
+			lua_pushstring(widget->L, arg);
+			argc++;
+		}
+	} while (arg);
+	va_end(vl);
+
+	return call_lua_function(widget->L, argc, 0);
 }
 
 void set_position(struct widget *widget, int x, int y) {
@@ -255,5 +275,6 @@ int __rtk_get_attribute(struct widget *widget) {
 	}
 
 ATTRIBUTE_FUNCS(int, int, number)
+ATTRIBUTE_FUNCS(bool, bool, boolean)
 ATTRIBUTE_FUNCS(double, double, number)
 ATTRIBUTE_FUNCS(const char*, string, string)
