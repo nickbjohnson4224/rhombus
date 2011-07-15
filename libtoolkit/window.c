@@ -16,8 +16,11 @@
 
 #include "window.h"
 #include <graph.h>
+#include <natio.h>
 #include <stdlib.h>
 #include "widget.h"
+
+struct window *__rtk_window; //todo: support for multiple windows
 
 struct window *create_window(const char *widget) {
 	struct window *window = malloc(sizeof(struct window));
@@ -41,8 +44,10 @@ struct window *create_window(const char *widget) {
 	}
 	window->widget->window = window;
 
-	redraw_window(window);
+	event_register(window->fb->rp);
+	draw_window(window);
 
+	__rtk_window = window;
 	return window;
 }
 
@@ -52,15 +57,25 @@ void destroy_window(struct window *window) {
 	free(window);
 }
 
-static void draw_window(struct window *window, bool force) {
+static void __draw_window(struct window *window, bool force) {
 	draw_widget(window->widget, force);
 	fb_flip(window->fb);
 }
 
-void redraw_window(struct window *window) {
-	draw_window(window, true);
+void draw_window(struct window *window) {
+	__draw_window(window, true);
 }
 
 void update_window(struct window *window) {
-	draw_window(window, false);
+	__draw_window(window, false);
+}
+
+void resize_window(struct window *window, int width, int height) {
+	fb_resize(window->fb, width, height);
+	set_size(window->widget, width, height);
+	draw_window(window);
+}
+
+void get_window_size(struct window *window, int *width, int *height) {
+	fb_getmode(window->fb, width, height);
 }

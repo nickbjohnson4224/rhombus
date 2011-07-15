@@ -15,8 +15,42 @@
  */
 
 #include "toolkit.h"
+#include <natio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "private.h"
 
-void init_toolkit() {
-	__rtk_init_freetype();
+static uint64_t wmanager;
+
+void toolkit_graph_event(uint64_t source, int argc, char **argv) {
+	
+	if (source != wmanager) return;
+	if (argc != 4) return;
+
+	if (!strcmp(argv[1], "resize")) {
+		resize_window(__rtk_window, atoi(argv[2]), atoi(argv[3]));
+	}
+}
+
+void toolkit_key_event(uint64_t source, int argc, char **argv) {
+	if (source != wmanager) return;
+//	widget_key_event(__rtk_window->widget, argc, argv);
+}
+
+void toolkit_mouse_event(uint64_t source, int argc, char **argv) {
+	if (source != wmanager) return;
+//	widget_mouse_event(__rtk_window->widget, argc, argv);
+}
+
+int init_toolkit() {
+	wmanager = fs_find("/sys/wmanager");
+	if (!wmanager) {
+		return 1;
+	}
+
+	event_set("graph", toolkit_graph_event);
+	event_set("key",   toolkit_key_event);
+	event_set("mouse", toolkit_mouse_event);
+
+	return __rtk_init_freetype();
 }

@@ -22,7 +22,10 @@
 int main(int argc, char **argv) {
 	struct window *window;
 
-	init_toolkit();
+	if (init_toolkit()) {
+		fprintf(stderr, "%s: initializing toolkit failed\n", argv[0]);
+		return 1;
+	}
 
 	window = create_window("testwidget");
 	if (!window) {

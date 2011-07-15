@@ -26,7 +26,9 @@ struct window {
 
 struct window *create_window(const char *widget);
 void destroy_window(struct window *window);
-void redraw_window(struct window *window);
+void draw_window  (struct window *window);
 void update_window(struct window *window);
+void resize_window(struct window *window, int width, int height);
+void get_window_size(struct window *window, int *width, int *height);
 
 #endif

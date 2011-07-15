@@ -177,7 +177,7 @@ void resize_window(struct window_t *window, int width, int height, bool notify) 
 	window->width = width;
 	window->height = height;
 
-	if (notify && window->flags & LISTEN_EVENTS) {
+	if (notify && (window->flags & LISTEN_EVENTS)) {
 		event_str = saprintf("graph resize %d %d", window->width, window->height);
 		event(RP_CONS(window->owner, 0), event_str);
 		free(event_str);

@@ -22,6 +22,7 @@
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
+#include "window.h"
 #include "private.h"
 
 #define DEBUG 1
@@ -124,21 +125,23 @@ int draw_widget(struct widget *widget, bool force) {
 
 void update_widget(struct widget *widget) {
 	struct widget *ptr;
+	int parent_width, parent_height;
 
 	if (widget->parent) {
 		widget->realx = widget->parent->realx + widget->x;
 		widget->realy = widget->parent->realy + widget->y;
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
-		widget->realwidth = MIN(widget->parent->width - widget->x, widget->width);
-		widget->realheight = MIN(widget->parent->height - widget->y, widget->height);
-#undef MIN
+		parent_width = widget->parent->width;
+		parent_height = widget->parent->height;
 	}
 	else {
 		widget->realx = widget->x;
 		widget->realy = widget->y;
-		widget->realwidth = widget->width;
-		widget->realheight = widget->height;
+		get_window_size(widget->window, &parent_width, &parent_height);
 	}
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+	widget->realwidth = MIN(parent_width - widget->x, widget->width);
+	widget->realheight = MIN(parent_height - widget->y, widget->height);
+#undef MIN
 
 	for (ptr = widget->children; ptr; ptr = ptr->next) {
 		update_widget(ptr);
