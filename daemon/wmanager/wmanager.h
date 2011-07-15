@@ -44,6 +44,7 @@ extern struct window_t *windows;
 extern struct window_t *active_window;
 extern struct window_t *main_window;
 extern bool winkey;
+extern int mousex, mousey;
 
 struct window_t *find_window(uint32_t id, uint32_t owner);
 int add_window(uint32_t id);
