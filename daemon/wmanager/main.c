@@ -167,6 +167,15 @@ char *wmanager_rcall_setwindowflags(uint64_t source, uint32_t index, int argc, c
 	return strdup("T");
 }
 
+char *wmanager_rcall_getmouse(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct window_t *window;
+
+	window = find_window(index, RP_PID(source));
+	if (!window) return NULL;
+
+	return saprintf("%i %i", mousex - window->x, mousey - window->y);
+}
+
 int wmanager_share(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off) {
 	struct window_t *window = find_window(index, RP_PID(source));
 
@@ -311,6 +320,7 @@ int main(int argc, char **argv) {
 	rcall_set("getwindowflags", wmanager_rcall_getwindowflags);
 	rcall_set("setwindowflags", wmanager_rcall_setwindowflags);
 	rcall_set("syncrect",       wmanager_rcall_syncrect);
+	rcall_set("getmouse", 		wmanager_rcall_getmouse);
 
 	rdi_set_share(wmanager_share);
 	rdi_set_sync (wmanager_sync);

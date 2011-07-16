@@ -29,9 +29,9 @@ static FT_Library library;
 static FT_Face face;
 static bool mutex;
 
-void __rtk_init_freetype() {
-	FT_Init_FreeType(&library);
-	FT_New_Face(library, "/etc/dejavu.ttf", 0, &face); //todo: configure font
+int __rtk_init_freetype() {
+	return FT_Init_FreeType(&library) ||
+	       FT_New_Face(library, "/etc/dejavu.ttf", 0, &face); //todo: configure font
 }
 
 struct widget *get_widget(lua_State *L) {
@@ -92,6 +92,7 @@ static int set_child_attribute(lua_State *L) {
 		lua_pushnumber(L, 0);
 		return 1;
 	}
+
 	name = lua_tostring(L, 2);
 	data = lua_tostring(L, 3);
 	if (lua_isnumber(L, 3)) {
@@ -209,8 +210,8 @@ static int write_text(lua_State *L) {
 						red   = alpha * PIX_R(foreground) + (1 - alpha) * PIX_R(background);
 						green = alpha * PIX_G(foreground) + (1 - alpha) * PIX_G(background);
 						blue  = alpha * PIX_B(foreground) + (1 - alpha) * PIX_B(background);
-						fb_plot(widget->window->fb, widget->x + cursorx + widget->realx,
-								widget->y + cursory + widget->realy, COLOR(red, green, blue));
+						fb_plot(widget->window->fb, cursorx + widget->realx,
+								cursory + widget->realy, COLOR(red, green, blue));
 					}
 				}
 				advance += face->glyph->advance.x >> 6;
@@ -230,6 +231,7 @@ static int write_text(lua_State *L) {
 
 void __rtk_init_drawing_functions(lua_State *L) {
 	EXPORT_FUNC(request_redraw);
+//todo: call
 
 	EXPORT_FUNC(add_child);
 	EXPORT_FUNC(set_child_attribute);

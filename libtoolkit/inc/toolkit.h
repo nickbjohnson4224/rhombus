@@ -20,7 +20,7 @@
 #include <toolkit/widget.h>
 #include <toolkit/window.h>
 
-void init_toolkit();
+int init_toolkit();
 
 #endif
 

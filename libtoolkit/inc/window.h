@@ -24,9 +24,15 @@ struct window {
 	struct widget *widget;
 };
 
-struct window *create_window(const char *widget);
+struct window *create_window_from_widget(const char *widget);
+struct window *create_window_from_file(const char *filename);
+struct window *create_window_from_store(const char *window);
 void destroy_window(struct window *window);
-void redraw_window(struct window *window);
+void draw_window  (struct window *window);
 void update_window(struct window *window);
+void resize_window(struct window *window, int width, int height);
+void get_window_size(struct window *window, int *width, int *height);
+//todo: struct widget *find_widget(struct window *window, const char *name);
+//todo: void window_register(const char *event, handler_t handler);
 
 #endif
