@@ -91,6 +91,23 @@ static int add_child(lua_State *L) {
 	return 1;
 }
 
+static int call_child(lua_State *L) {
+	struct widget *child = lua_touserdata(L, 1);
+	const char *func = lua_tostring(L, 2);
+	const char *arg;
+
+	lua_getglobal(child->L, func);
+
+	for (int i = 3; i <= lua_gettop(L); i++) {
+		arg = lua_tostring(L, i);
+		lua_pushstring(child->L, arg);
+	}
+
+	int ret = __rtk_call_lua_function(child->L, lua_gettop(L) - 2, 0);
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
 static int set_child_attribute(lua_State *L) {
 	struct widget *child = lua_touserdata(L, 1);
 	const char *name, *data;
@@ -241,9 +258,9 @@ static int write_text(lua_State *L) {
 void __rtk_init_drawing_functions(lua_State *L) {
 	EXPORT_FUNC(request_redraw);
 	EXPORT_FUNC(send_event);
-//todo: call child func
 
 	EXPORT_FUNC(add_child);
+	EXPORT_FUNC(call_child);
 	EXPORT_FUNC(set_child_attribute);
 	EXPORT_FUNC(get_child_attribute);
 

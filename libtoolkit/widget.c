@@ -26,7 +26,7 @@
 #include "window.h"
 #include "private.h"
 
-static int call_lua_function(lua_State *L, int args, int ret) {
+int __rtk_call_lua_function(lua_State *L, int args, int ret) {
 	if (lua_pcall(L, args, ret, 0)) {
 		lua_pop(L, -1);
 		return 1;
@@ -74,7 +74,7 @@ struct widget *add_widget(const char *name, struct widget *parent, struct window
 		parent->children = widget;
 	}
 
-	if (call_lua_function(widget->L, 0, 0)) {
+	if (__rtk_call_lua_function(widget->L, 0, 0)) {
 		free_widget(widget);
 		return NULL;
 	}
@@ -172,7 +172,7 @@ static int __widget_event(struct widget *widget, const char *event, int argc, ch
 	for (int i = 0; i < argc; i++) {
 		lua_pushstring(widget->L, argv[i]);
 	}
-	return call_lua_function(widget->L, argc + 2, 0);
+	return __rtk_call_lua_function(widget->L, argc + 2, 0);
 }
 
 int widget_event(struct widget *widget, const char *event, int argc, char **argv) {
@@ -207,7 +207,7 @@ int widget_call(struct widget *widget, const char *func, ...) {
 	} while (arg);
 	va_end(vl);
 
-	return call_lua_function(widget->L, argc, 0);
+	return __rtk_call_lua_function(widget->L, argc, 0);
 }
 
 struct widget *find_child(struct widget *widget, const char *name) {
@@ -266,13 +266,13 @@ char *get_name(struct widget *widget) {
 int __rtk_set_attribute(struct widget *widget) {
 	lua_getglobal(widget->L, "set_attribute");
 	lua_insert(widget->L, -3);
-	return call_lua_function(widget->L, 2, 0);
+	return __rtk_call_lua_function(widget->L, 2, 0);
 } 
 
 int __rtk_get_attribute(struct widget *widget) {
 	lua_getglobal(widget->L, "get_attribute");
 	lua_insert(widget->L, -2);
-	return call_lua_function(widget->L, 1, 1);
+	return __rtk_call_lua_function(widget->L, 1, 1);
 }
 
 #define ATTRIBUTE_FUNCS(ctype,typename,luatype) \

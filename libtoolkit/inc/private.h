@@ -20,3 +20,4 @@ int __rtk_init_freetype();
 void __rtk_init_drawing_functions(lua_State *L);
 int __rtk_set_attribute(struct widget *widget);
 int __rtk_get_attribute(struct widget *widget);
+int __rtk_call_lua_function(lua_State *L, int args, int ret);
