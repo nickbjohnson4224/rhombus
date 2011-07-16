@@ -179,18 +179,24 @@ void update_window(struct window *window) {
 	__draw_window(window, false);
 }
 
-void resize_window(struct window *window, int width, int height) {
+void __rtk_set_window_size(struct window *window, int width, int height) {
 	fb_resize(window->fb, width, height);
 	set_size(window->widget, width, height);
 	draw_window(window);
 }
 
-void get_window_size(struct window *window, int *width, int *height) {
-	fb_getmode(window->fb, width, height);
+
+int resize_window(struct window *window, int width, int height) {
+	if (fb_setmode(window->fb, width, height)) {
+		return 1;
+	}
+
+	__rtk_set_window_size(window, width, height);
+	return 0;
 }
 
-struct widget *find_widget(struct window *window, const char *name) {
-	return find_child(window->widget, name);
+void get_window_size(struct window *window, int *width, int *height) {
+	fb_getmode(window->fb, width, height);
 }
 
 void window_register(struct window *window, handler_t handler) {
@@ -219,4 +225,8 @@ void clear_window_flags(struct window *window, enum window_flags flags) {
 	int curflags = get_window_flags(window);
 	curflags &= ~flags;
 	set_window_flags(window, curflags);
+}
+
+struct widget *find_widget(struct window *window, const char *name) {
+	return find_child(window->widget, name);
 }
