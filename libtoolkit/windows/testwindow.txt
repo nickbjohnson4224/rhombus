@@ -5,7 +5,7 @@ layout
 		label text=b
 		end
 	end
-	label text=c
+	label text=c name=c
 	end
 	label text=d
 	end

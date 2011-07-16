@@ -48,6 +48,7 @@ struct widget *add_widget(const char *name, struct widget *parent, struct window
 	widget->prev = widget->next = NULL;
 	widget->width = w;
 	widget->height = h;
+	widget->name = NULL;
 	set_position(widget, x, y);
 
 	widget->L = lua_open();
@@ -101,6 +102,7 @@ void free_widget(struct widget *widget) {
 	}
 
 	lua_close(widget->L);
+	free(widget->name);
 	free(widget);
 }
 
@@ -108,8 +110,7 @@ int draw_widget(struct widget *widget, bool force) {
 	struct widget *ptr;
 
 	if (force || widget->dirty) {
-		lua_getglobal(widget->L, "draw");
-		call_lua_function(widget->L, 0, 0);
+		widget_call(widget, "draw", NULL);
 	}
 
 	if (force || widget->child_dirty) {
@@ -209,6 +210,23 @@ int widget_call(struct widget *widget, const char *func, ...) {
 	return call_lua_function(widget->L, argc, 0);
 }
 
+struct widget *find_child(struct widget *widget, const char *name) {
+	struct widget *ptr, *ret;
+
+	if (widget->name && !strcmp(widget->name, name)) {
+		return widget;
+	}
+
+	for (ptr = widget->children; ptr; ptr = ptr->next) {
+		ret = find_child(ptr, name);
+		if (ret) {
+			return ret;
+		}
+	}
+
+	return NULL;
+}
+
 void set_position(struct widget *widget, int x, int y) {
 	widget->x = x;
 	widget->y = y;
@@ -234,6 +252,15 @@ void get_size(struct widget *widget, int *width, int *height) {
 	*width = widget->width;
 	*height = widget->height;
 	update_widget(widget);
+}
+
+void set_name(struct widget *widget, const char *name) {
+	free(widget->name);
+	widget->name = strdup(name);
+}
+
+char *get_name(struct widget *widget) {
+	return widget->name;
 }
 
 int __rtk_set_attribute(struct widget *widget) {

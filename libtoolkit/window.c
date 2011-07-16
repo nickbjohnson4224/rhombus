@@ -130,7 +130,19 @@ struct window *create_window_from_file(const char *filename) {
 				name[middle - start - 1] = 0;
 				value[end - middle] = 0;
 
-				set_attribute_string(*stack_ptr, name, value);
+				if (!strcmp(name, "name")) {
+					set_name(*stack_ptr, value);
+				}
+				else {
+				   	if (!strcmp(name, "width")) {
+						(*stack_ptr)->width = atoi(value);
+					}
+					if (!strcmp(name, "height")) {
+						(*stack_ptr)->height = atoi(value);
+					}
+
+					set_attribute_string(*stack_ptr, name, value);
+				}
 			}
 		}
 	}
@@ -174,4 +186,8 @@ void resize_window(struct window *window, int width, int height) {
 
 void get_window_size(struct window *window, int *width, int *height) {
 	fb_getmode(window->fb, width, height);
+}
+
+struct widget *find_widget(struct window *window, const char *name) {
+	return find_child(window->widget, name);
 }

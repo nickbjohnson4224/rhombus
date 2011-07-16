@@ -32,7 +32,6 @@ void draw_window  (struct window *window);
 void update_window(struct window *window);
 void resize_window(struct window *window, int width, int height);
 void get_window_size(struct window *window, int *width, int *height);
-//todo: struct widget *find_widget(struct window *window, const char *name);
-//todo: void window_register(const char *event, handler_t handler);
+struct widget *find_widget(struct window *window, const char *name);
 
 #endif
