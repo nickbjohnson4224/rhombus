@@ -18,6 +18,10 @@
 #include <stdio.h>
 #include <toolkit/toolkit.h>
 
+void handler(struct widget *widget, const char *event) {
+	printf("%s %s\n", get_name(widget), event);
+}
+
 int main(int argc, char **argv) {
 	struct window *window;
 	struct widget *widget;
@@ -32,6 +36,7 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "%s: creating window failed\n", argv[0]);
 		return 1;
 	}
+	window_register(window, handler);
 
 	widget = find_widget(window, "c");
 	if (widget) {

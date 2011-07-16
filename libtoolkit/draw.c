@@ -55,6 +55,15 @@ static int request_redraw(lua_State *L) {
 	return 0;
 }
 
+static int send_event(lua_State *L) {
+	struct widget *widget = get_widget(L);
+
+	if (lua_isstring(L, 1) && widget->window->handler) {
+		widget->window->handler(widget, lua_tostring(L, 1));
+	}
+	return 0;
+}
+
 static int add_child(lua_State *L) {
 	bool error = false;
 	struct widget *child = NULL;
@@ -231,8 +240,8 @@ static int write_text(lua_State *L) {
 
 void __rtk_init_drawing_functions(lua_State *L) {
 	EXPORT_FUNC(request_redraw);
+	EXPORT_FUNC(send_event);
 //todo: call child func
-//todo: send event to app
 
 	EXPORT_FUNC(add_child);
 	EXPORT_FUNC(set_child_attribute);

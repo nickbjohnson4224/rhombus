@@ -19,9 +19,12 @@
 
 struct widget;
 
+typedef void (*handler_t)(struct widget *widget, const char *event);
+
 struct window {
 	struct fb *fb;
 	struct widget *widget;
+	handler_t handler;
 };
 
 struct window *create_window_from_widget(const char *widget);
@@ -33,5 +36,7 @@ void update_window(struct window *window);
 void resize_window(struct window *window, int width, int height);
 void get_window_size(struct window *window, int *width, int *height);
 struct widget *find_widget(struct window *window, const char *name);
+void window_register(struct window *window, handler_t handler);
+//todo: setflags etc
 
 #endif

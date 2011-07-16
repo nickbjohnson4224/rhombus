@@ -34,6 +34,7 @@ struct window *create_window_from_widget(const char *widget) {
 		return NULL;
 	}
 
+	window->handler = NULL;
 	window->fb = fb_createwindow();
 	if (!window->fb) {
 		free(window);
@@ -190,4 +191,8 @@ void get_window_size(struct window *window, int *width, int *height) {
 
 struct widget *find_widget(struct window *window, const char *name) {
 	return find_child(window->widget, name);
+}
+
+void window_register(struct window *window, handler_t handler) {
+	window->handler = handler;
 }

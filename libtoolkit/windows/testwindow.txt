@@ -9,4 +9,6 @@ layout
 	end
 	label text=d
 	end
+	button name=button text=Button
+	end
 end
