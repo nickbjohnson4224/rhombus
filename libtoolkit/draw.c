@@ -84,7 +84,7 @@ static int add_child(lua_State *L) {
 		width = lua_tonumber(L, 4);
 		height = lua_tonumber(L, 5);
 
-		child = add_widget(type, widget, widget->window, x, y, width, height);
+		child = __rtk_add_widget(type, widget, widget->window, x, y, width, height);
 	}
 
 	lua_pushlightuserdata(L, child);
@@ -127,11 +127,11 @@ static int set_child_attribute(lua_State *L) {
 	
 	if (!strcmp(name, "x")) {
 		child->x = value;
-		update_widget(child);
+		__rtk_update_widget(child);
 	}
 	else if (!strcmp(name, "y")) {
 		child->y = value;
-		update_widget(child);
+		__rtk_update_widget(child);
 	}
 	else {
 		lua_pushstring(child->L, name);
@@ -142,11 +142,11 @@ static int set_child_attribute(lua_State *L) {
 	if (!ret) {
 		if (!strcmp(name, "width")) {
 			child->width = value;
-			update_widget(child);
+			__rtk_update_widget(child);
 		}
 		if (!strcmp(name, "height")) {
 			child->height = value;
-			update_widget(child);
+			__rtk_update_widget(child);
 		}
 	}
 

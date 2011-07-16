@@ -17,7 +17,7 @@
 #ifndef _TOOLKIT_WINDOW_H
 #define _TOOLKIT_WINDOW_H
 
-struct fb;
+struct window;
 struct widget;
 
 typedef void (*handler_t)(struct widget *widget, const char *event);
@@ -26,12 +26,6 @@ enum window_flags {
 	LISTEN_EVENTS = 0x1,
 	CONSTANT_SIZE = 0x2,
 	FLOATING	  = 0x4
-};
-
-struct window {
-	struct fb *fb;
-	struct widget *widget;
-	handler_t handler;
 };
 
 struct window *create_window_from_widget(const char *widget);

@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "widget.h"
+#include "private.h"
 
 struct window *__rtk_window; //todo: support for multiple windows
 static const int stack_size = 16;
@@ -42,7 +43,7 @@ struct window *create_window_from_widget(const char *widget) {
 	}
 	fb_getmode(window->fb, &width, &height);
 
-	window->widget = add_widget(widget, NULL, window, 0, 0, width, height);
+	window->widget = __rtk_add_widget(widget, NULL, window, 0, 0, width, height);
 	if (!window->widget) {
 		free(window);
 		return NULL;
@@ -161,13 +162,13 @@ struct window *create_window_from_store(const char *window) {
 }
 
 void destroy_window(struct window *window) {
-	free_widget(window->widget);
+	__rtk_free_widget(window->widget);
 	fb_free(window->fb);
 	free(window);
 }
 
 static void __draw_window(struct window *window, bool force) {
-	draw_widget(window->widget, force);
+	__rtk_draw_widget(window->widget, force);
 	fb_flip(window->fb);
 }
 

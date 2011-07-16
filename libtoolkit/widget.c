@@ -34,7 +34,7 @@ int __rtk_call_lua_function(lua_State *L, int args, int ret) {
 	return 0;
 }
 
-struct widget *add_widget(const char *name, struct widget *parent, struct window *window, int x, int y, int w, int h) {
+struct widget *__rtk_add_widget(const char *name, struct widget *parent, struct window *window, int x, int y, int w, int h) {
 	struct widget *widget = malloc(sizeof(struct widget));
 	char *filename;
 
@@ -75,7 +75,7 @@ struct widget *add_widget(const char *name, struct widget *parent, struct window
 	}
 
 	if (__rtk_call_lua_function(widget->L, 0, 0)) {
-		free_widget(widget);
+		__rtk_free_widget(widget);
 		return NULL;
 	}
 
@@ -84,11 +84,11 @@ struct widget *add_widget(const char *name, struct widget *parent, struct window
 	return widget;
 }
 
-void free_widget(struct widget *widget) {
+void __rtk_free_widget(struct widget *widget) {
 	struct widget *ptr;
 	
 	for (ptr = widget->children; ptr; ptr = ptr->next) {
-		free_widget(ptr);
+		__rtk_free_widget(ptr);
 	}
 
 	if (widget->parent) {
@@ -106,7 +106,7 @@ void free_widget(struct widget *widget) {
 	free(widget);
 }
 
-int draw_widget(struct widget *widget, bool force) {
+int __rtk_draw_widget(struct widget *widget, bool force) {
 	struct widget *ptr;
 
 	if (force || widget->dirty) {
@@ -116,7 +116,7 @@ int draw_widget(struct widget *widget, bool force) {
 	if (force || widget->child_dirty) {
 		for (ptr = widget->children; ptr; ptr = ptr->next) {
 			if (force || ptr->dirty || ptr->child_dirty) {
-				draw_widget(ptr, force);
+				__rtk_draw_widget(ptr, force);
 			}
 		}
 	}
@@ -127,7 +127,7 @@ int draw_widget(struct widget *widget, bool force) {
 	return 0;
 }
 
-void update_widget(struct widget *widget) {
+void __rtk_update_widget(struct widget *widget) {
 	struct widget *ptr;
 	int parent_width, parent_height;
 
@@ -150,7 +150,7 @@ void update_widget(struct widget *widget) {
 	widget->child_dirty = true;
 
 	for (ptr = widget->children; ptr; ptr = ptr->next) {
-		update_widget(ptr);
+		__rtk_update_widget(ptr);
 	}
 }
 
@@ -230,7 +230,7 @@ struct widget *find_child(struct widget *widget, const char *name) {
 void set_position(struct widget *widget, int x, int y) {
 	widget->x = x;
 	widget->y = y;
-	update_widget(widget);
+	__rtk_update_widget(widget);
 }
 
 void get_position(struct widget *widget, int *x, int *y) {
@@ -242,7 +242,7 @@ int set_size(struct widget *widget, int width, int height) {
 	widget->width = width;
 	widget->height = height;
 
-	update_widget(widget);
+	__rtk_update_widget(widget);
 
 	return set_attribute_int(widget, "width", width) ||
 	       set_attribute_int(widget, "height", height);
@@ -251,7 +251,7 @@ int set_size(struct widget *widget, int width, int height) {
 void get_size(struct widget *widget, int *width, int *height) {
 	*width = widget->width;
 	*height = widget->height;
-	update_widget(widget);
+	__rtk_update_widget(widget);
 }
 
 void set_name(struct widget *widget, const char *name) {
