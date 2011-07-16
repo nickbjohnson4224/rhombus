@@ -55,6 +55,7 @@ struct widget *__rtk_add_widget(const char *name, struct widget *parent, struct 
 	luaL_openlibs(widget->L);
 	lua_pushlightuserdata(widget->L, widget);
 	lua_rawseti(widget->L, LUA_REGISTRYINDEX, 1);
+	__rtk_init_library(widget->L);
 	__rtk_init_drawing_functions(widget->L);
 
 	filename = saprintf("/etc/widgets/%s.lua", name);
@@ -261,6 +262,11 @@ void set_name(struct widget *widget, const char *name) {
 
 char *get_name(struct widget *widget) {
 	return widget->name;
+}
+
+struct widget *__rtk_get_widget(lua_State *L) {
+		lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+		return lua_touserdata(L, -1);
 }
 
 int __rtk_set_attribute(struct widget *widget) {

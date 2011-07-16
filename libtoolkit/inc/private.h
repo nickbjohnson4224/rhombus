@@ -14,6 +14,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifndef _TOOLKIT_PRIVATE_H
+#define _TOOLKIT_PRIVATE_H
+
+#include <stdbool.h>
+#include "window.h"
+
+#define EXPORT_FUNC(x) \
+    lua_pushcfunction(L, x); \
+    lua_setglobal(L, #x);
+
 struct window {
 	struct fb *fb;
 	struct widget *widget;
@@ -39,6 +49,9 @@ extern struct window *__rtk_window;
 int __rtk_init_freetype();
 void __rtk_init_drawing_functions(lua_State *L);
 
+void __rtk_init_library(lua_State *L);
+struct widget *__rtk_get_widget(lua_State *L);
+
 int __rtk_set_attribute(struct widget *widget);
 int __rtk_get_attribute(struct widget *widget);
 int __rtk_call_lua_function(lua_State *L, int args, int ret);
@@ -48,3 +61,5 @@ struct widget *__rtk_add_widget(const char *widget, struct widget *parent, struc
 void __rtk_free_widget(struct widget *widget);
 
 void __rtk_set_window_size(struct window *window, int width, int height);
+
+#endif
