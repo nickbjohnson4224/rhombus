@@ -30,6 +30,108 @@ int __rtk_init_freetype() {
 	       FT_New_Face(library, "/etc/dejavu.ttf", 0, &face); //todo: configure font
 }
 
+static int plot_pixel(lua_State *L) {
+	struct widget *widget = __rtk_get_widget(L);
+	int ret = 0;
+	int x, y;
+	uint32_t color;
+
+	if (!lua_isnumber(L, 1)) ret = 1;
+	if (!lua_isnumber(L, 2)) ret = 1;
+	if (!lua_isnumber(L, 3)) ret = 1;
+
+	if (!ret) {
+		x = lua_tonumber(L, 1);
+		y = lua_tonumber(L, 2);
+		color = lua_tonumber(L, 3);
+
+		if (x > widget->realwidth || y > widget->realheight) {
+			ret = 1;
+		}
+		else {
+			ret = fb_plot(widget->window->fb, widget->realx + x, widget->realy + y, color);
+		}
+	}
+
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
+static int fill(lua_State *L) {
+	struct widget *widget = __rtk_get_widget(L);
+	uint32_t color;
+	int ret = 0;
+	int x, y, width, height;
+	int i, j;
+
+	if (!lua_isnumber(L, 1)) ret = 1;
+	if (!lua_isnumber(L, 2)) ret = 1;
+	if (!lua_isnumber(L, 3)) ret = 1;
+	if (!lua_isnumber(L, 4)) ret = 1;
+	if (!lua_isnumber(L, 5)) ret = 1;
+
+	if (!ret) {
+		x = lua_tonumber(L, 1);
+		y = lua_tonumber(L, 2);
+		width = lua_tonumber(L, 3);
+		height = lua_tonumber(L, 4);
+		color = lua_tonumber(L, 5);
+
+		if (width < 0 || height < 0) {
+			ret = 1;
+		}
+		else {
+			for (i = 0; i < height && i < widget->realheight; i++) {
+				for (j = 0; j < width && j < widget->realwidth; j++) {
+					ret |= fb_plot(widget->window->fb, widget->realx + x + j, widget->realy + y + i, color);
+				}
+			}
+		}
+	}
+
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
+static int blit(lua_State *L) {
+	struct widget *widget = __rtk_get_widget(L);
+	uint32_t *bitmap;
+	int ret = 0;
+	int x, y, width, height;
+	int i = 0;
+
+	if (!lua_isnumber(L, 2)) ret = 1;
+	if (!lua_isnumber(L, 3)) ret = 1;
+	if (!lua_isnumber(L, 4)) ret = 1;
+	if (!lua_isnumber(L, 5)) ret = 1;
+
+	if (!ret) {
+		x = lua_tonumber(L, 2);
+		y = lua_tonumber(L, 3);
+		width = lua_tonumber(L, 4);
+		height = lua_tonumber(L, 5);
+		bitmap = malloc(width * height * sizeof(uint32_t));
+
+		lua_pushnil(L);
+		while (lua_next(L, 1) != 0) {
+			bitmap[i++] = lua_tointeger(L, -1);
+			lua_pop(L, 1);
+		}
+
+		if (width < 0 || height < 0) {
+			ret = 1;
+		}
+		else {
+			ret = fb_blit(widget->window->fb, bitmap, widget->realx + x, widget->realy + y, width, height);
+		}
+
+		free(bitmap);
+	}
+
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
 static int write_text(lua_State *L) {
 	struct widget *widget = __rtk_get_widget(L);
 	FT_Bitmap *bitmap;
@@ -93,5 +195,9 @@ static int write_text(lua_State *L) {
 }
 
 void __rtk_init_drawing_functions(lua_State *L) {
+	EXPORT_FUNC(plot_pixel);
+	EXPORT_FUNC(fill);
+	EXPORT_FUNC(blit);
+
 	EXPORT_FUNC(write_text);
 }
