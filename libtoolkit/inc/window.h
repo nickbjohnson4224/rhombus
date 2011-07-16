@@ -21,6 +21,12 @@ struct widget;
 
 typedef void (*handler_t)(struct widget *widget, const char *event);
 
+enum window_flags {
+	LISTEN_EVENTS = 0x1,
+	CONSTANT_SIZE = 0x2,
+	FLOATING	  = 0x4
+};
+
 struct window {
 	struct fb *fb;
 	struct widget *widget;
@@ -37,6 +43,7 @@ void resize_window(struct window *window, int width, int height);
 void get_window_size(struct window *window, int *width, int *height);
 struct widget *find_widget(struct window *window, const char *name);
 void window_register(struct window *window, handler_t handler);
-//todo: setflags etc
+void add_window_flags(struct window *window, enum window_flags flags);
+void clear_window_flags(struct window *window, enum window_flags flags);
 
 #endif

@@ -1,4 +1,4 @@
-function update_layout(delta, new)
+function update_layout()
 	local size = height / table.getn(children)
 	for i,child in pairs(children) do
 		set_child_attribute(child, "height", size)
@@ -16,7 +16,7 @@ function set_attribute(name, value)
 	if (name == "height") then
 		local old = height
 		height = value
-		update_layout(height - old, nil)
+		update_layout()
 	end
 end
 
@@ -33,7 +33,7 @@ end
 function add_widget(widgettype)
 	widget = add_child(widgettype, 0, 0, 100, 100)
 	table.insert(children, widget)
-	update_layout(-height, widget)
+	update_layout()
 end
 
 width = 0

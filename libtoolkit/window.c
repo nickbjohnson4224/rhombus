@@ -196,3 +196,27 @@ struct widget *find_widget(struct window *window, const char *name) {
 void window_register(struct window *window, handler_t handler) {
 	window->handler = handler;
 }
+
+static int get_window_flags(struct window *window) {
+	char *ret = rcall(window->fb->rp, "getwindowflags");
+	int flags;
+
+	sscanf(ret, "%i", &flags);
+	return flags;
+}
+
+static void set_window_flags(struct window *window, enum window_flags flags) {
+	rcallf(window->fb->rp, "setwindowflags %i", flags);
+}
+
+void add_window_flags(struct window *window, enum window_flags flags) {
+	int curflags = get_window_flags(window);
+	curflags |= flags;
+	set_window_flags(window, curflags);
+}
+
+void clear_window_flags(struct window *window, enum window_flags flags) {
+	int curflags = get_window_flags(window);
+	curflags &= ~flags;
+	set_window_flags(window, curflags);
+}
