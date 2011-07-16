@@ -15,8 +15,54 @@
  */
 
 #include "toolkit.h"
+#include <natio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "private.h"
 
-void init_toolkit() {
-	__rtk_init_freetype();
+static uint64_t wmanager;
+
+void toolkit_graph_event(uint64_t source, int argc, char **argv) {
+	
+	if (source != wmanager) return;
+	if (argc != 4) return;
+
+	if (!strcmp(argv[1], "resize")) {
+		resize_window(__rtk_window, atoi(argv[2]), atoi(argv[3]));
+	}
+}
+
+void toolkit_key_event(uint64_t source, int argc, char **argv) {
+	if (source != wmanager) return;
+
+	if (!strcmp(argv[1], "press") && argc == 3) {
+		widget_event(__rtk_window->widget, "key_press", argc - 2, argv + 2);
+	}
+	if (!strcmp(argv[1], "release") && argc == 3) {
+		widget_event(__rtk_window->widget, "key_release", argc - 2, argv + 2);
+	}
+}
+
+void toolkit_mouse_event(uint64_t source, int argc, char **argv) {
+	if (source != wmanager) return;
+
+	if (!strcmp(argv[1], "delta") && argc == 4) {
+		widget_event(__rtk_window->widget, "mouse_move", argc - 2, argv + 2);
+	}
+	if (!strcmp(argv[1], "button") && argc == 3) {
+		widget_event(__rtk_window->widget, "mouse_button", argc - 2, argv + 2);
+	}
+}
+
+int init_toolkit() {
+	wmanager = fs_find("/sys/wmanager");
+	if (!wmanager) {
+		return 1;
+	}
+
+	event_set("graph", toolkit_graph_event);
+	event_set("key",   toolkit_key_event);
+	event_set("mouse", toolkit_mouse_event);
+
+	return __rtk_init_freetype();
 }

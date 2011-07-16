@@ -40,6 +40,8 @@ struct widget *add_widget(const char *widget, struct widget *parent, struct wind
 void free_widget(struct widget *widget);
 int draw_widget(struct widget *widget, bool force);
 void update_widget();
+int widget_event(struct widget *widget, const char *event, int argc, char **argv);
+int widget_call(struct widget *widget, const char *func, ...);
 
 void set_position(struct widget *widget, int x, int y);
 void get_position(struct widget *widget, int *x, int *y);
@@ -47,9 +49,11 @@ int set_size(struct widget *widget, int width, int height);
 void get_size(struct widget *widget, int *width, int *height);
 
 int set_attribute_int(struct widget *widget, const char *name, int value);
+int set_attribute_bool(struct widget *widget, const char *name, bool value);
 int set_attribute_double(struct widget *widget, const char *name, double value);
 int set_attribute_string(struct widget *widget, const char *name, const char *value);
 int get_attribute_int(struct widget *widget, const char *name);
+bool get_attribute_bool(struct widget *widget, const char *name);
 double get_attribute_double(struct widget *widget, const char *name);
 const char *get_attribute_string(struct widget *widget, const char *name);
 

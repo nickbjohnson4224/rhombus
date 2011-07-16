@@ -1,6 +1,7 @@
 SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
 HEADERS := $(shell find inc -name "*.h" | grep -v private)
 WIDGETS := $(shell find widgets -name "*.lua")
+WINDOWS := $(shell find windows -name "*.txt")
 SUBDIR	:= libtoolkit
 STATIC	:= libtoolkit.a
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
@@ -17,6 +18,10 @@ widgets_dir:
 	@ echo " MKDIR	" $(BUILDDIR)/etc/widgets
 	@ mkdir -p $(BUILDDIR)/etc/widgets
 
+windows_dir:
+	@ echo " MKDIR	" $(BUILDDIR)/etc/windows
+	@ mkdir -p $(BUILDDIR)/etc/windows
+
 $(HEADERS): headers_dir
 	@ echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/inc
 	@ cp $@ $(BUILDDIR)/inc/toolkit/
@@ -25,7 +30,11 @@ $(WIDGETS): widgets_dir
 	@ echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/etc/widgets
 	@ cp $@ $(BUILDDIR)/etc/widgets
 
-$(STATIC): $(WIDGETS) $(HEADERS) $(SOURCES)
+$(WINDOWS): windows_dir
+	@ echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/etc/windows
+	@ cp $@ $(BUILDDIR)/etc/windows
+
+$(STATIC): $(WIDGETS) $(WINDOWS) $(HEADERS) $(SOURCES)
 	@ echo " AR	" $(SUBDIR)/$(STATIC)
 	@ $(AR) $(ARFLAGS) $(STATIC) $(SOURCES)
 	@ echo " CP	" $(SUBDIR)/$(STATIC) "->" $(BUILDDIR)/lib

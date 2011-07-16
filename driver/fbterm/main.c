@@ -166,6 +166,7 @@ int main(int argc, char **argv) {
 	}
 	else {
 		fb = fb_createwindow();
+		fb_dev  = fb->rp;
 		kbd_dev = fb->rp;
 	}
 	if (!fb) {
