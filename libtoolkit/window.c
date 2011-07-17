@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "widget.h"
+#include "private.h"
 
 struct window *__rtk_window; //todo: support for multiple windows
 static const int stack_size = 16;
@@ -34,6 +35,7 @@ struct window *create_window_from_widget(const char *widget) {
 		return NULL;
 	}
 
+	window->handler = NULL;
 	window->fb = fb_createwindow();
 	if (!window->fb) {
 		free(window);
@@ -41,7 +43,7 @@ struct window *create_window_from_widget(const char *widget) {
 	}
 	fb_getmode(window->fb, &width, &height);
 
-	window->widget = add_widget(widget, NULL, window, 0, 0, width, height);
+	window->widget = __rtk_add_widget(widget, NULL, window, 0, 0, width, height);
 	if (!window->widget) {
 		free(window);
 		return NULL;
@@ -130,7 +132,19 @@ struct window *create_window_from_file(const char *filename) {
 				name[middle - start - 1] = 0;
 				value[end - middle] = 0;
 
-				set_attribute_string(*stack_ptr, name, value);
+				if (!strcmp(name, "name")) {
+					set_name(*stack_ptr, value);
+				}
+				else {
+				   	if (!strcmp(name, "width")) {
+						(*stack_ptr)->width = atoi(value);
+					}
+					if (!strcmp(name, "height")) {
+						(*stack_ptr)->height = atoi(value);
+					}
+
+					set_attribute_string(*stack_ptr, name, value);
+				}
 			}
 		}
 	}
@@ -148,13 +162,13 @@ struct window *create_window_from_store(const char *window) {
 }
 
 void destroy_window(struct window *window) {
-	free_widget(window->widget);
+	__rtk_free_widget(window->widget);
 	fb_free(window->fb);
 	free(window);
 }
 
 static void __draw_window(struct window *window, bool force) {
-	draw_widget(window->widget, force);
+	__rtk_draw_widget(window->widget, force);
 	fb_flip(window->fb);
 }
 
@@ -166,12 +180,54 @@ void update_window(struct window *window) {
 	__draw_window(window, false);
 }
 
-void resize_window(struct window *window, int width, int height) {
+void __rtk_set_window_size(struct window *window, int width, int height) {
 	fb_resize(window->fb, width, height);
 	set_size(window->widget, width, height);
 	draw_window(window);
 }
 
+
+int resize_window(struct window *window, int width, int height) {
+	if (fb_setmode(window->fb, width, height)) {
+		return 1;
+	}
+
+	__rtk_set_window_size(window, width, height);
+	return 0;
+}
+
 void get_window_size(struct window *window, int *width, int *height) {
 	fb_getmode(window->fb, width, height);
+}
+
+void window_register(struct window *window, handler_t handler) {
+	window->handler = handler;
+}
+
+static int get_window_flags(struct window *window) {
+	char *ret = rcall(window->fb->rp, "getwindowflags");
+	int flags;
+
+	sscanf(ret, "%i", &flags);
+	return flags;
+}
+
+static void set_window_flags(struct window *window, enum window_flags flags) {
+	rcallf(window->fb->rp, "setwindowflags %i", flags);
+}
+
+void add_window_flags(struct window *window, enum window_flags flags) {
+	int curflags = get_window_flags(window);
+	curflags |= flags;
+	set_window_flags(window, curflags);
+}
+
+void clear_window_flags(struct window *window, enum window_flags flags) {
+	int curflags = get_window_flags(window);
+	curflags &= ~flags;
+	set_window_flags(window, curflags);
+}
+
+struct widget *find_widget(struct window *window, const char *name) {
+	return find_child(window->widget, name);
 }

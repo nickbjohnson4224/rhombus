@@ -14,15 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <assert.h>
 #include <graph.h>
 #include <string.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <lua.h>
-#include <lauxlib.h>
-#include "widget.h"
-#include "window.h"
 #include "private.h"
 
 static FT_Library library;
@@ -34,137 +30,110 @@ int __rtk_init_freetype() {
 	       FT_New_Face(library, "/etc/dejavu.ttf", 0, &face); //todo: configure font
 }
 
-struct widget *get_widget(lua_State *L) {
-		lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-		return lua_touserdata(L, -1);
-}
+static int plot_pixel(lua_State *L) {
+	struct widget *widget = __rtk_get_widget(L);
+	int ret = 0;
+	int x, y;
+	uint32_t color;
 
-void mark_child_dirty(struct widget *widget) {
-	widget->child_dirty = true;
-	if (widget->parent) {
-		mark_child_dirty(widget->parent);
+	if (!lua_isnumber(L, 1)) ret = 1;
+	if (!lua_isnumber(L, 2)) ret = 1;
+	if (!lua_isnumber(L, 3)) ret = 1;
+
+	if (!ret) {
+		x = lua_tonumber(L, 1);
+		y = lua_tonumber(L, 2);
+		color = lua_tonumber(L, 3);
+
+		if (x > widget->realwidth || y > widget->realheight) {
+			ret = 1;
+		}
+		else {
+			ret = fb_plot(widget->window->fb, widget->realx + x, widget->realy + y, color);
+		}
 	}
-}
-static int request_redraw(lua_State *L) {
-	struct widget *widget = get_widget(L);
 
-	widget->dirty = true;
-	if (widget->parent) {
-		mark_child_dirty(widget->parent);
-	}
-	return 0;
+	lua_pushboolean(L, ret);
+	return 1;
 }
 
-static int add_child(lua_State *L) {
-	bool error = false;
-	struct widget *child = NULL;
-	struct widget *widget = get_widget(L);
-	const char *type;
+static int fill(lua_State *L) {
+	struct widget *widget = __rtk_get_widget(L);
+	uint32_t color;
+	int ret = 0;
 	int x, y, width, height;
+	int i, j;
 
-	if (!lua_isstring(L, 1)) error = true;
-	if (!lua_isnumber(L, 2)) error = true;
-	if (!lua_isnumber(L, 3)) error = true;
-	if (!lua_isnumber(L, 4)) error = true;
-	if (!lua_isnumber(L, 5)) error = true;
+	if (!lua_isnumber(L, 1)) ret = 1;
+	if (!lua_isnumber(L, 2)) ret = 1;
+	if (!lua_isnumber(L, 3)) ret = 1;
+	if (!lua_isnumber(L, 4)) ret = 1;
+	if (!lua_isnumber(L, 5)) ret = 1;
 
-	if (!error) {
-		type = lua_tostring(L, 1);
+	if (!ret) {
+		x = lua_tonumber(L, 1);
+		y = lua_tonumber(L, 2);
+		width = lua_tonumber(L, 3);
+		height = lua_tonumber(L, 4);
+		color = lua_tonumber(L, 5);
+
+		if (width < 0 || height < 0) {
+			ret = 1;
+		}
+		else {
+			for (i = 0; i < height && i < widget->realheight; i++) {
+				for (j = 0; j < width && j < widget->realwidth; j++) {
+					ret |= fb_plot(widget->window->fb, widget->realx + x + j, widget->realy + y + i, color);
+				}
+			}
+		}
+	}
+
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
+static int blit(lua_State *L) {
+	struct widget *widget = __rtk_get_widget(L);
+	uint32_t *bitmap;
+	int ret = 0;
+	int x, y, width, height;
+	int i = 0;
+
+	if (!lua_isnumber(L, 2)) ret = 1;
+	if (!lua_isnumber(L, 3)) ret = 1;
+	if (!lua_isnumber(L, 4)) ret = 1;
+	if (!lua_isnumber(L, 5)) ret = 1;
+
+	if (!ret) {
 		x = lua_tonumber(L, 2);
 		y = lua_tonumber(L, 3);
 		width = lua_tonumber(L, 4);
 		height = lua_tonumber(L, 5);
+		bitmap = malloc(width * height * sizeof(uint32_t));
 
-		child = add_widget(type, widget, widget->window, x, y, width, height);
-	}
-
-	lua_pushlightuserdata(L, child);
-	return 1;
-}
-
-static int set_child_attribute(lua_State *L) {
-	struct widget *child = lua_touserdata(L, 1);
-	const char *name, *data;
-	int value = 0;
-	int ret = 0;
-
-	if (!lua_isstring(L, 2)) {
-		lua_pushnumber(L, 0);
-		return 1;
-	}
-
-	name = lua_tostring(L, 2);
-	data = lua_tostring(L, 3);
-	if (lua_isnumber(L, 3)) {
-		value = lua_tonumber(L, 3);
-	}
-	
-	if (!strcmp(name, "x")) {
-		child->x = value;
-		update_widget(child);
-	}
-	else if (!strcmp(name, "y")) {
-		child->y = value;
-		update_widget(child);
-	}
-	else {
-		lua_pushstring(child->L, name);
-		lua_pushstring(child->L, data);
-		ret = __rtk_set_attribute(child);
-	}
-
-	if (!ret) {
-		if (!strcmp(name, "width")) {
-			child->width = value;
-			update_widget(child);
+		lua_pushnil(L);
+		while (lua_next(L, 1) != 0) {
+			bitmap[i++] = lua_tointeger(L, -1);
+			lua_pop(L, 1);
 		}
-		if (!strcmp(name, "height")) {
-			child->height = value;
-			update_widget(child);
-		}
-	}
 
-	lua_pushnumber(L, ret);
-	return 1;
-}
-
-static int get_child_attribute(lua_State *L) {
-	struct widget *child = lua_touserdata(L, 1);
-	const char *name, *value;
-
-	if (!lua_isstring(L, 2)) {
-		lua_pushnumber(L, 0);
-		return 1;
-	}
-	name = lua_tostring(L, 2);
-
-	if (!strcmp(name, "x")) {
-		lua_pushnumber(L, child->x);
-	}
-	else if (!strcmp(name, "y")) {
-		lua_pushnumber(L, child->y);
-	}
-	else if (!strcmp(name, "width")) {
-		lua_pushnumber(L, child->width);
-	}
-	else if (!strcmp(name, "height")) {
-		lua_pushnumber(L, child->height);
-	}
-	else {
-		lua_pushstring(child->L, name);
-		if (__rtk_get_attribute(child)) {
-			lua_pushnumber(L, 0);
+		if (width < 0 || height < 0) {
+			ret = 1;
 		}
 		else {
-			value = lua_tostring(child->L, -1);
-			lua_pushstring(L, value);
+			ret = fb_blit(widget->window->fb, bitmap, widget->realx + x, widget->realy + y, width, height);
 		}
+
+		free(bitmap);
 	}
+
+	lua_pushboolean(L, ret);
 	return 1;
 }
 
 static int write_text(lua_State *L) {
-	struct widget *widget = get_widget(L);
+	struct widget *widget = __rtk_get_widget(L);
 	FT_Bitmap *bitmap;
 	const char *text;
 	uint32_t red, green, blue;
@@ -225,17 +194,10 @@ static int write_text(lua_State *L) {
 	return 1;
 }
 
-#define EXPORT_FUNC(x) \
-    lua_pushcfunction(L, x); \
-    lua_setglobal(L, #x);
-
 void __rtk_init_drawing_functions(lua_State *L) {
-	EXPORT_FUNC(request_redraw);
-//todo: call
-
-	EXPORT_FUNC(add_child);
-	EXPORT_FUNC(set_child_attribute);
-	EXPORT_FUNC(get_child_attribute);
+	EXPORT_FUNC(plot_pixel);
+	EXPORT_FUNC(fill);
+	EXPORT_FUNC(blit);
 
 	EXPORT_FUNC(write_text);
 }

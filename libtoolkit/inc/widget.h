@@ -20,26 +20,11 @@
 #include <lua.h>
 #include <stdbool.h>
 
+struct widget;
 struct window;
-struct fb;
 
-struct widget {
-	lua_State *L;
-	struct window *window;
-	bool dirty, child_dirty;
+struct widget *find_child(struct widget *widget, const char *name);
 
-	int x, y;
-	int width, height;
-	int realx, realy, realwidth, realheight;
-
-	struct widget *parent, *children;
-	struct widget *prev, *next;
-};
-
-struct widget *add_widget(const char *widget, struct widget *parent, struct window *window, int x, int y, int width, int height);
-void free_widget(struct widget *widget);
-int draw_widget(struct widget *widget, bool force);
-void update_widget();
 int widget_event(struct widget *widget, const char *event, int argc, char **argv);
 int widget_call(struct widget *widget, const char *func, ...);
 
@@ -47,6 +32,8 @@ void set_position(struct widget *widget, int x, int y);
 void get_position(struct widget *widget, int *x, int *y);
 int set_size(struct widget *widget, int width, int height);
 void get_size(struct widget *widget, int *width, int *height);
+void set_name(struct widget *widget, const char *name);
+char *get_name(struct widget *widget);
 
 int set_attribute_int(struct widget *widget, const char *name, int value);
 int set_attribute_bool(struct widget *widget, const char *name, bool value);

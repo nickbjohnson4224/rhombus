@@ -26,7 +26,7 @@
 #include "window.h"
 #include "private.h"
 
-static int call_lua_function(lua_State *L, int args, int ret) {
+int __rtk_call_lua_function(lua_State *L, int args, int ret) {
 	if (lua_pcall(L, args, ret, 0)) {
 		lua_pop(L, -1);
 		return 1;
@@ -34,7 +34,7 @@ static int call_lua_function(lua_State *L, int args, int ret) {
 	return 0;
 }
 
-struct widget *add_widget(const char *name, struct widget *parent, struct window *window, int x, int y, int w, int h) {
+struct widget *__rtk_add_widget(const char *name, struct widget *parent, struct window *window, int x, int y, int w, int h) {
 	struct widget *widget = malloc(sizeof(struct widget));
 	char *filename;
 
@@ -48,12 +48,14 @@ struct widget *add_widget(const char *name, struct widget *parent, struct window
 	widget->prev = widget->next = NULL;
 	widget->width = w;
 	widget->height = h;
+	widget->name = NULL;
 	set_position(widget, x, y);
 
 	widget->L = lua_open();
 	luaL_openlibs(widget->L);
 	lua_pushlightuserdata(widget->L, widget);
 	lua_rawseti(widget->L, LUA_REGISTRYINDEX, 1);
+	__rtk_init_library(widget->L);
 	__rtk_init_drawing_functions(widget->L);
 
 	filename = saprintf("/etc/widgets/%s.lua", name);
@@ -73,8 +75,8 @@ struct widget *add_widget(const char *name, struct widget *parent, struct window
 		parent->children = widget;
 	}
 
-	if (call_lua_function(widget->L, 0, 0)) {
-		free_widget(widget);
+	if (__rtk_call_lua_function(widget->L, 0, 0)) {
+		__rtk_free_widget(widget);
 		return NULL;
 	}
 
@@ -83,11 +85,11 @@ struct widget *add_widget(const char *name, struct widget *parent, struct window
 	return widget;
 }
 
-void free_widget(struct widget *widget) {
+void __rtk_free_widget(struct widget *widget) {
 	struct widget *ptr;
 	
 	for (ptr = widget->children; ptr; ptr = ptr->next) {
-		free_widget(ptr);
+		__rtk_free_widget(ptr);
 	}
 
 	if (widget->parent) {
@@ -101,21 +103,21 @@ void free_widget(struct widget *widget) {
 	}
 
 	lua_close(widget->L);
+	free(widget->name);
 	free(widget);
 }
 
-int draw_widget(struct widget *widget, bool force) {
+int __rtk_draw_widget(struct widget *widget, bool force) {
 	struct widget *ptr;
 
 	if (force || widget->dirty) {
-		lua_getglobal(widget->L, "draw");
-		call_lua_function(widget->L, 0, 0);
+		widget_call(widget, "draw", NULL);
 	}
 
 	if (force || widget->child_dirty) {
 		for (ptr = widget->children; ptr; ptr = ptr->next) {
 			if (force || ptr->dirty || ptr->child_dirty) {
-				draw_widget(ptr, force);
+				__rtk_draw_widget(ptr, force);
 			}
 		}
 	}
@@ -126,7 +128,7 @@ int draw_widget(struct widget *widget, bool force) {
 	return 0;
 }
 
-void update_widget(struct widget *widget) {
+void __rtk_update_widget(struct widget *widget) {
 	struct widget *ptr;
 	int parent_width, parent_height;
 
@@ -149,7 +151,7 @@ void update_widget(struct widget *widget) {
 	widget->child_dirty = true;
 
 	for (ptr = widget->children; ptr; ptr = ptr->next) {
-		update_widget(ptr);
+		__rtk_update_widget(ptr);
 	}
 }
 
@@ -171,7 +173,7 @@ static int __widget_event(struct widget *widget, const char *event, int argc, ch
 	for (int i = 0; i < argc; i++) {
 		lua_pushstring(widget->L, argv[i]);
 	}
-	return call_lua_function(widget->L, argc + 2, 0);
+	return __rtk_call_lua_function(widget->L, argc + 2, 0);
 }
 
 int widget_event(struct widget *widget, const char *event, int argc, char **argv) {
@@ -206,13 +208,30 @@ int widget_call(struct widget *widget, const char *func, ...) {
 	} while (arg);
 	va_end(vl);
 
-	return call_lua_function(widget->L, argc, 0);
+	return __rtk_call_lua_function(widget->L, argc, 0);
+}
+
+struct widget *find_child(struct widget *widget, const char *name) {
+	struct widget *ptr, *ret;
+
+	if (widget->name && !strcmp(widget->name, name)) {
+		return widget;
+	}
+
+	for (ptr = widget->children; ptr; ptr = ptr->next) {
+		ret = find_child(ptr, name);
+		if (ret) {
+			return ret;
+		}
+	}
+
+	return NULL;
 }
 
 void set_position(struct widget *widget, int x, int y) {
 	widget->x = x;
 	widget->y = y;
-	update_widget(widget);
+	__rtk_update_widget(widget);
 }
 
 void get_position(struct widget *widget, int *x, int *y) {
@@ -224,7 +243,7 @@ int set_size(struct widget *widget, int width, int height) {
 	widget->width = width;
 	widget->height = height;
 
-	update_widget(widget);
+	__rtk_update_widget(widget);
 
 	return set_attribute_int(widget, "width", width) ||
 	       set_attribute_int(widget, "height", height);
@@ -233,19 +252,33 @@ int set_size(struct widget *widget, int width, int height) {
 void get_size(struct widget *widget, int *width, int *height) {
 	*width = widget->width;
 	*height = widget->height;
-	update_widget(widget);
+	__rtk_update_widget(widget);
+}
+
+void set_name(struct widget *widget, const char *name) {
+	free(widget->name);
+	widget->name = strdup(name);
+}
+
+char *get_name(struct widget *widget) {
+	return widget->name;
+}
+
+struct widget *__rtk_get_widget(lua_State *L) {
+		lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+		return lua_touserdata(L, -1);
 }
 
 int __rtk_set_attribute(struct widget *widget) {
 	lua_getglobal(widget->L, "set_attribute");
 	lua_insert(widget->L, -3);
-	return call_lua_function(widget->L, 2, 0);
+	return __rtk_call_lua_function(widget->L, 2, 0);
 } 
 
 int __rtk_get_attribute(struct widget *widget) {
 	lua_getglobal(widget->L, "get_attribute");
 	lua_insert(widget->L, -2);
-	return call_lua_function(widget->L, 1, 1);
+	return __rtk_call_lua_function(widget->L, 1, 1);
 }
 
 #define ATTRIBUTE_FUNCS(ctype,typename,luatype) \

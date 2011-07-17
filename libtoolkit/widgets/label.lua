@@ -1,21 +1,27 @@
 function set_attribute(name, value)
 	if (name == "width") then
 		width = value
+		request_redraw()
 	end
 	if (name == "height") then
 		height = value
+		request_redraw()
 	end
 	if (name == "size") then
 		size = value
+		request_redraw()
 	end
 	if (name == "text") then
 		text = value
+		request_redraw()
 	end
 	if (name == "foreground") then
 		foreground = value
+		request_redraw()
 	end
 	if (name == "background") then
 		background = value
+		request_redraw()
 	end
 end
 
