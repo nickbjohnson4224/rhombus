@@ -50,6 +50,7 @@ static int add_child(lua_State *L) {
 	const char *type;
 	int x, y, width, height;
 
+	if (lua_gettop(L) < 5) error = true;
 	if (!lua_isstring(L, 1)) error = true;
 	if (!lua_isnumber(L, 2)) error = true;
 	if (!lua_isnumber(L, 3)) error = true;
@@ -66,7 +67,12 @@ static int add_child(lua_State *L) {
 		child = __rtk_add_widget(type, widget, widget->window, x, y, width, height);
 	}
 
-	lua_pushlightuserdata(L, child);
+	if (!child) {
+		lua_pushnil(L);
+	}
+	else {
+		lua_pushlightuserdata(L, child);
+	}
 	return 1;
 }
 
@@ -74,6 +80,11 @@ static int call_child(lua_State *L) {
 	struct widget *child = lua_touserdata(L, 1);
 	const char *func = lua_tostring(L, 2);
 	const char *arg;
+
+	if (lua_gettop(L) < 2) {
+		lua_pushboolean(L, true);
+		return 1;
+	}
 
 	lua_getglobal(child->L, func);
 
@@ -93,7 +104,7 @@ static int set_child_attribute(lua_State *L) {
 	int value = 0;
 	int ret = 0;
 
-	if (!lua_isstring(L, 2)) {
+	if (lua_gettop(L) < 3 || !lua_isstring(L, 2)) {
 		lua_pushnumber(L, 0);
 		return 1;
 	}
@@ -129,7 +140,7 @@ static int set_child_attribute(lua_State *L) {
 		}
 	}
 
-	lua_pushnumber(L, ret);
+	lua_pushboolean(L, ret);
 	return 1;
 }
 
@@ -137,7 +148,7 @@ static int get_child_attribute(lua_State *L) {
 	struct widget *child = lua_touserdata(L, 1);
 	const char *name, *value;
 
-	if (!lua_isstring(L, 2)) {
+	if (lua_gettop(L) < 2 || !lua_isstring(L, 2)) {
 		lua_pushnumber(L, 0);
 		return 1;
 	}
@@ -158,7 +169,7 @@ static int get_child_attribute(lua_State *L) {
 	else {
 		lua_pushstring(child->L, name);
 		if (__rtk_get_attribute(child)) {
-			lua_pushnumber(L, 0);
+			lua_pushnil(L);
 		}
 		else {
 			value = lua_tostring(child->L, -1);

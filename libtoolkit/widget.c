@@ -49,6 +49,7 @@ struct widget *__rtk_add_widget(const char *name, struct widget *parent, struct 
 	widget->width = w;
 	widget->height = h;
 	widget->name = NULL;
+	widget->fonts = NULL;
 	set_position(widget, x, y);
 
 	widget->L = lua_open();
@@ -104,6 +105,9 @@ void __rtk_free_widget(struct widget *widget) {
 
 	lua_close(widget->L);
 	free(widget->name);
+	if (widget->fonts) {
+		__rtk_free_font(widget->fonts);
+	}
 	free(widget);
 }
 

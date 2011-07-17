@@ -21,13 +21,31 @@
 #include <lua.h>
 #include "private.h"
 
+struct font {
+	FT_Face face;
+	bool mutex;
+	struct font *prev, *next;
+};
+
 static FT_Library library;
-static FT_Face face;
-static bool mutex;
+static struct font default_font;
 
 int __rtk_init_freetype() {
-	return FT_Init_FreeType(&library) ||
-	       FT_New_Face(library, "/etc/dejavu.ttf", 0, &face); //todo: configure font
+	if (FT_Init_FreeType(&library)) {
+		return 1;
+	}
+	if (FT_New_Face(library, "/etc/dejavu.ttf", 0, &default_font.face)) {
+		return 1;
+	}
+	return 0;
+}
+
+void __rtk_free_font(struct font *font) {
+	if (font->next) {
+		__rtk_free_font(font->next);
+	}
+	FT_Done_Face(font->face);
+	free(font);
 }
 
 static int plot_pixel(lua_State *L) {
@@ -36,6 +54,7 @@ static int plot_pixel(lua_State *L) {
 	int x, y;
 	uint32_t color;
 
+	if (lua_gettop(L) < 3) ret = 1;
 	if (!lua_isnumber(L, 1)) ret = 1;
 	if (!lua_isnumber(L, 2)) ret = 1;
 	if (!lua_isnumber(L, 3)) ret = 1;
@@ -64,6 +83,7 @@ static int fill(lua_State *L) {
 	int x, y, width, height;
 	int i, j;
 
+	if (lua_gettop(L) < 5) ret = 1;
 	if (!lua_isnumber(L, 1)) ret = 1;
 	if (!lua_isnumber(L, 2)) ret = 1;
 	if (!lua_isnumber(L, 3)) ret = 1;
@@ -100,6 +120,7 @@ static int blit(lua_State *L) {
 	int x, y, width, height;
 	int i = 0;
 
+	if (lua_gettop(L) < 5) ret = 1;
 	if (!lua_isnumber(L, 2)) ret = 1;
 	if (!lua_isnumber(L, 3)) ret = 1;
 	if (!lua_isnumber(L, 4)) ret = 1;
@@ -132,8 +153,66 @@ static int blit(lua_State *L) {
 	return 1;
 }
 
+static int load_font(lua_State *L) {
+	struct widget *widget = __rtk_get_widget(L);
+	struct font *font;
+	const char *name;
+
+	name = lua_tostring(L, 1);
+	if (!name) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	font = malloc(sizeof(struct font));
+	if (!font) {
+		lua_pushnil(L);
+		return 1;
+	}
+	font->mutex = false;
+
+	if (FT_New_Face(library, name, 0, &font->face)) {
+		free(font);
+		lua_pushnil(L);
+		return 1;
+	}
+
+	font->prev = NULL;
+	if (widget->fonts) {
+		widget->fonts->prev = font;
+	}
+	font->next = widget->fonts;
+	widget->fonts = font;
+	lua_pushlightuserdata(L, font);
+	return 1;
+}
+
+static int free_font(lua_State *L) {
+	struct widget *widget = __rtk_get_widget(L);
+	struct font *font = lua_touserdata(L, 1);
+
+	if (!font) {
+		return 0;
+	}
+
+	if (font->next) {
+		font->next->prev = font->prev;
+	}
+	if (font->prev) {
+		font->prev->next = font->next;
+	}
+	if (widget->fonts == font) {
+		widget->fonts = font->next;
+	}
+
+	FT_Done_Face(font->face);
+	free(font);
+	return 0;
+}
+
 static int write_text(lua_State *L) {
 	struct widget *widget = __rtk_get_widget(L);
+	struct font *font;
 	FT_Bitmap *bitmap;
 	const char *text;
 	uint32_t red, green, blue;
@@ -143,6 +222,7 @@ static int write_text(lua_State *L) {
 	int advance = 0;
 	int cursorx, cursory;
 
+	if (lua_gettop(L) < 7) ret = 1;
 	if (!lua_isnumber(L, 1)) ret = 1;
 	if (!lua_isnumber(L, 2)) ret = 1;
 	if (!lua_isnumber(L, 3)) ret = 1;
@@ -157,23 +237,24 @@ static int write_text(lua_State *L) {
 		text = lua_tostring(L, 4);
 		foreground = lua_tonumber(L, 5);
 		background = lua_tonumber(L, 6);
+		font = lua_touserdata(L, 7);
 
 		foreground = COLOR_WHITE; //fixme: default value
 
-		mutex_spin(&mutex);
+		mutex_spin(&font->mutex);
 
-		if (FT_Set_Pixel_Sizes(face, 0, size)) {
+		if (FT_Set_Pixel_Sizes(font->face, 0, size)) {
 			ret = 1;
 		}
 		else {
 			for (size_t c = 0; c < strlen(text) && advance < widget->realwidth; c++) {
-				if (FT_Load_Char(face, text[c], FT_LOAD_RENDER)) {
+				if (FT_Load_Char(font->face, text[c], FT_LOAD_RENDER)) {
 					continue;
 				}
-				bitmap = &face->glyph->bitmap;
-				cursory = y + (size - face->glyph->bitmap_top);
+				bitmap = &font->face->glyph->bitmap;
+				cursory = y + (size - font->face->glyph->bitmap_top);
 				for (int j = 0; j < bitmap->rows && cursory < widget->realheight; j++, cursory++) {
-					cursorx = x + advance + face->glyph->bitmap_left;
+					cursorx = x + advance + font->face->glyph->bitmap_left;
 					for (int i = 0; i < bitmap->width && cursorx < widget->realwidth; i++, cursorx++) {
 						alpha = bitmap->buffer[j * bitmap->width + i] / 255.0;
 						red   = alpha * PIX_R(foreground) + (1 - alpha) * PIX_R(background);
@@ -183,11 +264,11 @@ static int write_text(lua_State *L) {
 								cursory + widget->realy, COLOR(red, green, blue));
 					}
 				}
-				advance += face->glyph->advance.x >> 6;
+				advance += font->face->glyph->advance.x >> 6;
 			}
 		}
 
-		mutex_free(&mutex);
+		mutex_free(&font->mutex);
 	}
 	
 	lua_pushboolean(L, ret);
@@ -195,9 +276,14 @@ static int write_text(lua_State *L) {
 }
 
 void __rtk_init_drawing_functions(lua_State *L) {
+	lua_pushlightuserdata(L, &default_font);
+	lua_setglobal(L, "default_font");
+
 	EXPORT_FUNC(plot_pixel);
 	EXPORT_FUNC(fill);
 	EXPORT_FUNC(blit);
 
+	EXPORT_FUNC(load_font);
+	EXPORT_FUNC(free_font);
 	EXPORT_FUNC(write_text);
 }

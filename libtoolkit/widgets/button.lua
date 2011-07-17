@@ -33,7 +33,7 @@ function mouse_button(x, y, button)
 end
 
 function draw()
-	write_text(0, 0, 12, text, 0xffffffff, 0xff000000)
+	write_text(0, 0, 12, text, 0xffffffff, 0xff000000, default_font)
 end
 
 text = ""

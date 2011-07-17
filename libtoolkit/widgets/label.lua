@@ -23,6 +23,13 @@ function set_attribute(name, value)
 		background = value
 		request_redraw()
 	end
+	if (name == "font") then
+		if (font) then
+			free_font(font)
+		end
+		font = load_font(value)
+		request_redraw()
+	end
 end
 
 function get_attribute(name)
@@ -48,7 +55,11 @@ function get_attribute(name)
 end
 
 function draw()
-	write_text(0, 0, size, text, foreground, background)
+	if (font) then
+		write_text(0, 0, size, text, foreground, background, font)
+	else
+		write_text(0, 0, size, text, foreground, background, default_font)
+	end
 end
 
 size = 12
@@ -57,3 +68,4 @@ foreground = 0xffffffff
 background = 0xff000000
 width = 0
 height = 0
+font = nil
