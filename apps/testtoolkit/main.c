@@ -14,13 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <graph.h>
 #include <proc.h>
 #include <stdio.h>
 #include <toolkit/toolkit.h>
 
+void handler(struct widget *widget, const char *event) {
+	printf("%s %s\n", get_name(widget), event);
+}
+
 int main(int argc, char **argv) {
 	struct window *window;
+	struct widget *widget;
 
 	if (init_toolkit()) {
 		fprintf(stderr, "%s: initializing toolkit failed\n", argv[0]);
@@ -31,6 +35,13 @@ int main(int argc, char **argv) {
 	if (!window) {
 		fprintf(stderr, "%s: creating window failed\n", argv[0]);
 		return 1;
+	}
+	window_register(window, handler);
+
+	widget = find_widget(window, "c");
+	if (widget) {
+		set_attribute_string(widget, "text", "CCC");
+		update_window(window);
 	}
 
 	_done();

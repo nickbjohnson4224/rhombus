@@ -28,7 +28,7 @@ void toolkit_graph_event(uint64_t source, int argc, char **argv) {
 	if (argc != 4) return;
 
 	if (!strcmp(argv[1], "resize")) {
-		resize_window(__rtk_window, atoi(argv[2]), atoi(argv[3]));
+		__rtk_set_window_size(__rtk_window, atoi(argv[2]), atoi(argv[3]));
 	}
 }
 
