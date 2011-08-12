@@ -215,9 +215,10 @@ static int write_text(lua_State *L) {
 	struct font *font;
 	FT_Bitmap *bitmap;
 	const char *text;
+	uint32_t foreground, background;
 	uint32_t red, green, blue;
 	double alpha;
-	int x, y, size, foreground, background;
+	int x, y, size;
 	int ret = 0;
 	int advance = 0;
 	int cursorx, cursory;
@@ -238,8 +239,6 @@ static int write_text(lua_State *L) {
 		foreground = lua_tonumber(L, 5);
 		background = lua_tonumber(L, 6);
 		font = lua_touserdata(L, 7);
-
-		foreground = COLOR_WHITE; //fixme: default value
 
 		mutex_spin(&font->mutex);
 
