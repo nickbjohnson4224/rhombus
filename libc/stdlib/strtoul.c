@@ -15,6 +15,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 
 /****************************************************************************
@@ -46,10 +47,14 @@ unsigned long int strtoul(const char *nptr, char **endptr, int base) {
 		i++;
 	}
 
+	if (base == 16 && !strncmp(nptr, "0x", 2)) {
+		i += 2;
+	}
 	if (base == 0) {
 		if (nptr[i] == '0') {
 			i++;
 			if (nptr[i] == 'x') {
+				i++;
 				base = 16;
 			}
 			else if (__isbdigit(nptr[i], 8)) {
