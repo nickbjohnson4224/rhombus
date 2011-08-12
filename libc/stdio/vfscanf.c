@@ -166,7 +166,7 @@ static long double __scan_float(FILE *stream, int flags) {
 	}
 	else {
 		ungetc(c, stream);
-		e_part = 1.0;
+		e_part = 0.0;
 	}
 
 	return (i_part + f_part / powl(10, ceill(log10l(f_part)))) * powl(10, e_part);
