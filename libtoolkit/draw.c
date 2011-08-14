@@ -135,7 +135,7 @@ static int blit(lua_State *L) {
 
 		lua_pushnil(L);
 		while (lua_next(L, 1) != 0) {
-			bitmap[i++] = lua_tointeger(L, -1);
+			bitmap[i++] = lua_tonumber(L, -1);
 			lua_pop(L, 1);
 		}
 
