@@ -92,6 +92,7 @@ INTN	80	; proc
 INTN	81	; kill
 INTN	82	; vm86
 INTN	83	; name
+INTN	84	; keys
 
 extern int_handler
 extern fpu_save

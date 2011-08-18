@@ -43,6 +43,7 @@ For 0.9 Alpha:
 + file locking
 + top/ps equivalent
 + proper session/controlling tty stuff
+- kernel key system
 - RDI
 	+ I/O interface
 	+ VFS interface

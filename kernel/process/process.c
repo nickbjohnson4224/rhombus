@@ -57,6 +57,7 @@ struct process *process_alloc(void) {
 	pidlist_top = (pidlist_top + 1) % MAX_TASKS;
 
 	process_table[pid] = heap_alloc(sizeof(struct process));
+	memclr(process_table[pid], sizeof(struct process));
 	process_table[pid]->pid = pid;
 	return process_table[pid];
 }
@@ -86,6 +87,12 @@ struct process *process_clone(struct process *parent, struct thread *active) {
 	child->parent = parent;
 	child->pid    = pid;
 	child->rirq   = IRQ_NULL;
+
+	/* copy key table */
+	if (parent->keytable) {
+		child->keytable = heap_alloc(sizeof(struct key) * child->keycount);
+		memcpy(child->keytable, parent->keytable, sizeof(struct key) * child->keycount);
+	}
 
 	memclr(child->thread, sizeof(struct thread*) * 256);
 

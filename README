@@ -28,8 +28,7 @@ At the moment, Rhombus is not stable enough for real use, but it is rapidly
 progressing toward that point. It already can run a Lua interpreter, which
 is written in standard C, and all of its source code can be compiled with
 all warning flags and all optimization flags for CLang. The first beta
-release of Rhombus should be ready by June 2011. At that point, it should be
-ready for patches and other contributions.
+release of Rhombus will likely occur soon.
 
 All code in the Rhombus core (kernel, libc, libdriver, basic drivers) as well 
 as most of the rest of the system uses an OpenBSD-like copyright statement.

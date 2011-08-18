@@ -40,6 +40,7 @@
 #define SYSCALL_KILL	0x51
 #define SYSCALL_VM86	0x52
 #define SYSCALL_NAME	0x53
+#define SYSCALL_KEYS	0x54
 
 struct thread *syscall_send(struct thread *image);
 struct thread *syscall_done(struct thread *image);
@@ -61,5 +62,6 @@ struct thread *syscall_proc(struct thread *image);
 struct thread *syscall_kill(struct thread *image);
 struct thread *syscall_vm86(struct thread *image);
 struct thread *syscall_name(struct thread *image);
+struct thread *syscall_keys(struct thread *image);
 
 #endif/*KERNEL_SYSCALL_H*/
