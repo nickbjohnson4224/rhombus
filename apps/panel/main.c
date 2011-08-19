@@ -22,9 +22,6 @@
 #include <string.h>
 #include <toolkit/toolkit.h>
 
-#include <graph.h>
-#include <../libtoolkit/inc/private.h> //todo: nicer solution
-
 const int panel_height = 20;
 
 void panel_window_event(struct widget *widget, const char *event) {
@@ -64,7 +61,7 @@ int main(int argc, char **argv) {
 	}
 	resize_window(window, 100, panel_height); //todo: should be in panelui.txt
 
-	ret = rcall(window->fb->rp, "setpanel");
+	ret = rcall(get_resource_pointer(window), "setpanel");
 #if 0
 	//fixme
 	fprintf(stderr, "'%s'\n", ret);

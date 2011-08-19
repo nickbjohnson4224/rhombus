@@ -50,7 +50,7 @@ struct window *create_window_from_widget(const char *widget) {
 	}
 	window->widget->window = window;
 
-	event_register(window->fb->rp);
+	event_register(get_resource_pointer(window));
 	draw_window(window);
 
 	__rtk_window = window;
@@ -205,7 +205,7 @@ void window_register(struct window *window, handler_t handler) {
 }
 
 static int get_window_flags(struct window *window) {
-	char *ret = rcall(window->fb->rp, "getwindowflags");
+	char *ret = rcall(get_resource_pointer(window), "getwindowflags");
 	int flags;
 
 	sscanf(ret, "%i", &flags);
@@ -213,7 +213,7 @@ static int get_window_flags(struct window *window) {
 }
 
 static void set_window_flags(struct window *window, enum window_flags flags) {
-	rcallf(window->fb->rp, "setwindowflags %i", flags);
+	rcallf(get_resource_pointer(window), "setwindowflags %i", flags);
 }
 
 void add_window_flags(struct window *window, enum window_flags flags) {
@@ -230,4 +230,8 @@ void clear_window_flags(struct window *window, enum window_flags flags) {
 
 struct widget *find_widget(struct window *window, const char *name) {
 	return find_child(window->widget, name);
+}
+
+uint64_t get_resource_pointer(struct window *window) {
+	return window->fb->rp;
 }
