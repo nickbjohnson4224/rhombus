@@ -17,6 +17,8 @@
 #ifndef _TOOLKIT_WINDOW_H
 #define _TOOLKIT_WINDOW_H
 
+#include <stdint.h>
+
 struct window;
 struct widget;
 
