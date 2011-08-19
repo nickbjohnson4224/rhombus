@@ -1,0 +1,8 @@
+layout horizontal=true
+	button name=launch_terminal text=Terminal
+	end
+	button name=launch_testtoolkit text=TestToolkit
+	end
+	button name=halt text=Halt
+	end
+end
