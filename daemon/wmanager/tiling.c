@@ -17,6 +17,7 @@
 #include "wmanager.h"
 
 struct window_t *main_window;
+struct window_t *panel;
 
 void update_tiling() {
 	struct window_t *window, *last;
@@ -25,6 +26,10 @@ void update_tiling() {
 	int height = screen_height;
 	int count = 0;
 	int y = 0;
+
+	if (main_window && (main_window->flags & FLOATING)) {
+		main_window = NULL;
+	}
 
 	for (window = windows; window; window = window->next) {
 		if (!(window->flags & FLOATING)) {
@@ -51,16 +56,22 @@ void update_tiling() {
 		return;
 	}
 
+	if (panel) {
+		y += panel->height + 2;
+		height -= panel->height + 2;
+	}
+
 	if (width < 10) {
 		width = 10;
 	}
 
-	main_window->x = main_window->y = 0;
+	main_window->x = 0;
+	main_window->y = y;
 	if (main_window->flags & CONSTANT_SIZE) {
 		width = main_window->width;
 	}
 	else {
-		resize_window(main_window, others ? width : screen_width, screen_height, true);
+		resize_window(main_window, others ? width : screen_width, height, true);
 	}
 
 	for (window = windows; window; window = window->next) {

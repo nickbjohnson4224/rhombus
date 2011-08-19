@@ -34,6 +34,10 @@ void resize_screen(int width, int height) {
 	share(vgafd, screen, screen_width * screen_height * 4, 0, PROT_READ);
 	sync(vgafd);
 
+	if (panel) {
+		resize_window(panel, screen_width, panel->height, true);
+	}
+
 	update_tiling();
 }
 

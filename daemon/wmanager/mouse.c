@@ -50,7 +50,7 @@ void mouse_move(int16_t dx, int16_t dy) {
 		activate_window();
 	}
 
-	if (active_window && (winkey || alreadymoving)) {
+	if (active_window && (winkey || alreadymoving) && active_window != panel) {
 		alreadymoving = true;
 		wasfloating = active_window->flags & FLOATING;
 
@@ -85,9 +85,6 @@ void mouse_move(int16_t dx, int16_t dy) {
 		}
 
 		if (wasfloating != (active_window->flags & FLOATING)) {
-			if (active_window == main_window) {
-				main_window = NULL;
-			}
 			update_tiling();
 			return; // update_tiling() already updates screen
 		}
