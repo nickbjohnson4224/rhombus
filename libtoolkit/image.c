@@ -52,13 +52,20 @@ struct image {
 };
 
 
-static uint32_t *get_bitmap(struct dib_header dib_header, uint32_t *pixels, int x, int y, int width, int height) {
-//todo: dib_header pointerina??
-	uint32_t *ret = malloc(width * height * sizeof(uint32_t));
+static uint32_t *get_bitmap(struct dib_header *dib_header, uint32_t *pixels, int x, int y, int width, int height) {
+	int i, j;
+	uint32_t *ret;
+	uint8_t red, green, blue, alpha;
+	
+	ret = malloc(width * height * sizeof(uint32_t));
 	assert(ret);
-	for (int i = 0; i < height; i++) {
-		for (int j = 0; j < width; j++) {
-			ret[i * width + j] = pixels[(dib_header.height - j - 1) * dib_header.width + i];
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < width; j++) {
+			alpha =  pixels[(dib_header->height - (i + y) - 1) * dib_header->width + j + x] >> 24;
+			red   = (pixels[(dib_header->height - (i + y) - 1) * dib_header->width + j + x] >> 16) & 0xff;
+			green = (pixels[(dib_header->height - (i + y) - 1) * dib_header->width + j + x] >> 8) & 0xff;
+			blue  =  pixels[(dib_header->height - (i + y) - 1) * dib_header->width + j + x] & 0xff;
+			ret[i * width + j] = COLORA(red, green, blue, alpha);
 		}
 	}
 	return ret;
@@ -103,22 +110,22 @@ static struct image *__load_image(const char *filename) {
 	image->width  = dib_header.width;
 	image->height = dib_header.height;
 
-	image->top_left		= get_bitmap(dib_header, pixels, 0, 0,
+	image->top_left		= get_bitmap(&dib_header, pixels, 0, 0,
 			dib_header.width / 2, dib_header.height / 2);
-	image->top_right	= get_bitmap(dib_header, pixels, dib_header.width / 2, 0,
+	image->top_right	= get_bitmap(&dib_header, pixels, dib_header.width / 2, 0,
 			dib_header.width / 2, dib_header.height / 2);
-	image->bottom_left	= get_bitmap(dib_header, pixels, 0, dib_header.height / 2,
+	image->bottom_left	= get_bitmap(&dib_header, pixels, 0, dib_header.height / 2,
 			dib_header.width / 2, dib_header.height / 2);
-	image->bottom_right	= get_bitmap(dib_header, pixels, dib_header.width / 2, dib_header.height / 2,
+	image->bottom_right	= get_bitmap(&dib_header, pixels, dib_header.width / 2, dib_header.height / 2,
 			dib_header.width / 2, dib_header.height / 2);
 
-	image->top		= get_bitmap(dib_header, pixels, dib_header.width / 2, 0,
+	image->top		= get_bitmap(&dib_header, pixels, dib_header.width / 2, 0,
 			1, dib_header.height / 2);
-	image->bottom	= get_bitmap(dib_header, pixels, dib_header.width / 2, dib_header.height / 2,
+	image->bottom	= get_bitmap(&dib_header, pixels, dib_header.width / 2, dib_header.height / 2,
 			1, dib_header.height / 2);
-	image->left		= get_bitmap(dib_header, pixels, 0, dib_header.height / 2,
+	image->left		= get_bitmap(&dib_header, pixels, 0, dib_header.height / 2,
 			dib_header.width / 2, 1);
-	image->right	= get_bitmap(dib_header, pixels, dib_header.width / 2, dib_header.height / 2,
+	image->right	= get_bitmap(&dib_header, pixels, dib_header.width / 2, dib_header.height / 2,
 			dib_header.width / 2, 1);
 
 	free(pixels);
@@ -213,7 +220,7 @@ static void __free_image(struct image *image) {
 	free(image);
 }
 
-static int free_image(lua_State *L) { //todo: widgeti surma ajal automaatne free ka
+static int free_image(lua_State *L) { //todo: free images also after widget death
 	struct image *image;
 
 	image = lua_touserdata(L, 1);
