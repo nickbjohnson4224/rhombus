@@ -49,6 +49,7 @@ struct image {
 	int width, height;
 	uint32_t *top_left, *top_right, *bottom_left, *bottom_right;
 	uint32_t *top, *bottom, *left, *right;
+	struct image *prev, *next;
 };
 
 
@@ -71,7 +72,7 @@ static uint32_t *get_bitmap(struct dib_header *dib_header, uint32_t *pixels, int
 	return ret;
 }
 
-static struct image *__load_image(const char *filename) {
+static struct image *__load_image(const char *filename, struct widget *widget) {
 	struct file_header file_header;
 	struct dib_header dib_header;
 	uint32_t *pixels;
@@ -109,6 +110,12 @@ static struct image *__load_image(const char *filename) {
 	assert(image);
 	image->width  = dib_header.width;
 	image->height = dib_header.height;
+	image->prev = NULL;
+	if (widget->images) {
+		widget->images->prev = image;
+	}
+	image->next = widget->images;
+	widget->images = image;
 
 	image->top_left		= get_bitmap(&dib_header, pixels, 0, 0,
 			dib_header.width / 2, dib_header.height / 2);
@@ -143,7 +150,7 @@ static int load_image(lua_State *L) {
 		return 1;
 	}
 
-	image = __load_image(filename);
+	image = __load_image(filename, __rtk_get_widget(L));
 
 	if (!image) {
 		lua_pushnil(L);
@@ -208,7 +215,18 @@ static int draw_image(lua_State *L) {
 	return 1;
 }
 
-static void __free_image(struct image *image) {
+static void __free_image(struct image *image, struct widget *widget) {
+	if (image->next) {
+		image->next->prev = image->prev;
+	}
+	if (image->prev) {
+		image->prev->next = image->next;
+	}
+	else {
+		assert(image == widget->images);
+		widget->images = image->next;
+	}
+
 	free(image->top_left);
 	free(image->top_right);
 	free(image->bottom_left);
@@ -220,15 +238,23 @@ static void __free_image(struct image *image) {
 	free(image);
 }
 
-static int free_image(lua_State *L) { //todo: free images also after widget death
+static int free_image(lua_State *L) {
 	struct image *image;
 
 	image = lua_touserdata(L, 1);
 	if (image) {
-		__free_image(image);
+		__free_image(image, __rtk_get_widget(L));
 	}
 
 	return 0;
+}
+
+void __rtk_free_images(struct image *image, struct widget *widget) {
+	if (image->next) {
+		__rtk_free_images(image->next, widget);
+	}
+
+	__free_image(image, widget);
 }
 
 static int get_width(lua_State *L) {
