@@ -103,7 +103,7 @@ long double logl(long double x) {
 
 	y = 0.0;
 	y_old = 1.0;
-	epsilon = LDBL_EPSILON;
+	epsilon = 1e-6; //fixme
 
 	while (y > y_old + epsilon || y < y_old - epsilon) {
 		y_old = y;
@@ -116,8 +116,6 @@ long double logl(long double x) {
 		if (y < -700.0) {
 			y = -700.0;
 		}
-
-		epsilon = (fabs(y) > 1.0) ? fabs(y) * LDBL_EPSILON : LDBL_EPSILON;
 	}
 
 	if (y == 700.0) {

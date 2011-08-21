@@ -43,6 +43,7 @@ extern int screen_width, screen_height;
 extern struct window_t *windows;
 extern struct window_t *active_window;
 extern struct window_t *main_window;
+extern struct window_t *panel;
 extern bool winkey;
 extern int mousex, mousey;
 

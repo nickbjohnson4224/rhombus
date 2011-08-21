@@ -156,13 +156,19 @@ char *wmanager_rcall_getwindowflags(uint64_t source, uint32_t index, int argc, c
 
 char *wmanager_rcall_setwindowflags(uint64_t source, uint32_t index, int argc, char **argv) {
 	struct window_t *window;
+	int old_flags;
 
 	window = find_window(index, RP_PID(source));
 	if (!window) return NULL;
 
 	if (argc != 2) return NULL;
 
+	old_flags = window->flags;
 	window->flags = atoi(argv[1]);
+
+	if ((old_flags & FLOATING) != (window->flags & FLOATING)) {
+		update_tiling();
+	}
 
 	return strdup("T");
 }
@@ -174,6 +180,22 @@ char *wmanager_rcall_getmouse(uint64_t source, uint32_t index, int argc, char **
 	if (!window) return NULL;
 
 	return saprintf("%i %i", mousex - window->x, mousey - window->y);
+}
+
+char *wmanager_rcall_setpanel(uint64_t source, uint32_t index, int argc, char **argv) {
+	struct window_t *window;
+
+	if (panel) return NULL;
+
+	window = find_window(index, RP_PID(source));
+	if (!window) return NULL;
+
+	panel = window;
+	panel->flags |= FLOATING;
+	resize_window(panel, screen_width, panel->height, true);
+	update_tiling();
+
+	return strdup("T");
 }
 
 int wmanager_share(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off) {
@@ -321,6 +343,7 @@ int main(int argc, char **argv) {
 	rcall_set("setwindowflags", wmanager_rcall_setwindowflags);
 	rcall_set("syncrect",       wmanager_rcall_syncrect);
 	rcall_set("getmouse", 		wmanager_rcall_getmouse);
+	rcall_set("setpanel",		wmanager_rcall_setpanel);
 
 	rdi_set_share(wmanager_share);
 	rdi_set_sync (wmanager_sync);
@@ -343,7 +366,7 @@ int main(int argc, char **argv) {
 	event_set("graph", wmanager_graph_event);
 
 	if (fork() < 0) {
-		exec("/sbin/fbterm");
+		exec("/bin/panel");
 	}
 
 	_done();
