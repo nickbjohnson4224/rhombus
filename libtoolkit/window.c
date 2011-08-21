@@ -103,7 +103,6 @@ struct window *create_window_from_file(const char *filename) {
 				*(stack_ptr + 1) = (*stack_ptr)->children;
 				stack_ptr++;
 			}
-
 			
 			if (stack_ptr - stack >= stack_size) {
 				fclose(file);
