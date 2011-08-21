@@ -58,6 +58,7 @@ struct widget *__rtk_add_widget(const char *name, struct widget *parent, struct 
 	lua_rawseti(widget->L, LUA_REGISTRYINDEX, 1);
 	__rtk_init_library(widget->L);
 	__rtk_init_drawing_functions(widget->L);
+	__rtk_init_image_functions(widget->L);
 
 	filename = saprintf("/etc/widgets/%s.lua", name);
 	if (luaL_loadfile(widget->L, filename)) {
