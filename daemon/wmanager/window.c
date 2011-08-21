@@ -184,6 +184,8 @@ void resize_window(struct window_t *window, int width, int height, bool notify) 
 	}
 
 	mutex_free(&window->mutex);
+
+	update_decorations(window);
 }
 
 void bring_to_front(struct window_t *window) {
