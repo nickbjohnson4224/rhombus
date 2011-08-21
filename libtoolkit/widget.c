@@ -50,6 +50,7 @@ struct widget *__rtk_add_widget(const char *name, struct widget *parent, struct 
 	widget->height = h;
 	widget->name = NULL;
 	widget->fonts = NULL;
+	widget->images = NULL;
 	set_position(widget, x, y);
 
 	widget->L = lua_open();
@@ -58,6 +59,7 @@ struct widget *__rtk_add_widget(const char *name, struct widget *parent, struct 
 	lua_rawseti(widget->L, LUA_REGISTRYINDEX, 1);
 	__rtk_init_library(widget->L);
 	__rtk_init_drawing_functions(widget->L);
+	__rtk_init_image_functions(widget->L);
 
 	filename = saprintf("/etc/widgets/%s.lua", name);
 	if (luaL_loadfile(widget->L, filename)) {
@@ -107,6 +109,9 @@ void __rtk_free_widget(struct widget *widget) {
 	free(widget->name);
 	if (widget->fonts) {
 		__rtk_free_font(widget->fonts);
+	}
+	if (widget->images) {
+		__rtk_free_images(widget->images, widget);
 	}
 	free(widget);
 }

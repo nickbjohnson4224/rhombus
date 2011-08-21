@@ -18,7 +18,7 @@
 #include <lua.h>
 #include "private.h"
 
-void mark_child_dirty(struct widget *widget) {
+static void mark_child_dirty(struct widget *widget) {
 	widget->child_dirty = true;
 	if (widget->parent) {
 		mark_child_dirty(widget->parent);

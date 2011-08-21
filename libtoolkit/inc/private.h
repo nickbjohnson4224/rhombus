@@ -34,7 +34,9 @@ struct widget {
 	lua_State *L;
 	struct window *window;
 	bool dirty, child_dirty;
+
 	struct font *fonts;
+	struct image *images;
 
 	char *name;
 	int x, y;
@@ -53,6 +55,9 @@ void __rtk_init_drawing_functions(lua_State *L);
 
 void __rtk_init_library(lua_State *L);
 struct widget *__rtk_get_widget(lua_State *L);
+
+void __rtk_free_images(struct image *image, struct widget *widget);
+void __rtk_init_image_functions(lua_State *L);
 
 int __rtk_set_attribute(struct widget *widget);
 int __rtk_get_attribute(struct widget *widget);
