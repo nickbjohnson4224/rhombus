@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-//requirements for BMP: BITMAPINFOHEADER; 32bbp RGBA
+//requirements for BMP: BITMAPINFOHEADER; 32bbp RGBA; not compressed
 
 #include <assert.h>
 #include <graph.h>
@@ -98,7 +98,7 @@ static struct image *__load_image(const char *filename) {
 
 	fclose(file);
 
-	image = malloc(sizeof(image));
+	image = malloc(sizeof(struct image));
 	assert(image);
 	image->width  = dib_header.width;
 	image->height = dib_header.height;
@@ -111,6 +111,7 @@ static struct image *__load_image(const char *filename) {
 			dib_header.width / 2, dib_header.height / 2);
 	image->bottom_right	= get_bitmap(dib_header, pixels, dib_header.width / 2, dib_header.height / 2,
 			dib_header.width / 2, dib_header.height / 2);
+
 	image->top		= get_bitmap(dib_header, pixels, dib_header.width / 2, 0,
 			1, dib_header.height / 2);
 	image->bottom	= get_bitmap(dib_header, pixels, dib_header.width / 2, dib_header.height / 2,
