@@ -92,7 +92,7 @@ static char *__scan_str(const char **_str, int width, int flags) {
 	int count, i;
 	char *string;
 
-	for (count = 0; count < width; count++) {
+	for (count = 0; width == -1 || count < width; count++) {
 		if (isspace((*_str)[count]) || !(*_str)[count]) break;
 	}
 
@@ -136,7 +136,7 @@ int vsscanf(const char *str, const char *format, va_list ap) {
 	float *f;
 	double *lf;
 	long double *Lf;
-	char **s;
+	char *s;
 	char *c;
 
 	count = 0;
@@ -253,8 +253,10 @@ int vsscanf(const char *str, const char *format, va_list ap) {
 					}
 					break;
 				case TYPE_STR:
-					s = va_arg(ap, char**);
-					*s = __scan_str(&str, width, flags);
+					c = va_arg(ap, char*);
+					s = __scan_str(&str, width, flags);
+					strcpy(c, s);
+					free(s);
 					break;
 				case TYPE_CHAR:
 					c = va_arg(ap, char*);
