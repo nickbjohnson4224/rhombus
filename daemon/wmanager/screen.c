@@ -15,12 +15,13 @@
  */
 
 #include "wmanager.h"
+#include <graph.h>
 #include <natio.h>
 #include <page.h>
 #include <stdlib.h>
 #include <string.h>
 
-uint8_t *screen;
+uint32_t *screen;
 int screen_width, screen_height;
 
 void resize_screen(int width, int height) {
@@ -53,10 +54,7 @@ void update_screen(int x1, int y1, int x2, int y2) {
 
 	for (int x = x1; x < x2; x++) {
 		for (int y = y1; y < y2; y++) {
-			for (int c = 0; c < 3; c++) {
-				screen[(x + y * screen_width) * 4 + c] = 0;
-			}
-			screen[(x + y * screen_width) * 4 + 3] = 0xff;
+			screen[x + y * screen_width] = COLOR_BLACK;
 		}
 	}
 
@@ -68,16 +66,21 @@ void update_screen(int x1, int y1, int x2, int y2) {
 	rcallf(vgafd, "syncrect %i %i %i %i", x1, y1, x2 - x1, y2 - y1);
 }
 
-void blit_bitmap(const uint8_t *bitmap, int tox, int toy, int width, int height, int x1, int y1, int x2, int y2) {
-	for (int y = toy >= y1 ? toy : y1; y < toy + height && y < y2; y++) {
-		for (int x = tox >= x1 ? tox : x1; x < tox + width && x < x2; x++) {
-			int screen_index = (x + y * screen_width) * 4;
-			int bitmap_index = ((x - tox) + (y - toy) * width) * 4;
-			double alpha = bitmap[bitmap_index + 3] / 255.0;
-			for (int c = 0; c < 3; c++) {
-				screen[screen_index + c] = (1 - alpha) * screen[screen_index + c] +
-					alpha * bitmap[bitmap_index + c];
-			}
+void blit_bitmap(const uint32_t *bitmap, int tox, int toy, int width, int height, int x1, int y1, int x2, int y2) {
+	double alpha;
+	uint8_t red, green, blue;
+	int screen_index, bitmap_index;
+	int x, y;
+
+	for (y = toy >= y1 ? toy : y1; y < toy + height && y < y2; y++) {
+		for (x = tox >= x1 ? tox : x1; x < tox + width && x < x2; x++) {
+			screen_index = x + y * screen_width;
+			bitmap_index = (x - tox) + (y - toy) * width;
+			alpha = PIX_A(bitmap[bitmap_index]) / 255.0;
+			red   = alpha * PIX_R(bitmap[bitmap_index]) + (1 - alpha) * PIX_R(screen[screen_index]);
+			green = alpha * PIX_G(bitmap[bitmap_index]) + (1 - alpha) * PIX_G(screen[screen_index]);
+			blue  = alpha * PIX_B(bitmap[bitmap_index]) + (1 - alpha) * PIX_B(screen[screen_index]);
+			screen[screen_index] = COLOR(red, green, blue);
 		}
 	}
 }

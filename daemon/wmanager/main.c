@@ -207,7 +207,7 @@ int wmanager_share(uint64_t source, uint32_t index, uint8_t *buffer, size_t size
 	if (!window) {
 		return -1;
 	}
-	if ((int) size != window->width * window->height * 4) {
+	if (size != window->width * window->height * sizeof(uint32_t)) {
 		return -1;
 	}
 
@@ -215,7 +215,7 @@ int wmanager_share(uint64_t source, uint32_t index, uint8_t *buffer, size_t size
 	if (window->bitmap) {
 		page_free(window->bitmap, window->width * window->height * 4);
 	}
-	window->bitmap = buffer;
+	window->bitmap = (uint32_t*) buffer;
 	mutex_free(&window->mutex);
 	return 0;
 }
