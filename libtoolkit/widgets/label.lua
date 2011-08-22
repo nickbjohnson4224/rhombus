@@ -55,6 +55,7 @@ function get_attribute(name)
 end
 
 function draw()
+	fill(0, 0, width, height, background)
 	if (font) then
 		write_text(0, 0, size, text, foreground, background, font)
 	else
@@ -64,8 +65,8 @@ end
 
 size = 12
 text = ""
-foreground = 0xffffffff
-background = 0xff000000
+foreground = get_color("default_foreground")
+background = get_color("default_background")
 width = 0
 height = 0
 font = nil

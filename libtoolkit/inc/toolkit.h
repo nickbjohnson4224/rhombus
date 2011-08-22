@@ -21,6 +21,7 @@
 #include <toolkit/window.h>
 
 int init_toolkit();
+int set_theme(const char *theme);
 
 #endif
 

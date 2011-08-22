@@ -33,9 +33,14 @@ function mouse_button(x, y, button)
 end
 
 function draw()
-	write_text(0, 0, 12, text, 0xffffffff, 0xff000000, default_font)
+	fill(0, 0, width, height, bg_color)
+	draw_image(background, 0, 0, width, height)
+	write_text(0, 0, 12, text, fg_color, bg_color, default_font)
 end
 
 text = ""
 width = 0
 height = 0
+background = load_image(get_theme_path() .. "/button.bmp")
+fg_color = get_color("button_foreground", "default_foreground")
+bg_color = get_color("button_background", "default_background")
