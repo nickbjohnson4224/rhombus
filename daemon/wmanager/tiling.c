@@ -53,6 +53,7 @@ void update_tiling() {
 	}
 
 	if (!main_window) {
+		update_screen(0, 0, screen_width, screen_height);
 		return;
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Jaagup Repän <jrepan at gmail.com>
+ * Copyright (C) 2011 Jaagup Repan <jrepan at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,14 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef _TOOLKIT_H
-#define _TOOLKIT_H
+#ifndef CONFIG_H
+#define CONFIG_H
 
-#include <toolkit/widget.h>
-#include <toolkit/window.h>
+#define WINKEY 0x00800004
+#define CHANGE_MAIN_WINDOW_KEY 0x0a
 
-int init_toolkit();
-int set_theme(const char *theme);
+#define MOVE_BUTTON (1 << 0)
+#define RESIZE_BUTTON (1 << 1)
+#define TOGGLE_FLOATING_BUTTON (1 << 2)
+
+#define ACTIVE_WINDOW_BORDER COLOR_BLUE
+#define INACTIVE_WINDOW_BORDER COLOR_WHITE
 
 #endif
-

@@ -6,7 +6,7 @@ SUBDIR	:= libtoolkit
 STATIC	:= libtoolkit.a
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
 
-.PHONY: headers_dir $(HEADERS) clean
+.PHONY: headers_dir widgets_dir windows_dir themes_dir $(HEADERS) clean
 
 all: $(STATIC)
 
@@ -22,6 +22,11 @@ windows_dir:
 	@ echo " MKDIR	" $(BUILDDIR)/etc/windows
 	@ mkdir -p $(BUILDDIR)/etc/windows
 
+themes_dir:
+	@ echo " CP	" $(SUBDIR)/themes "->" $(BUILDDIR)/etc/themes
+	@ rm -r $(BUILDDIR)/etc/themes
+	@ cp -r $(BUILDDIR)/$(SUBDIR)/themes $(BUILDDIR)/etc/themes
+
 $(HEADERS): headers_dir
 	@ echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/inc
 	@ cp $@ $(BUILDDIR)/inc/toolkit/
@@ -34,7 +39,7 @@ $(WINDOWS): windows_dir
 	@ echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/etc/windows
 	@ cp $@ $(BUILDDIR)/etc/windows
 
-$(STATIC): $(WIDGETS) $(WINDOWS) $(HEADERS) $(SOURCES)
+$(STATIC): themes_dir $(WIDGETS) $(WINDOWS) $(HEADERS) $(SOURCES)
 	@ echo " AR	" $(SUBDIR)/$(STATIC)
 	@ $(AR) $(ARFLAGS) $(STATIC) $(SOURCES)
 	@ echo " CP	" $(SUBDIR)/$(STATIC) "->" $(BUILDDIR)/lib

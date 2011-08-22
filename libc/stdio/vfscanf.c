@@ -96,15 +96,19 @@ static int __scan_int(FILE *stream, int width, int flags) {
 static char *__scan_str(FILE *stream, int width, int flags) {
 	int i;
 	char buffer[100];
+	
+	if (width == -1) {
+		width = sizeof(buffer) - 1;
+	}
 
 	for (i = 0; i < width; i++) {
 		buffer[i] = getc(stream);
 		if (isspace(buffer[i])) {
 			ungetc(buffer[i], stream);
-			buffer[i] = '\0';
 			break;
 		}
 	}
+	buffer[i] = 0;
 
 	return strdup(buffer);
 }
@@ -190,7 +194,7 @@ int vfscanf(FILE *stream, const char *format, va_list ap) {
 	float *f;
 	double *lf;
 	long double *Lf;
-	char **s;
+	char *s;
 	char *c;
 
 	count = 0;
@@ -303,8 +307,10 @@ int vfscanf(FILE *stream, const char *format, va_list ap) {
 					}
 					break;
 				case TYPE_STR:
-					s = va_arg(ap, char**);
-					*s = __scan_str(stream, width, flags);
+					c = va_arg(ap, char*);
+					s = __scan_str(stream, width, flags);
+					strcpy(c, s);
+					free(s);
 					break;
 				case TYPE_CHAR:
 					c = va_arg(ap, char*);
