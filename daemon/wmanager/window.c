@@ -15,6 +15,7 @@
  */
 
 #include "wmanager.h"
+#include <graph.h>
 #include <stdlib.h>
 #include <mutex.h>
 #include <natio.h>
@@ -122,31 +123,23 @@ void draw_window(struct window_t *window, int x1, int y1, int x2, int y2) {
 	for (int x = window->x > x1 ? window->x - 1 : x1;
 			(x < (window->x + window->width + 1)) && (x < x2); x++) {
 		if (window->y > y1) {
-			for (int c = 0; c < 3; c++) {
-				screen[(x + (window->y - 1) * screen_width) * 4 + c] =
-					(window == active_window && c != 2) ? 0 : 0xff;
-			}
+			screen[x + (window->y - 1) * screen_width] =
+				(window == active_window) ? ACTIVE_WINDOW_BORDER : INACTIVE_WINDOW_BORDER;
 		}
 		if (window->y + window->height < y2) {
-			for (int c = 0; c < 3; c++) {
-				screen[(x + (window->y + window->height) * screen_width) * 4 + c] =
-					(window == active_window && c != 2) ? 0 : 0xff;
-			}
+			screen[x + (window->y + window->height) * screen_width] =
+				(window == active_window) ? ACTIVE_WINDOW_BORDER : INACTIVE_WINDOW_BORDER;
 		}
 	}
 	for (int y = window->y >= y1 ? window->y : y1;
 			(y < (window->y + window->height)) && (y < y2); y++) {
 		if (window->x > x1) {
-			for (int c = 0; c < 3; c++) {
-				screen[(window->x - 1 + y * screen_width) * 4 + c] =
-					(window == active_window && c != 2) ? 0 : 0xff;
-			}
+			screen[window->x - 1 + y * screen_width] =
+				(window == active_window) ? ACTIVE_WINDOW_BORDER : INACTIVE_WINDOW_BORDER;
 		}
 		if (window->x + window->width < x2) {
-			for (int c = 0; c < 3; c++) {
-				screen[(window->x + window->width + y * screen_width) * 4 + c] =
-					(window == active_window && c != 2) ? 0 : 0xff;
-			}
+			screen[window->x + window->width + y * screen_width] =
+				(window == active_window) ? ACTIVE_WINDOW_BORDER : INACTIVE_WINDOW_BORDER;
 		}
 	}
 

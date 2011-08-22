@@ -1,0 +1,3 @@
+default_background = 0xff000000
+default_foreground = 0xffffffff
+button_background = 0xff303030

@@ -179,6 +179,31 @@ static int get_child_attribute(lua_State *L) {
 	return 1;
 }
 
+static int get_color(lua_State *L) {
+	const char *name, *fallback;
+	uint32_t ret;
+	
+	name = lua_tostring(L, 1);
+	fallback = lua_tostring(L, 2);
+	if (!name) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	ret = __rtk_get_color(name);
+	if (!ret && fallback) {
+		ret = __rtk_get_color(fallback);
+	}
+
+	lua_pushnumber(L, ret);
+	return 1;
+}
+
+static int get_theme_path(lua_State *L) {
+	lua_pushstring(L, __rtk_theme_path);
+	return 1;
+}
+
 void __rtk_init_library(lua_State *L) {
 	EXPORT_FUNC(request_redraw);
 	EXPORT_FUNC(send_event);
@@ -187,4 +212,7 @@ void __rtk_init_library(lua_State *L) {
 	EXPORT_FUNC(call_child);
 	EXPORT_FUNC(set_child_attribute);
 	EXPORT_FUNC(get_child_attribute);
+
+	EXPORT_FUNC(get_color);
+	EXPORT_FUNC(get_theme_path)
 }

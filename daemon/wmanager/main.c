@@ -207,7 +207,7 @@ int wmanager_share(uint64_t source, uint32_t index, uint8_t *buffer, size_t size
 	if (!window) {
 		return -1;
 	}
-	if ((int) size != window->width * window->height * 4) {
+	if (size != window->width * window->height * sizeof(uint32_t)) {
 		return -1;
 	}
 
@@ -215,7 +215,7 @@ int wmanager_share(uint64_t source, uint32_t index, uint8_t *buffer, size_t size
 	if (window->bitmap) {
 		page_free(window->bitmap, window->width * window->height * 4);
 	}
-	window->bitmap = buffer;
+	window->bitmap = (uint32_t*) buffer;
 	mutex_free(&window->mutex);
 	return 0;
 }
@@ -262,12 +262,11 @@ void wmanager_key_event(uint64_t source, int argc, char **argv) {
 
 	data = atoi(argv[2]);
 
-	if (data == 0x00800004) {
+	if (data == WINKEY) {
 		winkey = pressed;
 	}
 
-	if (winkey && pressed && (data == 10)) {
-		// ENTER
+	if (winkey && pressed && (data == CHANGE_MAIN_WINDOW_KEY)) {
 		if (active_window && (active_window != main_window)) {
 			main_window = active_window;
 			update_tiling();
