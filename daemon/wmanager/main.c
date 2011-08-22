@@ -262,12 +262,11 @@ void wmanager_key_event(uint64_t source, int argc, char **argv) {
 
 	data = atoi(argv[2]);
 
-	if (data == 0x00800004) {
+	if (data == WINKEY) {
 		winkey = pressed;
 	}
 
-	if (winkey && pressed && (data == 10)) {
-		// ENTER
+	if (winkey && pressed && (data == CHANGE_MAIN_WINDOW_KEY)) {
 		if (active_window && (active_window != main_window)) {
 			main_window = active_window;
 			update_tiling();

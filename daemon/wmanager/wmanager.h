@@ -19,6 +19,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "config.h"
 
 enum window_flags {
 	LISTEN_EVENTS = 0x1,

@@ -54,7 +54,7 @@ void mouse_move(int16_t dx, int16_t dy) {
 		alreadymoving = true;
 		wasfloating = active_window->flags & FLOATING;
 
-		if (mousebuttons & 1) {
+		if (mousebuttons & MOVE_BUTTON) {
 			// move window
 			mutex_spin(&active_window->mutex);
 
@@ -70,7 +70,7 @@ void mouse_move(int16_t dx, int16_t dy) {
 
 			mutex_free(&active_window->mutex);
 		}
-		else if ((mousebuttons & 2) && !(active_window->flags & CONSTANT_SIZE)) {
+		else if ((mousebuttons & RESIZE_BUTTON) && !(active_window->flags & CONSTANT_SIZE)) {
 			resize_window(active_window, active_window->width + dx, active_window->height + dy, true);
 			active_window->flags |= FLOATING;
 			bring_to_front(active_window);
@@ -100,7 +100,7 @@ void mouse_buttons(int buttons) {
 		// release buttons
 		alreadymoving = false;
 	}
-	if ((clicked & 4) && active_window && (active_window->flags & FLOATING)) {
+	if ((clicked & TOGGLE_FLOATING_BUTTON) && active_window && (active_window->flags & FLOATING)) {
 		alreadymoving = false;
 		active_window->flags &= ~FLOATING;
 		update_tiling();
