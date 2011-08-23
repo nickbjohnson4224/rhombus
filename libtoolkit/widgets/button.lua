@@ -52,15 +52,16 @@ function draw()
 	else
 		draw_image(background_pressed, 0, 0, width, height)
 	end
-	write_text(0, 0, 12, text, fg_color, bg_color, default_font)
+	write_text(0, 0, text_height, text, fg_color, bg_color, default_font)
 end
 
 text = ""
 width = 0
 height = 0
+text_height = get_theme_attribute("button_text_height", "default_text_height")
 background = load_image(get_theme_path() .. "/button.bmp")
 background_pressed = load_image(get_theme_path() .. "/button_pressed.bmp")
-fg_color = get_color("button_foreground", "default_foreground")
-bg_color = get_color("button_background", "default_background")
+fg_color = get_theme_attribute("button_foreground", "default_foreground")
+bg_color = get_theme_attribute("button_background", "default_background")
 draw_pressed = false
 is_pressed = false

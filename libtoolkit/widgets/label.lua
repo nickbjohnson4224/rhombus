@@ -63,10 +63,10 @@ function draw()
 	end
 end
 
-size = 12
+size = get_theme_attribute("label_text_height", "default_text_height")
 text = ""
-foreground = get_color("default_foreground")
-background = get_color("default_background")
+foreground = get_theme_attribute("label_foreground", "default_foreground")
+background = get_theme_attribute("label_background", "default_background")
 width = 0
 height = 0
 font = nil

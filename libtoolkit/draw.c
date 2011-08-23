@@ -29,14 +29,22 @@ struct font {
 
 static FT_Library library;
 static struct font default_font;
+static bool default_font_ready;
 
 int __rtk_init_freetype() {
-	if (FT_Init_FreeType(&library)) {
+	return FT_Init_FreeType(&library);
+}
+
+int __rtk_set_default_font(const char *path) {
+	if (default_font_ready) {
+		FT_Done_Face(default_font.face);
+	}
+
+	if (FT_New_Face(library, path, 0, &default_font.face)) {
 		return 1;
 	}
-	if (FT_New_Face(library, "/etc/dejavu.ttf", 0, &default_font.face)) {
-		return 1;
-	}
+
+	default_font_ready = true;
 	return 0;
 }
 
