@@ -57,14 +57,55 @@ struct window *create_window_from_widget(const char *widget) {
 	return window;
 }
 
+static char *parse_arguments(char *string, char *name, char *value) {
+	char *start, *end, *middle;
+
+	start = string;
+	while (isspace(*start)) {
+		start++;
+	}
+
+	if (start >= string + strlen(string)) {
+		return NULL;
+	}
+
+	middle = strchr(start, '=') + 1;
+	if (!middle) {
+		return NULL;
+	}
+
+	end = strchr(middle, ' ');
+	if (!end) {
+		end = string + strlen(string) - 1;
+	}
+
+	strncpy(name, start, middle - start - 1);
+	strncpy(value, middle, end - middle);
+	name[middle - start - 1] = 0;
+	value[end - middle] = 0;
+
+	return end;
+}
+
+#define WINDOW_FLAG(x,y) \
+				if (!strcmp(name, x)) { \
+					if (!strcmp(name, "true")) { \
+						flags |= y; \
+					} \
+					if (!strcmp(name, "false")) { \
+						flags &= ~y; \
+					} \
+				} \
+
 struct window *create_window_from_file(const char *filename) {
 	FILE *file = fopen(filename, "r");
 	struct window *window;
 	struct widget *stack[stack_size + 1];
 	struct widget **stack_ptr = stack - 1;
 	char buffer[256], name[256], value[256];
-	char *start, *end, *middle;
+	char *start, *end;
 	bool first = true;
+	int width = 0, height = 0, flags = 0;
 
 	if (!file) {
 		return NULL;
@@ -80,19 +121,37 @@ struct window *create_window_from_file(const char *filename) {
 		if (!end) {
 			end = buffer + strlen(buffer) - 1;
 		}
+		strncpy(name, start, end - start);
+		name[end - start] = 0;
 
-		if (!strcmp(start, "end\n")) {
+		if (!strcmp(name, "windowoptions")) {
+			while ((end = parse_arguments(end, name, value))) {
+				if (!strcmp(name, "width")) {
+					width = atoi(value);
+				}
+				if (!strcmp(name, "height")) {
+					height = atoi(value);
+				}
+				WINDOW_FLAG("constant_size", CONSTANT_SIZE);
+				WINDOW_FLAG("floating", FLOATING);
+			}
+		}
+		else if (!strcmp(name, "end")) {
 			stack_ptr--;
 		}
 		else {
-			strncpy(name, start, end - start);
-			name[end - start] = 0;
-
 			if (first) {
 				window = create_window_from_widget(name);
 				if (!window) {
 					fclose(file);
 					return NULL;
+				}
+
+				if (width || height) {
+					resize_window(window, width, height);
+				}
+				if (flags) {
+					add_window_flags(window, flags);
 				}
 
 				*(++stack_ptr) = window->widget;
@@ -110,27 +169,7 @@ struct window *create_window_from_file(const char *filename) {
 				return NULL;
 			}
 			
-			while (1) {
-				start = end + 1;
-				if (start >= buffer + strlen(buffer)) {
-					break;
-				}
-
-				middle = strchr(start, '=') + 1;
-				if (!middle) {
-					break;
-				}
-
-				end = strchr(middle, ' ');
-				if (!end) {
-					end = buffer + strlen(buffer) - 1;
-				}
-
-				strncpy(name, start, middle - start - 1);
-				strncpy(value, middle, end - middle);
-				name[middle - start - 1] = 0;
-				value[end - middle] = 0;
-
+			while ((end = parse_arguments(end, name, value))) {
 				if (!strcmp(name, "name")) {
 					set_name(*stack_ptr, value);
 				}

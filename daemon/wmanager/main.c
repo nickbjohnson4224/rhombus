@@ -192,8 +192,26 @@ char *wmanager_rcall_setpanel(uint64_t source, uint32_t index, int argc, char **
 
 	panel = window;
 	panel->flags |= FLOATING;
+	panel->tags = 0xffffffff;
 	resize_window(panel, screen_width, panel->height, true);
 	update_tiling();
+
+	return strdup("T");
+}
+
+char *wmanager_rcall_settags(uint64_t source, uint32_t index, int argc, char **argv) {
+	uint32_t new_tags;
+
+	if (!panel || RP_PID(source) != panel->owner) return NULL;
+	if (argc != 2) return NULL;
+
+	new_tags = atoi(argv[1]);
+	if (new_tags == 0) return NULL;
+
+	if (new_tags != current_tags) {
+		current_tags = new_tags;
+		update_tiling();
+	}
 
 	return strdup("T");
 }
@@ -267,8 +285,8 @@ void wmanager_key_event(uint64_t source, int argc, char **argv) {
 	}
 
 	if (winkey && pressed && (data == CHANGE_MAIN_WINDOW_KEY)) {
-		if (active_window && (active_window != main_window)) {
-			main_window = active_window;
+		if (active_window && (active_window != windows)) {
+			bring_to_front(active_window);
 			update_tiling();
 		}
 	}
@@ -343,6 +361,7 @@ int main(int argc, char **argv) {
 	rcall_set("syncrect",       wmanager_rcall_syncrect);
 	rcall_set("getmouse", 		wmanager_rcall_getmouse);
 	rcall_set("setpanel",		wmanager_rcall_setpanel);
+	rcall_set("settags",		wmanager_rcall_settags);
 
 	rdi_set_share(wmanager_share);
 	rdi_set_sync (wmanager_sync);
@@ -363,6 +382,8 @@ int main(int argc, char **argv) {
 	event_set("mouse", wmanager_mouse_event);
 	event_set("key", wmanager_key_event);
 	event_set("graph", wmanager_graph_event);
+
+	current_tags = 1;
 
 	if (fork() < 0) {
 		exec("/bin/panel");
