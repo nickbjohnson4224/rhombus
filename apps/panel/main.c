@@ -22,8 +22,6 @@
 #include <string.h>
 #include <toolkit/toolkit.h>
 
-const int panel_height = 20;
-
 void panel_window_event(struct widget *widget, const char *event) {
 	if (!strcmp(get_name(widget), "launch_terminal") && !strcmp(event, "clicked")) {
 		if (fork() < 0) {
@@ -59,7 +57,6 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "%s: creating window failed\n", argv[0]);
 		return 1;
 	}
-	resize_window(window, 100, panel_height); //todo: should be in panelui.txt
 
 	ret = rcall(get_resource_pointer(window), "setpanel");
 #if 0

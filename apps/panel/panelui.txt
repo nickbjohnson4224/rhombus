@@ -1,3 +1,4 @@
+windowoptions height=20
 layout horizontal=true
 	button name=launch_terminal text=Terminal
 	end
