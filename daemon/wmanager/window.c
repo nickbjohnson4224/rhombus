@@ -75,11 +75,11 @@ int add_window(uint32_t id) {
 	window->flags = 0;
 	window->x = window->y = 0;
 	window->width = window->height = 0;
+	window->tags = current_tags;
 	window->bitmap = NULL;
 	window->mutex = false;
 
 	add_to_list(window);
-	main_window = window;
 	update_tiling();
 
 	return 0;
@@ -96,9 +96,6 @@ int remove_window(uint32_t id, uint32_t owner) {
 	if (window == active_window) {
 		active_window = NULL;
 	}
-	if (window == main_window) {
-		main_window = NULL;
-	}
 	flags = window->flags;
 
 	remove_from_list(window);
@@ -112,6 +109,10 @@ int remove_window(uint32_t id, uint32_t owner) {
 }
 
 void draw_window(struct window_t *window, int x1, int y1, int x2, int y2) {
+	if (!(window->tags & current_tags)) {
+		return;
+	}
+
 	mutex_spin(&window->mutex);
 
 	/* content */

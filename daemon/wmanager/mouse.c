@@ -119,7 +119,8 @@ void activate_window() {
 	active_window = NULL;
 	for (window = windows; window; window = window->next) {
 		if (window->x - 1 <= mousex && mousex <= window->x + window->width &&
-			window->y - 1 <= mousey && mousey <= window->y + window->height) {
+			window->y - 1 <= mousey && mousey <= window->y + window->height &&
+			(window->tags & current_tags)) {
 			active_window = window;
 		}
 	}

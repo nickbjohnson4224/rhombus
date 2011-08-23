@@ -33,6 +33,7 @@ struct window_t {
 	int flags;
 	int x, y;
 	int width, height;
+	uint32_t tags;
 	uint32_t *bitmap;
 	bool mutex;
 	struct window_t *next, *prev;
@@ -43,10 +44,10 @@ extern uint32_t *screen;
 extern int screen_width, screen_height;
 extern struct window_t *windows;
 extern struct window_t *active_window;
-extern struct window_t *main_window;
 extern struct window_t *panel;
 extern bool winkey;
 extern int mousex, mousey;
+extern uint32_t current_tags;
 
 struct window_t *find_window(uint32_t id, uint32_t owner);
 int add_window(uint32_t id);
