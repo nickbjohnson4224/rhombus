@@ -1,4 +1,21 @@
+windowoptions height=20
 layout horizontal=true
+	button name=tag1 text=1
+	end
+	button name=tag2 text=2
+	end
+	button name=tag3 text=3
+	end
+	button name=tag4 text=4
+	end
+	button name=tag5 text=5
+	end
+	button name=tag6 text=6
+	end
+	button name=tag7 text=7
+	end
+	button name=tag8 text=8
+	end
 	button name=launch_terminal text=Terminal
 	end
 	button name=launch_testtoolkit text=TestToolkit

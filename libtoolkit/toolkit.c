@@ -20,14 +20,14 @@
 #include <string.h>
 #include "private.h"
 
-struct colors_list {
+struct attributes_list {
 	char *name;
 	uint32_t value;
-	struct colors_list *next;
+	struct attributes_list *next;
 };
 
 static uint64_t wmanager;
-static struct colors_list *theme_colors;
+static struct attributes_list *theme_attributes;
 char *__rtk_theme_path;
 
 static void toolkit_graph_event(uint64_t source, int argc, char **argv) {
@@ -72,6 +72,10 @@ int init_toolkit() {
 		return 1;
 	}
 
+	if (__rtk_init_freetype()) {
+		return 1;
+	}
+
 	if (set_theme(NULL)) {
 		return 1;
 	}
@@ -80,26 +84,33 @@ int init_toolkit() {
 	event_set("key",   toolkit_key_event);
 	event_set("mouse", toolkit_mouse_event);
 
-	return __rtk_init_freetype();
+	return 0;
 }
 
 int set_theme(const char *theme) {
 	char name[256];
 	uint32_t value;
-	char *path, filename[256];
+	char *path, filename[256], fontpath[256];
 	FILE *file;
-	struct colors_list *ptr, *item, *list = NULL;
+	struct attributes_list *ptr, *item, *list = NULL;
 
 	if (!theme) {
 		return set_theme("default");
 	}
 
 	path = saprintf("/etc/themes/%s", theme);
-	sprintf(filename, "%s/colors.txt", path);
+	sprintf(filename, "%s/attributes.txt", path);
+	sprintf(fontpath, "%s/font.ttf", path);
 
 	file = fopen(filename, "r");
 	if (!file) {
 		free(path);
+		return 1;
+	}
+
+	if (__rtk_set_default_font(fontpath)) {
+		free(path);
+		fclose(file);
 		return 1;
 	}
 
@@ -108,7 +119,7 @@ int set_theme(const char *theme) {
 			continue;
 		}
 
-		item = malloc(sizeof(struct colors_list));
+		item = malloc(sizeof(struct attributes_list));
 		item->next = list;
 		list = item;
 		item->name = strdup(name);
@@ -117,23 +128,24 @@ int set_theme(const char *theme) {
 
 	if (__rtk_theme_path) {
 		free(__rtk_theme_path);
-		item = theme_colors;
+		item = theme_attributes;
 		while (item) {
 			ptr = item;
 			item = item->next;
 			free(ptr);
 		}
 	}
+	fclose (file);
 
 	__rtk_theme_path = path;
-	theme_colors = list;
+	theme_attributes = list;
 	return 0;
 }
 
-uint32_t __rtk_get_color(const char *name) {
-	struct colors_list *list;
+uint32_t __rtk_get_theme_attribute(const char *name) {
+	struct attributes_list *list;
 
-	for (list = theme_colors; list; list = list->next) {
+	for (list = theme_attributes; list; list = list->next) {
 		if (!strcmp(list->name, name)) {
 			return list->value;
 		}

@@ -22,9 +22,12 @@
 #include <string.h>
 #include <toolkit/toolkit.h>
 
-const int panel_height = 20;
+struct window *window;
+uint32_t tags = 1;
 
 void panel_window_event(struct widget *widget, const char *event) {
+	uint32_t old_tags, tag;
+
 	if (!strcmp(get_name(widget), "launch_terminal") && !strcmp(event, "clicked")) {
 		if (fork() < 0) {
 			exec("/sbin/fbterm");
@@ -43,10 +46,28 @@ void panel_window_event(struct widget *widget, const char *event) {
 			exit(1);
 		}
 	}
+	if (!strncmp(get_name(widget), "tag", 3) && !strcmp(event, "clicked")) {
+		old_tags = tags;
+		tag = 1 << (get_name(widget)[3] - '1');
+
+		if (tags & tag) {
+			if (tags != tag) {
+				tags &= ~tag;
+				set_attribute_bool(widget, "pressed", false);
+			}
+		}
+		else {
+			tags |= tag;
+			set_attribute_bool(widget, "pressed", true);
+		}
+
+		if (old_tags != tags) {
+			rcallf(get_resource_pointer(window), "settags %i", tags);
+		}
+	}
 }
 
 int main(int argc, char **argv) {
-	struct window *window;
 	char *ret;
 
 	if (init_toolkit()) {
@@ -59,7 +80,6 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "%s: creating window failed\n", argv[0]);
 		return 1;
 	}
-	resize_window(window, 100, panel_height); //todo: should be in panelui.txt
 
 	ret = rcall(get_resource_pointer(window), "setpanel");
 #if 0
@@ -73,6 +93,8 @@ int main(int argc, char **argv) {
 	free(ret);
 
 	window_register(window, panel_window_event);
+
+	set_attribute_bool(find_widget(window, "tag1"), "pressed", true);
 
 	_done();
 	return 0;

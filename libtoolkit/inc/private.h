@@ -50,9 +50,10 @@ struct widget {
 extern struct window *__rtk_window;
 extern char *__rtk_theme_path;
 
-uint32_t __rtk_get_color(const char *name);
+uint32_t __rtk_get_theme_attribute(const char *name);
 
 int __rtk_init_freetype();
+int __rtk_set_default_font(const char *path);
 void __rtk_free_font(struct font *font);
 void __rtk_init_drawing_functions(lua_State *L);
 
