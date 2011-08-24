@@ -46,13 +46,15 @@ function mouse_button(x, y, button)
 end
 
 function draw()
-	fill(0, 0, width, height, bg_color)
 	if (not draw_pressed and not is_pressed) then
+		fill(0, 0, width, height, bg_color)
 		draw_image(background, 0, 0, width, height)
+		write_text(0, 0, text_height, text, fg_color, bg_color, default_font)
 	else
+		fill(0, 0, width, height, bg_color_pressed)
 		draw_image(background_pressed, 0, 0, width, height)
+		write_text(0, 0, text_height, text, fg_color_pressed, bg_color_pressed, default_font)
 	end
-	write_text(0, 0, text_height, text, fg_color, bg_color, default_font)
 end
 
 text = ""
@@ -63,5 +65,13 @@ background = load_image(get_theme_path() .. "/button.bmp")
 background_pressed = load_image(get_theme_path() .. "/button_pressed.bmp")
 fg_color = get_theme_attribute("button_foreground", "default_foreground")
 bg_color = get_theme_attribute("button_background", "default_background")
+fg_color_pressed = get_theme_attribute("button_pressed_foreground")
+if (fg_color_pressed == 0) then
+	fg_color_pressed = fg_color
+end
+bg_color_pressed = get_theme_attribute("button_pressed_background")
+if (bg_color_pressed == 0) then
+	bg_color_pressed = bg_color
+end
 draw_pressed = false
 is_pressed = false
