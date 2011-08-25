@@ -170,7 +170,7 @@ static int __widget_event(struct widget *widget, const char *event, int argc, ch
 	for (ptr = widget->children; ptr; ptr = ptr->next) {
 		if ((ptr->realx <= mousex && mousex <= ptr->realx + ptr->realwidth) &&
 				(ptr->realy <= mousey && mousey <= ptr->realy + ptr->realheight)) {
-			if (!widget_event(ptr, event, argc, argv)) {
+			if (!__widget_event(ptr, event, argc, argv, mousex, mousey)) {
 				return 0;
 			}
 		}
