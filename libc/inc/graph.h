@@ -99,6 +99,7 @@ int        fb_getmode(struct fb *fb, int *xdim, int *ydim);
 // basic operations
 int        fb_flip (struct fb *fb);
 int        fb_plot (struct fb *fb, int x, int y, uint32_t color);
+int        fb_fill (struct fb *fb, int x, int y, int w, int h, uint32_t color);
 int        fb_blit (struct fb *fb, uint32_t *bitmap, int x, int y, int w, int h);
 
 // raw bitmap access

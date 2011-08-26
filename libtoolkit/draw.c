@@ -89,7 +89,6 @@ static int fill(lua_State *L) {
 	uint32_t color;
 	int ret = 0;
 	int x, y, width, height;
-	int i, j;
 
 	if (lua_gettop(L) < 5) ret = 1;
 	if (!lua_isnumber(L, 1)) ret = 1;
@@ -109,11 +108,7 @@ static int fill(lua_State *L) {
 			ret = 1;
 		}
 		else {
-			for (i = 0; i < height && i < widget->realheight; i++) {
-				for (j = 0; j < width && j < widget->realwidth; j++) {
-					ret |= fb_plot(widget->window->fb, widget->realx + x + j, widget->realy + y + i, color);
-				}
-			}
+			ret = fb_fill(widget->window->fb, widget->realx + x, widget->realy + y, width, height, color);
 		}
 	}
 
