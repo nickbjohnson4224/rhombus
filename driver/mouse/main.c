@@ -29,10 +29,12 @@
 struct event_list *event_list;
 uint8_t bytes[3];
 size_t curbyte;
-int16_t dx, dy;
-int buttons, prevbuttons;
+int prevbuttons;
 #if USE_IRQ
 bool mutex;
+#else
+int dx, dy;
+int buttons;
 #endif
 
 void wait_signal() {
@@ -71,32 +73,18 @@ char *mouse_deregister(uint64_t source, uint32_t index, int argc, char **argv) {
 	return strdup("T");
 }
 
-void read_byte() {
-	bytes[curbyte++] = inb(0x60);
-
-	if (curbyte == 1) {
-		buttons = bytes[0] & 0x7;
-		if (!(bytes[0] & 0x08)) {
-			// Out of sync
-			curbyte = 0;
-		}
-	}
-	if (curbyte == 3) {
-		curbyte = 0;
-		dx += bytes[1] - ((bytes[0] & 0x10) ? 256 : 0);
-		dy -= bytes[2] - ((bytes[0] & 0x20) ? 256 : 0);
-	}
-}
-
-void send_events() {
+static inline void send_event_delta(int dx, int dy) {
 	char *event;
 
 	if (dx || dy) {
 		event = saprintf("mouse delta %d %d", dx, dy);
 		eventl(event_list, event);
 		free(event);
-		dx = dy = 0;
 	}
+}
+
+static inline void send_event_button(int buttons) {
+	char *event;
 
 	if (buttons != prevbuttons) {
 		event = saprintf("mouse button %d", buttons);
@@ -106,11 +94,41 @@ void send_events() {
 	}
 }
 
+static inline void read_byte() {
+#if USE_IRQ
+	int dx = 0, dy = 0;
+	int buttons;
+#endif
+
+	bytes[curbyte++] = inb(0x60);
+
+	if (curbyte == 1) {
+		if (!(bytes[0] & 0x08)) {
+			// Out of sync
+			curbyte = 0;
+			return;
+		}
+		buttons = bytes[0] & 0x7;
+#if USE_IRQ
+		mutex_free(&mutex);
+		send_event_button(buttons);
+#endif
+	}
+	if (curbyte == 3) {
+		curbyte = 0;
+		dx += bytes[1] - ((bytes[0] & 0x10) ? 256 : 0);
+		dy -= bytes[2] - ((bytes[0] & 0x20) ? 256 : 0);
+#if USE_IRQ
+		mutex_free(&mutex);
+		send_event_delta(dx, dy);
+#endif
+	}
+}
+
 #if USE_IRQ
 void mouse_irq(struct msg *msg) {
 	mutex_spin(&mutex);
 	read_byte();
-	send_events();
 	mutex_free(&mutex);
 }
 #endif
@@ -160,7 +178,9 @@ int main(int argc, char **argv) {
 		first = true;
 		while ((inb(0x64) & 0x21) != 0x21) {
 			if (first) {
-				send_events();
+				send_event_delta(dx, dy);
+				send_event_button(buttons);
+				dx = dy = 0;
 			}
 			first = false;
 			sleep();
