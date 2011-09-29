@@ -43,29 +43,42 @@ For 0.9 Alpha:
 + file locking
 + top/ps equivalent
 + proper session/controlling tty stuff
-- kernel key system
-- RDI
+
+- driver interface complete
 	+ I/O interface
 	+ VFS interface
 	- core interface
 	- security interface
 	- event interface
-- pipe driver
-- shell pipe support
-- stdio buffering
-- better shared memory architecture
-- dynamic linking
-- device manager (PCI)
-- ATA/ATAPI driver
-- iso9660 driver
-- ext2 driver
-- FAT32 driver
+
+- kernel improvements
+	- kernel key system
+	- better names for system calls
+	- indexed system calls (one interrupt)
+	- SYSCALL/SYSENTER capability
+
+- pipes and shell improvements
+	- pipe driver
+	- shell pipe support
+	- stdio buffering
+	- shell job control
+	- login shell
+
+- graphics architecture improvements
+	- shared memory (mmap-style)
+	- canvas/blitter API
+
+- drivers
+	- device manager (PCI driver)
+	- ATA/ATAPI driver
+	- iso9660 driver
+	- ext2 driver
+	- FAT32 driver
 
 For 1.0 Beta:
 
 - curses port
 - user/password manager
-- login manager
 - decent shell (POSIX-compliant)
 - libc documentation
 - kernel documentation

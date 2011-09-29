@@ -39,6 +39,8 @@
  *   @p:i
  *
  * Where p is the PID of the pointer and i is the index, both in decimal.
+ * For example, if the PID is 42 and the index is 123, the string 
+ * representation would be "@42:123".
  */
 
 #define RP_CONS(pid, idx) ((((uint64_t) (pid)) << 32) | (uint64_t) (idx))
@@ -181,7 +183,7 @@ int rp_link (uint64_t dir, const char *name, uint64_t link);
  * do not allow certain operations (usually writing, if the filesystem is
  * read-only) and this does not ensure that the permission bitmap will 
  * actually be modified as specified.
- */
+ v
 
 uint8_t fs_getperm(const char *path, uint32_t user);
 int     fs_setperm(const char *path, uint32_t user, uint8_t perm);
