@@ -62,7 +62,7 @@ void panel_window_event(struct widget *widget, const char *event) {
 		}
 
 		if (old_tags != tags) {
-			rcallf(get_resource_pointer(window), "settags %i", tags);
+			rcall(get_resource_pointer(window), "settags %i", tags);
 		}
 	}
 }

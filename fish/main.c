@@ -70,7 +70,7 @@ int main() {
 
 		pid = fork();
 		if (pid < 0) {
-			rcallf(stdin->fd, "set_fgjob %d", getpid());
+			rcall(stdin->fd, "set_fgjob %d", getpid());
 
 			if (execv(argv[0], (char const **) argv)) {
 				if (errno == ENOENT) {
@@ -84,7 +84,7 @@ int main() {
 			}
 		}
 		mwait(PORT_CHILD, RP_CONS(pid, 0));
-		rcallf(stdin->fd, "set_fgjob %d", 0);
+		rcall(stdin->fd, "set_fgjob %d", 0);
 	}
 
 	return 0;

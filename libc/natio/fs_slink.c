@@ -68,7 +68,7 @@ int rp_plink(uint64_t rp, uint64_t link_rp, const char *link_path) {
 int rp_slink(uint64_t rp, const char *link) {
 	char *reply;
 
-	reply = rcallf(rp, "symlink %s", link);
+	reply = rcall(rp, "symlink %s", link);
 
 	if (!reply) {
 		errno = ENOSYS;
