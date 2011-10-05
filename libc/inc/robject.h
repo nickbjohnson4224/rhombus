@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -68,12 +68,12 @@ struct robject; // defined below
 // guaranteed to be an integer type
 typedef uint64_t rp_t;
 
-#define RP_CONS(pid, idx)   ((((uint64_t) (pid)) << 32) | (uint64_t) (idx))
-#define RP_PID(rp)          ((uint32_t) ((rp) >> 32))
-#define RP_INDEX(rp)        ((uint32_t) ((rp) & 0xFFFFFFFF))
-#define RP_NULL             ((uint64_t) 0)
+#define RP_CONS(pid, idx) ((((uint64_t) (pid)) << 32) | (uint64_t) (idx))
+#define RP_PID(rp)        ((uint32_t) ((rp) >> 32))
+#define RP_INDEX(rp)      ((uint32_t) ((rp) & 0xFFFFFFFF))
+#define RP_NULL           ((uint64_t) 0)
 
-char *rtoa(rp_t rp);     // convert robject pointer to string
+char *rtoa(rp_t rp);         // convert robject pointer to string
 rp_t  ator(const char *str); // convert string to robject pointer
 
 /*****************************************************************************
@@ -116,10 +116,6 @@ rcall_t rcall_geti(uint32_t index, const char *call);
  * mouse movement events, or window events.)
  */
 
-/*
- * deprecated event interface
- */
-
 struct event_list {
 	rp_t target;
 	struct event_list *next;
@@ -141,15 +137,13 @@ int     event_set(const char *event, event_t handler);
 event_t event_get(const char *event);
 
 /*****************************************************************************
- * Rhombus Object Indexing
+ * Rhombus Object Indexing and Lookup
  */
 
 void            robject_set(uint32_t index, struct robject *ro);
 struct robject *robject_get(uint32_t index);
 
-uint16_t  robject_new_pool (uint32_t index_min, uint32_t index_max);
-uint16_t  robject_free_pool(uint16_t pool_id);
-uint32_t  robject_new_index(uint16_t pool_id);
+uint32_t robject_new_index(void);
 
 /*****************************************************************************
  * Rhombus Object Operations
@@ -215,9 +209,11 @@ struct robject {
 	struct robject_evnt_list  *evnt_list;  // list of event subscribers
 };
 
+// constructor/destructor
 struct robject *robject_cons(uint32_t index, struct robject *parent);
 void            robject_free(struct robject *ro);
 
+// various field manipulations
 void    robject_set_call(struct robject *ro, const char *call, rcall_t hook);
 rcall_t robject_get_call(struct robject *ro, const char *call);
 void    robject_set_data(struct robject *ro, const char *field, void *data);
@@ -227,8 +223,9 @@ rcall_t robject_get_evnt(struct robject *ro, const char *type);
 void    robject_add_evnt(struct robject *ro, rp_t target);
 void    robject_del_evnt(struct robject *ro, rp_t target);
 
-void    robject_evnt(struct robject *ro, const char *event);
-char   *robject_call(struct robject *ro, const char *args);
-#define robject_data robject_get_data
+// basic interface
+void  robject_evnt(struct robject *ro, const char *event);
+char *robject_call(struct robject *ro, const char *args);
+void *robject_data(struct robject *ro, const char *field);
 
 #endif/*__RLIBC_ROBJECT_H*/
