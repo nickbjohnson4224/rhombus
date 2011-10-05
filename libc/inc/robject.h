@@ -169,6 +169,13 @@ struct __robject_call_table {
 	size_t size; // real size is (1 << size)
 };
 
+struct __robject_call_table *
+__call_table_set(struct __robject_call_table *table, const char *field, rcall_t hook);
+
+rcall_t __call_table_get(struct __robject_call_table *table, const char *field);
+
+void __call_table_free(struct __robject_call_table *table);
+
 /*
  * robject general data storage internals
  */
@@ -185,15 +192,26 @@ struct __robject_data_table {
 	size_t size; // real size is (1 << size)
 };
 
+struct __robject_data_table *
+__data_table_set(struct __robject_data_table *table, const char *field, void *data);
+
+void *__data_table_get(struct __robject_data_table *table, const char *field);
+
+void __data_table_free(struct __robject_data_table *table);
+
 /* 
  * robject event storage internals
  */
 
 struct __robject_event_set {
-	struct __robject_event_set *left;
-	struct __robject_event_set *right;
+	struct __robject_event_set *next;
+	struct __robject_event_set *prev;
 	rp_t target;
 };
+
+struct __robject_event_set *__event_set_add(struct __robject_event_set *set, rp_t target);
+struct __robject_event_set *__event_set_del(struct __robject_event_set *set, rp_t target);
+void   __event_set_send(struct __robject_event_set *set, const char *value);
 
 /*
  * robject definition
@@ -222,14 +240,16 @@ void    robject_set_call(struct robject *ro, const char *call, rcall_t hook);
 rcall_t robject_get_call(struct robject *ro, const char *call);
 void    robject_set_data(struct robject *ro, const char *field, void *data);
 void   *robject_get_data(struct robject *ro, const char *field);
-void    robject_set_evnt(struct robject *ro, const char *type, rcall_t hook);
-rcall_t robject_get_evnt(struct robject *ro, const char *type);
+
+// event management
+void    robject_set_event_hook(struct robject *ro, const char *type, rcall_t hook);
+rcall_t robject_get_event_hook(struct robject *ro, const char *type);
 void    robject_add_subscriber(struct robject *ro, rp_t target);
 void    robject_del_subscriber(struct robject *ro, rp_t target);
 
 // basic interface
-void  robject_evnt(struct robject *ro, const char *event);
-char *robject_call(struct robject *ro, const char *args);
-void *robject_data(struct robject *ro, const char *field);
+void  robject_event(struct robject *ro, const char *event);
+char *robject_call (struct robject *ro, const char *args);
+void *robject_data (struct robject *ro, const char *field);
 
 #endif/*__RLIBC_ROBJECT_H*/
