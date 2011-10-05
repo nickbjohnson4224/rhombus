@@ -16,9 +16,11 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include <stdio.h>
+#include <mutex.h>
 
 #include <robject.h>
+
+static bool _mutex = false;
 
 /*
  * AVL tree implementation for hash table buckets.
@@ -57,18 +59,13 @@ static struct __bucket *_tree_balance(struct __bucket *root) {
 
 		if (root->r->balance > 0) {
 			// right rotation on right subtree needed first
-			if (root->r->l) {
-				temp = root->r->l;
-				root->r->l = temp->r;
-				temp->r = root->r;
-				root->r = temp;
+			temp = root->r->l;
+			root->r->l = temp->r;
+			temp->r = root->r;
+			root->r = temp;
 
-				_update_height_balance(temp);
-				_update_height_balance(root->r);
-			}
-			else {
-				printf("! %x, %d\n", root->r, root->r->balance);
-			}
+			_update_height_balance(temp);
+			_update_height_balance(root->r);
 		}
 
 		temp = root->r;
@@ -271,16 +268,26 @@ static void _del(uint32_t index) {
 
 void robject_set(uint32_t index, struct robject *ro) {
 
+	mutex_spin(&_mutex);
 	if (ro) {
+		mutex_spin(&ro->mutex);
 		_set(index, ro);
+		mutex_free(&ro->mutex);
 	}
 	else {
 		_del(index);
 	}
+	mutex_free(&_mutex);
 }
 
 struct robject *robject_get(uint32_t index) {
-	return _get(index);
+	struct robject *robject;
+
+	mutex_spin(&_mutex);
+	robject = _get(index);
+	mutex_free(&_mutex);
+
+	return robject;
 }
 
 /*
@@ -288,7 +295,15 @@ struct robject *robject_get(uint32_t index) {
  */
 
 uint32_t robject_new_index(void) {
-	static uint32_t base = 0x80000000;
+	static uint32_t base = 1;
+	static bool mutex = false;
 
-	return (base++);
+	uint32_t index;
+
+	mutex_spin(&mutex);
+	index = base;
+	base++;
+	mutex_free(&mutex);
+
+	return index;
 }

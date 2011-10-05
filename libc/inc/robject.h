@@ -38,6 +38,8 @@
 
 struct robject; // defined below
 
+void __robject_init(void);
+
 /*****************************************************************************
  * Rhombus object pointers (robject pointers)
  *
@@ -140,6 +142,8 @@ event_t event_get(const char *event);
  * Rhombus Object Indexing and Lookup
  */
 
+extern struct robject *robject_root;
+
 void            robject_set(uint32_t index, struct robject *ro);
 struct robject *robject_get(uint32_t index);
 
@@ -153,15 +157,15 @@ uint32_t robject_new_index(void);
  * robject call dispatch internals
  */
 
-struct robject_call_table_entry {
+struct __robject_call_table_entry {
 	uint32_t hash1;
 	uint32_t hash2;
 	char *string;
 	rcall_t hook;
 };
 
-struct robject_call_table {
-	struct rcall_dispatch_entry *table;
+struct __robject_call_table {
+	struct __robject_call_table_entry *table;
 	size_t size; // real size is (1 << size)
 };
 
@@ -169,15 +173,15 @@ struct robject_call_table {
  * robject general data storage internals
  */
 
-struct robject_data_table_entry {
+struct __robject_data_table_entry {
 	uint32_t hash1;
 	uint32_t hash2;
 	char *string;
 	void *data;
 };
 
-struct robject_data_table {
-	struct robject_data_entry *table;
+struct __robject_data_table {
+	struct __robject_data_table_entry *table;
 	size_t size; // real size is (1 << size)
 };
 
@@ -185,8 +189,9 @@ struct robject_data_table {
  * robject event storage internals
  */
 
-struct robject_evnt_list {
-	struct robject_evnt_list *next;
+struct __robject_event_set {
+	struct __robject_event_set *left;
+	struct __robject_event_set *right;
 	rp_t target;
 };
 
@@ -196,17 +201,16 @@ struct robject_evnt_list {
 
 struct robject {
 	bool     mutex; // XOPT - this should be a readers/writer lock
-	uint32_t index; // object index within process
-	uint32_t refc;  // reference count
+	uint32_t index; // object index within process; do not modify
 	
 	// parent interface (for defaulting messages to)
 	struct robject *parent;
 
 	// robject fields
-	struct robject_call_table *call_table; // table of rcall hooks
-	struct robject_data_table *data_table; // table of general data
-	struct robject_call_table *evnt_table; // table of event hooks
-	struct robject_evnt_list  *evnt_list;  // list of event subscribers
+	struct __robject_call_table *call_table; // table of rcall hooks
+	struct __robject_data_table *data_table; // table of general data
+	struct __robject_call_table *evnt_table; // table of event hooks
+	struct __robject_event_set  *evnt_subs;  // list of event subscribers
 };
 
 // constructor/destructor
@@ -220,8 +224,8 @@ void    robject_set_data(struct robject *ro, const char *field, void *data);
 void   *robject_get_data(struct robject *ro, const char *field);
 void    robject_set_evnt(struct robject *ro, const char *type, rcall_t hook);
 rcall_t robject_get_evnt(struct robject *ro, const char *type);
-void    robject_add_evnt(struct robject *ro, rp_t target);
-void    robject_del_evnt(struct robject *ro, rp_t target);
+void    robject_add_subscriber(struct robject *ro, rp_t target);
+void    robject_del_subscriber(struct robject *ro, rp_t target);
 
 // basic interface
 void  robject_evnt(struct robject *ro, const char *event);
