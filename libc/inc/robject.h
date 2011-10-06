@@ -181,15 +181,16 @@ void __call_table_free(struct __robject_call_table *table);
  */
 
 struct __robject_data_table_entry {
-	uint32_t hash1;
-	uint32_t hash2;
+	struct __robject_data_table_entry *next;
+	uint32_t hash;
 	char *string;
 	void *data;
 };
 
 struct __robject_data_table {
-	struct __robject_data_table_entry *table;
 	size_t size; // real size is (1 << size)
+	size_t load;
+	struct __robject_data_table_entry table[];
 };
 
 struct __robject_data_table *
