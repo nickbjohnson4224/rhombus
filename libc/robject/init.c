@@ -40,6 +40,7 @@ void __robject_init(void) {
 
 	// allocate root object
 	robject_root = robject_cons(0, NULL);
+	robject_set(0, robject_root);
 
 	// set up basic data fields
 	robject_set_data(robject_root, "type", (void*) "basic");

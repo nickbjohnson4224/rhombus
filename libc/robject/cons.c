@@ -30,16 +30,21 @@ struct robject *robject_cons(uint32_t index, struct robject *parent) {
 	robject->call_table = NULL;
 	robject->data_table = NULL;
 	robject->evnt_table = NULL;
-	robject->evnt_subs  = NULL;
+	robject->event_subs = NULL;
 
 	if (index) {
-		robject_set(index, parent);
+		robject_set(index, robject);
 	}
 
 	return robject;
 }
 
 void robject_free(struct robject *ro) {
+
+	// refuse to free root object
+	if (ro == robject_root) {
+		return;
+	}
 
 	// remove from table (if in table)
 	if (ro->index) {
@@ -48,7 +53,10 @@ void robject_free(struct robject *ro) {
 
 	mutex_spin(&ro->mutex);
 
-	// XXX - should also free tables here
+	__data_table_free(ro->call_table);
+	__data_table_free(ro->data_table);
+	__data_table_free(ro->evnt_table);
+	__event_set_free(ro->event_subs);
 
 	free(ro);
 }

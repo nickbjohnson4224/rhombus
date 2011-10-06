@@ -63,3 +63,13 @@ void __event_set_send(struct __robject_event_set *set, const char *value) {
 		set = set->next;
 	}
 }
+
+void __event_set_free(struct __robject_event_set *set) {
+	struct __robject_event_set *temp;
+
+	while (set) {
+		temp = set->next;
+		free(set);
+		set = temp;
+	}
+}

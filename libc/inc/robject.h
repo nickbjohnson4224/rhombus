@@ -190,6 +190,7 @@ struct __robject_event_set {
 struct __robject_event_set *__event_set_add(struct __robject_event_set *set, rp_t target);
 struct __robject_event_set *__event_set_del(struct __robject_event_set *set, rp_t target);
 void   __event_set_send(struct __robject_event_set *set, const char *value);
+void   __event_set_free(struct __robject_event_set *set);
 
 /*
  * robject definition
