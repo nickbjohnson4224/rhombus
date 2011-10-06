@@ -42,9 +42,9 @@ void __robject_init(void) {
 	robject_root = robject_cons(0, NULL);
 
 	// set up basic data fields
-//	robject_set_data(robject_root, "type", "basic");
+	robject_set_data(robject_root, "type", (void*) "basic");
 
 	// set up basic rcall handlers
-//	robject_set_call(robject_root, "type", __rcall_type);
-//	robject_set_call(robject_root, "ping", __rcall_ping);
+	robject_set_call(robject_root, "type", __rcall_type);
+	robject_set_call(robject_root, "ping", __rcall_ping);
 }

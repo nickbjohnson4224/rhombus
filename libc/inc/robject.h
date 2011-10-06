@@ -154,29 +154,6 @@ uint32_t robject_new_index(void);
  */
 
 /*
- * robject call dispatch internals
- */
-
-struct __robject_call_table_entry {
-	uint32_t hash1;
-	uint32_t hash2;
-	char *string;
-	rcall_t hook;
-};
-
-struct __robject_call_table {
-	struct __robject_call_table_entry *table;
-	size_t size; // real size is (1 << size)
-};
-
-struct __robject_call_table *
-__call_table_set(struct __robject_call_table *table, const char *field, rcall_t hook);
-
-rcall_t __call_table_get(struct __robject_call_table *table, const char *field);
-
-void __call_table_free(struct __robject_call_table *table);
-
-/*
  * robject general data storage internals
  */
 
@@ -219,17 +196,17 @@ void   __event_set_send(struct __robject_event_set *set, const char *value);
  */
 
 struct robject {
-	bool     mutex; // XOPT - this should be a readers/writer lock
+	bool     mutex; // OPT - this should be a readers/writer lock
 	uint32_t index; // object index within process; do not modify
 	
 	// parent interface (for defaulting messages to)
 	struct robject *parent;
 
 	// robject fields
-	struct __robject_call_table *call_table; // table of rcall hooks
+	struct __robject_data_table *call_table; // table of rcall hooks
 	struct __robject_data_table *data_table; // table of general data
-	struct __robject_call_table *evnt_table; // table of event hooks
-	struct __robject_event_set  *evnt_subs;  // list of event subscribers
+	struct __robject_data_table *evnt_table; // table of event hooks
+	struct __robject_event_set  *event_subs; // list of event subscribers
 };
 
 // constructor/destructor
@@ -249,8 +226,9 @@ void    robject_add_subscriber(struct robject *ro, rp_t target);
 void    robject_del_subscriber(struct robject *ro, rp_t target);
 
 // basic interface
-void  robject_event(struct robject *ro, const char *event);
-char *robject_call (struct robject *ro, const char *args);
+void  robject_cause_event(struct robject *ro, const char *event);
+void  robject_event(struct robject *ro, rp_t source, const char *event);
+char *robject_call (struct robject *ro, rp_t source, const char *args);
 void *robject_data (struct robject *ro, const char *field);
 
 #endif/*__RLIBC_ROBJECT_H*/
