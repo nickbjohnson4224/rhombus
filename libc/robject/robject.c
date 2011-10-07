@@ -65,7 +65,6 @@ void *robject_get_data(struct robject *ro, const char *field) {
 	if (ro) {
 		mutex_spin(&ro->mutex);
 		data = __data_table_get(ro->data_table, field);
-		if (!data) data = robject_get_data(ro->parent, field);
 		mutex_free(&ro->mutex);
 
 		return data;
@@ -96,6 +95,7 @@ rcall_t robject_get_event_hook(struct robject *ro, const char *type) {
 		hook = (rcall_t) (uintptr_t) __data_table_get(ro->evnt_table, type);
 		if (!hook) hook = robject_get_event_hook(ro->parent, type);
 		mutex_free(&ro->mutex);
+		if (!hook) hook = robject_get_event_hook(robject_root, type);
 
 		return hook;
 	}

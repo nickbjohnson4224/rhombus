@@ -217,6 +217,8 @@ static void *_get(struct __robject_data_table *table, const char *field) {
 struct __robject_data_table *
 __data_table_set(struct __robject_data_table *table, const char *field, void *data) {
 
+	if (!field) return table;
+
 	if (!table) {
 		table = _cons(6);
 	}
@@ -240,6 +242,8 @@ __data_table_set(struct __robject_data_table *table, const char *field, void *da
 }
 
 void *__data_table_get(struct __robject_data_table *table, const char *field) {
+	if (!table) return NULL;
+	if (!field) return NULL;
 	return _get(table, field);
 }
 

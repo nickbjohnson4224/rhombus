@@ -232,4 +232,18 @@ void  robject_event(struct robject *ro, rp_t source, const char *event);
 char *robject_call (struct robject *ro, rp_t source, const char *args);
 void *robject_data (struct robject *ro, const char *field);
 
+/*****************************************************************************
+ * Standard Classes
+ */
+
+extern struct robject *robject_class_basic;
+extern struct robject *robject_class_event;
+
+/*****************************************************************************
+ * Type System
+ */
+
+int robject_is_type(const char *typestr, const char *type);
+int robject_check_type(struct robject *ro, const char *type);
+
 #endif/*__RLIBC_ROBJECT_H*/
