@@ -20,6 +20,52 @@
 #include <rdi/core.h>
 #include <ipc.h>
 
+/*****************************************************************************
+ * rdi_class_file (extends rdi_class_core) - file
+ *
+ * Calls:
+ *
+ * size - R
+ *
+ * reset - W
+ *
+ * Fields:
+ *
+ * size
+ *
+ *   Type: off_t * (heap-allocated)
+ *
+ * read
+ *
+ *   Type: rdi_read_hook (function pointer)
+ *
+ * write
+ *
+ *   Type: rdi_write_hook (function pointer)
+ *
+ * mmap
+ *
+ *   Type: rdi_mmap_hook (function pointer)
+ */
+
+extern struct robject *rdi_class_file;
+void __rdi_class_file_setup();
+
+struct robject *rdi_file_cons(uint32_t index, uint32_t access);
+void            rdi_file_free(struct robject *r);
+
+typedef size_t (*rdi_read_hook) (struct robject *r, rp_t src, uint8_t *buf, size_t size, off_t off);
+typedef size_t (*rdi_write_hook)(struct robject *r, rp_t src, uint8_t *buf, size_t size, off_t off);
+typedef void * (*rdi_mmap_hook) (struct robject *r, rp_t src, size_t size, off_t off, int prot);
+
+extern rdi_read_hook  rdi_global_read_hook;
+extern rdi_write_hook rdi_global_write_hook;
+extern rdi_mmap_hook  rdi_global_mmap_hook;
+
+/*
+ * Old stuff past here
+ */
+
 /* I/O callbacks ************************************************************/
 
 void rdi_set_read (size_t (*_read) (uint64_t src, uint32_t idx, uint8_t *buf, size_t size, uint64_t off));

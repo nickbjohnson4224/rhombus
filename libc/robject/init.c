@@ -166,7 +166,7 @@ void __robject_init(void) {
 	robject_class_basic = robject_cons(0, NULL);
 
 	robject_set_data(robject_class_basic, "type", (void*) "basic");
-	robject_set_data(robject_class_basic, "name", (void*) "class-basic");
+	robject_set_data(robject_class_basic, "name", (void*) "RLIBC-class-basic");
 
 	robject_set_call(robject_class_basic, "type", __rcall_type);
 	robject_set_call(robject_class_basic, "ping", __rcall_ping);
@@ -176,7 +176,7 @@ void __robject_init(void) {
 	robject_class_event = robject_cons(0, robject_class_basic);
 	
 	robject_set_data(robject_class_event, "type", (void*) "event");
-	robject_set_data(robject_class_event, "name", (void*) "class-event");
+	robject_set_data(robject_class_event, "name", (void*) "RLIBC-class-event");
 	
 	robject_set_call(robject_class_event, "subscribe",   __rcall_subscribe);
 	robject_set_call(robject_class_event, "unsubscribe", __rcall_unsubscribe);
@@ -184,4 +184,7 @@ void __robject_init(void) {
 	// allocate root object
 	robject_root = robject_cons(0, robject_class_basic);
 	robject_set(0, robject_root);
+
+	// set rcall handler
+	when(PORT_RCALL, __rcall_handler);
 }

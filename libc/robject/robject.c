@@ -65,6 +65,7 @@ void *robject_get_data(struct robject *ro, const char *field) {
 	if (ro) {
 		mutex_spin(&ro->mutex);
 		data = __data_table_get(ro->data_table, field);
+		if (!data) data = robject_get_data(ro->parent, field);
 		mutex_free(&ro->mutex);
 
 		return data;

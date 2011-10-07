@@ -100,9 +100,6 @@ char *rcall(rp_t rp, const char *fmt, ...);
 int         rcall_set(const char *call, rcall_old_t handler);
 rcall_old_t rcall_get(const char *call);
 
-int     rcall_seti(uint32_t index, const char *call, rcall_t hook);
-rcall_t rcall_geti(uint32_t index, const char *call);
-
 /**************************************************************************** 
  * Rhombus Object Event System (event)
  *
