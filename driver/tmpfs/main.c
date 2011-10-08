@@ -18,107 +18,133 @@
 #include <string.h>
 #include <mutex.h>
 #include <proc.h>
-#include <ipc.h>
-#include <abi.h>
 
 #include <rdi/core.h>
 #include <rdi/vfs.h>
 #include <rdi/io.h>
 
-uint8_t tmpfs_index_top = 1;
+size_t tmpfs_read(struct robject *self, rp_t source, uint8_t *buffer, size_t size, off_t offset) {
+	uint8_t *file_data;
+	off_t *file_size;
 
-struct resource *tmpfs_cons(uint64_t source, int type) {
-	struct resource *fobj = NULL;
+	mutex_spin(&self->driver_mutex);
 
-	if (FS_IS_FILE(type)) {
-		fobj        = resource_cons(FS_TYPE_FILE, PERM_READ | PERM_WRITE);
-		fobj->size  = 0;
-		fobj->data  = NULL;
-		fobj->index = tmpfs_index_top++;
-	}
-	else if (FS_IS_DIR(type)) {
-		fobj        = resource_cons(FS_TYPE_DIR, PERM_READ | PERM_WRITE);
-		fobj->index = tmpfs_index_top++;
-	}
-	else if (FS_IS_LINK(type)) {
-		fobj        = resource_cons(FS_TYPE_LINK, PERM_READ | PERM_WRITE);
-		fobj->index = tmpfs_index_top++;
-	}
+	file_data = robject_data(self, "data");
+	file_size = robject_data(self, "size");
 
-	return fobj;
-}
-
-size_t tmpfs_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
-	struct resource *file;
-
-	file = index_get(index);
-
-	if (!file->data) {
+	if (!file_data || !file_size) {
+		mutex_free(&self->driver_mutex);
 		return 0;
 	}
 
-	if (offset >= file->size) {
+	if (offset > *file_size) {
+		mutex_free(&self->driver_mutex);
 		return 0;
 	}
 
-	if (offset + size >= file->size) {
-		size = file->size - offset;
+	if (offset + size >= *file_size) {
+		size = *file_size - offset;
 	}
 
-	memcpy(buffer, &file->data[offset], size);
-	
+	memcpy(buffer, &file_data[offset], size);
+
+	mutex_free(&self->driver_mutex);
 	return size;
 }
 
-size_t tmpfs_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
-	struct resource *file;
+size_t tmpfs_write(struct robject *self, rp_t source, uint8_t *buffer, size_t size, off_t offset) {
+	uint8_t *file_data;
+	off_t _file_size = 0;
+	off_t *file_size;
 
-	file = index_get(index);
+	mutex_spin(&self->driver_mutex);
 
-	if (offset + size >= file->size) {
-		file->data = realloc(file->data, offset + size);
-		file->size = offset + size;
+	file_data = robject_data(self, "data");
+	file_size = robject_data(self, "size");
+
+	if (!file_size) {
+		file_size = &_file_size;
 	}
 
-	memcpy(&file->data[offset], buffer, size);
+	if (offset + size >= *file_size) {
+		file_data = realloc(file_data, offset + size);
+		robject_set_data(self, "data", file_data);
+		if (file_size == &_file_size) {
+			file_size = malloc(sizeof(off_t));
+		}
+		*file_size = offset + size;
+		robject_set_data(self, "size", file_size);
+	}
 
+	memcpy(&file_data[offset], buffer, size);
+
+	mutex_free(&self->driver_mutex);
 	return size;
 }
 
-void tmpfs_reset(uint64_t source, uint32_t index) {
-	struct resource *file;
+char *tmpfs_cons(struct robject *self, rp_t source, int argc, char **argv) {
+	struct robject *new_r = NULL;
+	int type;
 
-	file = index_get(index);
+	if (argc == 2) {
+		type = typeflag(argv[1][0]);
 
-	if (file->data) {
-		free(file->data);
-		file->size = 0;
-		file->data = NULL;
+		if (FS_IS_FILE(type)) {
+			new_r = rdi_file_cons(robject_new_index(), PERM_READ | PERM_WRITE);
+		}
+		else if (FS_IS_DIR(type)) {
+			new_r = rdi_dir_cons(robject_new_index(), PERM_READ | PERM_WRITE);
+		}
+		else if (FS_IS_LINK(type)) {
+			new_r = rdi_link_cons(robject_new_index(), PERM_READ | PERM_WRITE, NULL);
+		}
+
+		if (new_r) {
+			return rtoa(RP_CONS(getpid(), new_r->index));
+		}
 	}
+
+	return strdup("! arg");
 }
 
-/****************************************************************************
- * tmpfs - temporary ramdisk filesystem driver
- *
- * Usage: tmpfs
- *
- * Constructs an empty ramdisk filesystem. Maximum size is limited only by
- * heap space.
- */
+// XXX SEC - does not check for write access
+char *tmpfs_reset(struct robject *self, rp_t source, int argc, char **argv) {
+	uint8_t *file_data;
+	off_t *file_size;
 
-int main(int argc, char **argv) {	
+	mutex_spin(&self->driver_mutex);
 
-	/* create root directory */
-	index_set(0, resource_cons(FS_TYPE_DIR, PERM_READ | PERM_WRITE));
+	file_data = robject_data(self, "data");
+	file_size = robject_data(self, "size");
 
-	/* set interface */
-	rdi_set_read (tmpfs_read);
-	rdi_set_write(tmpfs_write);
-	rdi_set_reset(tmpfs_reset);
-	rdi_set_cons (tmpfs_cons);
-	rdi_init_all();
+	free(file_data);
+	free(file_size);
 
-	/* daemonize */
+	robject_set_data(self, "data", NULL);
+	robject_set_data(self, "size", NULL);
+
+	mutex_free(&self->driver_mutex);
+
+	return strdup("T");
+}
+
+int main(int argc, char **argv) {
+	struct robject *root;
+
+	rdi_init();
+
+	// create root directory
+	root = rdi_dir_cons(0, PERM_READ | PERM_WRITE);
+	robject_set(0, root);
+	robject_root = root;
+
+	// set interface functions
+	robject_set_call(rdi_class_core, "cons", tmpfs_cons);
+	robject_set_call(rdi_class_file, "reset", tmpfs_reset);
+	rdi_global_read_hook  = tmpfs_read;
+	rdi_global_write_hook = tmpfs_write;
+
+	// daemonize
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 	_done();
 

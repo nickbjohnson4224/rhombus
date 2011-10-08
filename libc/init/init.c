@@ -14,17 +14,18 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <arch.h>
+#include <robject.h>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
-#include <proc.h>
-#include <ipc.h>
-#include <exec.h>
 #include <stdio.h>
 #include <natio.h>
 #include <pack.h>
+#include <arch.h>
+#include <proc.h>
+#include <exec.h>
 #include <abi.h>
+#include <ipc.h>
 
 /****************************************************************************
  * reject/ignore
@@ -78,6 +79,9 @@ void _init() {
 	when(PORT_SHARE, reject);
 	when(PORT_RCALL, reject);
 	when(PORT_EVENT, ignore);
+
+	/* set up robject system */
+	__robject_init();
 
 	/* unpack argument list */
 	pack = __pack_load(PACK_KEY_ARG, &length);

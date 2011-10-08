@@ -251,7 +251,7 @@ static int get_window_flags(struct window *window) {
 }
 
 static void set_window_flags(struct window *window, enum window_flags flags) {
-	rcallf(get_resource_pointer(window), "setwindowflags %i", flags);
+	rcall(get_resource_pointer(window), "setwindowflags %i", flags);
 }
 
 void add_window_flags(struct window *window, enum window_flags flags) {

@@ -63,7 +63,7 @@ void update_screen(int x1, int y1, int x2, int y2) {
 	}
 	draw_cursor(x1, y1, x2, y2);
 
-	rcallf(vgafd, "syncrect %i %i %i %i", x1, y1, x2 - x1, y2 - y1);
+	rcall(vgafd, "syncrect %i %i %i %i", x1, y1, x2 - x1, y2 - y1);
 }
 
 void blit_bitmap(const uint32_t *bitmap, int tox, int toy, int width, int height, int x1, int y1, int x2, int y2) {

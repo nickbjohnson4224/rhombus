@@ -71,7 +71,7 @@ uint64_t rp_cons(uint64_t driver, int type) {
 	uint64_t rp;
 	char *reply;
 
-	reply = rcallf(driver, "cons %c", typechar(type));
+	reply = rcall(driver, "cons %c", typechar(type));
 
 	if (!reply) {
 		errno = ENOSYS;

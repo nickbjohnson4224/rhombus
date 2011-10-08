@@ -17,6 +17,7 @@
 #ifndef NATIO_H
 #define NATIO_H
 
+#include <robject.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -24,44 +25,20 @@
 #include <path.h>
 #include <ipc.h>
 
-/*****************************************************************************
- * resource pointers
- *
- * This stuff right here, this is important. Resource pointers are the way
- * that Rhombus indentifies pretty much everything on the system. Every file
- * can be uniquely identified by a resource pointer, which, because it is an 
- * integer type, is easy to pass to and from functions. Resource pointers 
- * also have canonical string representations which are used in the rcall and 
- * event interfaces, and are human-readable.
- *
- * The string representations have the following format:
- *
- *   @p:i
- *
- * Where p is the PID of the pointer and i is the index, both in decimal.
- */
-
-#define RP_CONS(pid, idx) ((((uint64_t) (pid)) << 32) | (uint64_t) (idx))
-#define RP_PID(rp) ((uint32_t) ((rp) >> 32))
-#define RP_INDEX(rp) ((uint32_t) ((rp) & 0xFFFFFFFF))
-#define RP_NULL ((uint64_t) 0)
-
-// string represenation (also %r in printf/scanf)
-char    *rtoa(uint64_t rp);
-uint64_t ator(const char *str);
-
 /* core I/O *****************************************************************/
 
-size_t read (uint64_t rp, void *buf, size_t size, uint64_t offset);
-size_t write(uint64_t rp, void *buf, size_t size, uint64_t offset);
-int    sync (uint64_t rp);
-int    reset(uint64_t rp);
-int    share(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot);
+typedef uint64_t off_t;
 
-uint64_t rp_cons (uint64_t driver, int type);
-uint64_t rp_size (uint64_t rp);
-int      rp_open (uint64_t rp);
-int      rp_close(uint64_t rp);
+size_t read (rp_t rp, void *buf, size_t size, off_t offset);
+size_t write(rp_t rp, void *buf, size_t size, off_t offset);
+int    sync (rp_t rp);
+int    reset(rp_t rp);
+int    share(rp_t rp, void *buf, size_t size, off_t offset, int prot);
+
+uint64_t rp_cons (rp_t driver, int type);
+uint64_t rp_size (rp_t rp);
+int      rp_open (rp_t rp);
+int      rp_close(rp_t rp);
 
 /*****************************************************************************
  * resource types
@@ -92,7 +69,7 @@ int      rp_close(uint64_t rp);
  */
 
 int fs_type(const char *path);
-int rp_type(uint64_t rp);
+int rp_type(rp_t rp);
 
 char typechar(int type);
 int  typeflag(char type);
@@ -117,14 +94,14 @@ int  typeflag(char type);
 
 extern uint64_t fs_root;
 
-uint64_t fs_find (const char *path);
-uint64_t fs_lfind(const char *path);
-uint64_t fs_cons (const char *path, int type);
-char    *fs_list (const char *path);
-uint64_t fs_size (const char *path);
-uint64_t fs_open (const char *path);
+rp_t  fs_find (const char *path);
+rp_t  fs_lfind(const char *path);
+rp_t  fs_cons (const char *path, int type);
+char *fs_list (const char *path);
+rp_t  fs_size (const char *path);
+rp_t  fs_open (const char *path);
 
-char    *rp_list (uint64_t dir);
+char *rp_list (rp_t dir);
 
 /*****************************************************************************
  * links
@@ -149,13 +126,13 @@ char    *rp_list (uint64_t dir);
  */
 
 int fs_slink(const char *path, const char *link);
-int fs_plink(const char *path, uint64_t link_rp, const char *link_path);
+int fs_plink(const char *path, rp_t link_rp, const char *link_path);
 int fs_link (const char *path, const char *link);
 int fs_ulink(const char *path);
 
-int rp_slink(uint64_t rp, const char *link);
-int rp_plink(uint64_t rp, uint64_t link_rp, const char *link_path);
-int rp_link (uint64_t dir, const char *name, uint64_t link);
+int rp_slink(rp_t rp, const char *link);
+int rp_plink(rp_t rp, rp_t link_rp, const char *link_path);
+int rp_link (rp_t dir, const char *name, rp_t link);
 
 /*****************************************************************************
  * permission bitmap
@@ -186,43 +163,11 @@ int rp_link (uint64_t dir, const char *name, uint64_t link);
 uint8_t fs_getperm(const char *path, uint32_t user);
 int     fs_setperm(const char *path, uint32_t user, uint8_t perm);
 
-uint8_t rp_getperm(uint64_t rp, uint32_t user);
-int     rp_setperm(uint64_t rp, uint32_t user, uint8_t perm);
+uint8_t rp_getperm(rp_t rp, uint32_t user);
+int     rp_setperm(rp_t rp, uint32_t user, uint8_t perm);
 
 #define PERM_READ	0x01
 #define PERM_WRITE	0x02
 #define PERM_ALTER	0x04
-
-/* rcall ********************************************************************/
-
-typedef char *(*rcall_t)(uint64_t src, uint32_t index, int argc, char **argv);
-
-char   *rcall    (uint64_t rp, const char *args);
-char   *rcallf   (uint64_t rp, const char *fmt, ...);
-
-int     rcall_set(const char *call, rcall_t handler);
-rcall_t rcall_get(const char *call);
-
-/* event ********************************************************************/
-
-struct event_list {
-	uint64_t target;
-	struct event_list *next;
-	struct event_list *prev;
-};
-
-struct event_list *event_list_add(struct event_list *list, uint64_t target);
-struct event_list *event_list_del(struct event_list *list, uint64_t target);
-
-int event_register(uint64_t rp);
-int event_deregister(uint64_t rp);
-
-int event (uint64_t rp, const char *value);
-int eventl(struct event_list *list, const char *value);
-
-typedef void (*event_t)(uint64_t src, int argc, char **argv);
-
-int     event_set(const char *event, event_t handler);
-event_t event_get(const char *event);
 
 #endif/*NATIO_H*/

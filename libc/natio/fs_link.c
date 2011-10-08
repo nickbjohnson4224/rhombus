@@ -50,22 +50,14 @@ int fs_link(const char *path, const char *link) {
 	return err;
 }
 
-int fs_ulink(const char *path) {
-	return fs_link(path, "@0:0");
-}
-
-int rp_link(uint64_t dir, const char *name, uint64_t link) {
+int rp_ulink(rp_t dir, const char *name) {
 	char *reply;
 
 	if (!name) {
 		return 1;
 	}
 
-	if (link && RP_PID(dir) != RP_PID(link)) {
-		return 1;
-	}
-
-	reply = rcallf(dir, "link %s %r", name, link);
+	reply = rcall(dir, "unlink %s", name);
 
 	if (!reply) {
 		errno = ENOSYS;
@@ -79,7 +71,58 @@ int rp_link(uint64_t dir, const char *name, uint64_t link) {
 		else if (!strcmp(reply, "! notempty")) errno = ENOTEMPTY;
 		else                                   errno = EUNK;
 		free(reply);
-		return reply[2];
+		return 1;
+	}
+
+	free(reply);
+	return 0;
+}
+
+int fs_ulink(const char *path) {
+	uint64_t dir;
+	char *parent;
+	char *name;
+	int err;
+
+	parent = path_parent(path);
+	name   = path_name(path);
+
+	dir = fs_find(parent);
+
+	err = rp_ulink(dir, name);
+
+	free(parent);
+	free(name);
+
+	return err;
+}
+
+int rp_link(uint64_t dir, const char *name, uint64_t link) {
+	char *reply;
+
+	if (!name) {
+		return 1;
+	}
+
+	if (link && RP_PID(dir) != RP_PID(link)) {
+		return 1;
+	}
+
+	reply = rcall(dir, "link %s %r", name, link);
+
+	if (!reply) {
+		errno = ENOSYS;
+		return 1;
+	}
+
+	if (reply[0] == '!') {
+		if      (!strcmp(reply, "! nfound"))   errno = ENOENT;
+		else if (!strcmp(reply, "! denied"))   errno = EACCES;
+		else if (!strcmp(reply, "! type"))     errno = ENOTDIR;
+		else if (!strcmp(reply, "! notempty")) errno = ENOTEMPTY;
+		else                                   errno = EUNK;
+		free(reply);
+		return 1;
 	}
 
 	free(reply);

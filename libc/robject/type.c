@@ -14,34 +14,36 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <rdi/core.h>
-#include <rdi/access.h>
-#include <rdi/vfs.h>
-#include <rdi/io.h>
+#include <string.h>
+#include <stdlib.h>
 
-#include <natio.h>
+#include <robject.h>
 
-void rdi_init_core() {
+int robject_is_type(const char *typestr, const char *type) {
 	
-	rcall_set("cons",  __rdi_cons_handler);
-	rcall_set("open",  __rdi_open_handler);
-//	rcall_set("close", __rdi_close_handler);
-	rcall_set("type",  __rdi_type_handler);
-	rcall_set("size",  __rdi_size_handler);
+	if (strstr(typestr, type)) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
 }
 
-void rdi_init_all() {
+int robject_check_type(struct robject *ro, const char *type) {
+	char *typestr;
 
-	rdi_init_core();
-	rdi_init_io();
-	rdi_init_vfs();
-	vfs_init();
-}
+	typestr = robject_call(ro, 0, "type");
 
-void rdi_init() {
+	if (!typestr) {
+		return 0;
+	}
 
-	__rdi_class_core_setup();
-	__rdi_class_dir_setup();
-	__rdi_class_link_setup();
-	__rdi_class_file_setup();
+	if (strstr(typestr, type)) {
+		free(typestr);
+		return 1;
+	}
+	else {
+		free(typestr);
+		return 0;
+	}
 }

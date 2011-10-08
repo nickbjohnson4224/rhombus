@@ -14,34 +14,28 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <rdi/core.h>
-#include <rdi/access.h>
-#include <rdi/vfs.h>
-#include <rdi/io.h>
+#include <stdlib.h>
+#include <string.h>
+#include <hash.h>
 
-#include <natio.h>
+/*****************************************************************************
+ * _crc_poly
+ *
+ * A table of builtin CRC polynomials corresponding to the contstants in
+ * hash.h.
+ */
 
-void rdi_init_core() {
-	
-	rcall_set("cons",  __rdi_cons_handler);
-	rcall_set("open",  __rdi_open_handler);
-//	rcall_set("close", __rdi_close_handler);
-	rcall_set("type",  __rdi_type_handler);
-	rcall_set("size",  __rdi_size_handler);
-}
+/*static uint32_t _crc_poly[CRC_COUNT][3] = {
 
-void rdi_init_all() {
+	// CRC-8
+	{ 0xD5, 0xAB, 0xEA },
 
-	rdi_init_core();
-	rdi_init_io();
-	rdi_init_vfs();
-	vfs_init();
-}
+	// CRC-16
+	{ 0x8005, 0xA001, 0xC002 },
 
-void rdi_init() {
+	// CRC-32
+	{ 0x04C11DB7, 0xEDB88320, 0x82608EDB },
 
-	__rdi_class_core_setup();
-	__rdi_class_dir_setup();
-	__rdi_class_link_setup();
-	__rdi_class_file_setup();
-}
+	// CRC-32C
+	{ 0x1EDC6F41, 0x82F63B78, 0x8F6E37A0 },
+};*/

@@ -34,7 +34,7 @@ int rp_setperm(uint64_t fobj, uint32_t user, uint8_t perm) {
 		return 1;
 	}
 
-	reply = rcallf(fobj, "fs_setperm %d %d", user, perm);
+	reply = rcall(fobj, "fs_setperm %d %d", user, perm);
 
 	if (!reply) {
 		errno = ENOSYS;

@@ -22,7 +22,7 @@
 #include <ipc.h>
 
 /*****************************************************************************
- * rcall
+ * __rcall
  *
  * Generic remote procedure call protocol. Sends a string to the given
  * resource, and recieves a string in return. This function can be used to
@@ -40,7 +40,7 @@
  *     char rets[]
  */
 
-char *rcall(uint64_t rp, const char *args) {
+char *__rcall(uint64_t rp, const char *args) {
 	struct msg *msg;
 	char *rets;
 
@@ -68,7 +68,7 @@ char *rcall(uint64_t rp, const char *args) {
 }
 
 /*****************************************************************************
- * rcallf
+ * rcall
  *
  * Generic remote procedure call protocol. Sends a formatted string to the 
  * given resource, and recieves a string in return. This function can be used 
@@ -77,7 +77,7 @@ char *rcall(uint64_t rp, const char *args) {
  * routines. Returns NULL on error or empty return string.
  */
 
-char *rcallf(uint64_t rp, const char *fmt, ...) {
+char *rcall(uint64_t rp, const char *fmt, ...) {
 	va_list ap;
 	char *args;
 	char *ret;
@@ -92,7 +92,7 @@ char *rcallf(uint64_t rp, const char *fmt, ...) {
 	}
 
 	// perform rcall
-	ret = rcall(rp, args);
+	ret = __rcall(rp, args);
 
 	// free argument string
 	free(args);
@@ -114,7 +114,7 @@ char *rcallf(uint64_t rp, const char *fmt, ...) {
 static struct _rcall_map {
 	struct _rcall_map *next;
 
-	rcall_t handler;
+	rcall_old_t handler;
 	char *key;
 } *_rcall_map = NULL;
 
@@ -139,7 +139,7 @@ static void _rcall_handler(struct msg *msg);
  * Returns zero on success, nonzero on error.
  */
 
-int rcall_set(const char *call, rcall_t handler) {
+int rcall_set(const char *call, rcall_old_t handler) {
 	struct _rcall_map *node;
 	
 	if (!_rcall_map) {
@@ -163,7 +163,7 @@ int rcall_set(const char *call, rcall_t handler) {
  * null on failure.
  */
 
-rcall_t rcall_get(const char *call) {
+rcall_old_t rcall_get(const char *call) {
 	struct _rcall_map *node;
 
 	// get handler
@@ -186,7 +186,7 @@ void _rcall_handler(struct msg *msg) {
 	struct msg *reply;
 	char *args;
 	char *rets;
-	rcall_t handler;
+	rcall_old_t handler;
 	int argc;
 	char **argv;
 

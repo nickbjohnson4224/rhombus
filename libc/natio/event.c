@@ -27,7 +27,7 @@
  * without waiting for a reply. Returns zero on success, nonzero on error.
  */
 
-int event(uint64_t rp, const char *value) {
+int event(rp_t rp, const char *value) {
 	struct msg *msg;
 
 	if (!value) value = "";
@@ -61,7 +61,7 @@ int eventl(struct event_list *list, const char *value) {
 	return 0;
 }
 
-int event_register(uint64_t rp) {
+int event_register(rp_t rp) {
 	char *reply;
 
 	reply = rcall(rp, "register");
@@ -72,7 +72,7 @@ int event_register(uint64_t rp) {
 	return 0;
 }
 
-int event_deregister(uint64_t rp) {
+int event_deregister(rp_t rp) {
 	char *reply;
 
 	reply = rcall(rp, "deregister");
