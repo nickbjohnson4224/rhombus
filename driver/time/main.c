@@ -28,15 +28,15 @@
 
 #include "time.h"
 
-size_t time_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
+size_t time_read(struct robject *self, rp_t source, uint8_t *buffer, size_t size, off_t offset) {
 	char *data;
 
-	if (size > 20) {
-		size = 20;
+	data = saprintf("%d", get_time());
+	
+	if (size > strlen(data)) {
+		size = strlen(data);
 	}
 
-	data = malloc(21);
-	sprintf(data, "%d", get_time());
 	memcpy(buffer, data, size);
 	free(data);
 
@@ -44,12 +44,19 @@ size_t time_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, 
 }
 
 int main(int argc, char **argv) {
+	struct robject *file;
 
-	index_set(0, resource_cons(FS_TYPE_FILE, PERM_READ));
+	rdi_init();
 
-	rdi_set_read(time_read);
-	rdi_init_all();
+	// create device file
+	file = rdi_file_cons(0, PERM_READ);
+	robject_set(0, file);
+	robject_root = file;
 
+	// set interface functions
+	rdi_global_read_hook = time_read;
+
+	// daemonize
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 	_done();
 
