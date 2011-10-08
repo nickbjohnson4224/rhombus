@@ -132,6 +132,11 @@ static void _set(struct __robject_data_table *table, const char *field, void *da
 		return;
 	}
 
+	if (entry->hash == hash && !strcmp(entry->string, field)) {
+		entry->data = data;
+		return;
+	}
+
 	while (entry->next) {
 		if (entry->next->hash == hash && !strcmp(entry->next->string, field)) {
 			entry->next->data = data;

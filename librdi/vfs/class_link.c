@@ -77,6 +77,9 @@ void __rdi_class_link_setup() {
 	robject_set_call(rdi_class_link, "set-link", _set_link);
 	robject_set_call(rdi_class_link, "get-link", _get_link);
 
+	// XXX DEP - legacy interface
+	robject_set_call(rdi_class_link, "symlink", _set_link);
+
 	robject_set_data(rdi_class_link, "type", (void*) "link");
 	robject_set_data(rdi_class_link, "name", (void*) "RDI-class-link");
 }
@@ -87,7 +90,7 @@ struct robject *rdi_link_cons(uint32_t index, uint32_t access, const char *link)
 	r = robject_cons(index, rdi_class_link);
 
 	robject_set_data(r, "access-default", (void*) access);
-	robject_set_data(r, "link", strdup(link));
+	if (link) robject_set_data(r, "link", strdup(link));
 
 	return r;
 }

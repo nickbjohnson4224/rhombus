@@ -131,7 +131,7 @@ static void __rcall_handler(struct msg *msg) {
 	struct robject *ro;
 	struct msg *reply;
 	char *rets;
-
+	
 	ro = robject_get(RP_INDEX(msg->target));
 
 	if (!ro) {

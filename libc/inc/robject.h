@@ -195,6 +195,7 @@ void   __event_set_free(struct __robject_event_set *set);
 
 struct robject {
 	bool     mutex; // OPT - this should be a readers/writer lock
+	bool     driver_mutex;
 	uint32_t index; // object index within process; do not modify
 	
 	// parent interface (for defaulting messages to)

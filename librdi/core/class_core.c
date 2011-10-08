@@ -23,14 +23,14 @@
 #include <rdi/core.h>
 
 // XXX SEC - does not check for read access
-static char *_find(struct robject *r, rp_t src, int argc, char **argv) {	
+static char *_find(struct robject *r, rp_t src, int argc, char **argv) {
 	return rtoa(RP_CONS(getpid(), r->index));
 }
 
 static char *_cons(struct robject *r, rp_t src, int argc, char **argv) {
 	struct robject *new_r;
 
-	if (argc == 1) {
+	if (argc == 2) {
 		new_r = rdi_core_cons(robject_new_index(), 0);
 		return rtoa(RP_CONS(getpid(), new_r->index));
 	}

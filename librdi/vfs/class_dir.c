@@ -23,6 +23,12 @@
 #include <rdi/core.h>
 #include <rdi/vfs.h>
 
+struct __dirent_list {
+	struct __dirent_list *next;
+	struct __dirent_list *prev;
+	char *name;
+};
+
 static struct robject *__find(struct robject *root, const char *path_str, const char **tail) {
 	struct path *path;
 	char *name;
@@ -93,7 +99,32 @@ static char *_find(struct robject *r, rp_t src, int argc, char **argv) {
 
 // XXX SEC - does not check for read access
 static char *_list(struct robject *r, rp_t src, int argc, char **argv) {
-	return robject_data(r, "dirents");
+	struct __dirent_list *node;
+	char *list;
+	char *temp;
+
+	list = NULL;
+	node = robject_data(r, "list");
+
+	while (node) {
+		if (list) {
+			temp = list;
+			list = strvcat(node->name, "\t", list, NULL);
+			free(temp);
+		}
+		else {
+			list = strdup(node->name);
+		}
+
+		node = node->next;
+	}
+
+	if (list) {
+		return strdup(list);
+	}
+	else {
+		return NULL;
+	}
 }
 
 // XXX SEC - does not check for write access
@@ -102,10 +133,15 @@ static char *_link(struct robject *r, rp_t src, int argc, char **argv) {
 	char *lookup;
 	uint32_t index;
 	struct robject *hardlink;
+	struct __dirent_list *list, *node;
 
 	if (argc == 3) {
 		entry = argv[1];
-		index = atoi(argv[2]);
+		index = RP_INDEX(ator(argv[2]));
+
+		if (RP_PID(ator(argv[2])) != getpid()) {
+			return strdup("! extern");
+		}
 
 		hardlink = robject_get(index);
 		if (!hardlink) {
@@ -116,18 +152,22 @@ static char *_link(struct robject *r, rp_t src, int argc, char **argv) {
 		lookup = strvcat("dirent-", entry, NULL);
 
 		if (robject_get_data(r, lookup)) {
-			// entry already exists, fail
+			// entry already exists; only change hardlink
+			robject_set_data(r, lookup, hardlink);
 			free(lookup);
-			return strdup("! exist");
+			return strdup("T");
 		}
 
 		robject_set_data(r, lookup, hardlink);
 		free(lookup);
 
-		// XXX HACK
-		lookup = robject_get_data(r, "dirents");
-		lookup = strvcat(entry, lookup, NULL);
-		robject_set_data(r, "dirents", lookup);
+		list = robject_data(r, "list");
+		node = malloc(sizeof(struct __dirent_list));
+		node->next = list;
+		node->prev = NULL;
+		node->name = strdup(entry);
+		if (node->next) node->next->prev = node;
+		robject_set_data(r, "list", node);
 
 		return strdup("T");
 	}
@@ -139,6 +179,7 @@ static char *_link(struct robject *r, rp_t src, int argc, char **argv) {
 static char *_unlink(struct robject *r, rp_t src, int argc, char **argv) {
 	char *entry;
 	char *lookup;
+	struct __dirent_list *list;
 
 	if (argc == 2) {
 		entry = argv[1];
@@ -153,6 +194,24 @@ static char *_unlink(struct robject *r, rp_t src, int argc, char **argv) {
 
 		robject_set_data(r, lookup, NULL);
 		free(lookup);
+
+		list = robject_data(r, "list");
+		while (list) {
+			if (!strcmp(list->name, entry)) {
+				if (list->prev) {
+					list->prev->next = list->next;
+				}
+				else {
+					robject_set_data(r, "list", list->next);
+				}
+
+				if (list->next) {
+					list->next->prev = list->prev;
+				}
+				break;
+			}
+			list = list->next;
+		}
 
 		return strdup("T");
 	}
@@ -185,5 +244,21 @@ struct robject *rdi_dir_cons(uint32_t index, uint32_t access) {
 }
 
 void rdi_dir_free(struct robject *r) {
+	struct __dirent_list *node, *temp_node;
+	char *temp;
+
+	node = robject_get_data(r, "list");
+
+	while (node) {		
+		temp = strvcat("dirent-", node->name, NULL);
+		free(robject_get_data(r, temp));
+		free(temp);
+
+		free(node->name);
+		temp_node = node->next;
+		free(node);
+		node = temp_node;
+	}
+
 	robject_free(r);
 }

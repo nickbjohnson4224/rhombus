@@ -24,6 +24,7 @@ struct robject *robject_cons(uint32_t index, struct robject *parent) {
 
 	robject = malloc(sizeof(struct robject));
 	robject->mutex = false;
+	robject->driver_mutex = false;
 	robject->index = index;
 	robject->parent = parent;
 
