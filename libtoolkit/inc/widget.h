@@ -17,7 +17,6 @@
 #ifndef _TOOLKIT_WIDGET_H
 #define _TOOLKIT_WIDGET_H
 
-#include <lua.h>
 #include <stdbool.h>
 
 struct widget;
