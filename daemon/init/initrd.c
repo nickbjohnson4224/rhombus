@@ -29,36 +29,45 @@
 #include "initrd.h"
 #include "inc/tar.h"
 
-size_t initrd_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
-	struct resource *file;
+size_t initrd_read(struct robject *self, rp_t source, uint8_t *buffer, size_t size, off_t offset) {
+	uint8_t *file_data;
+	off_t   *file_size;
 
-	file = index_get(index);
+	file_data = robject_data(self, "data");
+	file_size = robject_data(self, "size");
 
-	if (!file->data) {
+	if (!file_data || !file_size) {
 		return 0;
 	}
 
-	if (offset >= file->size) {
+	if (offset >= *file_size) {
 		return 0;
 	}
 
-	if (offset + size >= file->size) {
-		size = file->size - offset;
+	if (offset + size >= *file_size) {
+		size = *file_size - offset;
 	}
 
-	memcpy(buffer, &file->data[offset], size);
+	memcpy(buffer, &file_data[offset], size);
 	
 	return size;
 }
 
 void initrd_init(void) {
-	struct resource *root;
+	struct robject *file;
+	off_t *size;
 
-	root = resource_cons(FS_TYPE_FILE, PERM_READ);
-	root->data = (void*) BOOT_IMAGE;
-	root->size = tar_size(root->data);
-	index_set(0, root);
+	rdi_init();
 
-	rdi_set_read(initrd_read);
-	rdi_init_all();
+	file = rdi_file_cons(0, PERM_READ);
+	robject_set(0, file);
+	robject_root = file;
+
+	robject_set_data(file, "data", (void*) BOOT_IMAGE);
+
+	size = malloc(sizeof(off_t));
+	*size = tar_size((void*) BOOT_IMAGE);
+	robject_set_data(file, "size", (void*) size);
+
+	rdi_global_read_hook = initrd_read;
 }

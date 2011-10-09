@@ -64,28 +64,4 @@ extern rdi_write_hook rdi_global_write_hook;
 extern rdi_mmap_hook  rdi_global_mmap_hook;
 extern rdi_share_hook rdi_global_share_hook;
 
-/*
- * Old stuff past here
- */
-
-/* I/O callbacks ************************************************************/
-
-void rdi_set_read (size_t (*_read) (uint64_t src, uint32_t idx, uint8_t *buf, size_t size, uint64_t off));
-void rdi_set_write(size_t (*_write)(uint64_t src, uint32_t idx, uint8_t *buf, size_t size, uint64_t off));
-void rdi_set_reset(void   (*_reset)(uint64_t src, uint32_t idx));
-void rdi_set_sync (void   (*_sync) (uint64_t src, uint32_t idx));
-void rdi_set_share(int    (*_share)(uint64_t src, uint32_t idx, uint8_t *buf, size_t size, uint64_t off));
-void rdi_set_mmap (void  *(*_mmap) (uint64_t src, uint32_t idx, size_t size, uint64_t off, int prot));
-
-/* RDI I/O handlers *********************************************************/
-
-void rdi_init_io();
-
-void __rdi_read_handler (struct msg *msg);
-void __rdi_write_handler(struct msg *msg);
-void __rdi_reset_handler(struct msg *msg);
-void __rdi_sync_handler (struct msg *msg);
-void __rdi_share_handler(struct msg *msg);
-void __rdi_mmap_handler (struct msg *msg);
-
 #endif/*_RDI_IO_H*/

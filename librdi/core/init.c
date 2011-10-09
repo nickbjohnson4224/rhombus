@@ -15,31 +15,11 @@
  */
 
 #include <rdi/core.h>
-#include <rdi/access.h>
 #include <rdi/vfs.h>
 #include <rdi/io.h>
 
-#include <natio.h>
-
-void rdi_init_core() {
-	
-	rcall_set("cons",  __rdi_cons_handler);
-	rcall_set("open",  __rdi_open_handler);
-//	rcall_set("close", __rdi_close_handler);
-	rcall_set("type",  __rdi_type_handler);
-	rcall_set("size",  __rdi_size_handler);
-}
-
-void rdi_init_all() {
-
-	rdi_init_core();
-	rdi_init_io();
-	rdi_init_vfs();
-	vfs_init();
-}
-
 void rdi_init() {
-
+	
 	__rdi_class_core_setup();
 	__rdi_class_event_setup();
 	__rdi_class_dir_setup();

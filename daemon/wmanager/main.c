@@ -386,8 +386,6 @@ int main(int argc, char **argv) {
 	
 	rdi_global_share_hook = wmanager_share;
 
-	index_set(0, resource_cons(FS_TYPE_DIR, PERM_READ | PERM_WRITE));
-
 	fs_plink("/sys/wmanager", RP_CONS(getpid(), 0), NULL);
 
 	vgafd = fs_find("/dev/svga0");
