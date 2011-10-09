@@ -189,7 +189,7 @@ static char *_size(struct robject *r, rp_t src, int argc, char **argv) {
 	size = robject_data(r, "size");
 
 	if (size) {
-		return saprintf("%llu", *size);
+		return saprintf("%u:%u", (uint32_t) (*size >> 32), (uint32_t) *size);
 	}
 	else {
 		return strdup("0");

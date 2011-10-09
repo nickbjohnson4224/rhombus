@@ -75,6 +75,8 @@ void __rdi_class_dir_setup();
 struct robject *rdi_dir_cons(uint32_t index, uint32_t access);
 void            rdi_dir_free(struct robject *r);
 
+void rdi_vfs_add(struct robject *dir, const char *path, struct robject *r);
+
 /*****************************************************************************
  * rdi_class_link (extends rdi_class_core) - link
  *
