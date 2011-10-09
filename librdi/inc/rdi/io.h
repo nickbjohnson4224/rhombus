@@ -57,10 +57,12 @@ void            rdi_file_free(struct robject *r);
 typedef size_t (*rdi_read_hook) (struct robject *r, rp_t src, uint8_t *buf, size_t size, off_t off);
 typedef size_t (*rdi_write_hook)(struct robject *r, rp_t src, uint8_t *buf, size_t size, off_t off);
 typedef void * (*rdi_mmap_hook) (struct robject *r, rp_t src, size_t size, off_t off, int prot);
+typedef int    (*rdi_share_hook)(struct robject *r, rp_t src, uint8_t *buf, size_t size, off_t off);
 
 extern rdi_read_hook  rdi_global_read_hook;
 extern rdi_write_hook rdi_global_write_hook;
 extern rdi_mmap_hook  rdi_global_mmap_hook;
+extern rdi_share_hook rdi_global_share_hook;
 
 /*
  * Old stuff past here

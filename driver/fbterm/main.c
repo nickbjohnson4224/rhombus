@@ -184,7 +184,7 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "%s: setting up framebuffer failed\n", argv[0]);
 		return 1;
 	}
-	
+
 	fb_getmode(fb, &w, &h);
 	screen_resize(w, h);
 	screen_flip();

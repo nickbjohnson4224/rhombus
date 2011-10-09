@@ -47,9 +47,9 @@ For 0.9 Alpha:
 - driver interface complete
 	+ I/O interface
 	+ VFS interface
-	- core interface
+	+ core interface
 	- security interface
-	- event interface
+	+ event interface
 
 - kernel improvements
 	- kernel key system

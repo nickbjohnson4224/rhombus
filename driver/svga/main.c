@@ -29,67 +29,31 @@
 
 #include "svga.h"
 
-struct event_list *event_list;
 uint32_t *buffer;
 char *modesstr;
 
-char *svga_rcall_register(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct resource *file;
-
-	file = index_get(index);
-
-	mutex_spin(&file->mutex);
-	event_list = event_list_add(event_list, source);
-	mutex_free(&file->mutex);
-
-	return strdup("T");
+char *svga_rcall_getmode(struct robject *self, rp_t source, int argc, char **argv) {
+	return saprintf("%d %d %d", svga.w, svga.h, svga.d);
 }
 
-char *svga_rcall_deregister(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct resource *file;
-
-	file = index_get(index);
-
-	mutex_spin(&file->mutex);
-	event_list = event_list_del(event_list, source);
-	mutex_free(&file->mutex);
-
-	return strdup("T");
-}
-
-char *svga_rcall_getmode(uint64_t source, uint32_t index, int argc, char **argv) {
-	char *rets = NULL;
-
-	rets = malloc(16);
-	sprintf(rets, "%d %d %d", svga.w, svga.h, svga.d);
-	return rets;
-}
-
-char *svga_rcall_listmodes(uint64_t source, uint32_t index, int argc, char **argv) {
+char *svga_rcall_listmodes(struct robject *self, rp_t source, int argc, char **argv) {
 	return strdup(modesstr);
 }
 
-char *svga_rcall_unshare(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct resource *file;
+char *svga_rcall_unshare(struct robject *self, rp_t source, int argc, char **argv) {
 
-	file = index_get(index);
-	if (!file) return NULL;
-
-	mutex_spin(&file->mutex);
+	mutex_spin(&self->driver_mutex);
 	page_free(buffer, msize(buffer));
 	free(buffer);
 	buffer = valloc(svga.w * svga.h * 4);
-	mutex_free(&file->mutex);
+	mutex_free(&self->driver_mutex);
+
 	return strdup("T");
 }
 
-char *svga_rcall_setmode(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct resource *file;
+char *svga_rcall_setmode(struct robject *self, rp_t source, int argc, char **argv) {
 	int x, y, d;
 	int mode;
-
-	file = index_get(index);
-	if (!file) return NULL;
 
 	if (argc != 4) return NULL;
 
@@ -97,23 +61,19 @@ char *svga_rcall_setmode(uint64_t source, uint32_t index, int argc, char **argv)
 	y = atoi(argv[2]);
 	d = atoi(argv[3]);
 
-	mutex_spin(&file->mutex);
+	mutex_spin(&self->driver_mutex);
 	mode = svga_find_mode(x, y, d);
 	if (svga_set_mode(mode)) return NULL;
 	page_free(buffer, msize(buffer));
 	free(buffer);
 	buffer = valloc(svga.w * svga.h * 4);
-	mutex_free(&file->mutex);
+	mutex_free(&self->driver_mutex);
 
 	return strdup("T");
 }
 
-char *svga_rcall_syncrect(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct resource *file;
+char *svga_rcall_syncrect(struct robject *self, rp_t source, int argc, char **argv) {
 	int x, y, w, h;
-
-	file = index_get(index);
-	if (!file) return NULL;
 
 	if (argc != 5) return NULL;
 
@@ -122,18 +82,19 @@ char *svga_rcall_syncrect(uint64_t source, uint32_t index, int argc, char **argv
 	w = atoi(argv[3]);
 	h = atoi(argv[4]);
 
-	mutex_spin(&file->mutex);
+	mutex_spin(&self->driver_mutex);
 	svga_fliprect(buffer, x, y, w, h);
-	mutex_free(&file->mutex);
+	mutex_free(&self->driver_mutex);
 
 	return strdup("T");
 }
 
-void svga_sync(uint64_t source, uint32_t index) {
+char *svga_rcall_sync(struct robject *self, rp_t source, int argc, char **argv) {
 	svga_flip(buffer);
+	return strdup("T");
 }
 
-int svga_share(uint64_t source, uint32_t index, uint8_t *_buffer, size_t size, uint64_t off) {
+int svga_share(struct robject *self, rp_t source, uint8_t *_buffer, size_t size, uint64_t off) {
 
 	if (size != svga.w * svga.h * 4) {
 		return -1;
@@ -153,11 +114,18 @@ int svga_share(uint64_t source, uint32_t index, uint8_t *_buffer, size_t size, u
 }
 
 int main(int argc, char **argv) {
+	struct robject *canvas;
 	char *modesstr0;
 	char *modestr;
 	int i;
 
-	index_set(0, resource_cons(FS_TYPE_FILE | FS_TYPE_GRAPH, PERM_READ | PERM_WRITE));
+	rdi_init();
+
+	canvas = rdi_event_cons(0, PERM_READ | PERM_WRITE);
+	robject_set(0, canvas);
+	robject_root = canvas;
+
+	robject_set_data(canvas, "type", (void*) "canvas share");
 
 	svga_init();
 
@@ -175,16 +143,13 @@ int main(int argc, char **argv) {
 	buffer = malloc(svga.w * svga.h * 4);
 
 	/* set up driver interface */
-	rcall_set("getmode",    svga_rcall_getmode);
-	rcall_set("listmodes",  svga_rcall_listmodes);
-	rcall_set("unshare",    svga_rcall_unshare);
-	rcall_set("setmode",    svga_rcall_setmode);
-	rcall_set("register",   svga_rcall_register);
-	rcall_set("deregister", svga_rcall_deregister);
-	rcall_set("syncrect",   svga_rcall_syncrect);
-	rdi_set_sync (svga_sync);
-	rdi_set_share(svga_share);
-	rdi_init_all();
+	robject_set_call(canvas, "getmode",   svga_rcall_getmode);
+	robject_set_call(canvas, "listmodes", svga_rcall_listmodes);
+	robject_set_call(canvas, "unshare",   svga_rcall_unshare);
+	robject_set_call(canvas, "setmode",   svga_rcall_setmode);
+	robject_set_call(canvas, "syncrect",  svga_rcall_syncrect);
+	robject_set_call(canvas, "sync",      svga_rcall_sync);
+	rdi_global_share_hook = svga_share;
 
 	/* register the driver as /dev/svga0 */
 	fs_plink("/dev/svga0", RP_CONS(getpid(), 0), NULL);

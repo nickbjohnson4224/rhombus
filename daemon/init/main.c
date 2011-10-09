@@ -27,10 +27,6 @@
 #include "inc/tar.h"
 #include "initrd.h"
 
-const char *splash ="\
-Rhombus Operating System 0.8 Alpha\n\
-\n";
-
 void panic(const char *message) {
 	printf("INIT PANIC: %s\n", message);
 	for(;;);
@@ -73,15 +69,14 @@ int main() {
 	fs_cons("/dev", FS_TYPE_DIR);
 	fs_cons("/sys", FS_TYPE_DIR);
 
-	/* Logfile */
-	fs_cons("/dev/stderr", FS_TYPE_FILE);
-
 	/* Serial Driver */
 	argv[0] = "serial";
 	argv[1] = NULL;
 	file = tar_find(boot_image, "sbin/serial");
 	fs_plink("/dev/serial", start(file, argv), NULL);
 	stdout = stderr = fopen("/dev/serial", "w");
+
+	fs_plink("/dev/stderr", fs_find("/dev/serial"), NULL);
 
 	/* Keyboard Driver */
 	argv[0] = "kbd";
@@ -123,10 +118,6 @@ int main() {
 	argv[3] = NULL;
 	file = tar_find(boot_image, "sbin/fbterm");
 	fs_plink("/dev/tty", start(file, argv), NULL);
-
-	/* Splash */
-	stdout = stderr = stdin = fopen("/dev/tty", "w");
-	printf(splash);
 
 	/* Temporary filesystem */
 	argv[0] = "tmpfs";

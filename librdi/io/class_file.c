@@ -19,6 +19,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <proc.h>
+#include <page.h>
 #include <ipc.h>
 
 #include <rdi/core.h>
@@ -27,6 +28,7 @@
 rdi_read_hook  rdi_global_read_hook;
 rdi_write_hook rdi_global_write_hook;
 rdi_mmap_hook  rdi_global_mmap_hook;
+rdi_share_hook rdi_global_share_hook;
 
 // XXX SEC - does not check read access
 static void __rdi_read (struct msg *msg) {
@@ -142,6 +144,39 @@ static void __rdi_write(struct msg *msg) {
 	mreply(msg);
 }
 
+static void __rdi_share(struct msg *msg) {
+	struct robject *file;
+	off_t offset;
+	uint8_t err;
+	void *pages;
+
+	if (msg->length < PAGESZ - sizeof(struct msg)) {
+		merror(msg);
+		return;
+	}
+
+	file = robject_get(RP_INDEX(msg->target));
+	if (!file || !robject_check_type(file, "share")) {
+		merror(msg);
+		return;
+	}
+
+	if (!rdi_global_share_hook) {
+		merror(msg);
+		return;
+	}
+
+	offset = ((uint64_t*) msg->data)[0];
+	pages = aalloc(msg->length - PAGESZ + sizeof(struct msg), PAGESZ);
+	page_self(&msg->data[PAGESZ - sizeof(struct msg)], pages, msg->length - PAGESZ + sizeof(struct msg));
+
+	err = rdi_global_share_hook(file, msg->source, pages, msg->length - PAGESZ + sizeof(struct msg), offset);
+
+	msg->data[0] = err;
+	msg->length = 1;
+	mreply(msg);
+}
+
 // XXX SEC - does not check write access
 static void __rdi_sync(struct msg *msg) {
 	struct robject *file;
@@ -216,6 +251,7 @@ void __rdi_class_file_setup() {
 	when(PORT_WRITE, __rdi_write);
 	when(PORT_SYNC,  __rdi_sync);
 	when(PORT_RESET, __rdi_reset);
+	when(PORT_SHARE, __rdi_share);
 }
 
 struct robject *rdi_file_cons(uint32_t index, uint32_t access) {
