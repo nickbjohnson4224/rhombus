@@ -54,7 +54,7 @@ static inline void send_event_delta(int dx, int dy) {
 
 	if (dx || dy) {
 		event = saprintf("mouse delta %d %d", dx, dy);
-		robject_cause_event(robject_root, event);
+		robject_broadcast_event(robject_root, event);
 		free(event);
 	}
 }
@@ -64,7 +64,7 @@ static inline void send_event_button(int buttons) {
 
 	if (buttons != prevbuttons) {
 		event = saprintf("mouse button %d", buttons);
-		robject_cause_event(robject_root, event);
+		robject_broadcast_event(robject_root, event);
 		free(event);
 		prevbuttons = buttons;
 	}

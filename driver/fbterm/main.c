@@ -188,11 +188,11 @@ int main(int argc, char **argv) {
 	fb_getmode(fb, &w, &h);
 	screen_resize(w, h);
 	screen_flip();
-	event_register(fb_dev);
+	event_subscribe(fb_dev);
 	robject_set_event_hook(term, "graph", fbterm_graph_event);
 
 	// set up keyboard
-	event_register(kbd_dev);
+	event_subscribe(kbd_dev);
 	robject_set_event_hook(term, "key", fbterm_key_event);
 
 	robject_set_call(term, "clear", fbterm_rcall_clear);

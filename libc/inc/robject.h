@@ -92,13 +92,9 @@ rp_t  ator(const char *str); // convert string to robject pointer
  */
 
 // rcall hook format
-typedef char *(*rcall_old_t)(rp_t src, uint32_t index, int argc, char **argv);
 typedef char *(*rcall_t)(struct robject *self, rp_t src, int argc, char **argv);
 
 char *rcall(rp_t rp, const char *fmt, ...);
-
-int         rcall_set(const char *call, rcall_old_t handler);
-rcall_old_t rcall_get(const char *call);
 
 /**************************************************************************** 
  * Rhombus Object Event System (event)
@@ -115,25 +111,10 @@ rcall_old_t rcall_get(const char *call);
  * mouse movement events, or window events.)
  */
 
-struct event_list {
-	rp_t target;
-	struct event_list *next;
-	struct event_list *prev;
-};
+int event_subscribe  (rp_t event_source);
+int event_unsubscribe(rp_t event_source);
 
-struct event_list *event_list_add(struct event_list *list, rp_t target);
-struct event_list *event_list_del(struct event_list *list, rp_t target);
-
-int event_register  (rp_t rp);
-int event_deregister(rp_t rp);
-
-int event (rp_t rp, const char *value);
-int eventl(struct event_list *list, const char *value);
-
-typedef void (*event_t)(rp_t src, int argc, char **argv);
-
-int     event_set(const char *event, event_t handler);
-event_t event_get(const char *event);
+int event(rp_t rp, const char *value);
 
 /*****************************************************************************
  * Rhombus Object Indexing and Lookup
@@ -225,7 +206,7 @@ void    robject_add_subscriber(struct robject *ro, rp_t target);
 void    robject_del_subscriber(struct robject *ro, rp_t target);
 
 // basic interface
-void  robject_cause_event(struct robject *ro, const char *event);
+void  robject_broadcast_event(struct robject *ro, const char *event);
 void  robject_event(struct robject *ro, rp_t source, const char *event);
 char *robject_call (struct robject *ro, rp_t source, const char *args);
 void *robject_data (struct robject *ro, const char *field);

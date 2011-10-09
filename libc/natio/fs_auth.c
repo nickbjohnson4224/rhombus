@@ -27,14 +27,14 @@
  * <user>. Returns zero on success, nonzero on error.
  */
 
-int rp_setperm(uint64_t fobj, uint32_t user, uint8_t perm) {
+int rp_setperm(uint64_t fobj, uint32_t user, uint32_t perm) {
 	char *reply;
 
 	if (!fobj) {
 		return 1;
 	}
 
-	reply = rcall(fobj, "fs_setperm %d %d", user, perm);
+	reply = rcall(fobj, "set-access %d %d", user, perm);
 
 	if (!reply) {
 		errno = ENOSYS;
@@ -58,6 +58,6 @@ int rp_setperm(uint64_t fobj, uint32_t user, uint8_t perm) {
 	return 0;
 }
 
-int fs_setperm(const char *path, uint32_t user, uint8_t perm) {
+int fs_setperm(const char *path, uint32_t user, uint32_t perm) {
 	return rp_setperm(fs_find(path), user, perm);
 }

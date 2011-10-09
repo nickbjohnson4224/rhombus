@@ -59,8 +59,13 @@ int main() {
 
 			path = path_simplify(argv[1]);
 
-			if (path && FS_IS_DIR(fs_type(path))) {
-				setenv("PWD", path);
+			if (path && fs_find(path)) {
+				if (fs_checktype(path, "dir")) {
+					setenv("PWD", path);
+				}
+				else {
+					fprintf(stderr, "%s: %s: not a directory\n", getname_s(), argv[1]);
+				}
 			}
 			else {
 				fprintf(stderr, "%s: %s: no such directory\n", getname_s(), argv[1]);

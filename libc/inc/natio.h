@@ -35,60 +35,15 @@ int    sync (rp_t rp);
 int    reset(rp_t rp);
 int    share(rp_t rp, void *buf, size_t size, off_t offset, int prot);
 
-uint64_t rp_cons (rp_t driver, int type);
+uint64_t rp_cons (rp_t driver, const char *type);
 uint64_t rp_size (rp_t rp);
 int      rp_open (rp_t rp);
 int      rp_close(rp_t rp);
 
-/*****************************************************************************
- * resource types
- *
- * All resources must have exactly one of the following type flags:
- *   FS_TYPE_FILE					(f)
- *   FS_TYPE_DIR					(d)
- *   FS_TYPE_LINK					(l)
- *
- * Files of may have zero or one of these type flag sets:
- *   FS_TYPE_GRAPH 					(g)
- *   FS_TYPE_CHAR  					(c)
- *   FS_TYPE_EVENT 					(e)
- *   FS_TYPE_EVENT | FS_TYPE_GRAPH	(w)
- *
- * Directories may not have any additional type flags.
- *
- * Links may not have any additional type flags.
- *
- * Therefore, the following type values are valid:
- *   FS_TYPE_FILE    (f)  (FS_TYPE_FILE)
- *   FS_TYPE_DIR     (d)  (FS_TYPE_DIR)
- *   FS_TYPE_LINK    (l)  (FS_TYPE_LINK)
- *   FS_TYPE_GRAPHF  (g)  (FS_TYPE_FILE | FS_TYPE_GRAPH)
- *   FS_TYPE_EVENTF  (e)  (FS_TYPE_FILE | FS_TYPE_EVENT)
- *   FS_TYPE_WINDOW  (w)  (FS_TYPE_FILE | FS_TYPE_GRAPH | FS_TYPE_EVENT)
- *   FS_TYPE_CHARF   (c)  (FS_TYPE_FILE | FS_TYPE_CHAR)
- */
+/* resource type system *****************************************************/
 
-int fs_type(const char *path);
-int rp_type(rp_t rp);
-
-char typechar(int type);
-int  typeflag(char type);
-
-#define FS_TYPE_FILE   0x01 // file (allows read, write, reset)
-#define FS_TYPE_DIR    0x02 // directory (allows find, link, list, etc.)
-#define FS_TYPE_LINK   0x04 // symbolic link
-#define FS_TYPE_EVENT  0x10 // event source flag (allows register, deregister)
-#define FS_TYPE_GRAPH  0x20 // graphics file flag (allows various)
-#define FS_TYPE_CHAR   0x40 // character device flag (disallows size, offsets)
-
-#define FS_TYPE_GRAPHF 0x21 // graphics file
-#define FS_TYPE_EVENTF 0x11 // event source
-#define FS_TYPE_WINDOW 0x31 // window
-#define FS_TYPE_CHARF  0x41 // character file
-
-#define FS_IS_FILE(t) (((t) & FS_TYPE_FILE) != 0)
-#define FS_IS_DIR(t) ((t) == FS_TYPE_DIR)
-#define FS_IS_LINK(t) ((t) == FS_TYPE_LINK)
+bool fs_checktype(const char *path, const char *type);
+bool rp_checktype(rp_t rp, const char *type);
 
 /* filesystem operations ****************************************************/
 
@@ -96,7 +51,7 @@ extern uint64_t fs_root;
 
 rp_t  fs_find (const char *path);
 rp_t  fs_lfind(const char *path);
-rp_t  fs_cons (const char *path, int type);
+rp_t  fs_cons (const char *path, const char *type);
 char *fs_list (const char *path);
 rp_t  fs_size (const char *path);
 rp_t  fs_open (const char *path);
@@ -160,11 +115,11 @@ int rp_link (rp_t dir, const char *name, rp_t link);
  * actually be modified as specified.
  */
 
-uint8_t fs_getperm(const char *path, uint32_t user);
-int     fs_setperm(const char *path, uint32_t user, uint8_t perm);
+uint32_t fs_getperm(const char *path, uint32_t user);
+int      fs_setperm(const char *path, uint32_t user, uint32_t perm);
 
-uint8_t rp_getperm(rp_t rp, uint32_t user);
-int     rp_setperm(rp_t rp, uint32_t user, uint8_t perm);
+uint32_t rp_getperm(rp_t rp, uint32_t user);
+int      rp_setperm(rp_t rp, uint32_t user, uint32_t perm);
 
 #define PERM_READ	0x01
 #define PERM_WRITE	0x02

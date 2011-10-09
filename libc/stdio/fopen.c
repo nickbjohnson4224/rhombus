@@ -42,7 +42,7 @@ FILE *fopen(const char *path, const char *mode) {
 	fd = fs_find(path);
 
 	/* check if the object is a directory */
-	if (fd && ((rp_type(fd) & FS_TYPE_FILE) == 0)) {
+	if (fd && rp_checktype(fd, "dir")) {
 		errno = EISDIR;
 		return NULL;
 	}
@@ -51,7 +51,7 @@ FILE *fopen(const char *path, const char *mode) {
 
 		/* create the file */
 		if (mode[0] == 'w' || mode[0] == 'a') {
-			fd = fs_cons(path, FS_TYPE_FILE);
+			fd = fs_cons(path, "file");
 			if (!fd) {
 				return NULL;
 			}

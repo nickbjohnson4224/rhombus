@@ -32,7 +32,7 @@ int fs_slink(const char *path, const char *link) {
 	uint64_t rp;
 
 	rp = fs_find(path);
-	if (!rp) rp = fs_cons(path, FS_TYPE_LINK);
+	if (!rp) rp = fs_cons(path, "link");
 
 	return rp_slink(rp, link);
 }

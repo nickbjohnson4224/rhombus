@@ -68,12 +68,12 @@ static uintptr_t getvalue(char *field, size_t size) {
 
 char *tarfs_cons(struct robject *self, rp_t source, int argc, char **argv) {
 	struct robject *new_r = NULL;
-	int type;
+	char *type;
 
 	if (argc == 2) {
-		type = typeflag(argv[1][0]);
+		type = argv[1];
 
-		if (FS_IS_LINK(type)) {
+		if (!strcmp(type, "link")) {
 			new_r = rdi_link_cons(robject_new_index(), PERM_READ | PERM_WRITE, NULL);
 		}
 		else {

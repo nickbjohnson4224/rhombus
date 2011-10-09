@@ -27,7 +27,7 @@
  * apply to the user <user>. Returns zero on error.
  */
 
-uint8_t rp_getperm(uint64_t fobj, uint32_t user) {
+uint32_t rp_getperm(rp_t fobj, uint32_t user) {
 	uint8_t perm;
 	char *reply;
 
@@ -35,7 +35,7 @@ uint8_t rp_getperm(uint64_t fobj, uint32_t user) {
 		return 0;
 	}
 
-	reply = rcall(fobj, "fs_getperm %d", user);
+	reply = rcall(fobj, "get-access %d", user);
 
 	if (!reply) {
 		errno = ENOSYS;
@@ -60,6 +60,6 @@ uint8_t rp_getperm(uint64_t fobj, uint32_t user) {
 	return perm;
 }
 
-uint8_t fs_getperm(const char *path, uint32_t user) {
+uint32_t fs_getperm(const char *path, uint32_t user) {
 	return rp_getperm(fs_find(path), user);
 }

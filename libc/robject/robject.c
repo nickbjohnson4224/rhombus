@@ -126,7 +126,7 @@ void robject_del_subscriber(struct robject *ro, rp_t target) {
  * basic interface
  */
 
-void robject_cause_event(struct robject *ro, const char *event) {
+void robject_broadcast_event(struct robject *ro, const char *event) {
 	
 	if (ro) {
 		mutex_spin(&ro->mutex);

@@ -34,7 +34,7 @@
  * beyond that.
  */
 
-uint64_t fs_cons(const char *path, int type) {
+uint64_t fs_cons(const char *path, const char *type) {
 	uint64_t dir;
 	uint64_t rp;
 	char *dirname, *name;
@@ -67,11 +67,11 @@ uint64_t fs_cons(const char *path, int type) {
 	return rp;
 }
 
-uint64_t rp_cons(uint64_t driver, int type) {
+uint64_t rp_cons(uint64_t driver, const char *type) {
 	uint64_t rp;
 	char *reply;
 
-	reply = rcall(driver, "cons %c", typechar(type));
+	reply = rcall(driver, "cons %s", type);
 
 	if (!reply) {
 		errno = ENOSYS;

@@ -99,10 +99,6 @@ void __rdi_class_core_setup() {
 	robject_set_call(rdi_class_core, "sync", _sync);
 	robject_set_call(rdi_class_core, "open", _open);
 
-	// XXX DEP - legacy calls
-	robject_set_call(rdi_class_core, "fs_getperm", _get_access);
-	robject_set_call(rdi_class_core, "fs_setperm", _set_access);
-
 	robject_set_data(rdi_class_core, "type", (void*) "driver");
 	robject_set_data(rdi_class_core, "name", (void*) "RDI-class-core");
 }

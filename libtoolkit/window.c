@@ -50,7 +50,7 @@ struct window *create_window_from_widget(const char *widget) {
 	}
 	window->widget->window = window;
 
-	event_register(get_resource_pointer(window));
+	event_subscribe(get_resource_pointer(window));
 	draw_window(window);
 
 	__rtk_window = window;

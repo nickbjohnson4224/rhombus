@@ -26,19 +26,19 @@
  * Returns the file type of <file> on success, zero on error.
  */
 
-int rp_type(uint64_t fobj) {
+bool rp_checktype(rp_t rp, const char *type) {
 	char *reply;
-	int type;
-
-	if (!fobj) {
-		return 0;
+	bool is_type;
+	
+	if (!rp) {
+		return false;
 	}
 
-	reply = rcall(fobj, "type");
+	reply = rcall(rp, "type");
 
 	if (!reply) {
 		errno = ENOSYS;
-		return 0;
+		return false;
 	}
 
 	if (reply[0] == '!') {
@@ -46,15 +46,15 @@ int rp_type(uint64_t fobj) {
 		else if (!strcmp(reply, "! nosys"))  errno = ENOSYS;
 		else                                 errno = EUNK;
 		free(reply);
-		return 0;
+		return false;
 	}
 
-	type = typeflag(reply[0]);
+	is_type = strstr(reply, type) ? true : false;
 	free(reply);
 
-	return type;
+	return is_type;
 }
 
-int fs_type(const char *path) {
-	return rp_type(fs_find(path));
+bool fs_checktype(const char *path, const char *type) {
+	return rp_checktype(fs_find(path), type);
 }

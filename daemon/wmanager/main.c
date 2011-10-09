@@ -43,7 +43,7 @@ char *wmanager_rcall_createwindow(struct robject *self, uint64_t source, int arg
 	char buffer[32];
 
 	sprintf(buffer, "/sys/wmanager/%i", next_index);
-	fs_cons(buffer, FS_TYPE_FILE | FS_TYPE_GRAPH | FS_TYPE_EVENT);
+	fs_cons(buffer, "file");
 	window = find_window(next_index - 1, 0);
 	if (!window) {
 		fprintf(stderr, "wmanager: unable to create window\n");
@@ -255,16 +255,16 @@ char *wmanager_rcall_sync(struct robject *self, rp_t source, int argc, char **ar
 
 char *wmanager_rcall_cons(struct robject *self, rp_t source, int argc, char **argv) {
 	struct robject *new_r = NULL;
-	int type;
+	char *type;
 
 	if (RP_PID(source) != getpid()) {
 		return NULL;
 	}
 
 	if (argc == 2) {
-		type = typeflag(argv[1][0]);
+		type = argv[1];
 
-		if (FS_IS_FILE(type)) {
+		if (!strcmp(type, "file")) {
 			new_r = robject_cons(robject_new_index(), class_window);
 			add_window(new_r->index);
 		}
@@ -277,17 +277,17 @@ char *wmanager_rcall_cons(struct robject *self, rp_t source, int argc, char **ar
 	return strdup("! arg");
 }
 
-void wmanager_key_event(uint64_t source, int argc, char **argv) {
+char *wmanager_key_event(struct robject *self, uint64_t source, int argc, char **argv) {
 	char *event_str;
 	bool pressed;
 	int data;
 
-	if (argc != 3) return;
-	if (source != kbdfd) return;
+	if (argc != 3) return NULL;
+	if (source != kbdfd) return NULL;
 
 	if (!strcmp(argv[1], "press")) pressed = true;
 	else if (!strcmp(argv[1], "release")) pressed = false;
-	else return;
+	else return NULL;
 
 	data = atoi(argv[2]);
 
@@ -306,16 +306,18 @@ void wmanager_key_event(uint64_t source, int argc, char **argv) {
 		event(RP_CONS(active_window->owner, 0), event_str);
 		free(event_str);
 	}
+
+	return NULL;
 }
 
-void wmanager_mouse_event(uint64_t source, int argc, char **argv) {
+char *wmanager_mouse_event(struct robject *self, uint64_t source, int argc, char **argv) {
 	char *event_str;
 	
-	if (source != mousefd) return;
-	if (argc < 2) return;
+	if (source != mousefd) return NULL;
+	if (argc < 2) return NULL;
 
 	if (!strcmp(argv[1], "delta")) {
-		if (argc != 4) return;
+		if (argc != 4) return NULL;
 
 		mouse_move(atoi(argv[2]), atoi(argv[3]));
 		
@@ -326,7 +328,7 @@ void wmanager_mouse_event(uint64_t source, int argc, char **argv) {
 		}
 	}
 	else if (!strcmp(argv[1], "button")) {
-		if (argc != 3) return;
+		if (argc != 3) return NULL;
 
 		mouse_buttons(atoi(argv[2]));
 
@@ -336,16 +338,20 @@ void wmanager_mouse_event(uint64_t source, int argc, char **argv) {
 			free(event_str);
 		}
 	}
+
+	return NULL;
 }
 
-void wmanager_graph_event(uint64_t source, int argc, char **argv) {
+char *wmanager_graph_event(struct robject *self, uint64_t source, int argc, char **argv) {
 	
-	if (source != vgafd) return;
-	if (argc != 4) return;
+	if (source != vgafd) return NULL;
+	if (argc != 4) return NULL;
 	
 	if (!strcmp(argv[1], "resize")) {
 		resize_screen(atoi(argv[2]), atoi(argv[3]));
 	}
+
+	return NULL;
 }
 
 int main(int argc, char **argv) {
@@ -394,12 +400,12 @@ int main(int argc, char **argv) {
 
 	mousefd = fs_open("/dev/mouse");
 	kbdfd   = fs_open("/dev/kbd");
-	event_register(mousefd);
-	event_register(kbdfd);
-	event_register(vgafd);
-	event_set("mouse", wmanager_mouse_event);
-	event_set("key", wmanager_key_event);
-	event_set("graph", wmanager_graph_event);
+	event_subscribe(mousefd);
+	event_subscribe(kbdfd);
+	event_subscribe(vgafd);
+	robject_set_event_hook(root, "mouse", wmanager_mouse_event);
+	robject_set_event_hook(root, "key",   wmanager_key_event);
+	robject_set_event_hook(root, "graph", wmanager_graph_event);
 
 	current_tags = 1;
 

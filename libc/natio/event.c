@@ -44,111 +44,24 @@ int event(rp_t rp, const char *value) {
 	return msend(msg);
 }
 
-/******************************************************************************
- * eventl
- *
- * Sends an event to every resource on the event list <list>. Returns zero on 
- * success, nonzero on error.
- */
-
-int eventl(struct event_list *list, const char *value) {
-	
-	while (list) {
-		event(list->target, value);
-		list = list->next;
-	}
-
-	return 0;
-}
-
-int event_register(rp_t rp) {
+int event_subscribe(rp_t rp) {
 	char *reply;
 
-	reply = rcall(rp, "register");
+	reply = rcall(rp, "subscribe");
 
 	if (!reply) return 1;
 	
 	free(reply);
 	return 0;
-}
+} 
 
-int event_deregister(rp_t rp) {
+int event_unsubscribe(rp_t rp) {
 	char *reply;
 
-	reply = rcall(rp, "deregister");
+	reply = rcall(rp, "unsubscribe");
 
 	if (!reply) return 1;
 
 	free(reply);
 	return 0;
-}
-
-/*****************************************************************************
- * _event_map
- *
- * Structure mapping events to their respective handlers.
- *
- * Notes:
- * Currently, this is implemented as a linked list, which has terrible 
- * scalability.
- */
-
-static struct _event_map {
-	struct _event_map *next;
-
-	event_t handler;
-	char *key;
-} *_event_map = NULL;
-
-static void _event_handler(struct msg *msg);
-
-int event_set(const char *event, event_t handler) {
-	struct _event_map *node;
-
-	when(PORT_EVENT, _event_handler);
-
-	node = malloc(sizeof(struct _event_map));
-	node->next = _event_map;
-	node->handler = handler;
-	node->key = strdup(event);
-
-	_event_map = node;
-
-	return 0;
-}
-
-event_t event_get(const char *event) {
-	struct _event_map *node;
-
-	// get handler
-	for (node = _event_map; node; node = node->next) {
-		if (node->key && !strcmp(node->key, event)) {
-			return node->handler;
-		}
-	}
-
-	return NULL;
-}
-
-static void _event_handler(struct msg *msg) {
-	event_t handler;
-	char **argv;
-	char *args;
-	int argc;
-
-	// parse arguments
-	args = (char*) msg->data;
-	argv = strparse(args, " ");
-	for (argc = 0; argv[argc]; argc++);
-
-	handler = event_get(argv[0]);
-	if (!handler) return;
-
-	handler(msg->source, argc, argv);
-
-	for (argc = 0; argv[argc]; argc++) {
-		free(argv[argc]);
-	}
-	free(argv);
-	free(msg);
 }
