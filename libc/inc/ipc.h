@@ -73,6 +73,8 @@ struct msg {
 int         mqueue_push(struct msg *msg);
 struct msg *mqueue_pull(uint8_t port, uint64_t source);
 
+void mqueue_set_policy(uint8_t port, bool do_queue);
+
 /* sending and recieving ****************************************************/
 
 int         msend(struct msg *msg);
