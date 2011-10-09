@@ -155,6 +155,21 @@ static void __rcall_handler(struct msg *msg) {
 	msend(reply);
 }
 
+static void __event_handler(struct msg *msg) {
+	struct robject *ro;
+	
+	ro = robject_get(RP_INDEX(msg->target));
+
+	if (!ro) {
+		free(msg);
+		return;
+	}
+
+	robject_event(ro, msg->source, (const char*) msg->data);
+	
+	free(msg);
+}
+
 struct robject *robject_root;
 
 struct robject *robject_class_basic;
@@ -185,6 +200,7 @@ void __robject_init(void) {
 	robject_root = robject_cons(0, robject_class_basic);
 	robject_set(0, robject_root);
 
-	// set rcall handler
+	// set rcall and event handlers
 	when(PORT_RCALL, __rcall_handler);
+	when(PORT_EVENT, __event_handler);
 }

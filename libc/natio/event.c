@@ -105,9 +105,7 @@ static void _event_handler(struct msg *msg);
 int event_set(const char *event, event_t handler) {
 	struct _event_map *node;
 
-	if (!_event_map) {
-		when(PORT_EVENT, _event_handler);
-	}
+	when(PORT_EVENT, _event_handler);
 
 	node = malloc(sizeof(struct _event_map));
 	node->next = _event_map;

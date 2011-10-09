@@ -22,7 +22,7 @@
 #include <graph.h>
 
 struct screen screen = {
-	8,
+	10,
 	0,
 	0,
 	NULL,

@@ -29,7 +29,7 @@
 
 FT_Face face;
 
-size_t fbterm_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
+size_t fbterm_write(struct robject *self, rp_t source, uint8_t *buffer, size_t size, off_t offset) {
 	size_t i;
 
 	for (i = 0; i < size; i++) {
@@ -41,48 +41,7 @@ size_t fbterm_write(uint64_t source, uint32_t index, uint8_t *buffer, size_t siz
 	return size;
 }
 
-char *fbterm_rcall_set_fgjob(uint64_t source, uint32_t index, int argc, char **argv) {
-	extern uint32_t fgjob_pid;
-	
-	if (argc != 2) {
-		return NULL;
-	}
-
-	fgjob_pid = atoi(argv[1]);
-
-	return strdup("T");
-}
-
-char *fbterm_rcall_clear(uint64_t source, uint32_t index, int argc, char **argv) {
-	fbterm_clear();
-	return strdup("T");
-}
-
-char *fbterm_rcall_set_fgcolor(uint64_t source, uint32_t index, int argc, char **argv) {
-	
-	if (argc != 2) {
-		return NULL;
-	}
-
-	screen.fg = atoi(argv[1]);
-	screen_sync();
-
-	return strdup("T");
-}
-
-char *fbterm_rcall_set_bgcolor(uint64_t source, uint32_t index, int argc, char **argv) {
-	
-	if (argc != 2) {
-		return NULL;
-	}
-
-	screen.bg = atoi(argv[1]);
-	screen_sync();
-
-	return strdup("T");
-}
-
-size_t fbterm_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
+size_t fbterm_read(struct robject *self, rp_t source, uint8_t *buffer, size_t size, off_t offset) {
 	size_t i;
 
 	for (i = 0; i < size; i++) {
@@ -96,9 +55,50 @@ size_t fbterm_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size
 	return i;
 }
 
-void fbterm_key_event(uint64_t source, int argc, char **argv) {
+char *fbterm_rcall_set_fgjob(struct robject *self, rp_t source, int argc, char **argv) {
+	extern uint32_t fgjob_pid;
 	
-	if (argc != 3) return;
+	if (argc != 2) {
+		return NULL;
+	}
+
+	fgjob_pid = atoi(argv[1]);
+
+	return strdup("T");
+}
+
+char *fbterm_rcall_clear(struct robject *self, rp_t source, int argc, char **argv) {
+	fbterm_clear();
+	return strdup("T");
+}
+
+char *fbterm_rcall_set_fgcolor(struct robject *self, rp_t source, int argc, char **argv) {
+	
+	if (argc != 2) {
+		return NULL;
+	}
+
+	screen.fg = atoi(argv[1]);
+	screen_sync();
+
+	return strdup("T");
+}
+
+char *fbterm_rcall_set_bgcolor(struct robject *self, rp_t source, int argc, char **argv) {
+	
+	if (argc != 2) {
+		return NULL;
+	}
+
+	screen.bg = atoi(argv[1]);
+	screen_sync();
+
+	return strdup("T");
+}
+
+char *fbterm_key_event(struct robject *self, rp_t source, int argc, char **argv) {
+	
+	if (argc != 3) return NULL;
 
 	if (!strcmp(argv[1], "press")) {
 		keyboard_event(atoi(argv[2]), true);
@@ -106,12 +106,14 @@ void fbterm_key_event(uint64_t source, int argc, char **argv) {
 	else if (!strcmp(argv[1], "release")) {
 		keyboard_event(atoi(argv[2]), false);
 	}
+	
+	return NULL;
 }
 
-void fbterm_graph_event(uint64_t source, int argc, char **argv) {
+char *fbterm_graph_event(struct robject *self, rp_t source, int argc, char **argv) {
 	int w, h;
 	
-	if (argc != 4) return;
+	if (argc != 4) return NULL;
 
 	if (!strcmp(argv[1], "resize")) {
 		w = atoi(argv[2]);
@@ -120,16 +122,25 @@ void fbterm_graph_event(uint64_t source, int argc, char **argv) {
 		fbterm_resize(w, h);
 		screen_flip();
 	}
+
+	return NULL;
 }
 
 int main(int argc, char **argv) {
+	struct robject *term;
 	FT_Library library;
 	uint64_t kbd_dev;
 	uint64_t fb_dev;
 	int w, h;
 	int pid;
 
-	index_set(0, resource_cons(FS_TYPE_FILE | FS_TYPE_CHAR, PERM_READ | PERM_WRITE));
+	rdi_init();
+
+	term = rdi_file_cons(0, PERM_READ | PERM_WRITE);
+	robject_set(0, term);
+	robject_root = term;
+
+	robject_set_data(term, "type", (void*) "term");
 
 	// get font size
 	if (FT_Init_FreeType(&library)) {
@@ -178,19 +189,18 @@ int main(int argc, char **argv) {
 	screen_resize(w, h);
 	screen_flip();
 	event_register(fb_dev);
-	event_set("graph", fbterm_graph_event);
+	robject_set_event_hook(term, "graph", fbterm_graph_event);
 
 	// set up keyboard
 	event_register(kbd_dev);
-	event_set("key", fbterm_key_event);
+	robject_set_event_hook(term, "key", fbterm_key_event);
 
-	rcall_set("clear", fbterm_rcall_clear);
-	rcall_set("set_fgjob", fbterm_rcall_set_fgjob);
-	rcall_set("set_fgcolor", fbterm_rcall_set_fgcolor);
-	rcall_set("set_bgcolor", fbterm_rcall_set_bgcolor);
-	rdi_set_write(fbterm_write);
-	rdi_set_read (fbterm_read);
-	rdi_init_all();
+	robject_set_call(term, "clear", fbterm_rcall_clear);
+	robject_set_call(term, "set_fgjob", fbterm_rcall_set_fgjob);
+	robject_set_call(term, "set_fgcolor", fbterm_rcall_set_fgcolor);
+	robject_set_call(term, "set_bgcolor", fbterm_rcall_set_bgcolor);
+	rdi_global_read_hook = fbterm_read;
+	rdi_global_write_hook = fbterm_write;
 
 	// launch shell
 	pid = fork();
@@ -201,6 +211,7 @@ int main(int argc, char **argv) {
 		exec("/bin/fish");
 	}
 
+	// daemonize
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 	_done();
 

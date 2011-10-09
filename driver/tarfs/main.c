@@ -66,41 +66,6 @@ static uintptr_t getvalue(char *field, size_t size) {
 	return sum;
 }
 
-/*struct resource *tarfs_cons(uint64_t source, int type) {
-	static uint32_t tarfs_index_top = 1000;
-	struct resource *fobj = NULL;
-
-	if (FS_IS_LINK(type)) {
-		fobj        = resource_cons(FS_TYPE_LINK, PERM_READ | PERM_WRITE);
-		fobj->index = tarfs_index_top++;
-	}
-
-	return fobj;
-}
-
-size_t tarfs_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
-	struct resource *file;
-
-	file = index_get(index);
-
-	if (!file->data) {
-		return 0;
-	}
-
-	if (offset >= file->size) {
-		return 0;
-	}
-
-	if (offset + size >= file->size) {
-		size = file->size - offset;
-	}
-
-	fseek(parent, (size_t) file->data + offset, SEEK_SET);
-	fread(buffer, 1, size, parent);
-
-	return size;
-} */
-
 char *tarfs_cons(struct robject *self, rp_t source, int argc, char **argv) {
 	struct robject *new_r = NULL;
 	int type;
