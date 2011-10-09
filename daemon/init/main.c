@@ -108,7 +108,7 @@ int main() {
 	argv[2] = NULL;
 	file = tar_find(boot_image, "sbin/tarfs");
 	temp = start(file, argv);
-	
+
 	/* Link /dev and /sys and change root */
 	temp1 = fs_find("/dev");
 	temp2 = fs_find("/sys");

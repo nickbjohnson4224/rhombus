@@ -66,37 +66,51 @@ static uintptr_t getvalue(char *field, size_t size) {
 	return sum;
 }
 
-struct resource *tarfs_cons(uint64_t source, int type) {
-	static uint32_t tarfs_index_top = 1000;
-	struct resource *fobj = NULL;
+char *tarfs_cons(struct robject *self, rp_t source, int argc, char **argv) {
+	struct robject *new_r = NULL;
+	int type;
 
-	if (FS_IS_LINK(type)) {
-		fobj        = resource_cons(FS_TYPE_LINK, PERM_READ | PERM_WRITE);
-		fobj->index = tarfs_index_top++;
+	if (argc == 2) {
+		type = typeflag(argv[1][0]);
+
+		if (FS_IS_LINK(type)) {
+			new_r = rdi_link_cons(robject_new_index(), PERM_READ | PERM_WRITE, NULL);
+		}
+		else {
+			return strdup("! type");
+		}
+
+		if (new_r) {
+			return rtoa(RP_CONS(getpid(), new_r->index));
+		}
 	}
 
-	return fobj;
+	return strdup("! arg");
 }
 
-size_t tarfs_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t offset) {
-	struct resource *file;
+size_t tarfs_read(struct robject *self, rp_t source, uint8_t *buffer, size_t size, off_t offset) {
+	off_t *file_size;
+	off_t *file_poff;
 
-	file = index_get(index);
+	mutex_spin(&self->driver_mutex);
 
-	if (!file->data) {
+	file_size = robject_data(self, "size");
+	file_poff = robject_data(self, "parent-offset");
+
+	if (!file_size || !file_poff) return 0;
+
+	if (offset >= *file_size) {
 		return 0;
 	}
 
-	if (offset >= file->size) {
-		return 0;
+	if (offset + size > *file_size) {
+		size = *file_size - offset;
 	}
 
-	if (offset + size >= file->size) {
-		size = file->size - offset;
-	}
-
-	fseek(parent, (size_t) file->data + offset, SEEK_SET);
+	fseek(parent, *file_poff + offset, SEEK_SET);
 	fread(buffer, 1, size, parent);
+
+	mutex_free(&self->driver_mutex);
 
 	return size;
 }
@@ -111,9 +125,10 @@ size_t tarfs_read(uint64_t source, uint32_t index, uint8_t *buffer, size_t size,
 
 int main(int argc, char **argv) {
 	struct tar_block *block;
-	struct resource *root;
-	struct resource *file;
+	struct robject *root;
+	struct robject *file;
 	size_t i, n;
+	off_t *poff, *size;
 
 	/* reject if no parent is speicified */
 	if (argc < 2) {
@@ -132,9 +147,12 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	rdi_init();
+
 	/* create root directory */
-	index_set(0, resource_cons(FS_TYPE_DIR, PERM_READ | PERM_WRITE));
-	root = index_get(0);
+	root = rdi_dir_cons(0, PERM_READ);
+	robject_set(0, root);
+	robject_root = root;
 
 	/* allocate buffer space for header block */
 	block = malloc(512);
@@ -154,33 +172,36 @@ int main(int argc, char **argv) {
 
 			/* add directory to VFS */
 			block->filename[strlen(block->filename) - 1] = 0;
-			file        = resource_cons(FS_TYPE_DIR, PERM_READ | PERM_WRITE);
-			file->index = n;
-			vfs_add(root, block->filename, file);
-
+			file = rdi_dir_cons(robject_new_index(), PERM_READ);
+			rdi_vfs_add(root, block->filename, file);
+	
+			/* move to next file header */
+			i += 512;
 		}
 		else {
 
 			/* add file to VFS */
-			file        = resource_cons(FS_TYPE_FILE, PERM_READ);
-			file->index = n;
-			file->data  = (uint8_t*) (i + 512);
-			file->size  = getvalue(block->filesize, 12);
-			vfs_add(root, block->filename, file);
+			file = rdi_file_cons(robject_new_index(), PERM_READ);
+			rdi_vfs_add(root, block->filename, file);
 
+			poff = malloc(sizeof(off_t));
+			size = malloc(sizeof(off_t));
+			*poff = i + 512;
+			*size = getvalue(block->filesize, 12);
+			robject_set_data(file, "size", size);
+			robject_set_data(file, "parent-offset", poff);
+			
+			/* move to next file header */
+			i += ((*size / 512) + 1) * 512;
+			if (*size % 512) i += 512;
 		}
-
-		/* move to next file header */
-		i += ((file->size / 512) + 1) * 512;
-		if (file->size % 512) i += 512;
 	}
 
 	free(block);
 
 	/* set up interface */
-	rdi_set_read(tarfs_read);
-	rdi_set_cons(tarfs_cons);
-	rdi_init_all();
+	robject_set_call(rdi_class_core, "cons", tarfs_cons);
+	rdi_global_read_hook = tarfs_read;
 
 	/* daemonize */
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);

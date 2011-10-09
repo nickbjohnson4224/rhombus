@@ -24,6 +24,7 @@ struct __robject_event_set *__event_set_add(struct __robject_event_set *set, rp_
 	new_node = malloc(sizeof(struct __robject_event_set));
 	new_node->next = set;
 	new_node->prev = NULL;
+	new_node->target = target;
 
 	if (set) {
 		set->prev = new_node;

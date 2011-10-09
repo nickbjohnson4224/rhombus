@@ -27,15 +27,8 @@ static char *_find(struct robject *r, rp_t src, int argc, char **argv) {
 	return rtoa(RP_CONS(getpid(), r->index));
 }
 
-static char *_cons(struct robject *r, rp_t src, int argc, char **argv) {
-	struct robject *new_r;
-
-	if (argc == 2) {
-		new_r = rdi_core_cons(robject_new_index(), 0);
-		return rtoa(RP_CONS(getpid(), new_r->index));
-	}
-
-	return strdup("! arg");
+static char *_open(struct robject *r, rp_t src, int argc, char **argv) {
+	return strdup("T");
 }
 
 // XXX SEC - does not check for read access
@@ -101,10 +94,10 @@ void __rdi_class_core_setup() {
 	rdi_class_core = robject_cons(0, robject_class_basic);
 
 	robject_set_call(rdi_class_core, "find", _find);
-	robject_set_call(rdi_class_core, "cons", _cons);
 	robject_set_call(rdi_class_core, "get-access", _get_access);
 	robject_set_call(rdi_class_core, "set-access", _set_access);
 	robject_set_call(rdi_class_core, "sync", _sync);
+	robject_set_call(rdi_class_core, "open", _open);
 
 	// XXX DEP - legacy calls
 	robject_set_call(rdi_class_core, "fs_getperm", _get_access);

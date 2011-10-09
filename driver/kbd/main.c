@@ -23,32 +23,6 @@
 #include <rdi/vfs.h>
 #include <rdi/arch.h>
 
-struct event_list *event_list;
-
-char *kbd_rcall_register(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct resource *file;
-
-	file = index_get(index);
-
-	mutex_spin(&file->mutex);
-	event_list = event_list_add(event_list, source);
-	mutex_free(&file->mutex);
-
-	return strdup("T");
-}
-
-char *kbd_rcall_deregister(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct resource *file;
-
-	file = index_get(index);
-
-	mutex_spin(&file->mutex);
-	event_list = event_list_del(event_list, source);
-	mutex_free(&file->mutex);
-
-	return strdup("T");
-}
-
 #define ALT  0x00800000
 #define CTRL 0x00800001
 #define SHFT 0x00800002
@@ -150,7 +124,7 @@ void kbd_irq(struct msg *msg) {
 		case NUML: numlk = false; break;
 		default:
 			event = saprintf("key release %d\n", code);
-			eventl(event_list, event);
+			robject_cause_event(robject_root, event);
 			free(event);
 		}
 	}
@@ -161,23 +135,29 @@ void kbd_irq(struct msg *msg) {
 		case NUML: numlk = true; break;
 		default:
 			event = saprintf("key press %d\n", code);
-			eventl(event_list, event);
+			robject_cause_event(robject_root, event);
 			free(event);
 		}
 	}
 }
 
 int main(int argc, char **argv) {
+	struct robject *dev;
 
-	index_set(0, resource_cons(FS_TYPE_FILE | FS_TYPE_EVENT, PERM_READ));
+	rdi_init();
 
-	rcall_set  ("register",   kbd_rcall_register);
-	rcall_set  ("deregister", kbd_rcall_deregister);
+	// create device file
+	dev = rdi_event_cons(0, PERM_READ);
+	robject_set(0, dev);
+	robject_root = dev;
+
+	// set IRQ handler
 	rdi_set_irq(1, kbd_irq);
-	rdi_init_all();
 
+	// add to /dev
 	fs_plink("/dev/kbd", RP_CONS(getpid(), 0), NULL);
 
+	// daemonize
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 	_done();
 	

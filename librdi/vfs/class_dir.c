@@ -262,3 +262,29 @@ void rdi_dir_free(struct robject *r) {
 
 	robject_free(r);
 }
+
+void rdi_vfs_add(struct robject *root, const char *path, struct robject *r) {
+	struct robject *dir;
+	char *path1;
+	char *call;
+
+	if (!r) {
+		return;
+	}
+
+	// find parent directory
+	path1 = path_parent(path);
+	
+	dir = __find(root, path1, NULL);
+	free(path1);
+
+	if (!dir) {
+		return;
+	}
+
+	path1 = path_name(path);
+	call = saprintf("link %s %r", path1, RP_CONS(getpid(), r->index));
+	free(robject_call(dir, 0, call));
+	free(call);
+	free(path1);
+}
