@@ -74,7 +74,7 @@ char *tarfs_cons(struct robject *self, rp_t source, int argc, char **argv) {
 		type = argv[1];
 
 		if (!strcmp(type, "link")) {
-			new_r = rdi_link_cons(robject_new_index(), PERM_READ | PERM_WRITE, NULL);
+			new_r = rdi_link_cons(robject_new_index(), ACCS_READ | ACCS_WRITE, NULL);
 		}
 		else {
 			return strdup("! type");
@@ -150,7 +150,7 @@ int main(int argc, char **argv) {
 	rdi_init();
 
 	/* create root directory */
-	root = rdi_dir_cons(0, PERM_READ);
+	root = rdi_dir_cons(0, ACCS_READ | ACCS_WRITE);
 	robject_set(0, root);
 	robject_root = root;
 
@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
 
 			/* add directory to VFS */
 			block->filename[strlen(block->filename) - 1] = 0;
-			file = rdi_dir_cons(robject_new_index(), PERM_READ);
+			file = rdi_dir_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
 			rdi_vfs_add(root, block->filename, file);
 	
 			/* move to next file header */
@@ -181,7 +181,7 @@ int main(int argc, char **argv) {
 		else {
 
 			/* add file to VFS */
-			file = rdi_file_cons(robject_new_index(), PERM_READ);
+			file = rdi_file_cons(robject_new_index(), ACCS_READ);
 			rdi_vfs_add(root, block->filename, file);
 
 			poff = malloc(sizeof(off_t));

@@ -90,13 +90,13 @@ char *tmpfs_cons(struct robject *self, rp_t source, int argc, char **argv) {
 		type = argv[1];
 
 		if (!strcmp(type, "file")) {
-			new_r = rdi_file_cons(robject_new_index(), PERM_READ | PERM_WRITE);
+			new_r = rdi_file_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
 		}
 		else if (!strcmp(type, "dir")) {
-			new_r = rdi_dir_cons(robject_new_index(), PERM_READ | PERM_WRITE);
+			new_r = rdi_dir_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
 		}
 		else if (!strcmp(type, "link")) {
-			new_r = rdi_link_cons(robject_new_index(), PERM_READ | PERM_WRITE, NULL);
+			new_r = rdi_link_cons(robject_new_index(), ACCS_READ | ACCS_WRITE, NULL);
 		}
 
 		if (new_r) {
@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
 	rdi_init();
 
 	// create root directory
-	root = rdi_dir_cons(0, PERM_READ | PERM_WRITE);
+	root = rdi_dir_cons(0, ACCS_READ | ACCS_WRITE);
 	robject_set(0, root);
 	robject_root = root;
 

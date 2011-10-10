@@ -14,10 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef _RDI_CORE_H
-#define _RDI_CORE_H
+#ifndef __LIBRDI_CORE_H
+#define __LIBRDI_CORE_H
 
 #include <robject.h>
+#include <natio.h>
 
 /*****************************************************************************
  * Rhombus Driver Interface (RDI)
@@ -49,31 +50,28 @@ void rdi_init();
  *
  * cons <type> (additional args based on type) - none
  *   
- *   Requests the creation of a new robject of the given type. 
+ *   Requests the creation of a new robject of the given type. The three valid
+ *   types are "file", "dir", and "link".
  *
  *   Default behavior is to construct the new robject unconditionally. This is
  *   not at all secure.
  *
  *   Return: a robject pointer to the new robject
  * 
- * get-access <user> - R
+ * get-access (user) - R
  *
  *   Requests the access bitmap of the robject for a given user ID. This 
  *   "bitmap" is actually a hexadecimal string value. See natio.h for details 
- *   on its contents.
- *
- *   Default behavior is to return the contents of data field 
- *   "access-%X" <user>, if it exists, and otherwise to return 0.
+ *   on its contents. If (user) is nonexistent, the default access bitmap is
+ *   accessed.
  *
  *   Return: an access bitmap (hexadecimal string) valid for the given user.
  *
- * set-access <user> <bitmap> - A
+ * set-access (user) <bitmap> - A
  *
  *   Requests the the access bitmap of the robject for a given user ID be
+ *   changed. If (user) is nonexistent, the default access bitmap is
  *   changed.
- *
- *   Default behavior is to allow the request only if the source user has
- *   PERM_ALTER granted to them for this robject.
  *
  * sync - W
  *
@@ -85,11 +83,11 @@ void rdi_init();
  *
  * Fields:
  *
- * access-%X <uid>
+ * access
  *
- *   See calls get-access and set-access for details.
+ *   A structure containing UID-specific access rules.
  *
- *   Type: uint32_t
+ *   Type: struct rdi_access * (heap-allocated)
  */
 
 extern struct robject *rdi_class_core;
@@ -98,7 +96,7 @@ void __rdi_class_core_setup();
 struct robject *rdi_core_cons(uint32_t index, uint32_t access);
 void            rdi_core_free(struct robject *r);
 
-/******************************************************************************
+/*****************************************************************************
  * rdi_class_event (extends rdi_class_core) - event
  *
  * Calls:
@@ -114,4 +112,31 @@ void __rdi_class_event_setup();
 struct robject *rdi_event_cons(uint32_t index, uint32_t access);
 void            rdi_event_free(struct robject *r);
 
-#endif/*_RDI_CORE_H*/
+/*****************************************************************************
+ * RDI Access Control
+ */
+
+struct rdi_access_node {
+	struct rdi_access_node *l;
+	struct rdi_access_node *r;
+	int32_t balance;
+	uint32_t height;
+
+	uint32_t uid;
+	uint8_t access;
+};
+
+struct rdi_access {
+	bool mutex;
+	struct rdi_access_node *root;
+	uint8_t access_default;
+};
+
+uint8_t rdi_get_access  (struct robject *ro, uint32_t uid);
+bool    rdi_check_access(struct robject *ro, rp_t source,  uint8_t access);
+void    rdi_set_access  (struct robject *ro, uint32_t uid, uint8_t access);
+void    rdi_del_access  (struct robject *ro, uint32_t uid);
+uint8_t rdi_get_access_default(struct robject *ro, uint8_t access);
+void    rdi_set_access_default(struct robject *ro, uint8_t access);
+
+#endif/*__LIBRDI_CORE_H*/

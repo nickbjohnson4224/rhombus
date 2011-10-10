@@ -365,7 +365,7 @@ int main(int argc, char **argv) {
 	}
 	mwait(PORT_CHILD, 0);
 
-	root = rdi_dir_cons(0, PERM_READ | PERM_WRITE);
+	root = rdi_dir_cons(0, ACCS_READ | ACCS_WRITE);
 	robject_set(0, root);
 	robject_root = root;
 	robject_set_data(root, "type", (void*) "wm");

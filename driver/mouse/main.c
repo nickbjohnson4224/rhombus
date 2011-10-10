@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
 
 	rdi_init();
 
-	mouse = rdi_event_cons(0, PERM_READ | PERM_WRITE);
+	mouse = rdi_event_cons(0, ACCS_READ | ACCS_WRITE);
 	robject_set(0, mouse);
 	robject_root = mouse;
 

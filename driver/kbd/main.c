@@ -147,7 +147,7 @@ int main(int argc, char **argv) {
 	rdi_init();
 
 	// create device file
-	dev = rdi_event_cons(0, PERM_READ);
+	dev = rdi_event_cons(0, ACCS_READ);
 	robject_set(0, dev);
 	robject_root = dev;
 

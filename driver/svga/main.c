@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
 
 	rdi_init();
 
-	canvas = rdi_event_cons(0, PERM_READ | PERM_WRITE);
+	canvas = rdi_event_cons(0, ACCS_READ | ACCS_WRITE);
 	robject_set(0, canvas);
 	robject_root = canvas;
 

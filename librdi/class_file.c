@@ -55,6 +55,12 @@ static void __rdi_read (struct msg *msg) {
 		return;
 	}
 
+	if (!rdi_check_access(file, msg->source, ACCS_READ)) {
+		// access denied
+		merror(msg);
+		return;
+	}
+
 	if (!robject_check_type(file, "file")) {
 		/* robject is not a file */
 		merror(msg);
@@ -95,7 +101,6 @@ static void __rdi_read (struct msg *msg) {
 	msend(reply);
 }
 
-// XXX SEC - does not check write access
 static void __rdi_write(struct msg *msg) {
 	rdi_write_hook write_hook;
 	struct robject *file;
@@ -110,6 +115,12 @@ static void __rdi_write(struct msg *msg) {
 	file = robject_get(RP_INDEX(msg->target));
 	if (!file) {
 		/* there is no corresponding robject */
+		merror(msg);
+		return;
+	}
+
+	if (!rdi_check_access(file, msg->source, ACCS_WRITE)) {
+		// access denied
 		merror(msg);
 		return;
 	}
@@ -161,6 +172,12 @@ static void __rdi_share(struct msg *msg) {
 		return;
 	}
 
+	if (!rdi_check_access(file, msg->source, ACCS_WRITE)) {
+		// access denied
+		merror(msg);
+		return;
+	}
+
 	if (!rdi_global_share_hook) {
 		merror(msg);
 		return;
@@ -177,7 +194,6 @@ static void __rdi_share(struct msg *msg) {
 	mreply(msg);
 }
 
-// XXX SEC - does not check write access
 static void __rdi_sync(struct msg *msg) {
 	struct robject *file;
 
@@ -191,13 +207,18 @@ static void __rdi_sync(struct msg *msg) {
 		merror(msg);
 		return;
 	}
+	
+	if (!rdi_check_access(file, msg->source, ACCS_WRITE)) {
+		// access denied
+		merror(msg);
+		return;
+	}
 
 	free(robject_call(file, msg->source, "sync"));
 
 	merror(msg);
 }
 
-// XXX SEC - does not check write access
 static void __rdi_reset(struct msg *msg) {
 	struct robject *file;
 
@@ -212,14 +233,23 @@ static void __rdi_reset(struct msg *msg) {
 		return;
 	}
 
+	if (!rdi_check_access(file, msg->source, ACCS_WRITE)) {
+		// access denied
+		merror(msg);
+		return;
+	}
+
 	free(robject_call(file, msg->source, "reset"));
 
 	merror(msg);
 }
 
-// XXX SEC - does not check read access
 static char *_size(struct robject *r, rp_t src, int argc, char **argv) {
 	off_t *size;
+
+	if (!rdi_check_access(r, src, ACCS_READ)) {
+		return strdup("! denied");
+	}
 
 	size = robject_data(r, "size");
 
@@ -258,8 +288,7 @@ struct robject *rdi_file_cons(uint32_t index, uint32_t access) {
 	struct robject *r;
 
 	r = robject_cons(index, rdi_class_file);
-
-	robject_set_data(r, "access-default", (void*) access);
+	rdi_set_access_default(r, access);
 
 	return r;
 }

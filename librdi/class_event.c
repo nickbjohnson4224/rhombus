@@ -18,13 +18,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <natio.h>
 #include <proc.h>
 
 #include <rdi/core.h>
 
-// XXX SEC - does not check read access
 static char *_subscribe(struct robject *self, rp_t src, int argc, char **argv) {
 	rp_t target;
+
+	if (!rdi_check_access(self, src, ACCS_READ)) return strdup("! denied");
 
 	if (argc == 1) {
 		robject_add_subscriber(self, src);
@@ -46,9 +48,10 @@ static char *_subscribe(struct robject *self, rp_t src, int argc, char **argv) {
 	return strdup("! arg");
 }
 
-// XXX SEC - does not check read access
 static char *_unsubscribe(struct robject *self, rp_t src, int argc, char **argv) {
 	rp_t target;
+
+	if (!rdi_check_access(self, src, ACCS_READ)) return strdup("! denied");
 
 	if (argc == 1) {
 		robject_del_subscriber(self, src);
@@ -79,10 +82,6 @@ void __rdi_class_event_setup() {
 	robject_set_call(rdi_class_event, "subscribe", _subscribe);
 	robject_set_call(rdi_class_event, "unsubscribe", _unsubscribe);
 
-	// XXX DEP - legacy calls
-	robject_set_call(rdi_class_event, "register", _subscribe);
-	robject_set_call(rdi_class_event, "deregister", _unsubscribe);
-
 	robject_set_data(rdi_class_event, "type", (void*) "event");
 	robject_set_data(rdi_class_event, "name", (void*) "RDI-class-event");
 }
@@ -91,7 +90,7 @@ struct robject *rdi_event_cons(uint32_t index, uint32_t access) {
 	struct robject *r;
 
 	r = robject_cons(index, rdi_class_event);
-	robject_set_data(r, "access-default", (void*) access);
+	rdi_set_access_default(r, access);
 
 	return r;
 }

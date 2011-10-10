@@ -60,12 +60,13 @@ static struct robject *__find(struct robject *root, const char *path_str, const 
 	return NULL;
 }
 
-// XXX SEC - does not check for read access
 static char *_find(struct robject *r, rp_t src, int argc, char **argv) {
 	struct robject *file;
 	const char *path;
 	const char *tail;
 	bool link;
+
+	if (!rdi_check_access(r, src, ACCS_READ)) return strdup("! denied");
 
 	if (argc <= 1) return strdup("! arg");
 
@@ -97,11 +98,12 @@ static char *_find(struct robject *r, rp_t src, int argc, char **argv) {
 	}
 }
 
-// XXX SEC - does not check for read access
 static char *_list(struct robject *r, rp_t src, int argc, char **argv) {
 	struct __dirent_list *node;
 	char *list;
 	char *temp;
+
+	if (!rdi_check_access(r, src, ACCS_READ)) return strdup("! denied");
 
 	list = NULL;
 	node = robject_data(r, "list");
@@ -127,13 +129,14 @@ static char *_list(struct robject *r, rp_t src, int argc, char **argv) {
 	}
 }
 
-// XXX SEC - does not check for write access
 static char *_link(struct robject *r, rp_t src, int argc, char **argv) {
 	char *entry;
 	char *lookup;
 	uint32_t index;
 	struct robject *hardlink;
 	struct __dirent_list *list, *node;
+
+	if (!rdi_check_access(r, src, ACCS_WRITE)) return strdup("! denied");
 
 	if (argc == 3) {
 		entry = argv[1];
@@ -175,11 +178,12 @@ static char *_link(struct robject *r, rp_t src, int argc, char **argv) {
 	return strdup("! arg");
 }
 
-// XXX SEC - does not check for write access
 static char *_unlink(struct robject *r, rp_t src, int argc, char **argv) {
 	char *entry;
 	char *lookup;
 	struct __dirent_list *list;
+
+	if (!rdi_check_access(r, src, ACCS_WRITE)) return strdup("! denied");
 
 	if (argc == 2) {
 		entry = argv[1];
@@ -238,7 +242,7 @@ struct robject *rdi_dir_cons(uint32_t index, uint32_t access) {
 	struct robject *r;
 
 	r = robject_cons(index, rdi_class_dir);
-	robject_set_data(r, "access-default", (void*) access);
+	rdi_set_access_default(r, access);
 
 	return r;
 }

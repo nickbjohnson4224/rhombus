@@ -66,7 +66,7 @@ FILE *fopen(const char *path, const char *mode) {
 
 	/* check read permissions */
 	if (mode[0] == 'r' || mode[1] == '+') {
-		if ((perm & PERM_READ) == 0) {
+		if ((perm & ACCS_READ) == 0) {
 			errno = EACCES;
 			return NULL;
 		}
@@ -74,7 +74,7 @@ FILE *fopen(const char *path, const char *mode) {
 
 	/* check write permissions */
 	if (mode[0] == 'w' || mode[0] == 'a' || mode[1] == '+') {
-		if ((perm & PERM_WRITE) == 0) {
+		if ((perm & ACCS_WRITE) == 0) {
 			errno = EACCES;
 			return NULL;
 		}

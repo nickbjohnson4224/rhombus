@@ -22,20 +22,25 @@
 
 #include <rdi/core.h>
 
-// XXX SEC - does not check for read access
 static char *_find(struct robject *r, rp_t src, int argc, char **argv) {
+
+	if (!rdi_check_access(r, src, ACCS_READ)) return strdup("! denied");
+
 	return rtoa(RP_CONS(getpid(), r->index));
 }
 
 static char *_open(struct robject *r, rp_t src, int argc, char **argv) {
+
+	if (!rdi_check_access(r, src, ACCS_READ)) return strdup("! denied");
+
 	return strdup("T");
 }
 
-// XXX SEC - does not check for read access
 static char *_get_access(struct robject *r, rp_t src, int argc, char **argv) {
-	char *lookup;
 	uint32_t bitmap;
 	uint32_t user;
+
+	if (!rdi_check_access(r, src, ACCS_READ)) return strdup("! denied");
 
 	if (argc == 1) {
 		user = getuser(RP_PID(src));
@@ -47,22 +52,16 @@ static char *_get_access(struct robject *r, rp_t src, int argc, char **argv) {
 		return strdup("! arg");
 	}
 
-	lookup = saprintf("access-%X", user);
-	bitmap = (uint32_t) robject_data(r, lookup);
-	free(lookup);
-
-	if (!bitmap) {
-		bitmap = (uint32_t) robject_data(r, "access-default");
-	}
+	bitmap = rdi_get_access(r, user);
 
 	return saprintf("%X", bitmap);
 }
 
-// XXX SEC - does not check for alter access
 static char *_set_access(struct robject *r, rp_t src, int argc, char **argv) {
-	char *lookup;
 	uint32_t bitmap;
 	uint32_t user;
+
+	if (!rdi_check_access(r, src, ACCS_ALTER)) return strdup("! denied");
 
 	if (argc == 2) {
 		user = getuser(RP_PID(src));
@@ -76,9 +75,7 @@ static char *_set_access(struct robject *r, rp_t src, int argc, char **argv) {
 		return strdup("! arg");
 	}
 
-	lookup = saprintf("access-%X", user);
-	robject_set_data(r, lookup, (void*) bitmap);
-	free(lookup);
+	rdi_set_access(r, user, bitmap);
 
 	return strdup("T");
 }
@@ -107,7 +104,7 @@ struct robject *rdi_core_cons(uint32_t index, uint32_t access) {
 	struct robject *r;
 
 	r = robject_cons(index, rdi_class_core);
-	robject_set_data(r, "access-default", (void*) access);
+	rdi_set_access_default(r, access);
 
 	return r;
 }

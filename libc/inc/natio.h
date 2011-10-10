@@ -90,30 +90,40 @@ int rp_plink(rp_t rp, rp_t link_rp, const char *link_path);
 int rp_link (rp_t dir, const char *name, rp_t link);
 
 /*****************************************************************************
- * permission bitmap
+ * access bitmap
  *
- * The following flags correspond to bits that may be set in the permission
- * bitmap. Permissions can be assigned on a per-user basis, but not a 
- * per-process basis.
+ * The following flags correspond to bits that may be set in the access
+ * bitmap. Permissions can be assigned on a per-user basis.
  *
- * PERM_READ
+ * ACCS_READ
  *
  * This flag allows read access. For directories, this means finding and 
  * listing. For files, this means reading file contents.
  *
- * PERM_WRITE
+ * ACCS_WRITE
  *
  * This flag allows write access. For directories, this means the creation and
  * deletion of hard links. For files, this means writing, clearing, and 
  * deleting files/file contents, as well as requesting file synchronization.
  * 
- * PERM_ALTER
+ * ACCS_ALTER
  *
- * This flag allows the permission bitmap to be modified. Some drivers simply
+ * This flag allows the access bitmap to be modified. Some drivers simply
  * do not allow certain operations (usually writing, if the filesystem is
  * read-only) and this does not ensure that the permission bitmap will 
  * actually be modified as specified.
+ *
+ * These three flags are guaranteed to be implemented by all drivers, but the
+ * access bitmap is in fact 8 bits wide. These additional bits may be used
+ * for any driver-specific purpose, but should generally be ignored by user
+ * processes.
  */
+
+uint8_t getaccess(const char *path, uint32_t user);
+void    setaccess(const char *path, uint32_t user, uint8_t access);
+
+uint8_t rp_getaccess(rp_t rp, uint32_t user);
+void    rp_setaccess(rp_t rp, uint32_t user, uint8_t access);
 
 uint32_t fs_getperm(const char *path, uint32_t user);
 int      fs_setperm(const char *path, uint32_t user, uint32_t perm);
@@ -121,8 +131,8 @@ int      fs_setperm(const char *path, uint32_t user, uint32_t perm);
 uint32_t rp_getperm(rp_t rp, uint32_t user);
 int      rp_setperm(rp_t rp, uint32_t user, uint32_t perm);
 
-#define PERM_READ	0x01
-#define PERM_WRITE	0x02
-#define PERM_ALTER	0x04
+#define ACCS_READ	0x01
+#define ACCS_WRITE	0x02
+#define ACCS_ALTER	0x04
 
 #endif/*NATIO_H*/

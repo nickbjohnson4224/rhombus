@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
 	rdi_init();
 
 	// create device file
-	file = rdi_file_cons(0, PERM_READ);
+	file = rdi_file_cons(0, ACCS_READ);
 	robject_set(0, file);
 	robject_root = file;
 
