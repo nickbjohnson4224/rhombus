@@ -88,12 +88,6 @@ struct process *process_clone(struct process *parent, struct thread *active) {
 	child->pid    = pid;
 	child->rirq   = IRQ_NULL;
 
-	/* copy key table */
-	if (parent->keytable) {
-		child->keytable = heap_alloc(sizeof(struct key) * child->keycount);
-		memcpy(child->keytable, parent->keytable, sizeof(struct key) * child->keycount);
-	}
-
 	memclr(child->thread, sizeof(struct thread*) * 256);
 
 	new_thread = thread_alloc();
@@ -202,6 +196,8 @@ void process_kill(struct process *proc) {
 			thread_free(proc->thread[i]);
 		}
 	}
+
+	rtab_free(proc);
 
 	space_free(proc->space);
 	process_free(proc);

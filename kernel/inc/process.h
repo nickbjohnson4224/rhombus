@@ -28,13 +28,6 @@
 #define MAX_PID     1024
 #define MAX_TASKS	1024
 
-/* key structure ***********************************************************/
-
-struct key {
-	uint64_t resource;
-	uint32_t keyvalue;
-};
-
 /* process structure *******************************************************/
 
 struct process {
@@ -42,9 +35,9 @@ struct process {
 	/* address space */
 	space_t space;
 
-	/* keys */
-	uint32_t    keycount;
-	struct key *keytable;
+	/* robject table */
+	uint32_t rtab_count;
+	uint64_t *rtab;
 
 	/* various metadata */
 	uint64_t tick;
@@ -75,9 +68,11 @@ void            process_switch(struct process *proc);
 void            process_freeze(struct process *proc);
 void            process_thaw  (struct process *proc);
 
-/* process key operations ***************************************************/
+/* robject table operations ************************************************/
 
-void     key_set(struct process *proc, uint64_t resource, uint32_t keyvalue);
-uint32_t key_get(struct process *proc, uint64_t resource);
+void     rtab_close(struct process *proc, uint64_t rp);
+void     rtab_grant(struct process *proc, uint64_t rp);
+uint32_t rtab_count(uint64_t rp);
+void     rtab_free (struct process *proc);
 
 #endif/*KERNEL_PROCESS_H*/
