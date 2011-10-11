@@ -24,9 +24,6 @@
 #include <rdi/core.h>
 
 static char *_find(struct robject *r, rp_t src, int argc, char **argv) {
-
-	if (!rdi_check_access(r, src, ACCS_READ)) return strdup("! denied");
-
 	return rtoa(RP_CONS(getpid(), r->index));
 }
 
@@ -42,8 +39,6 @@ static char *_open(struct robject *r, rp_t src, int argc, char **argv) {
 static char *_get_access(struct robject *r, rp_t src, int argc, char **argv) {
 	uint32_t bitmap;
 	uint32_t user;
-
-	if (!rdi_check_access(r, src, ACCS_READ)) return strdup("! denied");
 
 	if (argc == 1) {
 		user = getuser(RP_PID(src));

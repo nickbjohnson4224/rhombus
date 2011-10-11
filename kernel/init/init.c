@@ -209,7 +209,7 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	int_set_handler(FAULT_XM, fault_nomath);
 
 	/* start timer (for preemption) */
-	timer_set_freq(256);
+	timer_set_freq(64);
 
 	/* initialize FPU/MMX/SSE */
 	cpu_init_fpu();

@@ -52,7 +52,7 @@ For 0.9 Alpha:
 	+ event interface
 
 - kernel improvements
-	- kernel robject tables
+	+ kernel robject tables
 	- better names for system calls
 	- indexed system calls (one interrupt)
 	- SYSCALL/SYSENTER capability
@@ -107,8 +107,7 @@ For 1.0 Beta:
 
 - graphics improvements
 	- port SDL
-	- window manager
-	- GUI toolkit finished
+	- games?
 
 For 1.1 Beta:
 
