@@ -40,18 +40,21 @@
  *     char rets[]
  */
 
-char *__rcall(uint64_t rp, const char *args) {
+static char *__rcall(uint64_t rp, const char *args) {
 	struct msg *msg;
+	size_t length;
 	char *rets;
 
-	msg = aalloc(sizeof(struct msg) + strlen(args) + 1, PAGESZ);
+	length = strlen(args) + 1;
+
+	msg = aalloc(sizeof(struct msg) + length, PAGESZ);
 	if (!msg) return NULL;
 	msg->source = RP_CONS(getpid(), 0);
 	msg->target = rp;
-	msg->length = strlen(args) + 1;
+	msg->length = length;
 	msg->port   = PORT_RCALL;
 	msg->arch   = ARCH_NAT;
-	strcpy((char*) msg->data, args);
+	memcpy(msg->data, args, length);
 
 	if (msend(msg)) return NULL;
 	msg = mwait(PORT_REPLY, rp);
@@ -82,20 +85,28 @@ char *rcall(uint64_t rp, const char *fmt, ...) {
 	char *args;
 	char *ret;
 
-	// format argument string
-	va_start(ap, fmt);
-	args = vsaprintf(fmt, ap);
-	va_end(ap);
+	if (strchr(fmt, '%')) {
 
-	if (!args) {
-		return NULL;
+		// format argument string
+		va_start(ap, fmt);
+		args = vsaprintf(fmt, ap);
+		va_end(ap);
+
+		if (!args) {
+			return NULL;
+		}
+
+		// perform rcall
+		ret = __rcall(rp, args);
+
+		// free argument string
+		free(args);
 	}
-
-	// perform rcall
-	ret = __rcall(rp, args);
-
-	// free argument string
-	free(args);
+	else {
+		
+		// just use the format string
+		ret = __rcall(rp, fmt);
+	}
 
 	return ret;
 }
