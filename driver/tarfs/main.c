@@ -92,8 +92,6 @@ size_t tarfs_read(struct robject *self, rp_t source, uint8_t *buffer, size_t siz
 	off_t *file_size;
 	off_t *file_poff;
 
-	mutex_spin(&self->driver_mutex);
-
 	file_size = robject_data(self, "size");
 	file_poff = robject_data(self, "parent-offset");
 
@@ -109,8 +107,6 @@ size_t tarfs_read(struct robject *self, rp_t source, uint8_t *buffer, size_t siz
 
 	fseek(parent, *file_poff + offset, SEEK_SET);
 	fread(buffer, 1, size, parent);
-
-	mutex_free(&self->driver_mutex);
 
 	return size;
 }

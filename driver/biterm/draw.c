@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,47 +14,46 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <natio.h>
-#include <errno.h>
+#include "fbterm.h"
 
-int main(int argc, char **argv) {
-	char *list, *path;
-	char **listv;
-	uint64_t dir;
+#include <stdlib.h>
+#include <graph.h>
+#include <stdio.h>
+
+struct fb *fb = NULL;
+
+int draw_cell(struct font *font, struct cell *c, int x, int y) {
+	struct glyph *glyph;
+	uint32_t *bitmap;
 	int i;
 
-	if (argc == 1) {
-		path = (char*) getenv("PWD");
+	if (!font || !c) {
+		return 1;
+	}
+
+	if (c->ch >= font->count) {
+		glyph = font->def_glyph;
 	}
 	else {
-		path = argv[1];
+		glyph = font->glyph[c->ch];
+
+		if (!glyph) {
+			glyph = font->def_glyph;
+			if (!glyph) {
+				return 1;
+			}
+		}
 	}
 
-	dir = fs_find(path);
-
-	if (!dir) {
-		fprintf(stderr, "%s: ", path_simplify(path));
-		perror(NULL);
-		abort();
+	// construct bitmap
+	bitmap = malloc(sizeof(uint32_t) * glyph->w * glyph->h);
+	for (i = 0; i < glyph->w * glyph->h; i++) {
+		bitmap[i] = (glyph->value[i]) ? c->fg : c->bg;
 	}
 
-	list = rp_list(dir);
-	if (!list) {
-		fprintf(stderr, "%s: ", path);
-		perror(NULL);
-		abort();
-	}
+	// blit onto framebuffer
+	fb_blit(fb, bitmap, x, y, glyph->w, glyph->h);
+	free(bitmap);
 
-	listv = strparse(list, "\t");
-
-	for (i = 0; listv[i]; i++) {
-		printf("%s\t", listv[i]);
-		if (i % 8 == 7 && listv[i+1]) printf("\n");
-	}
-	printf("\n");
-
-	return EXIT_SUCCESS;
+	return 0;
 }

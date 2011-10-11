@@ -112,11 +112,11 @@ int main() {
 	fs_plink("/sys", temp2, NULL);
 
 	/* Terminal Driver */
-	argv[0] = "fbterm";
+	argv[0] = "biterm";
 	argv[1] = "/dev/kbd";
 	argv[2] = "/dev/svga0";
 	argv[3] = NULL;
-	file = tar_find(boot_image, "sbin/fbterm");
+	file = tar_find(boot_image, "sbin/biterm");
 	fs_plink("/dev/tty", start(file, argv), NULL);
 
 	/* Temporary filesystem */
