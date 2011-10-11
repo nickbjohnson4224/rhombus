@@ -44,15 +44,15 @@ For 0.9 Alpha:
 + top/ps equivalent
 + proper session/controlling tty stuff
 
-- driver interface complete
++ driver interface complete
 	+ I/O interface
 	+ VFS interface
 	+ core interface
-	- security interface
+	+ security interface
 	+ event interface
 
 - kernel improvements
-	- kernel key system
+	- kernel robject tables
 	- better names for system calls
 	- indexed system calls (one interrupt)
 	- SYSCALL/SYSENTER capability
@@ -61,7 +61,7 @@ For 0.9 Alpha:
 	- pipe driver
 	- shell pipe support
 	- stdio buffering
-	- shell job control
+	- user/password manager
 	- login shell
 
 - graphics architecture improvements
@@ -77,19 +77,38 @@ For 0.9 Alpha:
 
 For 1.0 Beta:
 
-- curses port
-- user/password manager
-- decent shell (POSIX-compliant)
-- libc documentation
-- kernel documentation
-- driver writing manual
-- text editor (port vim?)
-- self-hosting toolchain (port GCC?)
-- installer
-- real hardware testing
-- window manager
-- GUI toolkit
-- port SDL
+- CLI improvements
+	- terminal performance
+	- terminal driver/client library
+	- curses implementation
+	- shell job control
+	- text editor (vim?)
+
+- documentation
+	- libc documentation
+	- kernel documentation
+	- librdi documentation
+	- driver writing manual
+
+- C and C++ libraries
+	- C standard library cleanup
+	- malloc performance testing
+	- floating point environment
+	- math library improvements
+	- C standard library finalization
+	- C++ standard library
+	- C++ testing
+
+- toolchain
+	(requires C++ standard library)
+	- port LLVM
+	- port Clang
+	- port Python?
+
+- graphics improvements
+	- port SDL
+	- window manager
+	- GUI toolkit finished
 
 For 1.1 Beta:
 

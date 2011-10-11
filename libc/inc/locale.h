@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef LOCALE_H
-#define LOCALE_H
+#ifndef __RLIBC_LOCALE_H
+#define __RLIBC_LOCALE_H
 
 #include <stddef.h>
 
@@ -66,4 +66,4 @@ struct lconv *localeconv(void);
 
 char *setlocale(int category, const char *locale);
 
-#endif/*LOCALE_H*/
+#endif/*__RLIBC_LOCALE_H*/

@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef SIGNAL_H
-#define SIGNAL_H
+#ifndef __RLIBC_SIGNAL_H
+#define __RLIBC_SIGNAL_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -68,4 +68,4 @@ int __raise(int caller, int signum);
 
 int kill(int pid, int signum);
 
-#endif/*SIGNAL_H*/
+#endif/*__RLIBC_SIGNAL_H*/

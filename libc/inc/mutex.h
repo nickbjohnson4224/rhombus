@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef MUTEX_H
-#define MUTEX_H
+#ifndef __RLIBC_MUTEX_H
+#define __RLIBC_MUTEX_H
 
 #include <stdbool.h>
 
@@ -25,4 +25,4 @@ void mutex_spin(bool *mutex);
 void mutex_wait(bool *mutex);
 void mutex_free(bool *mutex);
 
-#endif/*MUTEX_H*/
+#endif/*__RLIBC_MUTEX_H*/

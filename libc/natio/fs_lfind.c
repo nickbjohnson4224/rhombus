@@ -23,20 +23,20 @@
 /*****************************************************************************
  * fs_lfind
  * 
- * Finds the filesystem object with the given path <path> if it exists, 
- * without following terminal links. If it does not exist, this function 
- * returns RP_NULL.
+ * Finds the robject with the given path <path> if it exists, without 
+ * following terminal links. If it does not exist, this function returns 
+ * RP_NULL.
  */
 
-uint64_t fs_lfind(const char *path) {
-	uint64_t root;
-	uint64_t rp;
-	char *reply;
+rp_t fs_lfind(const char *path) {
 	char *path_s;
+	char *reply;
+	rp_t root;
+	rp_t rp;
 
 	// if path is NULL, return NULL
 	if (!path) {
-		return 0;
+		return RP_NULL;
 	}
 
 	// if preceeded by a resource pointer, use that as root and strip it
@@ -54,27 +54,30 @@ uint64_t fs_lfind(const char *path) {
 	}
 
 	path_s = path_simplify(path);
-	if (!path_s) return 0;
+	if (!path_s) return RP_NULL;
 
 	reply = rcall(root, "fs_find -L %s", path_s);
 	free(path_s);
 
 	if (!reply) {
 		errno = ENOSYS;
-		return 0;
+		return RP_NULL;
 	}
 
 	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nfound"))	errno = ENOENT;
-		else if (!strcmp(reply, "! denied"))	errno = EACCES;
-		else if (!strcmp(reply, "! nosys"))		errno = ENOSYS;
-		else if (!strcmp(reply, "! notdir"))	errno = ENOTDIR;
-		else 									errno = EUNK;
+		if      (!strcmp(reply, "! nfound")) errno = ENOENT;
+		else if (!strcmp(reply, "! denied")) errno = EACCES;
+		else if (!strcmp(reply, "! nosys"))  errno = ENOSYS;
+		else if (!strcmp(reply, "! notdir")) errno = ENOTDIR;
+		else                                 errno = EUNK;
 		free(reply);
-		return 0;
+		return RP_NULL;
 	}
 
+	// check for redirects
 	if (reply[0] == '>' && reply[1] == '>' && reply[2] == ' ' && reply[3] == '@') {
+
+		// recurse
 		rp = fs_find(&reply[3]);
 		free(reply);
 		return rp;

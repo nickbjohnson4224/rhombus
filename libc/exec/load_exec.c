@@ -44,7 +44,7 @@ void *load_exec(const char *name) {
 	}
 	fd = fs_find(path);
 
-	if (!fd || !rp_checktype(fd, "file")) {
+	if (!fd || !checktype_rp(fd, "file")) {
 		/* file not found */
 		return NULL;
 	}

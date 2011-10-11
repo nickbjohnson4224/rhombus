@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef MATH_H
-#define MATH_H
+#ifndef __RLIBC_MATH_H
+#define __RLIBC_MATH_H
 
 #undef __GNUC__
 
@@ -145,6 +145,4 @@ float       tanhf (float x);
 double      tanh  (double x);
 long double tanhl (long double x);
 
-/* GCC builtin math functions ***********************************************/
-
-#endif/*MATH_H*/
+#endif/*__RLIBC_MATH_H*/

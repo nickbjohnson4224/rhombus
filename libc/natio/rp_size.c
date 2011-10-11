@@ -17,71 +17,46 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <natio.h>
 #include <errno.h>
 
 /*****************************************************************************
- * fs_find
+ * rp_size
  *
- * Finds the robject with the given path <path> if it exists and returns a
- * robject pointer to it. If it does not exist, this function returns RP_NULL.
+ * Returns the file size of <file> in bytes. If this value is zero, the file
+ * may not exist, be the wrong type, or be a character device. checktype can 
+ * be used to differentiate between these cases.
  */
 
-rp_t fs_find(const char *path) {
-	uint64_t rp;
-	uint64_t root;
+off_t rp_size(rp_t file) {
+	uint32_t size0, size1;
+	uint64_t size;
 	char *reply;
-	char *path_s;
 
-	// if path is NULL, return NULL
-	if (!path) {
-		return RP_NULL;
+	if (!file) {
+		return 0;
 	}
 
-	// if preceeded by a resource pointer, use that as root and strip it
-	if (path[0] == '@') {
-		root = ator(path);
-		while (*path != '/' && *path) path++;
-	}
-	else {
-		root = fs_root;
-	}
-
-	// simply return root if path is nonexistent
-	if (path[0] == '\0' || (path[0] == '/' && path[1] == '\0')) {
-		return root;
-	}
-
-	path_s = path_simplify(path);
-	if (!path_s) return RP_NULL;
-
-	reply = rcall(root, "find %s", path_s);
-	free(path_s);
+	reply = rcall(file, "size");
 
 	if (!reply) {
 		errno = ENOSYS;
-		return RP_NULL;
+		return 0;
 	}
 
 	if (reply[0] == '!') {
 		if      (!strcmp(reply, "! nfound")) errno = ENOENT;
-		else if (!strcmp(reply, "! denied")) errno = EACCES;
 		else if (!strcmp(reply, "! nosys"))  errno = ENOSYS;
-		else if (!strcmp(reply, "! notdir")) errno = ENOTDIR;
+		else if (!strcmp(reply, "! denied")) errno = EACCES;
 		else                                 errno = EUNK;
 		free(reply);
-		return RP_NULL;
+		return 0;
 	}
 
-	if (reply[0] == '>' && reply[1] == '>' && reply[2] == ' ') {
-		rp = fs_find(&reply[3]);
-		free(reply);
-		return rp;
-	}	
-
-	rp = ator(reply);
+	size0 = 0;
+	sscanf(reply, "%u:%u", &size0, &size1);
+	size = size1 | (uint64_t) size0 << 32;
 	free(reply);
 
-	return rp;
+	return size;
 }

@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef PACK_H
-#define PACK_H
+#ifndef __RLIBC_PACK_H
+#define __RLIBC_PACK_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -50,4 +50,4 @@ void  __pack_add  (uint32_t key, const void *data, size_t size);
 void  __pack_save (void);
 void *__pack_load (uint32_t key, size_t *size);
 
-#endif/*PACK_H*/
+#endif/*__RLIBC_PACK_H*/

@@ -23,45 +23,10 @@
 /*****************************************************************************
  * fs_list
  *
- * Gives the name of the entry of number <entry> in the directory <dir>.
- * Returns a copy of that string on success, NULL on failure.
+ * List the contents of the directory <dir>. On success, a tab-separated list
+ * of directory entry names is returned; on failure, NULL is returned.
  */
 
-char *rp_list(uint64_t dir) {
-	char *reply;
-
-	reply = rcall(dir, "list");
-	
-	if (!reply) {
-		return strdup("");
-	}
-
-	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! denied"))	errno = EACCES;
-		else if (!strcmp(reply, "! nfound"))	errno = ENOENT;
-		else if (!strcmp(reply, "! nosys"))		errno = ENOSYS;
-		else if (!strcmp(reply, "! type"))		errno = ENOTDIR;
-		else									errno = EUNK;
-		free(reply);
-		return NULL;
-	}
-	
-	return reply;
-}
-
 char *fs_list(const char *path) {
-	uint64_t dir;
-
-	if (path) {
-		dir = fs_find(path);
-
-		if (!dir) {
-			return NULL;
-		}
-	}
-	else {
-		dir = fs_root;
-	}
-
-	return rp_list(dir);
+	return rp_list(fs_find(path));
 }

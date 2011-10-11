@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ABI_H
-#define ABI_H
+#ifndef __RLIBC_ABI_H
+#define __RLIBC_ABI_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -115,4 +115,4 @@ int         _keys(uint32_t operation, uint32_t value, uint32_t target, uint64_t 
 #define KEYS_DELETE	3
 #define KETS_RECALL	4
 
-#endif/*ABI_H*/
+#endif/*__RLIBC_ABI_H*/

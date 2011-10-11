@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef PATH_H
-#define PATH_H
+#ifndef __RLIBC_PATH_H
+#define __RLIBC_PATH_H
 
 #define PATH_SEP '/'
 
@@ -37,4 +37,4 @@ char *path_name  (const char *path);
 
 char *path_simplify(const char *path);
 
-#endif/*PATH_H*/
+#endif/*__RLIBC_PATH_H*/

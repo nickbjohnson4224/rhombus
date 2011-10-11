@@ -21,24 +21,25 @@
 #include <errno.h>
 
 /*****************************************************************************
- * fs_setperm
+ * getaccess_rp
  *
- * Sets the permissions of the filesystem object <fobj> to <perm> for user
- * <user>. Returns zero on success, nonzero on error.
+ * Returns the access bitmap of the robject <rp> that applies to the UID
+ * <user>. Returns zero on error.
  */
 
-int rp_setperm(uint64_t fobj, uint32_t user, uint32_t perm) {
+uint8_t getaccess_rp(rp_t rp, uint32_t user) {
+	uint8_t access;
 	char *reply;
 
-	if (!fobj) {
-		return 1;
+	if (!rp) {
+		return 0;
 	}
 
-	reply = rcall(fobj, "set-access %d %d", user, perm);
+	reply = rcall(rp, "get-access %d", user);
 
 	if (!reply) {
 		errno = ENOSYS;
-		return 1;
+		return 0;
 	}
 
 	if (reply[0] == '!') {
@@ -47,17 +48,14 @@ int rp_setperm(uint64_t fobj, uint32_t user, uint32_t perm) {
 		else if (!strcmp(reply, "! nosys"))  errno = ENOSYS;
 		else                                 errno = EUNK;
 		free(reply);
-		return 1;
+		return 0;
 	}
 	else {
 		errno = 0;
 	}
 
+	access = atoi(reply);
 	free(reply);
 
-	return 0;
-}
-
-int fs_setperm(const char *path, uint32_t user, uint32_t perm) {
-	return rp_setperm(fs_find(path), user, perm);
+	return access;
 }

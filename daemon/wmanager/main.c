@@ -398,8 +398,8 @@ int main(int argc, char **argv) {
 	sscanf(rcall(vgafd, "getmode"), "%i %i", &width, &height);
 	resize_screen(width, height);
 
-	mousefd = fs_open("/dev/mouse");
-	kbdfd   = fs_open("/dev/kbd");
+	mousefd = fs_find("/dev/mouse");
+	kbdfd   = fs_find("/dev/kbd");
 	event_subscribe(mousefd);
 	event_subscribe(kbdfd);
 	event_subscribe(vgafd);

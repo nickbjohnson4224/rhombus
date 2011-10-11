@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,47 +21,31 @@
 #include <errno.h>
 
 /*****************************************************************************
- * fs_cons
+ * rp_plink
  *
- * Attempts to create a new filesystem object of type <type> at the path 
- * <path>. Returns a resource pointer to the new resource on success, RP_NULL 
- * on failure.
- *
- * Notes:
- *
- * <type> should only be "file", "dir", or "link", unless driver intimate
- * driver details are known.
+ * Sets the value of the symbolic link <rp> to the path <link_path> from the
+ * robject pointer <link_rp>. Returns zero on success, nonzero on error.
  */
 
-rp_t fs_cons(const char *path, const char *type) {
-	char *dirname;
-	char *name;
-	rp_t dir;
-	rp_t rp;
+int rp_plink(rp_t rp, rp_t link_rp, const char *link_path) {
+	char *link_path1;
+	int err;
 
-	// check for existing entries
-	if (fs_find(path)) {
-		errno = EEXIST;
+	if (link_rp && link_path) {
+		link_path1 = saprintf("%r/%s", link_rp, link_path);
+	}
+	else if (link_path) {
+		link_path1 = strdup(link_path);
+	}
+	else if (link_rp) {
+		link_path1 = rtoa(link_rp);
+	}
+	else {
 		return 1;
 	}
 
-	// find parent directory
-	dirname = path_parent(path);
-	dir = fs_find(dirname);
-	free(dirname);
-	if (!dir) return RP_NULL;
+	err = rp_slink(rp, link_path1);
+	free(link_path1);
 
-	// construct new robject
-	rp = rp_cons(dir, type);
-	if (!rp) return RP_NULL;
-	
-	// add to directory
-	name = path_name(path);
-	if (rp_link(dir, name, rp)) {
-		free(name);
-		return RP_NULL;
-	}
-
-	free(name);
-	return rp;
+	return err;
 }

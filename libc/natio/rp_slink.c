@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,40 +21,31 @@
 #include <errno.h>
 
 /*****************************************************************************
- * rp_type
+ * rp_slink
  *
- * Returns the file type of <file> on success, zero on error.
+ * Sets the value of the symbolic link <rp> to the path <link>. Returns zero 
+ * on success, nonzero on error.
  */
 
-bool rp_checktype(rp_t rp, const char *type) {
+int rp_slink(uint64_t rp, const char *link) {
 	char *reply;
-	bool is_type;
-	
-	if (!rp) {
-		return false;
-	}
 
-	reply = rcall(rp, "type");
+	reply = rcall(rp, "set-link %s", link);
 
 	if (!reply) {
 		errno = ENOSYS;
-		return false;
+		return 1;
 	}
 
 	if (reply[0] == '!') {
 		if      (!strcmp(reply, "! nfound")) errno = ENOENT;
-		else if (!strcmp(reply, "! nosys"))  errno = ENOSYS;
+		else if (!strcmp(reply, "! denied")) errno = EACCES;
+		else if (!strcmp(reply, "! type"))   errno = EINVAL;
 		else                                 errno = EUNK;
 		free(reply);
-		return false;
+		return 1;
 	}
 
-	is_type = strstr(reply, type) ? true : false;
 	free(reply);
-
-	return is_type;
-}
-
-bool fs_checktype(const char *path, const char *type) {
-	return rp_checktype(fs_find(path), type);
+	return 0;
 }

@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ELF_H
-#define ELF_H
+#ifndef __RLIBC_ELF_H
+#define __RLIBC_ELF_H
 
 #include <stdint.h>
 
@@ -166,4 +166,4 @@ struct elf32_phdr {
 #define PF_W	0x2
 #define PF_X	0x4
 
-#endif/*ELF_H*/
+#endif/*__RLIBC_ELF_H*/

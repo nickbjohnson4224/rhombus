@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef PROC_H
-#define PROC_H
+#ifndef __RLIBC_PROC_H
+#define __RLIBC_PROC_H
 
 #include <abi.h>
 
@@ -74,4 +74,4 @@ int      setname(const char *name);
 char    *getname(uint32_t pid);
 char    *getname_s();
 
-#endif/*PROC_H*/
+#endif/*__RLIBC_PROC_H*/

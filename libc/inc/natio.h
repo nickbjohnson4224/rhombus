@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef NATIO_H
-#define NATIO_H
+#ifndef __RLIBC_NATIO_H
+#define __RLIBC_NATIO_H
 
 #include <robject.h>
 #include <stdbool.h>
@@ -35,26 +35,18 @@ int    sync (rp_t rp);
 int    reset(rp_t rp);
 int    share(rp_t rp, void *buf, size_t size, off_t offset, int prot);
 
-uint64_t rp_cons (rp_t driver, const char *type);
-uint64_t rp_size (rp_t rp);
-int      rp_open (rp_t rp);
-int      rp_close(rp_t rp);
-
-/* resource type system *****************************************************/
-
-bool fs_checktype(const char *path, const char *type);
-bool rp_checktype(rp_t rp, const char *type);
+rp_t   rp_cons(rp_t rp, const char *type);
+off_t  rp_size(rp_t rp);
 
 /* filesystem operations ****************************************************/
 
-extern uint64_t fs_root;
+extern rp_t fs_root;
 
 rp_t  fs_find (const char *path);
 rp_t  fs_lfind(const char *path);
 rp_t  fs_cons (const char *path, const char *type);
 char *fs_list (const char *path);
-rp_t  fs_size (const char *path);
-rp_t  fs_open (const char *path);
+off_t fs_size (const char *path);
 
 char *rp_list (rp_t dir);
 
@@ -66,11 +58,7 @@ char *rp_list (rp_t dir);
  * Hard links are simply directory entries, and are used for all directories
  * and files. Because of this, hard links are indistinguishable from files.
  * All metadata of a file is shared between its hard links, except for its
- * position in the VFS. Files may have an unlimited number of hard links, but
- * directories may only have one, to prevent a variety of problems. If you
- * want to link directories, use symbolic links. Once a file or directory has
- * no hard links, it is typically freed. Use fs_link to create hard links and
- * fs_ulink to remove them.
+ * position in the VFS.
  *
  * Symbolic links are redirections to a specified path. Because paths may
  * contain resource pointers, symbolic links may be used like UNIX
@@ -89,50 +77,46 @@ int rp_slink(rp_t rp, const char *link);
 int rp_plink(rp_t rp, rp_t link_rp, const char *link_path);
 int rp_link (rp_t dir, const char *name, rp_t link);
 
+/* robject type system ******************************************************/
+
+bool checktype   (const char *path, const char *type);
+bool checktype_rp(rp_t rp, const char *type);
+
 /*****************************************************************************
  * access bitmap
  *
  * The following flags correspond to bits that may be set in the access
  * bitmap. Permissions can be assigned on a per-user basis.
  *
- * ACCS_READ
+ * ACCS_READ  - 0x1
  *
- * This flag allows read access. For directories, this means finding and 
- * listing. For files, this means reading file contents.
+ * This flag allows read access. For directories and links, this means 
+ * finding and listing. For files, this means reading file contents.
  *
- * ACCS_WRITE
+ * ACCS_WRITE - 0x2
  *
  * This flag allows write access. For directories, this means the creation and
  * deletion of hard links. For files, this means writing, clearing, and 
  * deleting files/file contents, as well as requesting file synchronization.
  * 
- * ACCS_ALTER
+ * ACCS_ALTER - 0x3
  *
  * This flag allows the access bitmap to be modified. Some drivers simply
  * do not allow certain operations (usually writing, if the filesystem is
  * read-only) and this does not ensure that the permission bitmap will 
  * actually be modified as specified.
  *
- * These three flags are guaranteed to be implemented by all drivers, but the
- * access bitmap is in fact 8 bits wide. These additional bits may be used
- * for any driver-specific purpose, but should generally be ignored by user
- * processes.
+ * These three flags are guaranteed to be implemented by all drivers.
  */
-
-uint8_t getaccess(const char *path, uint32_t user);
-void    setaccess(const char *path, uint32_t user, uint8_t access);
-
-uint8_t rp_getaccess(rp_t rp, uint32_t user);
-void    rp_setaccess(rp_t rp, uint32_t user, uint8_t access);
-
-uint32_t fs_getperm(const char *path, uint32_t user);
-int      fs_setperm(const char *path, uint32_t user, uint32_t perm);
-
-uint32_t rp_getperm(rp_t rp, uint32_t user);
-int      rp_setperm(rp_t rp, uint32_t user, uint32_t perm);
 
 #define ACCS_READ	0x01
 #define ACCS_WRITE	0x02
 #define ACCS_ALTER	0x04
 
-#endif/*NATIO_H*/
+uint8_t getaccess   (const char *path, uint32_t user);
+uint8_t getaccess_rp(rp_t rp, uint32_t user);
+
+int     setaccess   (const char *path, uint32_t user, uint8_t access);
+int     setaccess_rp(rp_t rp, uint32_t user, uint8_t access);
+
+#endif/*__RLIBC_NATIO_H*/

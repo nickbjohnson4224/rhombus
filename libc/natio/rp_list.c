@@ -17,71 +17,35 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <natio.h>
 #include <errno.h>
 
 /*****************************************************************************
- * fs_find
+ * rp_list
  *
- * Finds the robject with the given path <path> if it exists and returns a
- * robject pointer to it. If it does not exist, this function returns RP_NULL.
+ * List the contents of the directory <dir>. On success, a tab-separated list
+ * of directory entry names is returned; on failure, NULL is returned.
  */
 
-rp_t fs_find(const char *path) {
-	uint64_t rp;
-	uint64_t root;
+char *rp_list(rp_t dir) {
 	char *reply;
-	char *path_s;
 
-	// if path is NULL, return NULL
-	if (!path) {
-		return RP_NULL;
-	}
-
-	// if preceeded by a resource pointer, use that as root and strip it
-	if (path[0] == '@') {
-		root = ator(path);
-		while (*path != '/' && *path) path++;
-	}
-	else {
-		root = fs_root;
-	}
-
-	// simply return root if path is nonexistent
-	if (path[0] == '\0' || (path[0] == '/' && path[1] == '\0')) {
-		return root;
-	}
-
-	path_s = path_simplify(path);
-	if (!path_s) return RP_NULL;
-
-	reply = rcall(root, "find %s", path_s);
-	free(path_s);
-
+	reply = rcall(dir, "list");
+	
 	if (!reply) {
 		errno = ENOSYS;
-		return RP_NULL;
+		return NULL;
 	}
 
 	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nfound")) errno = ENOENT;
-		else if (!strcmp(reply, "! denied")) errno = EACCES;
+		if      (!strcmp(reply, "! denied")) errno = EACCES;
+		else if (!strcmp(reply, "! nfound")) errno = ENOENT;
 		else if (!strcmp(reply, "! nosys"))  errno = ENOSYS;
-		else if (!strcmp(reply, "! notdir")) errno = ENOTDIR;
+		else if (!strcmp(reply, "! type"))   errno = ENOTDIR;
 		else                                 errno = EUNK;
 		free(reply);
-		return RP_NULL;
+		return NULL;
 	}
-
-	if (reply[0] == '>' && reply[1] == '>' && reply[2] == ' ') {
-		rp = fs_find(&reply[3]);
-		free(reply);
-		return rp;
-	}	
-
-	rp = ator(reply);
-	free(reply);
-
-	return rp;
+	
+	return reply;
 }

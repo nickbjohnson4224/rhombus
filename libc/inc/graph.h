@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GRAPH_H
-#define GRAPH_H
+#ifndef __RLIBC_GRAPH_H
+#define __RLIBC_GRAPH_H
 
 #include <stdint.h>
 #include <mutex.h>
@@ -109,4 +109,4 @@ uint32_t  *fb_getbmp(struct fb *fb);
 int        fb_setbmp(struct fb *fb, uint32_t *bitmap);
 int		   fb_resize(struct fb *fb, int xdim, int ydim);
 
-#endif/*GRAPH_H*/
+#endif/*__RLIBC_GRAPH_H*/

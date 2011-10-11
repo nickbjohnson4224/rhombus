@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ISO646_H
-#define ISO646_H
+#ifndef __RLIBC_ISO646_H
+#define __RLIBC_ISO646_H
 
 #define and 	&&
 #define and_eq 	&=
@@ -29,4 +29,4 @@
 #define xor		^
 #define xor_eq	^=
 
-#endif/*ISO646_H*/
+#endif/*__RLIBC_ISO646_H*/

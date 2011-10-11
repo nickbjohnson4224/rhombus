@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ARCH_H
-#define ARCH_H
+#ifndef __RLIBC_ARCH_H
+#define __RLIBC_ARCH_H
 
 /* architecture *******************************************************/
 
@@ -55,4 +55,4 @@
 	#define KSPACE 	0xF0000000	/* Kernel space */
 #endif
 
-#endif/*ARCH_H*/
+#endif/*__RLIBC_ARCH_H*/

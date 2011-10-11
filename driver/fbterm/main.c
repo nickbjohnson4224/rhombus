@@ -68,7 +68,9 @@ char *fbterm_rcall_set_fgjob(struct robject *self, rp_t source, int argc, char *
 }
 
 char *fbterm_rcall_clear(struct robject *self, rp_t source, int argc, char **argv) {
+
 	fbterm_clear();
+
 	return strdup("T");
 }
 
@@ -160,8 +162,8 @@ int main(int argc, char **argv) {
 
 	// set up screen
 	if (argc >= 3) {
-		kbd_dev = fs_open(argv[1]);
-		fb_dev  = fs_open(argv[2]);
+		kbd_dev = fs_find(argv[1]);
+		fb_dev  = fs_find(argv[2]);
 
 		if (!kbd_dev) {
 			fprintf(stderr, "%s: %s: keyboard not found\n", argv[0], argv[1]);
@@ -188,6 +190,8 @@ int main(int argc, char **argv) {
 	fb_getmode(fb, &w, &h);
 	screen_resize(w, h);
 	screen_flip();
+
+	// listen to graphics events
 	event_subscribe(fb_dev);
 	robject_set_event_hook(term, "graph", fbterm_graph_event);
 
@@ -195,8 +199,8 @@ int main(int argc, char **argv) {
 	event_subscribe(kbd_dev);
 	robject_set_event_hook(term, "key", fbterm_key_event);
 
-	robject_set_call(term, "clear", fbterm_rcall_clear);
-	robject_set_call(term, "set_fgjob", fbterm_rcall_set_fgjob);
+	robject_set_call(term, "clear",       fbterm_rcall_clear);
+	robject_set_call(term, "set_fgjob",   fbterm_rcall_set_fgjob);
 	robject_set_call(term, "set_fgcolor", fbterm_rcall_set_fgcolor);
 	robject_set_call(term, "set_bgcolor", fbterm_rcall_set_bgcolor);
 	rdi_global_read_hook = fbterm_read;

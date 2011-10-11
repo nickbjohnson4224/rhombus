@@ -29,27 +29,27 @@
 
 FILE *fopen(const char *path, const char *mode) {
 	uint64_t fd;
-	uint8_t perm;
+	uint8_t accs;
 	FILE *stream;
 
-	/* check mode */
+	// check mode
 	if (mode[0] != 'a' && mode[0] != 'w' && mode[0] != 'r') {
 		errno = EINVAL;
 		return NULL;
 	}
 
-	/* attempt to find the file */
+	// attempt to find the file
 	fd = fs_find(path);
 
 	/* check if the object is a directory */
-	if (fd && rp_checktype(fd, "dir")) {
+	if (fd && checktype_rp(fd, "dir")) {
 		errno = EISDIR;
 		return NULL;
 	}
 
 	if (!fd) {
 
-		/* create the file */
+		// create the file
 		if (mode[0] == 'w' || mode[0] == 'a') {
 			fd = fs_cons(path, "file");
 			if (!fd) {
@@ -62,33 +62,30 @@ FILE *fopen(const char *path, const char *mode) {
 		}
 	}
 
-	perm = rp_getperm(fd, getuser(getpid()));
+	accs = getaccess_rp(fd, getuser(getpid()));
 
-	/* check read permissions */
+	// check read permissions
 	if (mode[0] == 'r' || mode[1] == '+') {
-		if ((perm & ACCS_READ) == 0) {
+		if ((accs & ACCS_READ) == 0) {
 			errno = EACCES;
 			return NULL;
 		}
 	}
 
-	/* check write permissions */
+	// check write permissions
 	if (mode[0] == 'w' || mode[0] == 'a' || mode[1] == '+') {
-		if ((perm & ACCS_WRITE) == 0) {
+		if ((accs & ACCS_WRITE) == 0) {
 			errno = EACCES;
 			return NULL;
 		}
 	}
 
-	/* set file as open */
-	rp_open(fd);
-
-	/* reset the file contents */
+	// reset (erase) the file contents
 	if (mode[0] == 'w') {
 		reset(fd);
 	}
 
-	/* open a stream on the file */
+	// open a stream on the file
 	stream = malloc(sizeof(FILE));
 
 	if (!stream) {
@@ -96,6 +93,7 @@ FILE *fopen(const char *path, const char *mode) {
 		return NULL;
 	}
 
+	// set up stream structure
 	stream->fd       = fd;
 	stream->mutex    = false;
 	stream->position = 0;
@@ -110,7 +108,7 @@ FILE *fopen(const char *path, const char *mode) {
 		stream->flags |= FILE_WRITE;
 	}
 
-	/* position the stream properly */
+	// position the stream properly
 	if (mode[0] == 'a' && mode[1] != '+') {
 		fseek(stream, 0, SEEK_END);
 	}

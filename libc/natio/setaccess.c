@@ -21,47 +21,12 @@
 #include <errno.h>
 
 /*****************************************************************************
- * fs_cons
+ * setaccess
  *
- * Attempts to create a new filesystem object of type <type> at the path 
- * <path>. Returns a resource pointer to the new resource on success, RP_NULL 
- * on failure.
- *
- * Notes:
- *
- * <type> should only be "file", "dir", or "link", unless driver intimate
- * driver details are known.
+ * Set the access bitmap of the robject at <path> for the UID <user> to 
+ * <access>. Returns zero on success, nonzero on error.
  */
 
-rp_t fs_cons(const char *path, const char *type) {
-	char *dirname;
-	char *name;
-	rp_t dir;
-	rp_t rp;
-
-	// check for existing entries
-	if (fs_find(path)) {
-		errno = EEXIST;
-		return 1;
-	}
-
-	// find parent directory
-	dirname = path_parent(path);
-	dir = fs_find(dirname);
-	free(dirname);
-	if (!dir) return RP_NULL;
-
-	// construct new robject
-	rp = rp_cons(dir, type);
-	if (!rp) return RP_NULL;
-	
-	// add to directory
-	name = path_name(path);
-	if (rp_link(dir, name, rp)) {
-		free(name);
-		return RP_NULL;
-	}
-
-	free(name);
-	return rp;
+int setaccess(const char *path, uint32_t user, uint8_t access) {
+	return setaccess_rp(fs_find(path), user, access);
 }

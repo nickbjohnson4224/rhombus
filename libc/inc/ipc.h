@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef IPC_H
-#define IPC_H
+#ifndef __RLIBC_IPC_H
+#define __RLIBC_IPC_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -91,4 +91,4 @@ int msendv(uint64_t target, uint8_t port, void *data, size_t length);
 
 void when(uint8_t port, void (*handler)(struct msg *msg));
 
-#endif/*IPC_H*/
+#endif/*__RLIBC_IPC_H*/

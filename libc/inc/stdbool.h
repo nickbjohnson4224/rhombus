@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef STDBOOL_H
-#define STDBOOL_H
+#ifndef __RLIBC_STDBOOL_H
+#define __RLIBC_STDBOOL_H
 
 #define __bool_true_false_are_defined 1
 
@@ -25,4 +25,4 @@ typedef uint8_t 		bool;
 #define true 1
 #define false 0
 
-#endif/*STDBOOL_H*/
+#endif/*__RLIBC_STDBOOL_H*/
