@@ -205,6 +205,9 @@ rcall_t robject_get_event_hook(struct robject *ro, const char *type);
 void    robject_add_subscriber(struct robject *ro, rp_t target);
 void    robject_del_subscriber(struct robject *ro, rp_t target);
 
+// reference counting
+uint32_t robject_get_refc(struct robject *ro);
+
 // basic interface
 void  robject_broadcast_event(struct robject *ro, const char *event);
 void  robject_event(struct robject *ro, rp_t source, const char *event);

@@ -16,23 +16,17 @@
 
 section .text
 
-global _keys:function _keys.end-_keys
+global _rtab:function _rtab.end-_rtab
 
-_keys:
+_rtab:
 	push ebx
-	push edi
-	push esi
 
-	mov ebx, [esp+16]
-	mov ecx, [esp+20]
-	mov edx, [esp+24]
-	mov edi, [esp+28]
-	mov esi, [esp+32]
+	mov edx, [esp+8]
+	mov ebx, [esp+12]
+	mov ecx, [esp+16]
 
 	int 0x54
 
-	pop esi
-	pop edi
 	pop ebx
 	ret
 .end:

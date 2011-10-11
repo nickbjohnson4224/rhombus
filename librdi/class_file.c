@@ -30,7 +30,6 @@ rdi_write_hook rdi_global_write_hook;
 rdi_mmap_hook  rdi_global_mmap_hook;
 rdi_share_hook rdi_global_share_hook;
 
-// XXX SEC - does not check read access
 static void __rdi_read (struct msg *msg) {
 	rdi_read_hook read_hook;
 	struct robject *file;
@@ -41,7 +40,7 @@ static void __rdi_read (struct msg *msg) {
 	uint32_t size;
 
 	if (msg->length != sizeof(uint64_t) + sizeof(uint32_t)) {
-		/* message is of the wrong size */
+		// message is of the wrong size
 		merror(msg);
 		return;
 	}
@@ -50,7 +49,7 @@ static void __rdi_read (struct msg *msg) {
 
 	file = robject_get(index);
 	if (!file) {
-		/* there is no corresponding robject */
+		// there is no corresponding robject
 		merror(msg);
 		return;
 	}
@@ -62,30 +61,33 @@ static void __rdi_read (struct msg *msg) {
 	}
 
 	if (!robject_check_type(file, "file")) {
-		/* robject is not a file */
+		// robject is not a file
 		merror(msg);
 		return;
 	}
 	
 	if (rdi_global_read_hook) {
-		/* use global hook if defined */
+		// use global hook if defined
 		read_hook = rdi_global_read_hook;
 	}
 	else {
-		/* default to file-specific hook */
+		// default to file-specific hook
 		read_hook = (rdi_read_hook) robject_data(file, "read");
 		if (!read_hook) {
-			/* no hook; fail */
+			// no hook; fail
 			merror(msg);
 			return;
 		}
 	}
 
-	/* read parameters */
+	// add to robject table
+	_rtab(RTAB_GRANT, RP_INDEX(msg->target), RP_PID(msg->source));
+
+	// read parameter
 	offset = ((uint64_t*) msg->data)[0];
 	size   = ((uint32_t*) msg->data)[2];
 
-	/* construct reply message containing buffer */
+	// construct reply message containing buffer
 	reply = aalloc(sizeof(struct msg) + size, PAGESZ);
 	reply->source = msg->target;
 	reply->target = msg->source;
@@ -107,14 +109,14 @@ static void __rdi_write(struct msg *msg) {
 	uint64_t offset;
 
 	if (msg->length < sizeof(uint64_t)) {
-		/* message is of the wrong size */
+		// message is of the wrong size
 		merror(msg);
 		return;
 	}
 
 	file = robject_get(RP_INDEX(msg->target));
 	if (!file) {
-		/* there is no corresponding robject */
+		// there is no corresponding robject
 		merror(msg);
 		return;
 	}
@@ -126,17 +128,17 @@ static void __rdi_write(struct msg *msg) {
 	}
 
 	if (!robject_check_type(file, "file")) {
-		/* robject is not a file */
+		// robject is not a file
 		merror(msg);
 		return;
 	}
 	
 	if (rdi_global_write_hook) {
-		/* use global hook if defined */
+		// use global hook if defined
 		write_hook = rdi_global_write_hook;
 	}
 	else {
-		/* default to file-specific hook */
+		// default to file-specific hook
 		write_hook = (rdi_write_hook) robject_data(file, "write");
 		if (!write_hook) {
 			/* no hook; fail */
@@ -145,7 +147,10 @@ static void __rdi_write(struct msg *msg) {
 		}
 	}
 
-	/* read parameter */
+	// add to robject table
+	_rtab(RTAB_GRANT, RP_INDEX(msg->target), RP_PID(msg->source));
+
+	// read parameter
 	offset = ((uint64_t*) msg->data)[0];
 
 	((uint32_t*) msg->data)[0] = write_hook(file, msg->source, 
@@ -183,6 +188,9 @@ static void __rdi_share(struct msg *msg) {
 		return;
 	}
 
+	// add to robject table
+	_rtab(RTAB_GRANT, RP_INDEX(msg->target), RP_PID(msg->source));
+
 	offset = ((uint64_t*) msg->data)[0];
 	pages = aalloc(msg->length - PAGESZ + sizeof(struct msg), PAGESZ);
 	page_self(&msg->data[PAGESZ - sizeof(struct msg)], pages, msg->length - PAGESZ + sizeof(struct msg));
@@ -214,6 +222,9 @@ static void __rdi_sync(struct msg *msg) {
 		return;
 	}
 
+	// add to robject table
+	_rtab(RTAB_GRANT, RP_INDEX(msg->target), RP_PID(msg->source));
+
 	free(robject_call(file, msg->source, "sync"));
 
 	merror(msg);
@@ -238,6 +249,9 @@ static void __rdi_reset(struct msg *msg) {
 		merror(msg);
 		return;
 	}
+
+	// add to robject table
+	_rtab(RTAB_GRANT, RP_INDEX(msg->target), RP_PID(msg->source));
 
 	free(robject_call(file, msg->source, "reset"));
 

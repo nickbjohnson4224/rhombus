@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <proc.h>
 #include <ipc.h>
+#include <abi.h>
 
 static char *__rcall_type(struct robject *self, rp_t src, int argc, char **argv) {
 	const char *type;
@@ -52,6 +53,17 @@ static char *__rcall_type(struct robject *self, rp_t src, int argc, char **argv)
 
 static char *__rcall_ping(struct robject *self, rp_t src, int argc, char **argv) {
 	return strdup("T");
+}
+
+static char *__rcall_open(struct robject *self, rp_t src, int argc, char **argv) {
+
+	_rtab(RTAB_GRANT, self->index, RP_PID(src));
+
+	return strdup("T");
+}
+
+static char *__rcall_refc(struct robject *self, rp_t src, int argc, char **argv) {	
+	return saprintf("%d", _rtab(RTAB_COUNT, self->index, getpid()));
 }
 
 static char *__rcall_name(struct robject *self, rp_t src, int argc, char **argv) {
@@ -186,6 +198,8 @@ void __robject_init(void) {
 	robject_set_call(robject_class_basic, "type", __rcall_type);
 	robject_set_call(robject_class_basic, "ping", __rcall_ping);
 	robject_set_call(robject_class_basic, "name", __rcall_name);
+	robject_set_call(robject_class_basic, "open", __rcall_open);
+	robject_set_call(robject_class_basic, "refc", __rcall_refc);
 
 	// create event class
 	robject_class_event = robject_cons(0, robject_class_basic);

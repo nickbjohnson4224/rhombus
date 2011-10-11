@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,37 +14,15 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
 #include <natio.h>
-#include <stdio.h>
-#include <mutex.h>
+#include <abi.h>
 
-/****************************************************************************
- * fclose - close a stream
+/*****************************************************************************
+ * rp_close
  *
- * The fclose() function flushes the stream pointed to by <stream> (writing 
- * any buffered output data using fflush()).
- *
- * Upon successful completion 0 is returned. Otherwise, EOF is returned. 
- * In either case further access (including another call to fclose()) to 
- * the stream results in undefined behavior.
+ * Inform the owner of <rp> that it is no longer being used by this process.
  */
 
-int fclose(FILE *stream) {
-
-	fflush(stream);
-	
-	mutex_spin(&stream->mutex);
-
-	if (stream->buffer) {
-		free(stream->buffer);
-	}
-
-	mutex_free(&stream->mutex);
-
-	rp_close(stream->fd);
-
-	free(stream);
-
-	return 0;
+void rp_close(rp_t rp) {	
+	_rtab(RTAB_CLOSE, RP_INDEX(rp), RP_PID(rp));
 }

@@ -141,6 +141,7 @@ static void _refc_set(uint64_t rp, uint32_t refc) {
 
 void rtab_free(struct process *proc) {
 	uint32_t i;
+	uint32_t refc;
 
 	// traverse table
 	for (i = 0; i < proc->rtab_count; i++) {
@@ -148,7 +149,10 @@ void rtab_free(struct process *proc) {
 		if (proc->rtab[i]) {
 
 			// decrement reference count for entry
-			_refc_set(proc->rtab[i], _refc_get(proc->rtab[i]) - 1);
+			refc = _refc_get(proc->rtab[i]);
+			if (refc > 0) {
+				_refc_set(proc->rtab[i], refc - 1);
+			}
 		}
 	}
 
@@ -165,6 +169,7 @@ void rtab_free(struct process *proc) {
  */
 
 void rtab_close(struct process *proc, uint64_t rp) {
+	uint32_t refc;
 	uint32_t i;
 
 	// find slot
@@ -173,7 +178,10 @@ void rtab_close(struct process *proc, uint64_t rp) {
 		if (proc->rtab[i] == rp) {
 			// found slot
 			proc->rtab[i] = 0;
-			_refc_set(rp, _refc_get(rp) - 1);
+			refc = _refc_get(rp);
+			if (refc > 0) {
+				_refc_set(rp, refc - 1);
+			}
 			return;
 		}
 	}

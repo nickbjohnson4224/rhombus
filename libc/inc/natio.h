@@ -35,8 +35,10 @@ int    sync (rp_t rp);
 int    reset(rp_t rp);
 int    share(rp_t rp, void *buf, size_t size, off_t offset, int prot);
 
-rp_t   rp_cons(rp_t rp, const char *type);
-off_t  rp_size(rp_t rp);
+rp_t   rp_cons (rp_t rp, const char *type);
+off_t  rp_size (rp_t rp);
+void   rp_close(rp_t rp);
+int    rp_open (rp_t rp);
 
 /* filesystem operations ****************************************************/
 
