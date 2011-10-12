@@ -219,7 +219,6 @@ void *robject_data (struct robject *ro, const char *field);
  */
 
 extern struct robject *robject_class_basic;
-extern struct robject *robject_class_event;
 
 /*****************************************************************************
  * Type System

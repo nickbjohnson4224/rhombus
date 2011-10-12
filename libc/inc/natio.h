@@ -90,18 +90,18 @@ bool checktype_rp(rp_t rp, const char *type);
  * The following flags correspond to bits that may be set in the access
  * bitmap. Permissions can be assigned on a per-user basis.
  *
- * ACCS_READ  - 0x1
+ * ACCS_READ  - 0x2
  *
  * This flag allows read access. For directories and links, this means 
  * finding and listing. For files, this means reading file contents.
  *
- * ACCS_WRITE - 0x2
+ * ACCS_WRITE - 0x4
  *
  * This flag allows write access. For directories, this means the creation and
  * deletion of hard links. For files, this means writing, clearing, and 
  * deleting files/file contents, as well as requesting file synchronization.
  * 
- * ACCS_ALTER - 0x3
+ * ACCS_ALTER - 0x8
  *
  * This flag allows the access bitmap to be modified. Some drivers simply
  * do not allow certain operations (usually writing, if the filesystem is
@@ -111,9 +111,10 @@ bool checktype_rp(rp_t rp, const char *type);
  * These three flags are guaranteed to be implemented by all drivers.
  */
 
-#define ACCS_READ	0x01
-#define ACCS_WRITE	0x02
-#define ACCS_ALTER	0x04
+#define ACCS_PING	0x01
+#define ACCS_READ	0x02
+#define ACCS_WRITE	0x04
+#define ACCS_ALTER	0x08
 
 uint8_t getaccess   (const char *path, uint32_t user);
 uint8_t getaccess_rp(rp_t rp, uint32_t user);

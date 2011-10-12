@@ -185,7 +185,6 @@ static void __event_handler(struct msg *msg) {
 struct robject *robject_root;
 
 struct robject *robject_class_basic;
-struct robject *robject_class_event;
 
 void __robject_init(void) {
 
@@ -200,15 +199,8 @@ void __robject_init(void) {
 	robject_set_call(robject_class_basic, "name", __rcall_name);
 	robject_set_call(robject_class_basic, "open", __rcall_open);
 	robject_set_call(robject_class_basic, "refc", __rcall_refc);
-
-	// create event class
-	robject_class_event = robject_cons(0, robject_class_basic);
-	
-	robject_set_data(robject_class_event, "type", (void*) "event");
-	robject_set_data(robject_class_event, "name", (void*) "RLIBC-class-event");
-	
-	robject_set_call(robject_class_event, "subscribe",   __rcall_subscribe);
-	robject_set_call(robject_class_event, "unsubscribe", __rcall_unsubscribe);
+	robject_set_call(robject_class_basic, "subscribe",   __rcall_subscribe);
+	robject_set_call(robject_class_basic, "unsubscribe", __rcall_unsubscribe);
 
 	// allocate root object
 	robject_root = robject_cons(0, robject_class_basic);
