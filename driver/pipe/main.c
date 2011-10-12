@@ -146,6 +146,8 @@ char *pipe_cons(struct robject *self, rp_t src, int argc, char **argv) {
 			pipe = pipe_new();
 			robject_set_data(new_r, "pipe", pipe);
 
+			_rtab(RTAB_GRANT, new_r->index, RP_PID(src));
+
 			return rtoa(RP_CONS(getpid(), new_r->index));
 		}
 

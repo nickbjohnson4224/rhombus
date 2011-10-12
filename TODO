@@ -58,7 +58,7 @@ For 0.9 Alpha:
 	- SYSCALL/SYSENTER capability
 
 - pipes and shell improvements
-	- pipe driver
+	+ pipe driver
 	- shell pipe support
 	- stdio buffering
 	- user/password manager

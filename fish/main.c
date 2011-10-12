@@ -23,12 +23,117 @@
 #include <proc.h>
 #include <ipc.h>
 
+int fish_cd(int argc, char **argv) {
+	char *path;
+
+	if (argc < 2) {
+		setenv("PWD", "/");
+		return 0;
+	}
+
+	path = path_simplify(argv[1]);
+
+	if (path && fs_find(path)) {
+		if (checktype(path, "dir")) {
+			setenv("PWD", path);
+		}
+		else {
+			fprintf(stderr, "%s: %s: not a directory\n", getname_s(), argv[1]);
+			free(path);
+			return 1;
+		}
+	}
+	else {
+		fprintf(stderr, "%s: %s: no such directory\n", getname_s(), argv[1]);
+		free(path);
+		return 1;
+	}
+
+	free(path);
+	return 0;
+}
+
+int fish_exec_bg(int argc, char **argv, FILE *in, FILE *out, FILE *err) {
+	char const **_argv;
+	int pid;
+
+	pid = fork();
+	if (pid < 0) {
+
+		if (in)  stdin  = in;
+		if (out) stdout = out;
+		if (err) stderr = err;
+
+		_argv = malloc(sizeof(char*) * (argc + 1));
+		memcpy(_argv, argv, sizeof(char*) * argc);
+		_argv[argc] = NULL;
+
+		if (execv(_argv[0], _argv)) {
+			if (errno == ENOENT) {
+				fprintf(stderr, "%s: %s: command not found\n", getname_s(), argv[0]);
+			}
+			else {
+				perror(argv[0]);
+			}
+			
+			abort();
+		}
+	}
+	
+	return 0;
+}
+
+int fish_exec_fg(int argc, char **argv, FILE *in, FILE *out, FILE *err) {
+	char const **_argv;
+	int pid;
+
+	pid = fork();
+	if (pid < 0) {
+		rcall(stdin->fd, "set_fgjob %d", getpid());
+
+		if (in)  stdin  = in;
+		if (out) stdout = out;
+		if (err) stderr = err;
+
+		_argv = malloc(sizeof(char*) * (argc + 1));
+		memcpy(_argv, argv, sizeof(char*) * argc);
+		_argv[argc] = NULL;
+
+		if (execv(_argv[0], _argv)) {
+			if (errno == ENOENT) {
+				fprintf(stderr, "%s: %s: command not found\n", getname_s(), argv[0]);
+			}
+			else {
+				perror(argv[0]);
+			}
+			
+			abort();
+		}
+	}
+	mwait(PORT_CHILD, RP_CONS(pid, 0));
+	rcall(stdin->fd, "set_fgjob %d", 0);
+	
+	return 0;
+}
+
+int fish_do(int argc, char **argv) {
+	
+	if (!strcmp(argv[0], "cd")) {
+		return fish_cd(argc, argv);
+	}
+
+	if (!strcmp(argv[argc-1], "&")) {
+		return fish_exec_bg(argc - 1, argv, NULL, NULL, NULL);
+	}
+	else {
+		return fish_exec_fg(argc, argv, NULL, NULL, NULL);
+	}
+}
+
 int main() {
 	char buffer[100];
 	size_t i, n;
-	int pid;
 	char *argv[100];
-	char *path;
 
 	setenv("PWD", "/");
 
@@ -51,45 +156,7 @@ int main() {
 			continue;
 		}
 
-		if (!strcmp(argv[0], "cd")) {
-			if (n < 2) {
-				setenv("PWD", "/");
-				continue;
-			}
-
-			path = path_simplify(argv[1]);
-
-			if (path && fs_find(path)) {
-				if (checktype(path, "dir")) {
-					setenv("PWD", path);
-				}
-				else {
-					fprintf(stderr, "%s: %s: not a directory\n", getname_s(), argv[1]);
-				}
-			}
-			else {
-				fprintf(stderr, "%s: %s: no such directory\n", getname_s(), argv[1]);
-			}
-			continue;
-		}
-
-		pid = fork();
-		if (pid < 0) {
-			rcall(stdin->fd, "set_fgjob %d", getpid());
-
-			if (execv(argv[0], (char const **) argv)) {
-				if (errno == ENOENT) {
-					fprintf(stderr, "%s: %s: command not found\n", getname_s(), argv[0]);
-				}
-				else {
-					perror(argv[0]);
-				}
-
-				abort();
-			}
-		}
-		mwait(PORT_CHILD, RP_CONS(pid, 0));
-		rcall(stdin->fd, "set_fgjob %d", 0);
+		fish_do(n, argv);
 	}
 
 	return 0;
