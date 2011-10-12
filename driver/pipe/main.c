@@ -76,13 +76,18 @@ static void pipe_putc(struct pipe *pipe, int datum) {
 	
 	node = malloc(sizeof(struct pipe_node));
 	node->datum = datum;
+	node->next = NULL;
 
 	mutex_spin(&pipe->mutex);
-	node->next = pipe->front;
-	pipe->front = node;
+	if (!pipe->back) {
+		pipe->back = node;
+		pipe->front = node;
+	}
+	else {
+		pipe->back->next = node;
+		pipe->back = node;
+	}
 	mutex_free(&pipe->mutex);
-
-	printf("_putc %c %x\n", datum, pipe->front);
 }
 
 size_t pipe_read(struct robject *self, rp_t source, uint8_t *buffer, size_t size, off_t offset) {
@@ -92,13 +97,14 @@ size_t pipe_read(struct robject *self, rp_t source, uint8_t *buffer, size_t size
 
 	pipe = robject_data(self, "pipe");
 
-	printf("pipe_read\n");
-
 	for (i = 0; i < size; i++) {
 		datum = pipe_getc(pipe);
 
 		while (datum == ERR_EMPTY) {
-			printf("empty\n");
+			if (robject_get_refc(self) <= 1) {
+				datum = ERR_EOF;
+				break;
+			}
 			sleep();
 			datum = pipe_getc(pipe);
 		}
@@ -119,8 +125,6 @@ size_t pipe_write(struct robject *self, rp_t source, uint8_t *buffer, size_t siz
 	size_t i;
 
 	pipe = robject_data(self, "pipe");
-
-	printf("pipe_write\n");
 	
 	for (i = 0; i < size; i++) {
 		pipe_putc(pipe, buffer[i]);
