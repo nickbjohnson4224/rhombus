@@ -75,6 +75,10 @@ For 0.9 Alpha:
 	- ext2 driver
 	- FAT32 driver
 
+- POSIXness
+	- start unistd.h as wrapper
+	- implement coreutils
+
 For 1.0 Beta:
 
 - CLI improvements

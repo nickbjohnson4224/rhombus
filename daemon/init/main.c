@@ -131,6 +131,12 @@ int main() {
 	file = tar_find(boot_image, "sbin/time");
 	fs_plink("/dev/time", start(file, argv), NULL);
 
+	/* Pipe Driver */
+	argv[0] = "pipe";
+	argv[1] = NULL;
+	file = tar_find(boot_image, "sbin/pipe");
+	fs_plink("/sys/pipe", start(file, argv), NULL);
+
 	setname("init");
 	
 	mwait(PORT_CHILD, 0);
