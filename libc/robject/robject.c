@@ -148,7 +148,3 @@ char *robject_call(struct robject *ro, rp_t source, const char *args) {
 void *robject_data(struct robject *ro, const char *field) {
 	return robject_get_data(ro, field);
 }
-
-uint32_t robject_get_refc(struct robject *ro) {
-	return _rtab(RTAB_COUNT, ro->index, getpid());
-}

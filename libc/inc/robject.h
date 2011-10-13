@@ -137,25 +137,6 @@ uint32_t robject_new_index(void);
  * Rhombus Object Operations
  */
 
-/* 
- * robject event storage internals
- */
-
-struct __robject_event_set {
-	struct __robject_event_set *next;
-	struct __robject_event_set *prev;
-	rp_t target;
-};
-
-struct __robject_event_set *__event_set_add(struct __robject_event_set *set, rp_t target);
-struct __robject_event_set *__event_set_del(struct __robject_event_set *set, rp_t target);
-void   __event_set_send(struct __robject_event_set *set, const char *value);
-void   __event_set_free(struct __robject_event_set *set);
-
-/*
- * robject definition
- */
-
 struct robject {
 	bool     mutex; // OPT - this should be a readers/writer lock
 	bool     driver_mutex;
@@ -183,9 +164,6 @@ void   *robject_get_data(struct robject *ro, const char *field);
 // event management
 void    robject_add_subscriber(struct robject *ro, rp_t target);
 void    robject_del_subscriber(struct robject *ro, rp_t target);
-
-// reference counting
-uint32_t robject_get_refc(struct robject *ro);
 
 // basic interface
 void  robject_event(struct robject *ro, const char *event);

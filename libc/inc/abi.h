@@ -87,7 +87,6 @@ uint64_t	_time(uint32_t selector);
 int         _proc(uint32_t pid, uint32_t selector, uint32_t value);
 int         _kill(uint32_t target, uint8_t signal);
 int         _name(char *name, uint32_t pid, uint32_t operation);
-int         _rtab(uint32_t operation, uint32_t index, uint32_t pid);
 
 #define GPID_SELF	0
 #define GPID_PARENT	1
@@ -106,9 +105,5 @@ int         _rtab(uint32_t operation, uint32_t index, uint32_t pid);
 #define PROC_WRITE_PPID	1
 #define PROC_READ_UID	2
 #define PROC_WRITE_UID	3
-
-#define RTAB_GRANT 0
-#define RTAB_CLOSE 1
-#define RTAB_COUNT 2
 
 #endif/*__RLIBC_ABI_H*/

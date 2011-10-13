@@ -31,8 +31,6 @@ static char *_open(struct robject *r, rp_t src, int argc, char **argv) {
 
 	if (!rdi_check_access(r, src, ACCS_READ)) return strdup("! denied");
 
-	_rtab(RTAB_GRANT, r->index, RP_PID(src));
-
 	return strdup("T");
 }
 

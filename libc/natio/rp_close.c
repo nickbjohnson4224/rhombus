@@ -23,6 +23,6 @@
  * Inform the owner of <rp> that it is no longer being used by this process.
  */
 
-void rp_close(rp_t rp) {	
-	_rtab(RTAB_CLOSE, RP_INDEX(rp), RP_PID(rp));
+void rp_close(rp_t rp) {
+//	_rtab(RTAB_CLOSE, RP_INDEX(rp), RP_PID(rp));
 }

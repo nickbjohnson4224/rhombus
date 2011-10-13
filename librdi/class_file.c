@@ -80,9 +80,6 @@ static void __rdi_read (struct msg *msg) {
 		}
 	}
 
-	// add to robject table
-	_rtab(RTAB_GRANT, RP_INDEX(msg->target), RP_PID(msg->source));
-
 	// read parameter
 	offset = ((uint64_t*) msg->data)[0];
 	size   = ((uint32_t*) msg->data)[2];
@@ -147,9 +144,6 @@ static void __rdi_write(struct msg *msg) {
 		}
 	}
 
-	// add to robject table
-	_rtab(RTAB_GRANT, RP_INDEX(msg->target), RP_PID(msg->source));
-
 	// read parameter
 	offset = ((uint64_t*) msg->data)[0];
 
@@ -188,9 +182,6 @@ static void __rdi_share(struct msg *msg) {
 		return;
 	}
 
-	// add to robject table
-	_rtab(RTAB_GRANT, RP_INDEX(msg->target), RP_PID(msg->source));
-
 	offset = ((uint64_t*) msg->data)[0];
 	pages = aalloc(msg->length - PAGESZ + sizeof(struct msg), PAGESZ);
 	page_self(&msg->data[PAGESZ - sizeof(struct msg)], pages, msg->length - PAGESZ + sizeof(struct msg));
@@ -222,9 +213,6 @@ static void __rdi_sync(struct msg *msg) {
 		return;
 	}
 
-	// add to robject table
-	_rtab(RTAB_GRANT, RP_INDEX(msg->target), RP_PID(msg->source));
-
 	free(robject_call(file, msg->source, "sync"));
 
 	merror(msg);
@@ -249,9 +237,6 @@ static void __rdi_reset(struct msg *msg) {
 		merror(msg);
 		return;
 	}
-
-	// add to robject table
-	_rtab(RTAB_GRANT, RP_INDEX(msg->target), RP_PID(msg->source));
 
 	free(robject_call(file, msg->source, "reset"));
 
