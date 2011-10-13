@@ -20,15 +20,13 @@
 #include <proc.h>
 #include <stdio.h>
 
-char *mouse_event(struct robject *self, uint64_t source, int argc, char **argv) {
+void mouse_event(rp_t source, int argc, char **argv) {
 	int i;
 
 	for (i = 0; i < argc; i++) {
 		printf("%s ", argv[i]);
 	}
 	printf("\n");
-
-	return NULL;
 }
 
 int main(int argc, char **argv) {
@@ -41,7 +39,7 @@ int main(int argc, char **argv) {
 	}
 
 	event_subscribe(mousefd);
-	robject_set_event_hook(robject_root, "mouse", mouse_event);
+	event_hook("mouse", mouse_event);
 
 	_done();
 	return 0;

@@ -126,7 +126,7 @@ void kbd_irq(struct msg *msg) {
 		case NUML: numlk = false; break;
 		default:
 			event = saprintf("key release %d\n", code);
-			robject_broadcast_event(keyboard, event);
+			robject_event(keyboard, event);
 			free(event);
 		}
 	}
@@ -137,7 +137,7 @@ void kbd_irq(struct msg *msg) {
 		case NUML: numlk = true; break;
 		default:
 			event = saprintf("key press %d\n", code);
-			robject_broadcast_event(keyboard, event);
+			robject_event(keyboard, event);
 			free(event);
 		}
 	}

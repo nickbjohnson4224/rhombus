@@ -14,11 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <struct.h>
 #include <stdlib.h>
 #include <string.h>
 #include <natio.h>
 #include <proc.h>
 #include <ipc.h>
+
+static struct s_table *event_table = NULL;
 
 /*****************************************************************************
  * event
@@ -63,5 +66,35 @@ int event_unsubscribe(rp_t rp) {
 	if (!reply) return 1;
 
 	free(reply);
+	return 0;
+}
+
+static void __event_handler(struct msg *msg) {
+	event_t hook;
+	char **argv;
+	int argc;
+
+	argv = strparse((const char*) msg->data, " ");
+	if (!argv) return;
+
+	for (argc = 0; argv[argc]; argc++);
+
+	hook = (event_t) (uintptr_t) s_table_get(event_table, argv[0]);
+
+	if (hook) {
+		hook(msg->source, argc, argv);
+	}
+
+	for (argc = 0; argv[argc]; argc++) free(argv[argc]);
+	free(argv);
+
+	free(msg);
+}
+
+int event_hook(const char *type, event_t hook) {
+	
+	event_table = s_table_set(event_table, type, (void*) (uintptr_t) hook);
+	when(PORT_EVENT, __event_handler);
+
 	return 0;
 }

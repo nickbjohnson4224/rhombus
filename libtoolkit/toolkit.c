@@ -32,20 +32,18 @@ static uint64_t wmanager;
 static struct attributes_list *theme_attributes;
 char *__rtk_theme_path;
 
-static char *toolkit_graph_event(struct robject *self, uint64_t source, int argc, char **argv) {
+static void toolkit_graph_event(rp_t source, int argc, char **argv) {
 	
-	if (source != wmanager) return NULL;
-	if (argc != 4) return NULL;
+	if (source != wmanager) return;
+	if (argc != 4) return;
 
 	if (!strcmp(argv[1], "resize")) {
 		__rtk_set_window_size(__rtk_window, atoi(argv[2]), atoi(argv[3]));
 	}
-
-	return NULL;
 }
 
-static char *toolkit_key_event(struct robject *self, uint64_t source, int argc, char **argv) {
-	if (source != wmanager) return NULL;
+static void toolkit_key_event(rp_t source, int argc, char **argv) {
+	if (source != wmanager) return;
 
 	if (!strcmp(argv[1], "press") && argc == 3) {
 		widget_event(__rtk_window->widget, "key_press", argc - 2, argv + 2);
@@ -55,12 +53,10 @@ static char *toolkit_key_event(struct robject *self, uint64_t source, int argc, 
 		widget_event(__rtk_window->widget, "key_release", argc - 2, argv + 2);
 		update_window(__rtk_window);
 	}
-
-	return NULL;
 }
 
-static char *toolkit_mouse_event(struct robject *self, uint64_t source, int argc, char **argv) {
-	if (source != wmanager) return NULL;
+static void toolkit_mouse_event(rp_t source, int argc, char **argv) {
+	if (source != wmanager) return;
 
 	if (!strcmp(argv[1], "delta") && argc == 4) {
 		widget_event(__rtk_window->widget, "mouse_move", argc - 2, argv + 2);
@@ -70,8 +66,6 @@ static char *toolkit_mouse_event(struct robject *self, uint64_t source, int argc
 		widget_event(__rtk_window->widget, "mouse_button", argc - 2, argv + 2);
 		update_window(__rtk_window);
 	}
-
-	return NULL;
 }
 
 int init_toolkit() {
@@ -88,9 +82,9 @@ int init_toolkit() {
 		return 1;
 	}
 
-	robject_set_event_hook(robject_root, "graph", toolkit_graph_event);
-	robject_set_event_hook(robject_root, "key",   toolkit_key_event);
-	robject_set_event_hook(robject_root, "mouse", toolkit_mouse_event);
+	event_hook("graph", toolkit_graph_event);
+	event_hook("key",   toolkit_key_event);
+	event_hook("mouse", toolkit_mouse_event);
 
 	return 0;
 }

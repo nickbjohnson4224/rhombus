@@ -277,17 +277,17 @@ char *wmanager_rcall_cons(struct robject *self, rp_t source, int argc, char **ar
 	return strdup("! arg");
 }
 
-char *wmanager_key_event(struct robject *self, uint64_t source, int argc, char **argv) {
+void wmanager_key_event(rp_t source, int argc, char **argv) {
 	char *event_str;
 	bool pressed;
 	int data;
 
-	if (argc != 3) return NULL;
-	if (source != kbdfd) return NULL;
+	if (argc != 3) return;
+	if (source != kbdfd) return;
 
 	if (!strcmp(argv[1], "press")) pressed = true;
 	else if (!strcmp(argv[1], "release")) pressed = false;
-	else return NULL;
+	else return;
 
 	data = atoi(argv[2]);
 
@@ -306,18 +306,16 @@ char *wmanager_key_event(struct robject *self, uint64_t source, int argc, char *
 		event(RP_CONS(active_window->owner, 0), event_str);
 		free(event_str);
 	}
-
-	return NULL;
 }
 
-char *wmanager_mouse_event(struct robject *self, uint64_t source, int argc, char **argv) {
+void wmanager_mouse_event(rp_t source, int argc, char **argv) {
 	char *event_str;
 	
-	if (source != mousefd) return NULL;
-	if (argc < 2) return NULL;
+	if (source != mousefd) return;
+	if (argc < 2) return;
 
 	if (!strcmp(argv[1], "delta")) {
-		if (argc != 4) return NULL;
+		if (argc != 4) return;
 
 		mouse_move(atoi(argv[2]), atoi(argv[3]));
 		
@@ -328,7 +326,7 @@ char *wmanager_mouse_event(struct robject *self, uint64_t source, int argc, char
 		}
 	}
 	else if (!strcmp(argv[1], "button")) {
-		if (argc != 3) return NULL;
+		if (argc != 3) return;
 
 		mouse_buttons(atoi(argv[2]));
 
@@ -338,20 +336,16 @@ char *wmanager_mouse_event(struct robject *self, uint64_t source, int argc, char
 			free(event_str);
 		}
 	}
-
-	return NULL;
 }
 
-char *wmanager_graph_event(struct robject *self, uint64_t source, int argc, char **argv) {
+void wmanager_graph_event(rp_t source, int argc, char **argv) {
 	
-	if (source != vgafd) return NULL;
-	if (argc != 4) return NULL;
+	if (source != vgafd) return;
+	if (argc != 4) return;
 	
 	if (!strcmp(argv[1], "resize")) {
 		resize_screen(atoi(argv[2]), atoi(argv[3]));
 	}
-
-	return NULL;
 }
 
 int main(int argc, char **argv) {
@@ -403,9 +397,9 @@ int main(int argc, char **argv) {
 	event_subscribe(mousefd);
 	event_subscribe(kbdfd);
 	event_subscribe(vgafd);
-	robject_set_event_hook(root, "mouse", wmanager_mouse_event);
-	robject_set_event_hook(root, "key",   wmanager_key_event);
-	robject_set_event_hook(root, "graph", wmanager_graph_event);
+	event_hook("mouse", wmanager_mouse_event);
+	event_hook("key",   wmanager_key_event);
+	event_hook("graph", wmanager_graph_event);
 
 	current_tags = 1;
 

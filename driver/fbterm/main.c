@@ -98,9 +98,9 @@ char *fbterm_rcall_set_bgcolor(struct robject *self, rp_t source, int argc, char
 	return strdup("T");
 }
 
-char *fbterm_key_event(struct robject *self, rp_t source, int argc, char **argv) {
+void fbterm_key_event(rp_t source, int argc, char **argv) {
 	
-	if (argc != 3) return NULL;
+	if (argc != 3) return;
 
 	if (!strcmp(argv[1], "press")) {
 		keyboard_event(atoi(argv[2]), true);
@@ -108,14 +108,12 @@ char *fbterm_key_event(struct robject *self, rp_t source, int argc, char **argv)
 	else if (!strcmp(argv[1], "release")) {
 		keyboard_event(atoi(argv[2]), false);
 	}
-	
-	return NULL;
 }
 
-char *fbterm_graph_event(struct robject *self, rp_t source, int argc, char **argv) {
+void fbterm_graph_event(rp_t source, int argc, char **argv) {
 	int w, h;
 	
-	if (argc != 4) return NULL;
+	if (argc != 4) return;
 
 	if (!strcmp(argv[1], "resize")) {
 		w = atoi(argv[2]);
@@ -124,8 +122,6 @@ char *fbterm_graph_event(struct robject *self, rp_t source, int argc, char **arg
 		fbterm_resize(w, h);
 		screen_flip();
 	}
-
-	return NULL;
 }
 
 int main(int argc, char **argv) {
@@ -193,11 +189,11 @@ int main(int argc, char **argv) {
 
 	// listen to graphics events
 	event_subscribe(fb_dev);
-	robject_set_event_hook(term, "graph", fbterm_graph_event);
+	event_hook("graph", fbterm_graph_event);
 
 	// set up keyboard
 	event_subscribe(kbd_dev);
-	robject_set_event_hook(term, "key", fbterm_key_event);
+	event_hook("key", fbterm_key_event);
 
 	robject_set_call(term, "clear",       fbterm_rcall_clear);
 	robject_set_call(term, "set_fgjob",   fbterm_rcall_set_fgjob);

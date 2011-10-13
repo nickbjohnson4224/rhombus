@@ -26,6 +26,8 @@
 
 #define USE_IRQ 0
 
+struct robject *mouse;
+
 struct event_list *event_list;
 uint8_t bytes[3];
 size_t curbyte;
@@ -54,7 +56,7 @@ static inline void send_event_delta(int dx, int dy) {
 
 	if (dx || dy) {
 		event = saprintf("mouse delta %d %d", dx, dy);
-		robject_broadcast_event(robject_root, event);
+		robject_event(mouse, event);
 		free(event);
 	}
 }
@@ -64,7 +66,7 @@ static inline void send_event_button(int buttons) {
 
 	if (buttons != prevbuttons) {
 		event = saprintf("mouse button %d", buttons);
-		robject_broadcast_event(robject_root, event);
+		robject_event(mouse, event);
 		free(event);
 		prevbuttons = buttons;
 	}
@@ -110,7 +112,6 @@ void mouse_irq(struct msg *msg) {
 #endif
 
 int main(int argc, char **argv) {
-	struct robject *mouse;
 #if USE_IRQ
 	uint8_t status;
 #else
@@ -138,15 +139,13 @@ int main(int argc, char **argv) {
 
 	rdi_init();
 
-	mouse = rdi_event_cons(0, ACCS_READ | ACCS_WRITE);
-	robject_set(0, mouse);
-	robject_root = mouse;
+	mouse = rdi_event_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
 
 #if USE_IRQ
 	rdi_set_irq(12, mouse_irq);
 #endif
 
-	fs_plink("/dev/mouse", RP_CONS(getpid(), 0), NULL);
+	fs_plink("/dev/mouse", RP_CONS(getpid(), mouse->index), NULL);
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 
 #if USE_IRQ

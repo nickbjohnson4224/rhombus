@@ -132,7 +132,7 @@ int svga_set_mode(int mode) {
 	}
 
 	event = saprintf("graph resize %d %d", svga.w, svga.h);
-	robject_broadcast_event(robject_root, event);
+	robject_event(robject_get(1), event);
 	free(event);
 	
 	return 0;
