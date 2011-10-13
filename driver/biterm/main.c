@@ -137,10 +137,7 @@ int main(int argc, char **argv) {
 
 	rdi_init();
 
-	term = rdi_file_cons(0, ACCS_READ | ACCS_WRITE);
-	robject_set(0, term);
-	robject_root = term;
-
+	term = rdi_file_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
 	robject_set_data(term, "type", (void*) "term");
 
 	if (argc < 3) {
@@ -184,11 +181,11 @@ int main(int argc, char **argv) {
 
 	// listen to graphics events
 	event_subscribe(fb_dev);
-	robject_set_event_hook(term, "graph", fbterm_graph_event);
+	robject_set_event_hook(robject_root, "graph", fbterm_graph_event);
 
 	// set up keyboard
 	event_subscribe(kbd_dev);
-	robject_set_event_hook(term, "key", fbterm_key_event);
+	robject_set_event_hook(robject_root, "key", fbterm_key_event);
 
 	robject_set_call(term, "clear",       fbterm_rcall_clear);
 	robject_set_call(term, "set_fgjob",   fbterm_rcall_set_fgjob);
@@ -201,8 +198,8 @@ int main(int argc, char **argv) {
 	pid = fork();
 	if (pid < 0) {
 		setenv("PATH", "/bin");
-		stdout = stderr = fdopen(RP_CONS(-pid, 0), "w");
-		stdin = fdopen(RP_CONS(-pid, 0), "r");
+		stdout = stderr = fdopen(RP_CONS(-pid, term->index), "w");
+		stdin = fdopen(RP_CONS(-pid, term->index), "r");
 		exec("/bin/fish");
 	}
 

@@ -121,10 +121,7 @@ int main(int argc, char **argv) {
 
 	rdi_init();
 
-	canvas = rdi_event_cons(0, ACCS_READ | ACCS_WRITE);
-	robject_set(0, canvas);
-	robject_root = canvas;
-
+	canvas = rdi_event_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
 	robject_set_data(canvas, "type", (void*) "canvas share");
 
 	svga_init();
@@ -152,7 +149,7 @@ int main(int argc, char **argv) {
 	rdi_global_share_hook = svga_share;
 
 	/* register the driver as /dev/svga0 */
-	fs_plink("/dev/svga0", RP_CONS(getpid(), 0), NULL);
+	fs_plink("/dev/svga0", RP_CONS(getpid(), canvas->index), NULL);
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 	_done();
 

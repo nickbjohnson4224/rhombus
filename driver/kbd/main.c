@@ -101,6 +101,8 @@ const int keymap[4][128] = {
 	}
 };
 
+struct robject *keyboard;
+
 void kbd_irq(struct msg *msg) {
 	uint8_t scan;
 	char *event;
@@ -124,7 +126,7 @@ void kbd_irq(struct msg *msg) {
 		case NUML: numlk = false; break;
 		default:
 			event = saprintf("key release %d\n", code);
-			robject_broadcast_event(robject_root, event);
+			robject_broadcast_event(keyboard, event);
 			free(event);
 		}
 	}
@@ -135,27 +137,24 @@ void kbd_irq(struct msg *msg) {
 		case NUML: numlk = true; break;
 		default:
 			event = saprintf("key press %d\n", code);
-			robject_broadcast_event(robject_root, event);
+			robject_broadcast_event(keyboard, event);
 			free(event);
 		}
 	}
 }
 
 int main(int argc, char **argv) {
-	struct robject *dev;
 
 	rdi_init();
 
 	// create device file
-	dev = rdi_event_cons(0, ACCS_READ);
-	robject_set(0, dev);
-	robject_root = dev;
+	keyboard = rdi_event_cons(1, ACCS_READ);
 
 	// set IRQ handler
 	rdi_set_irq(1, kbd_irq);
 
 	// add to /dev
-	fs_plink("/dev/kbd", RP_CONS(getpid(), 0), NULL);
+	fs_plink("/dev/kbd", RP_CONS(getpid(), keyboard->index), NULL);
 
 	// daemonize
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);

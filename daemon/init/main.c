@@ -42,9 +42,9 @@ static uint64_t start(struct tar_file *file, char const **argv) {
 		for(;;);
 	}
 
-	mwait(PORT_CHILD, RP_CONS(pid, 0));
+	mwait(PORT_CHILD, pid);
 
-	return RP_CONS(pid, 0);
+	return RP_CONS(pid, 1);
 }
 
 int main() {
@@ -91,11 +91,11 @@ int main() {
 	start(file, argv);
 
 	/* Init control file */
-	fs_plink("/sys/init", RP_CONS(getpid(), 1), NULL);
+	fs_plink("/sys/init", RP_CONS(getpid(), 0), NULL);
 
 	/* Initrd */
 	initrd_init();
-	fs_plink("/dev/initrd", RP_CONS(getpid(), 0), NULL);
+	fs_plink("/dev/initrd", RP_CONS(getpid(), 1), NULL);
 
 	/* Root filesystem (tarfs) */
 	argv[0] = "tarfs";
@@ -130,12 +130,6 @@ int main() {
 	argv[1] = NULL;
 	file = tar_find(boot_image, "sbin/time");
 	fs_plink("/dev/time", start(file, argv), NULL);
-
-	/* Pipe Driver */
-	argv[0] = "pipe";
-	argv[1] = NULL;
-	file = tar_find(boot_image, "sbin/pipe");
-	fs_plink("/sys/pipe", start(file, argv), NULL);
 
 	setname("init");
 	

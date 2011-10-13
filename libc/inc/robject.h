@@ -73,6 +73,7 @@ typedef uint64_t rp_t;
 #define RP_CONS(idx, pid) ((((uint64_t) (pid)) << 32) | (uint64_t) (idx))
 #define RP_INDEX(rp)      ((uint32_t) ((rp) >> 32))
 #define RP_PID(rp)        ((uint32_t) ((rp) & 0xFFFFFFFF))
+#define RP_HEAD(rp)       ((uint64_t) ((rp) & 0xFFFFFFFF))
 #define RP_NULL           ((uint64_t) 0)
 
 char *rtoa(rp_t rp);         // convert robject pointer to string

@@ -52,9 +52,7 @@ int main(int argc, char **argv) {
 	rdi_init();
 
 	// create device file
-	root = rdi_file_cons(0, ACCS_READ | ACCS_WRITE);
-	robject_set(0, root);
-	robject_root = root;
+	root = rdi_file_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
 
 	// initialize serial port
 	outb(PORT + 1, 0x00);

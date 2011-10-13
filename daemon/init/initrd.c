@@ -59,9 +59,7 @@ void initrd_init(void) {
 
 	rdi_init();
 
-	file = rdi_file_cons(0, ACCS_READ);
-	robject_set(0, file);
-	robject_root = file;
+	file = rdi_file_cons(1, ACCS_READ);
 
 	robject_set_data(file, "data", (void*) BOOT_IMAGE);
 

@@ -134,9 +134,7 @@ int main(int argc, char **argv) {
 	rdi_init();
 
 	// create root directory
-	root = rdi_dir_cons(0, ACCS_READ | ACCS_WRITE);
-	robject_set(0, root);
-	robject_root = root;
+	root = rdi_dir_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
 
 	// set interface functions
 	robject_set_call(rdi_class_core, "cons", tmpfs_cons);
