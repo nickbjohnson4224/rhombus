@@ -49,9 +49,7 @@ int main(int argc, char **argv) {
 	rdi_init();
 
 	// create device file
-	file = rdi_file_cons(0, PERM_READ);
-	robject_set(0, file);
-	robject_root = file;
+	file = rdi_file_cons(1, ACCS_READ);
 
 	// set interface functions
 	rdi_global_read_hook = time_read;

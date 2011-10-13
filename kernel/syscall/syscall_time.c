@@ -49,7 +49,7 @@ struct thread *syscall_time(struct thread *image) {
 		tick = image->tick;
 		break;
 	case 4:
-		tick = 3906250; // 1000000000 / 256
+		tick = 1000000000 / 64;
 		break;
 	}
 	

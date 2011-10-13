@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2011 Jaagup Repän <jrepan at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +20,7 @@
 #include <proc.h>
 #include <stdio.h>
 
-void mouse_event(uint64_t source, int argc, char **argv) {
+void mouse_event(rp_t source, int argc, char **argv) {
 	int i;
 
 	for (i = 0; i < argc; i++) {
@@ -37,8 +38,8 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	event_register(mousefd);
-	event_set("mouse", mouse_event);
+	event_subscribe(mousefd);
+	event_hook("mouse", mouse_event);
 
 	_done();
 	return 0;

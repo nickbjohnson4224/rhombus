@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef CFS_TYPE_H
-#define CFS_TYPE_H
+#ifndef __RLIBC_CTYPE_H
+#define __RLIBC_CTYPE_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -46,4 +46,4 @@ bool __isbdigit(char c, int base);
 int tolower(int c);
 int toupper(int c);
 
-#endif/*CFS_TYPE_H*/
+#endif/*__RLIBC_CTYPE_H*/

@@ -24,73 +24,44 @@
  * fs_cons
  *
  * Attempts to create a new filesystem object of type <type> at the path 
- * <path>. Returns a resource pointer to the new resource on success, NULL on 
- * failure.
+ * <path>. Returns a resource pointer to the new resource on success, RP_NULL 
+ * on failure.
  *
  * Notes:
  *
- * <type> should only be FS_TYPE_FILE, FS_TYPE_DIR, or FS_TYPE_FILE | 
- * FS_TYPE_LINK. The driver will fill in the appropriate flags for its files
- * beyond that.
+ * <type> should only be "file", "dir", or "link", unless driver intimate
+ * driver details are known.
  */
 
-uint64_t fs_cons(const char *path, int type) {
-	uint64_t dir;
-	uint64_t rp;
-	char *dirname, *name;
+rp_t fs_cons(const char *path, const char *type) {
+	char *dirname;
+	char *name;
+	rp_t dir;
+	rp_t rp;
 
-	/* check for existing files */
+	// check for existing entries
 	if (fs_find(path)) {
 		errno = EEXIST;
 		return 1;
 	}
 
-	/* find parent directory */
+	// find parent directory
 	dirname = path_parent(path);
-
 	dir = fs_find(dirname);
 	free(dirname);
-
 	if (!dir) return RP_NULL;
 
+	// construct new robject
 	rp = rp_cons(dir, type);
 	if (!rp) return RP_NULL;
 	
+	// add to directory
 	name = path_name(path);
-
 	if (rp_link(dir, name, rp)) {
 		free(name);
 		return RP_NULL;
 	}
 
 	free(name);
-	return rp;
-}
-
-uint64_t rp_cons(uint64_t driver, int type) {
-	uint64_t rp;
-	char *reply;
-
-	reply = rcall(driver, "cons %c", typechar(type));
-
-	if (!reply) {
-		errno = ENOSYS;
-		return 0;
-	}
-
-	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nfound"))	errno = ENOENT;
-		else if (!strcmp(reply, "! denied"))	errno = EACCES;
-		else if (!strcmp(reply, "! nosys"))		errno = ENOSYS;
-		else if (!strcmp(reply, "! construct")) errno = ENOSPC;
-		else if (!strcmp(reply, "! type"))		errno = ENOTDIR;
-		else 									errno = EUNK;
-		free(reply);
-		return 0;
-	}
-
-	rp = ator(reply);
-	free(reply);
-
 	return rp;
 }

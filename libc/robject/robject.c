@@ -14,10 +14,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <struct.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <mutex.h>
+#include <proc.h>
+#include <abi.h>
 
 #include <robject.h>
 
@@ -29,7 +32,7 @@ void robject_set_call(struct robject *ro, const char *call, rcall_t hook) {
 	
 	if (ro) {
 		mutex_spin(&ro->mutex);
-		ro->call_table = __data_table_set(ro->call_table, call, (void*) (uintptr_t) hook);
+		ro->call_table = s_table_set(ro->call_table, call, (void*) (uintptr_t) hook);
 		mutex_free(&ro->mutex);
 	}
 }
@@ -39,7 +42,7 @@ rcall_t robject_get_call(struct robject *ro, const char *call) {
 	
 	if (ro) {
 		mutex_spin(&ro->mutex);
-		hook = (rcall_t) (uintptr_t) __data_table_get(ro->call_table, call);
+		hook = (rcall_t) (uintptr_t) s_table_get(ro->call_table, call);
 		if (!hook) hook = robject_get_call(ro->parent, call);
 		mutex_free(&ro->mutex);
 
@@ -54,7 +57,7 @@ void robject_set_data(struct robject *ro, const char *field, void *data) {
 	
 	if (ro) {
 		mutex_spin(&ro->mutex);
-		ro->data_table = __data_table_set(ro->data_table, field, data);
+		ro->data_table = s_table_set(ro->data_table, field, data);
 		mutex_free(&ro->mutex);
 	}
 }
@@ -64,7 +67,7 @@ void *robject_get_data(struct robject *ro, const char *field) {
 
 	if (ro) {
 		mutex_spin(&ro->mutex);
-		data = __data_table_get(ro->data_table, field);
+		data = s_table_get(ro->data_table, field);
 		mutex_free(&ro->mutex);
 
 		return data;
@@ -78,37 +81,11 @@ void *robject_get_data(struct robject *ro, const char *field) {
  * event management
  */
 
-void robject_set_event_hook(struct robject *ro, const char *type, rcall_t hook) {
-	
-	if (ro) {
-		mutex_spin(&ro->mutex);
-		ro->evnt_table = __data_table_set(ro->evnt_table, type, (void*) (uintptr_t) hook);
-		mutex_free(&ro->mutex);
-	}
-}
-
-rcall_t robject_get_event_hook(struct robject *ro, const char *type) {
-	rcall_t hook;
-	
-	if (ro) {
-		mutex_spin(&ro->mutex);
-		hook = (rcall_t) (uintptr_t) __data_table_get(ro->evnt_table, type);
-		if (!hook) hook = robject_get_event_hook(ro->parent, type);
-		mutex_free(&ro->mutex);
-		if (!hook) hook = robject_get_event_hook(robject_root, type);
-
-		return hook;
-	}
-	else {
-		return NULL;
-	}
-}
-
 void robject_add_subscriber(struct robject *ro, rp_t target) {
 	
 	if (ro) {
 		mutex_spin(&ro->mutex);
-		ro->event_subs = __event_set_add(ro->event_subs, target);
+		ro->subs_table = s_table_setv(ro->subs_table, (void*) 1, "%r", target);
 		mutex_free(&ro->mutex);
 	}
 }
@@ -117,7 +94,7 @@ void robject_del_subscriber(struct robject *ro, rp_t target) {
 	
 	if (ro) {
 		mutex_spin(&ro->mutex);
-		ro->event_subs = __event_set_del(ro->event_subs, target);
+		ro->subs_table = s_table_setv(ro->subs_table, NULL, "%r", target);
 		mutex_free(&ro->mutex);
 	}
 }
@@ -126,34 +103,16 @@ void robject_del_subscriber(struct robject *ro, rp_t target) {
  * basic interface
  */
 
-void robject_cause_event(struct robject *ro, const char *event) {
+void __iter(void *arg0, const char *key, void *value) {
+	event(ator(key), arg0);
+}
+
+void robject_event(struct robject *ro, const char *event) {
 	
 	if (ro) {
 		mutex_spin(&ro->mutex);
-		__event_set_send(ro->event_subs, event);
+		s_table_iter(ro->subs_table, (void*) event, __iter);
 		mutex_free(&ro->mutex);
-	}
-}
-
-void robject_event(struct robject *ro, rp_t source, const char *event) {
-	rcall_t hook;
-	int argc;
-	char **argv;
-
-	// parse argument list
-	argv = strparse(event, " ");
-	if (!argv) return;
-
-	for (argc = 0; argv[argc]; argc++);
-
-	hook = robject_get_event_hook(ro, argv[0]);
-
-	if (!hook) {
-		for (argc = 0; argv[argc]; argc++) free(argv[argc]);
-		free(argv);
-	}
-	else {
-		hook(ro, source, argc, argv);
 	}
 }
 

@@ -14,11 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef _RDI_CORE_H
-#define _RDI_CORE_H
+#ifndef __LIBRDI_CORE_H
+#define __LIBRDI_CORE_H
 
-#include <rdi/util.h>
 #include <robject.h>
+#include <natio.h>
 
 /*****************************************************************************
  * Rhombus Driver Interface (RDI)
@@ -50,31 +50,28 @@ void rdi_init();
  *
  * cons <type> (additional args based on type) - none
  *   
- *   Requests the creation of a new robject of the given type. 
+ *   Requests the creation of a new robject of the given type. The three valid
+ *   types are "file", "dir", and "link".
  *
  *   Default behavior is to construct the new robject unconditionally. This is
  *   not at all secure.
  *
  *   Return: a robject pointer to the new robject
  * 
- * get-access <user> - R
+ * get-access (user) - R
  *
  *   Requests the access bitmap of the robject for a given user ID. This 
  *   "bitmap" is actually a hexadecimal string value. See natio.h for details 
- *   on its contents.
- *
- *   Default behavior is to return the contents of data field 
- *   "access-%X" <user>, if it exists, and otherwise to return 0.
+ *   on its contents. If (user) is nonexistent, the default access bitmap is
+ *   accessed.
  *
  *   Return: an access bitmap (hexadecimal string) valid for the given user.
  *
- * set-access <user> <bitmap> - A
+ * set-access (user) <bitmap> - A
  *
  *   Requests the the access bitmap of the robject for a given user ID be
+ *   changed. If (user) is nonexistent, the default access bitmap is
  *   changed.
- *
- *   Default behavior is to allow the request only if the source user has
- *   PERM_ALTER granted to them for this robject.
  *
  * sync - W
  *
@@ -86,11 +83,11 @@ void rdi_init();
  *
  * Fields:
  *
- * access-%X <uid>
+ * access
  *
- *   See calls get-access and set-access for details.
+ *   A structure containing UID-specific access rules.
  *
- *   Type: uint32_t
+ *   Type: struct rdi_access * (heap-allocated)
  */
 
 extern struct robject *rdi_class_core;
@@ -99,7 +96,7 @@ void __rdi_class_core_setup();
 struct robject *rdi_core_cons(uint32_t index, uint32_t access);
 void            rdi_core_free(struct robject *r);
 
-/******************************************************************************
+/*****************************************************************************
  * rdi_class_event (extends rdi_class_core) - event
  *
  * Calls:
@@ -115,106 +112,31 @@ void __rdi_class_event_setup();
 struct robject *rdi_event_cons(uint32_t index, uint32_t access);
 void            rdi_event_free(struct robject *r);
 
-/*
- * Old stuff past here
+/*****************************************************************************
+ * RDI Access Control
  */
 
-/* RDI resource structure ****************************************************/
+struct rdi_access_node {
+	struct rdi_access_node *l;
+	struct rdi_access_node *r;
+	int32_t balance;
+	uint32_t height;
 
-struct resource {
-	bool mutex;
-
-	/* file information */
-	int      type;
-	uint64_t size;
-	uint8_t *data;
-
-	/* opener PID table */
-	struct id_hash open;
-
-	/* index lookup table */
-	uint32_t index;
-	struct resource *next;
-	struct resource *prev;
-
-	/* directory structure */
-	struct vfs_node *vfs;
-	int vfs_refcount;
-
-	/* old permissions system (deprecated) */
-	struct id_hash acl;
-
-	/* access control */
-	struct id_hash pid_acl;
-	struct id_hash uid_acl;
-	uint32_t dfl_acl;
-
-	/* link information */
-	char *symlink;
+	uint32_t uid;
+	uint8_t access;
 };
 
-struct resource *resource_cons(int type, int access);
-void             resource_free(struct resource *r);
+struct rdi_access {
+	bool mutex;
+	struct rdi_access_node *root;
+	uint8_t access_default;
+};
 
-/******************************************************************************
- * RDI resource indexing
- *
- * A central part of the RDI is the resource index. It is a table that maps
- * every resource to an index number, which is part of the resource pointer
- * that refers to that resource (along with the driver PID.)
- *
- * Functions:
- *
- *   index_get returns the resource registered with index <index>.
- *
- *   index_set sets the resource <r> to be registered with index <index>, 
- *   setting the index field of <r> to <index> in the process. If another
- *   resource already has index <index>, it is returned.
- *
- *   index_new returns an index number that is unused by any resource in the
- *   index table. This index number has almost always never been used by a
- *   resource, but this behavior is not guaranteed.
- */
+uint8_t rdi_get_access  (struct robject *ro, uint32_t uid);
+bool    rdi_check_access(struct robject *ro, rp_t source,  uint8_t access);
+void    rdi_set_access  (struct robject *ro, uint32_t uid, uint8_t access);
+void    rdi_del_access  (struct robject *ro, uint32_t uid);
+uint8_t rdi_get_access_default(struct robject *ro, uint8_t access);
+void    rdi_set_access_default(struct robject *ro, uint8_t access);
 
-struct resource *index_get(uint32_t index);
-struct resource *index_set(uint32_t index, struct resource *r);
-uint32_t         index_new(void);
-
-/******************************************************************************
- * RDI core driver callbacks
- *
- * Drivers that use RDI register their functionality with RDI by using these
- * functions. The functions set here are global for the driver, but may be
- * overridden by resources individually.
- *
- * When a callback is run, it could be run by any thread at any time. Make sure
- * to use adequate synchonization.
- */
-
-void rdi_set_cons (struct resource *(*_cons)(uint64_t src, int type));
-void rdi_set_open (int (*_open) (uint64_t src, struct resource *obj));
-void rdi_set_close(int (*_close)(uint64_t src, struct resource *obj));
-
-extern struct resource *(*__rdi_callback_cons)(uint64_t src, int type);
-extern int (*__rdi_callback_open) (uint64_t src, struct resource *obj);
-extern int (*__rdi_callback_close)(uint64_t src, struct resource *obj);
-
-/* Access callbacks */
-void rdi_set_aclsync(void (*_aclsync)(struct resource *obj));
-
-extern void (*_rdi_callback_aclsync)(struct resource *obj);
-
-/*****************************************************************************
- * RDI core handlers
- */
-
-void rdi_init_core(void);
-void rdi_init_all(void);
-
-char *__rdi_cons_handler (uint64_t src, uint32_t idx, int argc, char **argv);
-char *__rdi_open_handler (uint64_t src, uint32_t idx, int argc, char **argv);
-char *__rdi_close_handler(uint64_t src, uint32_t idx, int argc, char **argv);
-char *__rdi_type_handler (uint64_t src, uint32_t idx, int argc, char **argv);
-char *__rdi_size_handler (uint64_t src, uint32_t idx, int argc, char **argv);
-
-#endif/*_RDI_CORE_H*/
+#endif/*__LIBRDI_CORE_H*/

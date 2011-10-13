@@ -24,11 +24,11 @@
 /*****************************************************************************
  * fs_find
  *
- * Finds the resource with the given path <path> if it exists and returns a
- * resource pointer to it. If it does not exist, this function returns NULL.
+ * Finds the robject with the given path <path> if it exists and returns a
+ * robject pointer to it. If it does not exist, this function returns RP_NULL.
  */
 
-uint64_t fs_find(const char *path) {
+rp_t fs_find(const char *path) {
 	uint64_t rp;
 	uint64_t root;
 	char *reply;
@@ -36,7 +36,7 @@ uint64_t fs_find(const char *path) {
 
 	// if path is NULL, return NULL
 	if (!path) {
-		return 0;
+		return RP_NULL;
 	}
 
 	// if preceeded by a resource pointer, use that as root and strip it
@@ -54,24 +54,24 @@ uint64_t fs_find(const char *path) {
 	}
 
 	path_s = path_simplify(path);
-	if (!path_s) return 0;
+	if (!path_s) return RP_NULL;
 
 	reply = rcall(root, "find %s", path_s);
 	free(path_s);
 
 	if (!reply) {
 		errno = ENOSYS;
-		return 0;
+		return RP_NULL;
 	}
 
 	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nfound"))	errno = ENOENT;
-		else if (!strcmp(reply, "! denied"))	errno = EACCES;
-		else if (!strcmp(reply, "! nosys"))		errno = ENOSYS;
-		else if (!strcmp(reply, "! notdir"))	errno = ENOTDIR;
-		else 									errno = EUNK;
+		if      (!strcmp(reply, "! nfound")) errno = ENOENT;
+		else if (!strcmp(reply, "! denied")) errno = EACCES;
+		else if (!strcmp(reply, "! nosys"))  errno = ENOSYS;
+		else if (!strcmp(reply, "! notdir")) errno = ENOTDIR;
+		else                                 errno = EUNK;
 		free(reply);
-		return 0;
+		return RP_NULL;
 	}
 
 	if (reply[0] == '>' && reply[1] == '>' && reply[2] == ' ') {

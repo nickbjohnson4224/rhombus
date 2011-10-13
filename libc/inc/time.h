@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef TIME_H
-#define TIME_H
+#ifndef __RLIBC_TIME_H
+#define __RLIBC_TIME_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -72,4 +72,4 @@ char *ctime  (const time_t *timer);
 size_t strftime(char *s, size_t n, const char *format, const struct tm *ptr);
 char  *strptime(const char *s, const char *format, struct tm *ptr);
 
-#endif/*TIME_H*/
+#endif/*__RLIBC_TIME_H*/

@@ -20,8 +20,9 @@
 #include <stdio.h>
 #include <proc.h>
 #include <ipc.h>
+#include <abi.h>
 
-static char *__rcall_type(struct robject *self, rp_t src, int argc, char **argv) {
+static char *__type(struct robject *self, rp_t src, int argc, char **argv) {
 	const char *type;
 	char *parent_type;
 	char *final_type;
@@ -50,11 +51,15 @@ static char *__rcall_type(struct robject *self, rp_t src, int argc, char **argv)
 	}
 }
 
-static char *__rcall_ping(struct robject *self, rp_t src, int argc, char **argv) {
+static char *__ping(struct robject *self, rp_t src, int argc, char **argv) {
 	return strdup("T");
 }
 
-static char *__rcall_name(struct robject *self, rp_t src, int argc, char **argv) {
+static char *__open(struct robject *self, rp_t src, int argc, char **argv) {
+	return strdup("T");
+}
+
+static char *__name(struct robject *self, rp_t src, int argc, char **argv) {
 	char *name;
 	char *full;
 	char *proc;
@@ -81,7 +86,7 @@ static char *__rcall_name(struct robject *self, rp_t src, int argc, char **argv)
 	return full;
 }
 
-static char *__rcall_subscribe(struct robject *self, rp_t src, int argc, char **argv) {
+static char *__subscribe(struct robject *self, rp_t src, int argc, char **argv) {
 	rp_t target;
 
 	if (argc == 1) {
@@ -104,7 +109,7 @@ static char *__rcall_subscribe(struct robject *self, rp_t src, int argc, char **
 	return strdup("!arg");
 }
 
-static char *__rcall_unsubscribe(struct robject *self, rp_t src, int argc, char **argv) {
+static char *__unsubscribe(struct robject *self, rp_t src, int argc, char **argv) {
 	rp_t target;
 
 	if (argc == 1) {
@@ -155,25 +160,9 @@ static void __rcall_handler(struct msg *msg) {
 	msend(reply);
 }
 
-static void __event_handler(struct msg *msg) {
-	struct robject *ro;
-	
-	ro = robject_get(RP_INDEX(msg->target));
-
-	if (!ro) {
-		free(msg);
-		return;
-	}
-
-	robject_event(ro, msg->source, (const char*) msg->data);
-	
-	free(msg);
-}
-
 struct robject *robject_root;
 
 struct robject *robject_class_basic;
-struct robject *robject_class_event;
 
 void __robject_init(void) {
 
@@ -183,18 +172,12 @@ void __robject_init(void) {
 	robject_set_data(robject_class_basic, "type", (void*) "basic");
 	robject_set_data(robject_class_basic, "name", (void*) "RLIBC-class-basic");
 
-	robject_set_call(robject_class_basic, "type", __rcall_type);
-	robject_set_call(robject_class_basic, "ping", __rcall_ping);
-	robject_set_call(robject_class_basic, "name", __rcall_name);
-
-	// create event class
-	robject_class_event = robject_cons(0, robject_class_basic);
-	
-	robject_set_data(robject_class_event, "type", (void*) "event");
-	robject_set_data(robject_class_event, "name", (void*) "RLIBC-class-event");
-	
-	robject_set_call(robject_class_event, "subscribe",   __rcall_subscribe);
-	robject_set_call(robject_class_event, "unsubscribe", __rcall_unsubscribe);
+	robject_set_call(robject_class_basic, "type", __type);
+	robject_set_call(robject_class_basic, "ping", __ping);
+	robject_set_call(robject_class_basic, "name", __name);
+	robject_set_call(robject_class_basic, "open", __open);
+	robject_set_call(robject_class_basic, "subscribe",   __subscribe);
+	robject_set_call(robject_class_basic, "unsubscribe", __unsubscribe);
 
 	// allocate root object
 	robject_root = robject_cons(0, robject_class_basic);
@@ -202,5 +185,4 @@ void __robject_init(void) {
 
 	// set rcall and event handlers
 	when(PORT_RCALL, __rcall_handler);
-	when(PORT_EVENT, __event_handler);
 }

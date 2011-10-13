@@ -26,6 +26,8 @@
 
 #define USE_IRQ 0
 
+struct robject *mouse;
+
 struct event_list *event_list;
 uint8_t bytes[3];
 size_t curbyte;
@@ -49,36 +51,12 @@ void command(uint8_t byte) {
 	while ((inb(0x64) & 0x21) == 0x21 && inb(0x60) != 0xfa); // ACK
 }
 
-char *mouse_register(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct resource *file;
-
-	file = index_get(index);
-
-	mutex_spin(&file->mutex);
-	event_list = event_list_add(event_list, source);
-	mutex_free(&file->mutex);
-
-	return strdup("T");
-}
-
-char *mouse_deregister(uint64_t source, uint32_t index, int argc, char **argv) {
-	struct resource *file;
-
-	file = index_get(index);
-
-	mutex_spin(&file->mutex);
-	event_list = event_list_del(event_list, source);
-	mutex_free(&file->mutex);
-
-	return strdup("T");
-}
-
 static inline void send_event_delta(int dx, int dy) {
 	char *event;
 
 	if (dx || dy) {
 		event = saprintf("mouse delta %d %d", dx, dy);
-		eventl(event_list, event);
+		robject_event(mouse, event);
 		free(event);
 	}
 }
@@ -88,7 +66,7 @@ static inline void send_event_button(int buttons) {
 
 	if (buttons != prevbuttons) {
 		event = saprintf("mouse button %d", buttons);
-		eventl(event_list, event);
+		robject_event(mouse, event);
 		free(event);
 		prevbuttons = buttons;
 	}
@@ -159,16 +137,15 @@ int main(int argc, char **argv) {
 	wait_signal();
 #endif
 
-	index_set(0, resource_cons(FS_TYPE_FILE | FS_TYPE_EVENT, PERM_READ | PERM_WRITE));
+	rdi_init();
 
-	rcall_set("register",   mouse_register);
-	rcall_set("deregister", mouse_deregister);
+	mouse = rdi_event_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
+
 #if USE_IRQ
 	rdi_set_irq(12, mouse_irq);
 #endif
-	rdi_init_all();
 
-	fs_plink("/dev/mouse", RP_CONS(getpid(), 0), NULL);
+	fs_plink("/dev/mouse", RP_CONS(getpid(), mouse->index), NULL);
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 
 #if USE_IRQ

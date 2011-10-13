@@ -27,10 +27,6 @@
 #include "inc/tar.h"
 #include "initrd.h"
 
-const char *splash ="\
-Rhombus Operating System 0.8 Alpha\n\
-\n";
-
 void panic(const char *message) {
 	printf("INIT PANIC: %s\n", message);
 	for(;;);
@@ -46,9 +42,9 @@ static uint64_t start(struct tar_file *file, char const **argv) {
 		for(;;);
 	}
 
-	mwait(PORT_CHILD, RP_CONS(pid, 0));
+	mwait(PORT_CHILD, pid);
 
-	return RP_CONS(pid, 0);
+	return RP_CONS(pid, 1);
 }
 
 int main() {
@@ -70,11 +66,8 @@ int main() {
 	argv[1] = NULL;
 	file = tar_find(boot_image, "sbin/tmpfs");
 	fs_root = start(file, argv);
-	fs_cons("/dev", FS_TYPE_DIR);
-	fs_cons("/sys", FS_TYPE_DIR);
-
-	/* Logfile */
-	fs_cons("/dev/stderr", FS_TYPE_FILE);
+	fs_cons("/dev", "dir");
+	fs_cons("/sys", "dir");
 
 	/* Serial Driver */
 	argv[0] = "serial";
@@ -82,6 +75,8 @@ int main() {
 	file = tar_find(boot_image, "sbin/serial");
 	fs_plink("/dev/serial", start(file, argv), NULL);
 	stdout = stderr = fopen("/dev/serial", "w");
+
+	fs_plink("/dev/stderr", fs_find("/dev/serial"), NULL);
 
 	/* Keyboard Driver */
 	argv[0] = "kbd";
@@ -96,11 +91,11 @@ int main() {
 	start(file, argv);
 
 	/* Init control file */
-	fs_plink("/sys/init", RP_CONS(getpid(), 1), NULL);
+	fs_plink("/sys/init", RP_CONS(getpid(), 0), NULL);
 
 	/* Initrd */
 	initrd_init();
-	fs_plink("/dev/initrd", RP_CONS(getpid(), 0), NULL);
+	fs_plink("/dev/initrd", RP_CONS(getpid(), 1), NULL);
 
 	/* Root filesystem (tarfs) */
 	argv[0] = "tarfs";
@@ -117,16 +112,12 @@ int main() {
 	fs_plink("/sys", temp2, NULL);
 
 	/* Terminal Driver */
-	argv[0] = "fbterm";
+	argv[0] = "biterm";
 	argv[1] = "/dev/kbd";
 	argv[2] = "/dev/svga0";
 	argv[3] = NULL;
-	file = tar_find(boot_image, "sbin/fbterm");
+	file = tar_find(boot_image, "sbin/biterm");
 	fs_plink("/dev/tty", start(file, argv), NULL);
-
-	/* Splash */
-	stdout = stderr = stdin = fopen("/dev/tty", "w");
-	printf(splash);
 
 	/* Temporary filesystem */
 	argv[0] = "tmpfs";

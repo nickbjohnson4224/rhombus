@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ASSERT_H
-#define ASSERT_H
+#ifndef __RLIBC_ASSERT_H
+#define __RLIBC_ASSERT_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,4 +28,4 @@ do {\
 	}\
 } while (0);
 
-#endif/*ASSERT_H*/
+#endif/*__RLIBC_ASSERT_H*/

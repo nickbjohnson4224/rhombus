@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef SETJMP_H
-#define SETJMP_H
+#ifndef __RLIBC_SETJMP_H
+#define __RLIBC_SETJMP_H
 
 #include <stdint.h>
 
@@ -41,4 +41,4 @@ int setjmp(jmp_buf env);
 
 int longjmp(jmp_buf env, int val);
 
-#endif/*SETJMP_H*/
+#endif/*__RLIBC_SETJMP_H*/

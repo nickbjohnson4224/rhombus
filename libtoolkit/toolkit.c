@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2011 Jaagup Repän <jrepan at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,6 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <robject.h>
 #include "toolkit.h"
 #include <natio.h>
 #include <stdlib.h>
@@ -30,7 +32,7 @@ static uint64_t wmanager;
 static struct attributes_list *theme_attributes;
 char *__rtk_theme_path;
 
-static void toolkit_graph_event(uint64_t source, int argc, char **argv) {
+static void toolkit_graph_event(rp_t source, int argc, char **argv) {
 	
 	if (source != wmanager) return;
 	if (argc != 4) return;
@@ -40,7 +42,7 @@ static void toolkit_graph_event(uint64_t source, int argc, char **argv) {
 	}
 }
 
-static void toolkit_key_event(uint64_t source, int argc, char **argv) {
+static void toolkit_key_event(rp_t source, int argc, char **argv) {
 	if (source != wmanager) return;
 
 	if (!strcmp(argv[1], "press") && argc == 3) {
@@ -53,7 +55,7 @@ static void toolkit_key_event(uint64_t source, int argc, char **argv) {
 	}
 }
 
-static void toolkit_mouse_event(uint64_t source, int argc, char **argv) {
+static void toolkit_mouse_event(rp_t source, int argc, char **argv) {
 	if (source != wmanager) return;
 
 	if (!strcmp(argv[1], "delta") && argc == 4) {
@@ -80,9 +82,9 @@ int init_toolkit() {
 		return 1;
 	}
 
-	event_set("graph", toolkit_graph_event);
-	event_set("key",   toolkit_key_event);
-	event_set("mouse", toolkit_mouse_event);
+	event_hook("graph", toolkit_graph_event);
+	event_hook("key",   toolkit_key_event);
+	event_hook("mouse", toolkit_mouse_event);
 
 	return 0;
 }

@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef STRING_H
-#define STRING_H
+#ifndef __RLIBC_STRING_H
+#define __RLIBC_STRING_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -73,4 +73,4 @@ const char *strerror(int);
 int    strcoll(const char *, const char *);
 size_t strxfrm(char *, const char *, size_t);
 
-#endif
+#endif/*__RLIBC_STRING_H*/

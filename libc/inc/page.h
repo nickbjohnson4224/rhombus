@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef PAGE_H
-#define PAGE_H
+#ifndef __RLIBC_PAGE_H
+#define __RLIBC_PAGE_H
 
 #include <arch.h>
 #include <abi.h>
@@ -45,4 +45,4 @@ int page_prot(void *addr, size_t length, int prot);
 
 uintptr_t phys(void *addr);
 
-#endif/*PAGE_H*/
+#endif/*__RLIBC_PAGE_H*/

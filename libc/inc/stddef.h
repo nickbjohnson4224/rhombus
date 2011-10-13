@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef STDDEF_H
-#define STDDEF_H
+#ifndef __RLIBC_STDDEF_H
+#define __RLIBC_STDDEF_H
 
 #include <stdint.h>
 
@@ -30,4 +30,4 @@ typedef uint32_t  wchar_t;
 
 #define offsetof(type, member) __builtin_offsetof(type, member)
 
-#endif/*STDDEF_H*/
+#endif/*__RLIBC_STDDEF_H*/

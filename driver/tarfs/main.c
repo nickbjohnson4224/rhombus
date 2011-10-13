@@ -68,13 +68,13 @@ static uintptr_t getvalue(char *field, size_t size) {
 
 char *tarfs_cons(struct robject *self, rp_t source, int argc, char **argv) {
 	struct robject *new_r = NULL;
-	int type;
+	char *type;
 
 	if (argc == 2) {
-		type = typeflag(argv[1][0]);
+		type = argv[1];
 
-		if (FS_IS_LINK(type)) {
-			new_r = rdi_link_cons(robject_new_index(), PERM_READ | PERM_WRITE, NULL);
+		if (!strcmp(type, "link")) {
+			new_r = rdi_link_cons(robject_new_index(), ACCS_READ | ACCS_WRITE, NULL);
 		}
 		else {
 			return strdup("! type");
@@ -92,8 +92,6 @@ size_t tarfs_read(struct robject *self, rp_t source, uint8_t *buffer, size_t siz
 	off_t *file_size;
 	off_t *file_poff;
 
-	mutex_spin(&self->driver_mutex);
-
 	file_size = robject_data(self, "size");
 	file_poff = robject_data(self, "parent-offset");
 
@@ -109,8 +107,6 @@ size_t tarfs_read(struct robject *self, rp_t source, uint8_t *buffer, size_t siz
 
 	fseek(parent, *file_poff + offset, SEEK_SET);
 	fread(buffer, 1, size, parent);
-
-	mutex_free(&self->driver_mutex);
 
 	return size;
 }
@@ -150,9 +146,7 @@ int main(int argc, char **argv) {
 	rdi_init();
 
 	/* create root directory */
-	root = rdi_dir_cons(0, PERM_READ);
-	robject_set(0, root);
-	robject_root = root;
+	root = rdi_dir_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
 
 	/* allocate buffer space for header block */
 	block = malloc(512);
@@ -172,7 +166,7 @@ int main(int argc, char **argv) {
 
 			/* add directory to VFS */
 			block->filename[strlen(block->filename) - 1] = 0;
-			file = rdi_dir_cons(robject_new_index(), PERM_READ);
+			file = rdi_dir_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
 			rdi_vfs_add(root, block->filename, file);
 	
 			/* move to next file header */
@@ -181,7 +175,7 @@ int main(int argc, char **argv) {
 		else {
 
 			/* add file to VFS */
-			file = rdi_file_cons(robject_new_index(), PERM_READ);
+			file = rdi_file_cons(robject_new_index(), ACCS_READ);
 			rdi_vfs_add(root, block->filename, file);
 
 			poff = malloc(sizeof(off_t));

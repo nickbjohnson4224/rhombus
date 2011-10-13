@@ -84,7 +84,7 @@ const int keymap[4][128] = {
 		ESC,  '!',  '@',  '#', '$', '%', '^',  '&', '*',  '(', ')', '_',  '+', '\b',
 		'\t', 'Q',  'W',  'E', 'R', 'T', 'Y',  'U', 'I',  'O', 'P', '{',  '}', '\n', 
 		CTRL, 'A',  'S',  'D', 'F', 'G', 'H',  'J', 'K',  'L', ':', '"',  '~', SHFT, 
-		'\\', 'Z',  'X',  'C', 'V', 'B', 'N',  'M', '<',  '>', '?', SHFT, '*', 
+		'|', 'Z',  'X',  'C', 'V', 'B', 'N',  'M', '<',  '>', '?', SHFT, '*', 
 		ALT,  ' ',  CAPS, F1,  F2,   F3,  F4,   F5,  F6,   F7,  F8,  F9,   F10,
 		NUML, SCRL, HOME, UP,  PGUP, '-', LEFT, 5,   RGHT, '+', END, DOWN, PGDN, INS, DEL,
 		SYSR, 0,    WIN,  F11, F12,  0,   0,    WIN, WIN,
@@ -94,12 +94,14 @@ const int keymap[4][128] = {
 		ESC,  '!',  '@',  '#', '$', '%', '^',  '&', '*',  '(', ')', '_',  '+', '\b',
 		'\t', 'Q',  'W',  'E', 'R', 'T', 'Y',  'U', 'I',  'O', 'P', '{',  '}', '\n', 
 		CTRL, 'A',  'S',  'D', 'F', 'G', 'H',  'J', 'K',  'L', ':', '"',  '~', SHFT, 
-		'\\', 'Z',  'X',  'C', 'V', 'B', 'N',  'M', '<',  '>', '?', SHFT, '*', 
+		'|', 'Z',  'X',  'C', 'V', 'B', 'N',  'M', '<',  '>', '?', SHFT, '*', 
 		ALT,  ' ',  CAPS, F1,  F2,  F3,  F4,  F5,  F6,  F7,  F8,  F9,   F10,
 		NUML, SCRL, 7,    8,   9,   '-', 4,   5,   6,   '+', 1,   2,    3,   0, '.',
 		SYSR, 0,    WIN,  F11, F12, 0,   0,   WIN, WIN,
 	}
 };
+
+struct robject *keyboard;
 
 void kbd_irq(struct msg *msg) {
 	uint8_t scan;
@@ -124,7 +126,7 @@ void kbd_irq(struct msg *msg) {
 		case NUML: numlk = false; break;
 		default:
 			event = saprintf("key release %d\n", code);
-			robject_cause_event(robject_root, event);
+			robject_event(keyboard, event);
 			free(event);
 		}
 	}
@@ -135,27 +137,24 @@ void kbd_irq(struct msg *msg) {
 		case NUML: numlk = true; break;
 		default:
 			event = saprintf("key press %d\n", code);
-			robject_cause_event(robject_root, event);
+			robject_event(keyboard, event);
 			free(event);
 		}
 	}
 }
 
 int main(int argc, char **argv) {
-	struct robject *dev;
 
 	rdi_init();
 
 	// create device file
-	dev = rdi_event_cons(0, PERM_READ);
-	robject_set(0, dev);
-	robject_root = dev;
+	keyboard = rdi_event_cons(1, ACCS_READ);
 
 	// set IRQ handler
 	rdi_set_irq(1, kbd_irq);
 
 	// add to /dev
-	fs_plink("/dev/kbd", RP_CONS(getpid(), 0), NULL);
+	fs_plink("/dev/kbd", RP_CONS(getpid(), keyboard->index), NULL);
 
 	// daemonize
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);

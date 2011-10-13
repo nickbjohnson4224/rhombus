@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef STDINT_H
-#define STDINT_H
+#ifndef __RLIBC_STDINT_H
+#define __RLIBC_STDINT_H
 
 /* integer types ***********************************************************/
 
@@ -124,4 +124,4 @@ typedef uint32_t		size_t;
 
 #define NULL ((void*) 0)
 
-#endif/*STDINT_H*/
+#endif/*__RLIBC_STDINT_H*/

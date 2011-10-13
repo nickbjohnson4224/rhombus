@@ -44,23 +44,37 @@
 int main(int argc, char **argv) {
 	uint64_t fobj;
 	char *path;
-	char type;
+	const char *type;
 
 	if (argc < 2) {
 		fprintf(stderr, "%s: missing file operand\n", argv[0]);
 		return 1;
 	}
-		
-	if (argv[1][0] == '-' && argc > 2) {
-		type = argv[1][1];
+	
+	if (argc > 2) {
+
+		if (argv[1][0] == '-') {
+			switch (argv[1][1]) {
+			case 'd': type = "dir"; break;
+			case 'f': type = "file"; break;
+			case 'l': type = "link"; break;
+			default: 
+				fprintf(stderr, "%s: unknown type %c\n", argv[0], argv[1][1]);
+				return 1; break;
+			}
+		}
+		else {
+			type = argv[1];
+		}
+
 		path = path_simplify(argv[2]);
 	}
 	else {
-		type = 'f';
+		type = "file";
 		path = path_simplify(argv[1]);
 	}
 
-	fobj = fs_cons(path, typeflag(type));
+	fobj = fs_cons(path, type);
 	
 	if (!fobj) {
 		fprintf(stderr, "%s: cannot construct %s: ", argv[0], path);

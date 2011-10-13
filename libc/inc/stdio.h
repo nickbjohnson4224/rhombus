@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef STDIO_H
-#define STDIO_H
+#ifndef __RLIBC_STDIO_H
+#define __RLIBC_STDIO_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -30,29 +30,29 @@ typedef uint64_t fpos_t;
 /* file structure ***********************************************************/
 
 typedef struct _file {
-	uint64_t fd;			/* File descriptor */
+	uint64_t fd;       // File descriptor
 
-	bool mutex;				/* Mutex for buffers/position */
+	bool mutex;        // Mutex for buffers/position
 
-	fpos_t position;		/* File position */
-	fpos_t size;			/* File size */
+	fpos_t position;   // File position
+	fpos_t size;       // File size
 
-	uint8_t *buffer;		/* Stream buffer */
-	size_t buffpos;			/* Position in stream buffer */
-	size_t buffsize;		/* Size of stream buffer */
+	uint8_t *buffer;   // Stream buffer
+	size_t buffpos;    // Position in stream buffer
+	size_t buffsize;   // Size of stream buffer
 
-	int revbuf;				/* ungetc() reverse buffer */
+	int revbuf;        // ungetc() reverse buffer
 
-	uint8_t flags;			/* EOF/Error/various flags */
+	uint8_t flags;     // EOF/Error/various flags
 } FILE;
 
-#define FILE_EOF	0x01	/* End Of File */
-#define FILE_ERROR	0x02	/* File Error */
-#define FILE_FBF	0x04	/* Fully Buffered */
-#define FILE_LBF	0x08	/* Line Buffered */
-#define FILE_NBF	0x10	/* Not Buffered */
-#define FILE_READ	0x20	/* Read Access */
-#define FILE_WRITE	0x40	/* Write Access */
+#define FILE_EOF    0x01    // End Of File
+#define FILE_ERROR  0x02    // File Error
+#define FILE_FBF    0x04    // Fully Buffered
+#define FILE_LBF    0x08    // Line Buffered
+#define FILE_NBF    0x10    // Not Buffered
+#define FILE_READ   0x20    // Read Access
+#define FILE_WRITE  0x40    // Write Access
 
 /* constants ***************************************************************/
 
@@ -153,4 +153,4 @@ int    feof    (FILE *stream);
 int    ferror  (FILE *stream);
 void   perror  (const char *s);
 
-#endif/*STDIO_H*/
+#endif/*__RLIBC_STDIO_H*/

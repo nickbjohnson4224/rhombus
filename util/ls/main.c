@@ -32,9 +32,9 @@ int main(int argc, char **argv) {
 	else {
 		path = argv[1];
 	}
-	
+
 	dir = fs_find(path);
-	
+
 	if (!dir) {
 		fprintf(stderr, "%s: ", path_simplify(path));
 		perror(NULL);

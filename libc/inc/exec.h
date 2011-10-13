@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef EXEC_H
-#define EXEC_H
+#ifndef __RLIBC_EXEC_H
+#define __RLIBC_EXEC_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -61,4 +61,4 @@ struct dl_list {
 int dl_load(void *dl_image);
 int dl_exec(struct dl_list *list, size_t count);
 
-#endif/*EXEC_H*/
+#endif/*__RLIBC_EXEC_H*/

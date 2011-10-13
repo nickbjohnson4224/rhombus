@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ABI_H
-#define ABI_H
+#ifndef __RLIBC_ABI_H
+#define __RLIBC_ABI_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -40,8 +40,6 @@ uint32_t kcall(uint32_t call, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3
 #define KCALL_PROC_SET_UID		0x0115
 #define KCALL_PROC_SET_NAME		0x0116
 #define KCALL_PROC_GET_NAME		0x0117
-#define KCALL_PROC_GET_KEY		0x0120
-#define KCALL_PROC_GRANT_KEY	0x0121
 
 // thread management
 #define KCALL_THREAD_SPAWN		0x0200
@@ -89,7 +87,6 @@ uint64_t	_time(uint32_t selector);
 int         _proc(uint32_t pid, uint32_t selector, uint32_t value);
 int         _kill(uint32_t target, uint8_t signal);
 int         _name(char *name, uint32_t pid, uint32_t operation);
-int         _keys(uint32_t operation, uint32_t value, uint32_t target, uint64_t resource);
 
 #define GPID_SELF	0
 #define GPID_PARENT	1
@@ -109,10 +106,4 @@ int         _keys(uint32_t operation, uint32_t value, uint32_t target, uint64_t 
 #define PROC_READ_UID	2
 #define PROC_WRITE_UID	3
 
-#define KEYS_CHECK	0
-#define KEYS_GRANT	1
-#define KEYS_SHARE	2
-#define KEYS_DELETE	3
-#define KETS_RECALL	4
-
-#endif/*ABI_H*/
+#endif/*__RLIBC_ABI_H*/

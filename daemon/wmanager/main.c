@@ -28,20 +28,22 @@
 
 #include "wmanager.h"
 
+struct robject *class_window;
+
 uint64_t vgafd, mousefd, kbdfd;
 bool winkey;
 int next_index = 1;
 
-char *wmanager_rcall_listmodes(uint64_t source, uint32_t index, int argc, char **argv) {
+char *wmanager_rcall_listmodes(struct robject *self, uint64_t source, int argc, char **argv) {
 	return strdup("any");
 }
 
-char *wmanager_rcall_createwindow(uint64_t source, uint32_t index, int argc, char **argv) {
+char *wmanager_rcall_createwindow(struct robject *self, uint64_t source, int argc, char **argv) {
 	struct window_t *window;
 	char buffer[32];
 
 	sprintf(buffer, "/sys/wmanager/%i", next_index);
-	fs_cons(buffer, FS_TYPE_FILE | FS_TYPE_GRAPH | FS_TYPE_EVENT);
+	fs_cons(buffer, "file");
 	window = find_window(next_index - 1, 0);
 	if (!window) {
 		fprintf(stderr, "wmanager: unable to create window\n");
@@ -52,12 +54,12 @@ char *wmanager_rcall_createwindow(uint64_t source, uint32_t index, int argc, cha
 	return rtoa(RP_CONS(getpid(), next_index - 1));
 }
 
-char *wmanager_rcall_setmode(uint64_t source, uint32_t index, int argc, char **argv) {
+char *wmanager_rcall_setmode(struct robject *self, uint64_t source, int argc, char **argv) {
 	struct window_t *window;
 	int width, height;
 	int old_flags;
 
-	window = find_window(index, RP_PID(source));
+	window = find_window(self->index, RP_PID(source));
 	if (!window) return NULL;
 
 	if (argc != 4) return NULL;
@@ -79,20 +81,20 @@ char *wmanager_rcall_setmode(uint64_t source, uint32_t index, int argc, char **a
 	return strdup("T");
 }
 
-char *wmanager_rcall_getmode(uint64_t source, uint32_t index, int argc, char **argv) {
+char *wmanager_rcall_getmode(struct robject *self, uint64_t source, int argc, char **argv) {
 	struct window_t *window;
 
-	window = find_window(index, RP_PID(source));
+	window = find_window(self->index, RP_PID(source));
 	if (!window) return NULL;
 
 	return saprintf("%i %i 32", window->width, window->height);
 }
 
-char *wmanager_rcall_syncrect(uint64_t source, uint32_t index, int argc, char **argv) {
+char *wmanager_rcall_syncrect(struct robject *self, uint64_t source, int argc, char **argv) {
 	struct window_t *window;
 	int x, y, w, h;
 
-	window = find_window(index, RP_PID(source));
+	window = find_window(self->index, RP_PID(source));
 	if (!window) return NULL;
 
 	if (argc != 5) return NULL;
@@ -107,10 +109,10 @@ char *wmanager_rcall_syncrect(uint64_t source, uint32_t index, int argc, char **
 	return strdup("T");
 }
 
-char *wmanager_rcall_unshare(uint64_t source, uint32_t index, int argc, char **argv) {
+char *wmanager_rcall_unshare(struct robject *self, uint64_t source, int argc, char **argv) {
 	struct window_t *window;
 
-	window = find_window(index, RP_PID(source));
+	window = find_window(self->index, RP_PID(source));
 	if (!window) return NULL;
 
 	if (!window->bitmap) return NULL;
@@ -123,10 +125,10 @@ char *wmanager_rcall_unshare(uint64_t source, uint32_t index, int argc, char **a
 	return strdup("T");
 }
 
-char *wmanager_rcall_register(uint64_t source, uint32_t index, int argc, char **argv) {
+char *wmanager_rcall_register(struct robject *self, uint64_t source, int argc, char **argv) {
 	struct window_t *window;
 
-	window = find_window(index, RP_PID(source));
+	window = find_window(self->index, RP_PID(source));
 	if (!window) return NULL;
 
 	window->flags |= LISTEN_EVENTS;
@@ -134,10 +136,10 @@ char *wmanager_rcall_register(uint64_t source, uint32_t index, int argc, char **
 	return strdup("T");
 }
 
-char *wmanager_rcall_deregister(uint64_t source, uint32_t index, int argc, char **argv) {
+char *wmanager_rcall_deregister(struct robject *self, uint64_t source, int argc, char **argv) {
 	struct window_t *window;
 
-	window = find_window(index, RP_PID(source));
+	window = find_window(self->index, RP_PID(source));
 	if (!window) return NULL;
 
 	window->flags &= ~LISTEN_EVENTS;
@@ -145,20 +147,20 @@ char *wmanager_rcall_deregister(uint64_t source, uint32_t index, int argc, char 
 	return strdup("T");
 }
 
-char *wmanager_rcall_getwindowflags(uint64_t source, uint32_t index, int argc, char **argv) {
+char *wmanager_rcall_getwindowflags(struct robject *self, uint64_t source, int argc, char **argv) {
 	struct window_t *window;
 
-	window = find_window(index, RP_PID(source));
+	window = find_window(self->index, RP_PID(source));
 	if (!window) return NULL;
 
 	return saprintf("%i", window->flags);
 }
 
-char *wmanager_rcall_setwindowflags(uint64_t source, uint32_t index, int argc, char **argv) {
+char *wmanager_rcall_setwindowflags(struct robject *self, uint64_t source, int argc, char **argv) {
 	struct window_t *window;
 	int old_flags;
 
-	window = find_window(index, RP_PID(source));
+	window = find_window(self->index, RP_PID(source));
 	if (!window) return NULL;
 
 	if (argc != 2) return NULL;
@@ -173,21 +175,21 @@ char *wmanager_rcall_setwindowflags(uint64_t source, uint32_t index, int argc, c
 	return strdup("T");
 }
 
-char *wmanager_rcall_getmouse(uint64_t source, uint32_t index, int argc, char **argv) {
+char *wmanager_rcall_getmouse(struct robject *self, uint64_t source, int argc, char **argv) {
 	struct window_t *window;
 
-	window = find_window(index, RP_PID(source));
+	window = find_window(self->index, RP_PID(source));
 	if (!window) return NULL;
 
 	return saprintf("%i %i", mousex - window->x, mousey - window->y);
 }
 
-char *wmanager_rcall_setpanel(uint64_t source, uint32_t index, int argc, char **argv) {
+char *wmanager_rcall_setpanel(struct robject *self, uint64_t source, int argc, char **argv) {
 	struct window_t *window;
 
 	if (panel) return NULL;
 
-	window = find_window(index, RP_PID(source));
+	window = find_window(self->index, RP_PID(source));
 	if (!window) return NULL;
 
 	panel = window;
@@ -199,7 +201,7 @@ char *wmanager_rcall_setpanel(uint64_t source, uint32_t index, int argc, char **
 	return strdup("T");
 }
 
-char *wmanager_rcall_settags(uint64_t source, uint32_t index, int argc, char **argv) {
+char *wmanager_rcall_settags(struct robject *self, uint64_t source, int argc, char **argv) {
 	uint32_t new_tags;
 
 	if (!panel || RP_PID(source) != panel->owner) return NULL;
@@ -216,8 +218,8 @@ char *wmanager_rcall_settags(uint64_t source, uint32_t index, int argc, char **a
 	return strdup("T");
 }
 
-int wmanager_share(uint64_t source, uint32_t index, uint8_t *buffer, size_t size, uint64_t off) {
-	struct window_t *window = find_window(index, RP_PID(source));
+int wmanager_share(struct robject *self, uint64_t source, uint8_t *buffer, size_t size, uint64_t off) {
+	struct window_t *window = find_window(self->index, RP_PID(source));
 
 	if (off != 0) {
 		return -1;
@@ -238,35 +240,44 @@ int wmanager_share(uint64_t source, uint32_t index, uint8_t *buffer, size_t size
 	return 0;
 }
 
-void wmanager_sync(uint64_t source, uint32_t index) {
-	struct window_t *window = find_window(index, RP_PID(source));
+char *wmanager_rcall_sync(struct robject *self, rp_t source, int argc, char **argv) {
+	struct window_t *window = find_window(self->index, RP_PID(source));
 	
 	if (!window) {
-		return;
+		return NULL;
 	}
 
-	update_screen(window->x - 1, window->y - 1, window->x + window->width + 1, window->y + window->height + 1);
+	update_screen(window->x - 1, window->y - 1, 
+		window->x + window->width + 1, window->y + window->height + 1);
+
+	return strdup("T");
 }
 
-struct resource *wmanager_cons(uint64_t source, int type) {
-	struct resource *fobj = NULL;
+char *wmanager_rcall_cons(struct robject *self, rp_t source, int argc, char **argv) {
+	struct robject *new_r = NULL;
+	char *type;
 
 	if (RP_PID(source) != getpid()) {
 		return NULL;
 	}
 
-	if (FS_IS_FILE(type)) {
-		fobj        = resource_cons(FS_TYPE_FILE | FS_TYPE_GRAPH | FS_TYPE_EVENT, PERM_READ | PERM_WRITE);
-		fobj->size  = 0;
-		fobj->data  = NULL;
-		fobj->index = next_index++;
-		add_window(fobj->index);
+	if (argc == 2) {
+		type = argv[1];
+
+		if (!strcmp(type, "file")) {
+			new_r = robject_cons(robject_new_index(), class_window);
+			add_window(new_r->index);
+		}
+
+		if (new_r) {
+			return rtoa(RP_CONS(getpid(), new_r->index));
+		}
 	}
-	
-	return fobj;
+
+	return strdup("! arg");
 }
 
-void wmanager_key_event(uint64_t source, int argc, char **argv) {
+void wmanager_key_event(rp_t source, int argc, char **argv) {
 	char *event_str;
 	bool pressed;
 	int data;
@@ -297,7 +308,7 @@ void wmanager_key_event(uint64_t source, int argc, char **argv) {
 	}
 }
 
-void wmanager_mouse_event(uint64_t source, int argc, char **argv) {
+void wmanager_mouse_event(rp_t source, int argc, char **argv) {
 	char *event_str;
 	
 	if (source != mousefd) return;
@@ -327,7 +338,7 @@ void wmanager_mouse_event(uint64_t source, int argc, char **argv) {
 	}
 }
 
-void wmanager_graph_event(uint64_t source, int argc, char **argv) {
+void wmanager_graph_event(rp_t source, int argc, char **argv) {
 	
 	if (source != vgafd) return;
 	if (argc != 4) return;
@@ -338,6 +349,7 @@ void wmanager_graph_event(uint64_t source, int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
+	struct robject *root;
 	int width, height;
 
 	stdout = stderr = fopen("/dev/serial", "w");
@@ -347,26 +359,32 @@ int main(int argc, char **argv) {
 	}
 	mwait(PORT_CHILD, 0);
 
-	index_set(0, resource_cons(FS_TYPE_DIR, PERM_READ | PERM_WRITE));
+	root = rdi_dir_cons(0, ACCS_READ | ACCS_WRITE);
+	robject_set(0, root);
+	robject_root = root;
+	robject_set_data(root, "type", (void*) "wm");
+	robject_set_call(root, "createwindow", wmanager_rcall_createwindow);
+	robject_set_call(root, "cons",         wmanager_rcall_cons);
 
-	rcall_set("listmodes",      wmanager_rcall_listmodes);
-	rcall_set("createwindow",   wmanager_rcall_createwindow);
-	rcall_set("setmode",        wmanager_rcall_setmode);
-	rcall_set("getmode",        wmanager_rcall_getmode);
-	rcall_set("unshare",        wmanager_rcall_unshare);
-	rcall_set("register",       wmanager_rcall_register);
-	rcall_set("deregister",     wmanager_rcall_deregister);
-	rcall_set("getwindowflags", wmanager_rcall_getwindowflags);
-	rcall_set("setwindowflags", wmanager_rcall_setwindowflags);
-	rcall_set("syncrect",       wmanager_rcall_syncrect);
-	rcall_set("getmouse", 		wmanager_rcall_getmouse);
-	rcall_set("setpanel",		wmanager_rcall_setpanel);
-	rcall_set("settags",		wmanager_rcall_settags);
-
-	rdi_set_share(wmanager_share);
-	rdi_set_sync (wmanager_sync);
-	rdi_set_cons (wmanager_cons);
-	rdi_init_all();
+	class_window = robject_cons(0, rdi_class_core);
+	robject_set_data(class_window, "name", (void*) "class-window");
+	robject_set_data(class_window, "type", (void*) "window canvas share event");
+	robject_set_call(class_window, "listmodes",      wmanager_rcall_listmodes);
+	robject_set_call(class_window, "setmode",        wmanager_rcall_setmode);
+	robject_set_call(class_window, "getmode",        wmanager_rcall_getmode);
+	robject_set_call(class_window, "unshare",        wmanager_rcall_unshare);
+	robject_set_call(class_window, "getwindowflags", wmanager_rcall_getwindowflags);
+	robject_set_call(class_window, "setwindowflags", wmanager_rcall_setwindowflags);
+	robject_set_call(class_window, "syncrect",       wmanager_rcall_syncrect);
+	robject_set_call(class_window, "getmouse",       wmanager_rcall_getmouse);
+	robject_set_call(class_window, "setpanel",       wmanager_rcall_setpanel);
+	robject_set_call(class_window, "settags",        wmanager_rcall_settags);
+	robject_set_call(class_window, "register",       wmanager_rcall_register);
+	robject_set_call(class_window, "deregister",     wmanager_rcall_deregister);
+	robject_set_call(class_window, "subscribe",      wmanager_rcall_register);
+	robject_set_call(class_window, "unsubscribe",    wmanager_rcall_deregister);
+	
+	rdi_global_share_hook = wmanager_share;
 
 	fs_plink("/sys/wmanager", RP_CONS(getpid(), 0), NULL);
 
@@ -374,14 +392,14 @@ int main(int argc, char **argv) {
 	sscanf(rcall(vgafd, "getmode"), "%i %i", &width, &height);
 	resize_screen(width, height);
 
-	mousefd = fs_open("/dev/mouse");
-	kbdfd   = fs_open("/dev/kbd");
-	event_register(mousefd);
-	event_register(kbdfd);
-	event_register(vgafd);
-	event_set("mouse", wmanager_mouse_event);
-	event_set("key", wmanager_key_event);
-	event_set("graph", wmanager_graph_event);
+	mousefd = fs_find("/dev/mouse");
+	kbdfd   = fs_find("/dev/kbd");
+	event_subscribe(mousefd);
+	event_subscribe(kbdfd);
+	event_subscribe(vgafd);
+	event_hook("mouse", wmanager_mouse_event);
+	event_hook("key",   wmanager_key_event);
+	event_hook("graph", wmanager_graph_event);
 
 	current_tags = 1;
 

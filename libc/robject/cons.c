@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <struct.h>
 #include <stdlib.h>
 #include <mutex.h>
 
@@ -30,8 +31,7 @@ struct robject *robject_cons(uint32_t index, struct robject *parent) {
 
 	robject->call_table = NULL;
 	robject->data_table = NULL;
-	robject->evnt_table = NULL;
-	robject->event_subs = NULL;
+	robject->subs_table = NULL;
 
 	if (index) {
 		robject_set(index, robject);
@@ -54,10 +54,9 @@ void robject_free(struct robject *ro) {
 
 	mutex_spin(&ro->mutex);
 
-	__data_table_free(ro->call_table);
-	__data_table_free(ro->data_table);
-	__data_table_free(ro->evnt_table);
-	__event_set_free(ro->event_subs);
+	s_table_free(ro->call_table);
+	s_table_free(ro->data_table);
+	s_table_free(ro->subs_table);
 
 	free(ro);
 }

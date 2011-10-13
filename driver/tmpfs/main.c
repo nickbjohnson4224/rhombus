@@ -84,19 +84,19 @@ size_t tmpfs_write(struct robject *self, rp_t source, uint8_t *buffer, size_t si
 
 char *tmpfs_cons(struct robject *self, rp_t source, int argc, char **argv) {
 	struct robject *new_r = NULL;
-	int type;
+	char *type;
 
 	if (argc == 2) {
-		type = typeflag(argv[1][0]);
+		type = argv[1];
 
-		if (FS_IS_FILE(type)) {
-			new_r = rdi_file_cons(robject_new_index(), PERM_READ | PERM_WRITE);
+		if (!strcmp(type, "file")) {
+			new_r = rdi_file_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
 		}
-		else if (FS_IS_DIR(type)) {
-			new_r = rdi_dir_cons(robject_new_index(), PERM_READ | PERM_WRITE);
+		else if (!strcmp(type, "dir")) {
+			new_r = rdi_dir_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
 		}
-		else if (FS_IS_LINK(type)) {
-			new_r = rdi_link_cons(robject_new_index(), PERM_READ | PERM_WRITE, NULL);
+		else if (!strcmp(type, "link")) {
+			new_r = rdi_link_cons(robject_new_index(), ACCS_READ | ACCS_WRITE, NULL);
 		}
 
 		if (new_r) {
@@ -134,9 +134,7 @@ int main(int argc, char **argv) {
 	rdi_init();
 
 	// create root directory
-	root = rdi_dir_cons(0, PERM_READ | PERM_WRITE);
-	robject_set(0, root);
-	robject_root = root;
+	root = rdi_dir_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
 
 	// set interface functions
 	robject_set_call(rdi_class_core, "cons", tmpfs_cons);

@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef NATIO_H
-#define NATIO_H
+#ifndef __RLIBC_NATIO_H
+#define __RLIBC_NATIO_H
 
 #include <robject.h>
 #include <stdbool.h>
@@ -35,71 +35,20 @@ int    sync (rp_t rp);
 int    reset(rp_t rp);
 int    share(rp_t rp, void *buf, size_t size, off_t offset, int prot);
 
-uint64_t rp_cons (rp_t driver, int type);
-uint64_t rp_size (rp_t rp);
-int      rp_open (rp_t rp);
-int      rp_close(rp_t rp);
-
-/*****************************************************************************
- * resource types
- *
- * All resources must have exactly one of the following type flags:
- *   FS_TYPE_FILE					(f)
- *   FS_TYPE_DIR					(d)
- *   FS_TYPE_LINK					(l)
- *
- * Files of may have zero or one of these type flag sets:
- *   FS_TYPE_GRAPH 					(g)
- *   FS_TYPE_CHAR  					(c)
- *   FS_TYPE_EVENT 					(e)
- *   FS_TYPE_EVENT | FS_TYPE_GRAPH	(w)
- *
- * Directories may not have any additional type flags.
- *
- * Links may not have any additional type flags.
- *
- * Therefore, the following type values are valid:
- *   FS_TYPE_FILE    (f)  (FS_TYPE_FILE)
- *   FS_TYPE_DIR     (d)  (FS_TYPE_DIR)
- *   FS_TYPE_LINK    (l)  (FS_TYPE_LINK)
- *   FS_TYPE_GRAPHF  (g)  (FS_TYPE_FILE | FS_TYPE_GRAPH)
- *   FS_TYPE_EVENTF  (e)  (FS_TYPE_FILE | FS_TYPE_EVENT)
- *   FS_TYPE_WINDOW  (w)  (FS_TYPE_FILE | FS_TYPE_GRAPH | FS_TYPE_EVENT)
- *   FS_TYPE_CHARF   (c)  (FS_TYPE_FILE | FS_TYPE_CHAR)
- */
-
-int fs_type(const char *path);
-int rp_type(rp_t rp);
-
-char typechar(int type);
-int  typeflag(char type);
-
-#define FS_TYPE_FILE   0x01 // file (allows read, write, reset)
-#define FS_TYPE_DIR    0x02 // directory (allows find, link, list, etc.)
-#define FS_TYPE_LINK   0x04 // symbolic link
-#define FS_TYPE_EVENT  0x10 // event source flag (allows register, deregister)
-#define FS_TYPE_GRAPH  0x20 // graphics file flag (allows various)
-#define FS_TYPE_CHAR   0x40 // character device flag (disallows size, offsets)
-
-#define FS_TYPE_GRAPHF 0x21 // graphics file
-#define FS_TYPE_EVENTF 0x11 // event source
-#define FS_TYPE_WINDOW 0x31 // window
-#define FS_TYPE_CHARF  0x41 // character file
-
-#define FS_IS_FILE(t) (((t) & FS_TYPE_FILE) != 0)
-#define FS_IS_DIR(t) ((t) == FS_TYPE_DIR)
-#define FS_IS_LINK(t) ((t) == FS_TYPE_LINK)
+rp_t   rp_cons (rp_t rp, const char *type);
+off_t  rp_size (rp_t rp);
+void   rp_close(rp_t rp);
+int    rp_open (rp_t rp);
 
 /* filesystem operations ****************************************************/
 
-extern uint64_t fs_root;
+extern rp_t fs_root;
 
 rp_t  fs_find (const char *path);
 rp_t  fs_lfind(const char *path);
-rp_t  fs_cons (const char *path, int type);
+rp_t  fs_cons (const char *path, const char *type);
 char *fs_list (const char *path);
-rp_t  fs_size (const char *path);
-rp_t  fs_open (const char *path);
+off_t fs_size (const char *path);
 
 char *rp_list (rp_t dir);
 
@@ -111,11 +60,7 @@ char *rp_list (rp_t dir);
  * Hard links are simply directory entries, and are used for all directories
  * and files. Because of this, hard links are indistinguishable from files.
  * All metadata of a file is shared between its hard links, except for its
- * position in the VFS. Files may have an unlimited number of hard links, but
- * directories may only have one, to prevent a variety of problems. If you
- * want to link directories, use symbolic links. Once a file or directory has
- * no hard links, it is typically freed. Use fs_link to create hard links and
- * fs_ulink to remove them.
+ * position in the VFS.
  *
  * Symbolic links are redirections to a specified path. Because paths may
  * contain resource pointers, symbolic links may be used like UNIX
@@ -134,40 +79,47 @@ int rp_slink(rp_t rp, const char *link);
 int rp_plink(rp_t rp, rp_t link_rp, const char *link_path);
 int rp_link (rp_t dir, const char *name, rp_t link);
 
+/* robject type system ******************************************************/
+
+bool checktype   (const char *path, const char *type);
+bool checktype_rp(rp_t rp, const char *type);
+
 /*****************************************************************************
- * permission bitmap
+ * access bitmap
  *
- * The following flags correspond to bits that may be set in the permission
- * bitmap. Permissions can be assigned on a per-user basis, but not a 
- * per-process basis.
+ * The following flags correspond to bits that may be set in the access
+ * bitmap. Permissions can be assigned on a per-user basis.
  *
- * PERM_READ
+ * ACCS_READ  - 0x2
  *
- * This flag allows read access. For directories, this means finding and 
- * listing. For files, this means reading file contents.
+ * This flag allows read access. For directories and links, this means 
+ * finding and listing. For files, this means reading file contents.
  *
- * PERM_WRITE
+ * ACCS_WRITE - 0x4
  *
  * This flag allows write access. For directories, this means the creation and
  * deletion of hard links. For files, this means writing, clearing, and 
  * deleting files/file contents, as well as requesting file synchronization.
  * 
- * PERM_ALTER
+ * ACCS_ALTER - 0x8
  *
- * This flag allows the permission bitmap to be modified. Some drivers simply
+ * This flag allows the access bitmap to be modified. Some drivers simply
  * do not allow certain operations (usually writing, if the filesystem is
  * read-only) and this does not ensure that the permission bitmap will 
  * actually be modified as specified.
+ *
+ * These three flags are guaranteed to be implemented by all drivers.
  */
 
-uint8_t fs_getperm(const char *path, uint32_t user);
-int     fs_setperm(const char *path, uint32_t user, uint8_t perm);
+#define ACCS_PING	0x01
+#define ACCS_READ	0x02
+#define ACCS_WRITE	0x04
+#define ACCS_ALTER	0x08
 
-uint8_t rp_getperm(rp_t rp, uint32_t user);
-int     rp_setperm(rp_t rp, uint32_t user, uint8_t perm);
+uint8_t getaccess   (const char *path, uint32_t user);
+uint8_t getaccess_rp(rp_t rp, uint32_t user);
 
-#define PERM_READ	0x01
-#define PERM_WRITE	0x02
-#define PERM_ALTER	0x04
+int     setaccess   (const char *path, uint32_t user, uint8_t access);
+int     setaccess_rp(rp_t rp, uint32_t user, uint8_t access);
 
-#endif/*NATIO_H*/
+#endif/*__RLIBC_NATIO_H*/

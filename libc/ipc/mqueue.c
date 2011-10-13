@@ -32,6 +32,20 @@ struct mqueue {
 };
 
 static struct mqueue mqueue[256];
+static bool   mqueue_policy[256];
+
+/*****************************************************************************
+ * mqueue_set_policy
+ *
+ * Set the policy for queueing messages from a specified port. If <do_queue>
+ * is true, messages from the port are queued. If <do_queue> is false, 
+ * messages from the port are not queued. By default, all ports are set to
+ * queue.
+ */
+
+void mqueue_set_policy(uint8_t port, bool do_queue) {	
+	mqueue_policy[port] = (do_queue) ? false : true;
+}
 
 /*****************************************************************************
  * mqueue_push
@@ -50,6 +64,10 @@ int mqueue_push(struct msg *msg) {
 	}
 
 	port = msg->port;
+
+	if (mqueue_policy[port] == true) {
+		return 0;
+	}
 
 	mutex_spin(&mqueue[port].mutex);
 

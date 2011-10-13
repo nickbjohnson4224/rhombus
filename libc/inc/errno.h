@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#ifndef __RLIBC_ERRNO_H
+#define __RLIBC_ERRNO_H
 
 #include <proc.h>
 
@@ -52,4 +52,4 @@ extern int errnov[MAX_THREADS];
 #define ENOTEMPTY 23
 #define ETIMEDOUT 24
 
-#endif/*ERRNO_H*/
+#endif/*__RLIBC_ERRNO_H*/
