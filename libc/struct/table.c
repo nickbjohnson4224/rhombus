@@ -214,7 +214,7 @@ static void *_get(struct s_table *table, const char *field) {
 	return NULL;
 }
 
-static void _iter(struct s_table *table, void (*func)(const char *, void *)) {
+static void _iter(struct s_table *table, void *arg0, void (*func)(void *, const char *, void *)) {
 	struct s_table_entry *entry;
 	uint32_t index;
 
@@ -227,7 +227,7 @@ static void _iter(struct s_table *table, void (*func)(const char *, void *)) {
 		}
 
 		while (entry) {
-			func(entry->string, entry->data);
+			func(arg0, entry->string, entry->data);
 			entry = entry->next;
 		}
 	}
@@ -343,8 +343,8 @@ void *s_table_getv(struct s_table *table, const char *field, ...) {
 	return table;
 }
 
-void s_table_iter(struct s_table *table, void (*iter)(const char *, void *)) {
-	_iter(table, iter);
+void s_table_iter(struct s_table *table, void *arg0, void (*iter)(void *, const char *, void *)) {
+	if (table) _iter(table, arg0, iter);
 }
 
 struct s_table *s_table_seti(struct s_table *table, uint32_t field, void *data) {

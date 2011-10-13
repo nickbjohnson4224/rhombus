@@ -167,7 +167,7 @@ struct robject {
 	// robject fields
 	struct s_table *call_table; // table of rcall hooks
 	struct s_table *data_table; // table of general data
-	struct __robject_event_set  *event_subs; // list of event subscribers
+	struct s_table *subs_table; // table of event subscribers
 };
 
 // constructor/destructor

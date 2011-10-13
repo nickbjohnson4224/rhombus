@@ -46,6 +46,6 @@ struct s_table *s_table_setv(struct s_table *table, void *data, const char *fiel
 void           *s_table_getv(struct s_table *table, const char *field, ...);
 
 void            s_table_free(struct s_table *table);
-void            s_table_iter(struct s_table *table, void (*iter)(const char*, void*));
+void            s_table_iter(struct s_table *table, void *arg0, void (*iter)(void *, const char*, void*));
 
 #endif/*__RLIBC_STRUCT_H*/

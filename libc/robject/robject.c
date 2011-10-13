@@ -85,7 +85,7 @@ void robject_add_subscriber(struct robject *ro, rp_t target) {
 	
 	if (ro) {
 		mutex_spin(&ro->mutex);
-		ro->event_subs = __event_set_add(ro->event_subs, target);
+		ro->subs_table = s_table_setv(ro->subs_table, (void*) 1, "%r", target);
 		mutex_free(&ro->mutex);
 	}
 }
@@ -94,7 +94,7 @@ void robject_del_subscriber(struct robject *ro, rp_t target) {
 	
 	if (ro) {
 		mutex_spin(&ro->mutex);
-		ro->event_subs = __event_set_del(ro->event_subs, target);
+		ro->subs_table = s_table_setv(ro->subs_table, NULL, "%r", target);
 		mutex_free(&ro->mutex);
 	}
 }
@@ -103,11 +103,15 @@ void robject_del_subscriber(struct robject *ro, rp_t target) {
  * basic interface
  */
 
+void __iter(void *arg0, const char *key, void *value) {
+	event(ator(key), arg0);
+}
+
 void robject_event(struct robject *ro, const char *event) {
 	
 	if (ro) {
 		mutex_spin(&ro->mutex);
-		__event_set_send(ro->event_subs, event);
+		s_table_iter(ro->subs_table, (void*) event, __iter);
 		mutex_free(&ro->mutex);
 	}
 }
