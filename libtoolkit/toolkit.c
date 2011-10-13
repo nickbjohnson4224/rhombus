@@ -16,6 +16,7 @@
  */
 
 #include <robject.h>
+#include <event.h>
 #include "toolkit.h"
 #include <natio.h>
 #include <stdlib.h>

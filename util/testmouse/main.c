@@ -15,10 +15,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <exec.h>
 #include <natio.h>
-#include <proc.h>
 #include <stdio.h>
+#include <event.h>
+#include <proc.h>
 
 void mouse_event(rp_t source, int argc, char **argv) {
 	int i;

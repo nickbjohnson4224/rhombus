@@ -18,6 +18,7 @@
 #include <graph.h>
 #include <stdlib.h>
 #include <mutex.h>
+#include <event.h>
 #include <natio.h>
 #include <page.h>
 

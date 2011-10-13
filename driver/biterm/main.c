@@ -18,6 +18,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <event.h>
 #include <stdio.h>
 #include <proc.h>
 #include <exec.h>

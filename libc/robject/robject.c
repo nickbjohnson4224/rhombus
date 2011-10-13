@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <event.h>
 #include <mutex.h>
 #include <proc.h>
 #include <abi.h>

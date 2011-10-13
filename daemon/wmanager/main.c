@@ -19,6 +19,7 @@
 #include <string.h>
 #include <mutex.h>
 #include <stdio.h>
+#include <event.h>
 #include <exec.h>
 #include <proc.h>
 #include <page.h>

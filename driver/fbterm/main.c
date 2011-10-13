@@ -19,6 +19,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <event.h>
 #include <proc.h>
 #include <exec.h>
 #include <math.h>

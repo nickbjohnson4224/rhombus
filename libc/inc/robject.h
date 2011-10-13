@@ -36,8 +36,13 @@
  * passing IPC layer.
  */
 
-struct robject; // defined below
+// defined below
+struct robject;
 
+// class from which all others are derived
+extern struct robject *robject_class_basic;
+
+// called from libc initialization; sets up robject_class_basic
 void __robject_init(void);
 
 /*****************************************************************************
@@ -97,31 +102,6 @@ typedef char *(*rcall_t)(struct robject *self, rp_t src, int argc, char **argv);
 
 char *rcall(rp_t rp, const char *fmt, ...);
 
-/**************************************************************************** 
- * Rhombus Object Event System (event)
- *
- * The event protocol is an asyncronous, broadcasting parallel of the rcall 
- * protocol. Only a single ASCII string is sent as event data, and events are 
- * sent from robjects to processes. Each robject maintains a list of "event 
- * subscribers", to which messages are sent if an event is to be sent from 
- * that robject. Think of it as an RSS feed.
- *
- * Instead of a method name like in rcall, event uses the first token of the
- * argument string as an event type, which is used to route it. Event types
- * should be used to group similar events together (like keypress events, or
- * mouse movement events, or window events.)
- */
-
-// event hook format
-typedef void (*event_t)(rp_t src, int argc, char **argv);
-
-int event_subscribe  (rp_t event_source);
-int event_unsubscribe(rp_t event_source);
-
-int event(rp_t rp, const char *value);
-
-int event_hook(const char *type, event_t hook);
-
 /*****************************************************************************
  * Rhombus Object Indexing and Lookup
  */
@@ -165,22 +145,13 @@ void   *robject_get_data(struct robject *ro, const char *field);
 void    robject_add_subscriber(struct robject *ro, rp_t target);
 void    robject_del_subscriber(struct robject *ro, rp_t target);
 
+// type system
+int     robject_is_type(const char *typestr, const char *type);
+int     robject_check_type(struct robject *ro, const char *type);
+
 // basic interface
 void  robject_event(struct robject *ro, const char *event);
 char *robject_call (struct robject *ro, rp_t source, const char *args);
 void *robject_data (struct robject *ro, const char *field);
-
-/*****************************************************************************
- * Standard Classes
- */
-
-extern struct robject *robject_class_basic;
-
-/*****************************************************************************
- * Type System
- */
-
-int robject_is_type(const char *typestr, const char *type);
-int robject_check_type(struct robject *ro, const char *type);
 
 #endif/*__RLIBC_ROBJECT_H*/
