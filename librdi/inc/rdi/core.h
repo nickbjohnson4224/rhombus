@@ -97,22 +97,6 @@ struct robject *rdi_core_cons(uint32_t index, uint32_t access);
 void            rdi_core_free(struct robject *r);
 
 /*****************************************************************************
- * rdi_class_event (extends rdi_class_core) - event
- *
- * Calls:
- *
- * subscribe (target) - R
- *
- * unsubscribe (target) - W
- */
-
-extern struct robject *rdi_class_event;
-void __rdi_class_event_setup();
-
-struct robject *rdi_event_cons(uint32_t index, uint32_t access);
-void            rdi_event_free(struct robject *r);
-
-/*****************************************************************************
  * RDI Access Control
  */
 

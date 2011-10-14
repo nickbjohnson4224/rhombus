@@ -127,8 +127,11 @@ struct robject {
 
 	// robject fields
 	struct s_table *call_table; // table of rcall hooks
+	struct s_table *call_stat_table; // table of rcall status levels
 	struct s_table *data_table; // table of general data
 	struct s_table *subs_table; // table of event subscribers
+	struct s_table *open_table; // table of openers and open statuses
+	struct s_table *accs_table; // table of user access bitmaps
 };
 
 // constructor/destructor
@@ -136,7 +139,7 @@ struct robject *robject_cons(uint32_t index, struct robject *parent);
 void            robject_free(struct robject *ro);
 
 // various field manipulations
-void    robject_set_call(struct robject *ro, const char *call, rcall_t hook);
+void    robject_set_call(struct robject *ro, const char *call, rcall_t hook, int status);
 rcall_t robject_get_call(struct robject *ro, const char *call);
 void    robject_set_data(struct robject *ro, const char *field, void *data);
 void   *robject_get_data(struct robject *ro, const char *field);
@@ -149,9 +152,21 @@ void    robject_del_subscriber(struct robject *ro, rp_t target);
 int     robject_is_type(const char *typestr, const char *type);
 int     robject_check_type(struct robject *ro, const char *type);
 
+// permission system
+int  robject_check_access(struct robject *ro, rp_t source, int access);
+int  robject_check_status(struct robject *ro, rp_t source, int status);
+
+void robject_set_access  (struct robject *ro, rp_t source, int access);
+int  robject_get_access  (struct robject *ro, rp_t source);
+void robject_set_default_access(struct robject *ro, int access);
+
 // basic interface
 void  robject_event(struct robject *ro, const char *event);
 char *robject_call (struct robject *ro, rp_t source, const char *args);
 void *robject_data (struct robject *ro, const char *field);
+
+int   robject_open (struct robject *ro, rp_t source, int access);
+int   robject_stat (struct robject *ro, rp_t source);
+void  robject_close(struct robject *ro, rp_t source);
 
 #endif/*__RLIBC_ROBJECT_H*/

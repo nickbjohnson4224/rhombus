@@ -66,8 +66,6 @@ static char *_find(struct robject *r, rp_t src, int argc, char **argv) {
 	const char *tail;
 	bool link;
 
-	if (!rdi_check_access(r, src, ACCS_READ)) return strdup("! denied");
-
 	if (argc <= 1) return strdup("! arg");
 
 	// check for link follow flag
@@ -103,8 +101,6 @@ static char *_list(struct robject *r, rp_t src, int argc, char **argv) {
 	char *list;
 	char *temp;
 
-	if (!rdi_check_access(r, src, ACCS_READ)) return strdup("! denied");
-
 	list = NULL;
 	node = robject_data(r, "list");
 
@@ -135,8 +131,6 @@ static char *_link(struct robject *r, rp_t src, int argc, char **argv) {
 	uint32_t index;
 	struct robject *hardlink;
 	struct __dirent_list *list, *node;
-
-	if (!rdi_check_access(r, src, ACCS_WRITE)) return strdup("! denied");
 
 	if (argc == 3) {
 		entry = argv[1];
@@ -183,8 +177,6 @@ static char *_unlink(struct robject *r, rp_t src, int argc, char **argv) {
 	char *lookup;
 	struct __dirent_list *list;
 
-	if (!rdi_check_access(r, src, ACCS_WRITE)) return strdup("! denied");
-
 	if (argc == 2) {
 		entry = argv[1];
 
@@ -229,10 +221,10 @@ void __rdi_class_dir_setup() {
 	
 	rdi_class_dir = robject_cons(0, rdi_class_core);
 
-	robject_set_call(rdi_class_dir, "find", _find);
-	robject_set_call(rdi_class_dir, "list", _list);
-	robject_set_call(rdi_class_dir, "link", _link);
-	robject_set_call(rdi_class_dir, "unlink", _unlink);
+	robject_set_call(rdi_class_dir, "find",   _find,   0);
+	robject_set_call(rdi_class_dir, "list",   _list,   STAT_READER);
+	robject_set_call(rdi_class_dir, "link",   _link,   STAT_WRITER);
+	robject_set_call(rdi_class_dir, "unlink", _unlink, STAT_WRITER);
 
 	robject_set_data(rdi_class_dir, "type", (void*) "dir");
 	robject_set_data(rdi_class_dir, "name", (void*) "RDI-class-dir");
@@ -242,6 +234,7 @@ struct robject *rdi_dir_cons(uint32_t index, uint32_t access) {
 	struct robject *r;
 
 	r = robject_cons(index, rdi_class_dir);
+	robject_set_default_access(r, access);
 	rdi_set_access_default(r, access);
 
 	return r;

@@ -23,8 +23,8 @@
 #include <ipc.h>
 
 #include <rdi/core.h>
-#include <rdi/vfs.h>
 #include <rdi/arch.h>
+#include <rdi/vfs.h>
 #include <rdi/io.h>
 
 #include "svga.h"
@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
 
 	rdi_init();
 
-	canvas = rdi_event_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
+	canvas = rdi_file_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
 	robject_set_data(canvas, "type", (void*) "canvas share");
 
 	svga_init();
@@ -140,12 +140,12 @@ int main(int argc, char **argv) {
 	buffer = malloc(svga.w * svga.h * 4);
 
 	/* set up driver interface */
-	robject_set_call(canvas, "getmode",   svga_rcall_getmode);
-	robject_set_call(canvas, "listmodes", svga_rcall_listmodes);
-	robject_set_call(canvas, "unshare",   svga_rcall_unshare);
-	robject_set_call(canvas, "setmode",   svga_rcall_setmode);
-	robject_set_call(canvas, "syncrect",  svga_rcall_syncrect);
-	robject_set_call(canvas, "sync",      svga_rcall_sync);
+	robject_set_call(canvas, "getmode",   svga_rcall_getmode,   STAT_READER);
+	robject_set_call(canvas, "listmodes", svga_rcall_listmodes, STAT_READER);
+	robject_set_call(canvas, "unshare",   svga_rcall_unshare,   STAT_WRITER);
+	robject_set_call(canvas, "setmode",   svga_rcall_setmode,   STAT_WRITER);
+	robject_set_call(canvas, "syncrect",  svga_rcall_syncrect,  STAT_WRITER);
+	robject_set_call(canvas, "sync",      svga_rcall_sync,      STAT_WRITER);
 	rdi_global_share_hook = svga_share;
 
 	/* register the driver as /dev/svga0 */

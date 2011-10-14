@@ -26,10 +26,10 @@
  * Returns zero on success, nonzero on error.
  */
 
-int rp_open(uint64_t rp) {
+int rp_open(rp_t rp, int status) {
 	char *reply;
 
-	reply = rcall(rp, "open");
+	reply = rcall(rp, "open %d", status);
 
 	if (!reply) {
 		errno = ENOSYS;
@@ -56,7 +56,7 @@ int rp_open(uint64_t rp) {
  * resource on success, zero on error.
  */
 
-uint64_t fs_open(const char *path) {
+rp_t fs_open(const char *path, int status) {
 	uint64_t rp;
 
 	rp = fs_find(path);
@@ -65,7 +65,7 @@ uint64_t fs_open(const char *path) {
 		return 0;
 	}
 
-	if (rp_open(rp)) {
+	if (rp_open(rp, status)) {
 		return 0;
 	}
 

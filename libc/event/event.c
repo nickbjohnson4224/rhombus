@@ -45,7 +45,7 @@ int event(rp_t rp, const char *value) {
 int event_subscribe(rp_t rp) {
 	char *reply;
 
-	reply = rcall(rp, "subscribe");
+	reply = rcall(rp, "open %d", STAT_EVENT);
 
 	if (!reply) return 1;
 	
@@ -56,7 +56,7 @@ int event_subscribe(rp_t rp) {
 int event_unsubscribe(rp_t rp) {
 	char *reply;
 
-	reply = rcall(rp, "unsubscribe");
+	reply = rcall(rp, "close %d", STAT_EVENT);
 
 	if (!reply) return 1;
 

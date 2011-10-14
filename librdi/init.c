@@ -21,7 +21,6 @@
 void rdi_init() {
 	
 	__rdi_class_core_setup();
-	__rdi_class_event_setup();
 	__rdi_class_dir_setup();
 	__rdi_class_link_setup();
 	__rdi_class_file_setup();

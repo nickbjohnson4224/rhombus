@@ -35,10 +35,20 @@ int    sync (rp_t rp);
 int    reset(rp_t rp);
 int    share(rp_t rp, void *buf, size_t size, off_t offset, int prot);
 
-rp_t   rp_cons (rp_t rp, const char *type);
-off_t  rp_size (rp_t rp);
-void   rp_close(rp_t rp);
-int    rp_open (rp_t rp);
+rp_t  rp_cons(rp_t rp, const char *type);
+off_t rp_size(rp_t rp);
+
+/* opening and closing files ************************************************/
+
+#define STAT_OPEN	0x01
+#define STAT_READER	0x02
+#define STAT_WRITER	0x04
+#define STAT_ADMIN	0x08
+#define STAT_EVENT	0x10
+
+int    rp_open (rp_t rp, int status); // XXX IMP
+int    rp_stat (rp_t rp); // XXX IMP
+void   rp_close(rp_t rp); // XXX IMP
 
 /* filesystem operations ****************************************************/
 
@@ -46,6 +56,7 @@ extern rp_t fs_root;
 
 rp_t  fs_find (const char *path);
 rp_t  fs_lfind(const char *path);
+rp_t  fs_open (const char *path, int status); // XXX IMP
 rp_t  fs_cons (const char *path, const char *type);
 char *fs_list (const char *path);
 off_t fs_size (const char *path);
@@ -111,10 +122,10 @@ bool checktype_rp(rp_t rp, const char *type);
  * These three flags are guaranteed to be implemented by all drivers.
  */
 
-#define ACCS_PING	0x01
 #define ACCS_READ	0x02
 #define ACCS_WRITE	0x04
 #define ACCS_ALTER	0x08
+#define ACCS_EVENT	0x10
 
 uint8_t getaccess   (const char *path, uint32_t user);
 uint8_t getaccess_rp(rp_t rp, uint32_t user);

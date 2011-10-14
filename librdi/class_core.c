@@ -23,17 +23,6 @@
 
 #include <rdi/core.h>
 
-static char *_find(struct robject *r, rp_t src, int argc, char **argv) {
-	return rtoa(RP_CONS(getpid(), r->index));
-}
-
-static char *_open(struct robject *r, rp_t src, int argc, char **argv) {
-
-	if (!rdi_check_access(r, src, ACCS_READ)) return strdup("! denied");
-
-	return strdup("T");
-}
-
 static char *_get_access(struct robject *r, rp_t src, int argc, char **argv) {
 	uint32_t bitmap;
 	uint32_t user;
@@ -57,8 +46,6 @@ static char *_set_access(struct robject *r, rp_t src, int argc, char **argv) {
 	uint32_t bitmap;
 	uint32_t user;
 
-	if (!rdi_check_access(r, src, ACCS_ALTER)) return strdup("! denied");
-
 	if (argc == 2) {
 		user = getuser(RP_PID(src));
 		sscanf(argv[1], "%X", &bitmap);
@@ -76,21 +63,14 @@ static char *_set_access(struct robject *r, rp_t src, int argc, char **argv) {
 	return strdup("T");
 }
 
-static char *_sync(struct robject *r, rp_t src, int argc, char **argv) {
-	return strdup("T");
-}
-
 struct robject *rdi_class_core;
 
 void __rdi_class_core_setup() {
 	
 	rdi_class_core = robject_cons(0, robject_class_basic);
 
-	robject_set_call(rdi_class_core, "find", _find);
-	robject_set_call(rdi_class_core, "get-access", _get_access);
-	robject_set_call(rdi_class_core, "set-access", _set_access);
-	robject_set_call(rdi_class_core, "sync", _sync);
-	robject_set_call(rdi_class_core, "open", _open);
+	robject_set_call(rdi_class_core, "get-access", _get_access, 0);
+	robject_set_call(rdi_class_core, "set-access", _set_access, STAT_ADMIN);
 
 	robject_set_data(rdi_class_core, "type", (void*) "driver");
 	robject_set_data(rdi_class_core, "name", (void*) "RDI-class-core");
@@ -100,6 +80,7 @@ struct robject *rdi_core_cons(uint32_t index, uint32_t access) {
 	struct robject *r;
 
 	r = robject_cons(index, rdi_class_core);
+	robject_set_default_access(r, access);
 	rdi_set_access_default(r, access);
 
 	return r;

@@ -162,7 +162,7 @@ int main(int argc, char **argv) {
 	robject_root = root;
 
 	// set interface functions
-	robject_set_call(rdi_class_core, "cons", pipe_cons);
+	robject_set_call(rdi_class_core, "cons", pipe_cons, 0);
 	rdi_global_write_hook = pipe_write;
 	rdi_global_read_hook  = pipe_read;
 

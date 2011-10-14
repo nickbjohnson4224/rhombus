@@ -17,6 +17,7 @@
 #include <struct.h>
 #include <stdlib.h>
 #include <mutex.h>
+#include <natio.h>
 
 #include <robject.h>
 
@@ -30,8 +31,10 @@ struct robject *robject_cons(uint32_t index, struct robject *parent) {
 	robject->parent = parent;
 
 	robject->call_table = NULL;
+	robject->call_stat_table = NULL;
 	robject->data_table = NULL;
-	robject->subs_table = NULL;
+	robject->open_table = NULL;
+	robject->accs_table = NULL;
 
 	if (index) {
 		robject_set(index, robject);
@@ -55,8 +58,10 @@ void robject_free(struct robject *ro) {
 	mutex_spin(&ro->mutex);
 
 	s_table_free(ro->call_table);
+	s_table_free(ro->call_stat_table);
 	s_table_free(ro->data_table);
-	s_table_free(ro->subs_table);
+	s_table_free(ro->open_table);
+	s_table_free(ro->accs_table);
 
 	free(ro);
 }

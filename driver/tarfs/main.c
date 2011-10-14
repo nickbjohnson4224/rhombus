@@ -194,7 +194,7 @@ int main(int argc, char **argv) {
 	free(block);
 
 	/* set up interface */
-	robject_set_call(rdi_class_core, "cons", tarfs_cons);
+	robject_set_call(rdi_class_core, "cons", tarfs_cons, 0);
 	rdi_global_read_hook = tarfs_read;
 
 	/* daemonize */

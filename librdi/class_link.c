@@ -28,8 +28,6 @@ static char *_find(struct robject *r, rp_t src, int argc, char **argv) {
 
 	link = robject_get_data(r, "link");
 
-	if (!rdi_check_access(r, src, ACCS_READ)) return strdup("! denied");
-
 	if (argc == 2) {
 		if (link) {
 			return saprintf(">> %s", link);
@@ -49,7 +47,9 @@ static char *_set_link(struct robject *r, rp_t src, int argc, char **argv) {
 	char *link;
 	char *old;
 
-	if (!rdi_check_access(r, src, ACCS_WRITE)) return strdup("! denied");
+	if (!robject_check_access(r, src, ACCS_WRITE)) {
+		return strdup("! denied");
+	}
 
 	if (argc == 2) {
 		link = argv[1];
@@ -66,7 +66,9 @@ static char *_set_link(struct robject *r, rp_t src, int argc, char **argv) {
 
 static char *_get_link(struct robject *r, rp_t src, int argc, char **argv) {
 
-	if (!rdi_check_access(r, src, ACCS_READ)) return strdup("! denied");
+	if (!robject_check_access(r, src, ACCS_READ)) {
+		return strdup("! denied");
+	}
 
 	return strdup(robject_get_data(r, "link"));
 }
@@ -77,9 +79,9 @@ void __rdi_class_link_setup() {
 	
 	rdi_class_link = robject_cons(0, rdi_class_core);
 
-	robject_set_call(rdi_class_link, "find", _find);
-	robject_set_call(rdi_class_link, "set-link", _set_link);
-	robject_set_call(rdi_class_link, "get-link", _get_link);
+	robject_set_call(rdi_class_link, "find",     _find,     0);
+	robject_set_call(rdi_class_link, "set-link", _set_link, STAT_WRITER);
+	robject_set_call(rdi_class_link, "get-link", _get_link, STAT_READER);
 
 	robject_set_data(rdi_class_link, "type", (void*) "link");
 	robject_set_data(rdi_class_link, "name", (void*) "RDI-class-link");
@@ -89,6 +91,7 @@ struct robject *rdi_link_cons(uint32_t index, uint32_t access, const char *link)
 	struct robject *r;
 
 	r = robject_cons(index, rdi_class_link);
+	robject_set_default_access(r, access);
 	rdi_set_access_default(r, access);
 	if (link) robject_set_data(r, "link", strdup(link));
 

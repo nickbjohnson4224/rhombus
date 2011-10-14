@@ -126,7 +126,7 @@ char *wmanager_rcall_unshare(struct robject *self, uint64_t source, int argc, ch
 	return strdup("T");
 }
 
-char *wmanager_rcall_register(struct robject *self, uint64_t source, int argc, char **argv) {
+/*char *wmanager_rcall_register(struct robject *self, uint64_t source, int argc, char **argv) {
 	struct window_t *window;
 
 	window = find_window(self->index, RP_PID(source));
@@ -146,7 +146,7 @@ char *wmanager_rcall_deregister(struct robject *self, uint64_t source, int argc,
 	window->flags &= ~LISTEN_EVENTS;
 
 	return strdup("T");
-}
+} */
 
 char *wmanager_rcall_getwindowflags(struct robject *self, uint64_t source, int argc, char **argv) {
 	struct window_t *window;
@@ -364,26 +364,24 @@ int main(int argc, char **argv) {
 	robject_set(0, root);
 	robject_root = root;
 	robject_set_data(root, "type", (void*) "wm");
-	robject_set_call(root, "createwindow", wmanager_rcall_createwindow);
-	robject_set_call(root, "cons",         wmanager_rcall_cons);
+	robject_set_call(root, "createwindow", wmanager_rcall_createwindow, 0);
+	robject_set_call(root, "cons",         wmanager_rcall_cons, 0);
 
 	class_window = robject_cons(0, rdi_class_core);
+
 	robject_set_data(class_window, "name", (void*) "class-window");
 	robject_set_data(class_window, "type", (void*) "window canvas share event");
-	robject_set_call(class_window, "listmodes",      wmanager_rcall_listmodes);
-	robject_set_call(class_window, "setmode",        wmanager_rcall_setmode);
-	robject_set_call(class_window, "getmode",        wmanager_rcall_getmode);
-	robject_set_call(class_window, "unshare",        wmanager_rcall_unshare);
-	robject_set_call(class_window, "getwindowflags", wmanager_rcall_getwindowflags);
-	robject_set_call(class_window, "setwindowflags", wmanager_rcall_setwindowflags);
-	robject_set_call(class_window, "syncrect",       wmanager_rcall_syncrect);
-	robject_set_call(class_window, "getmouse",       wmanager_rcall_getmouse);
-	robject_set_call(class_window, "setpanel",       wmanager_rcall_setpanel);
-	robject_set_call(class_window, "settags",        wmanager_rcall_settags);
-	robject_set_call(class_window, "register",       wmanager_rcall_register);
-	robject_set_call(class_window, "deregister",     wmanager_rcall_deregister);
-	robject_set_call(class_window, "subscribe",      wmanager_rcall_register);
-	robject_set_call(class_window, "unsubscribe",    wmanager_rcall_deregister);
+
+	robject_set_call(class_window, "listmodes",      wmanager_rcall_listmodes, 0);
+	robject_set_call(class_window, "setmode",        wmanager_rcall_setmode,   0);
+	robject_set_call(class_window, "getmode",        wmanager_rcall_getmode,   STAT_READER);
+	robject_set_call(class_window, "unshare",        wmanager_rcall_unshare,   STAT_WRITER);
+	robject_set_call(class_window, "getwindowflags", wmanager_rcall_getwindowflags, STAT_READER);
+	robject_set_call(class_window, "setwindowflags", wmanager_rcall_setwindowflags, STAT_READER);
+	robject_set_call(class_window, "syncrect",       wmanager_rcall_syncrect,  STAT_WRITER);
+	robject_set_call(class_window, "getmouse",       wmanager_rcall_getmouse,  STAT_READER);
+	robject_set_call(class_window, "setpanel",       wmanager_rcall_setpanel,  STAT_WRITER);
+	robject_set_call(class_window, "settags",        wmanager_rcall_settags,   STAT_WRITER);
 	
 	rdi_global_share_hook = wmanager_share;
 

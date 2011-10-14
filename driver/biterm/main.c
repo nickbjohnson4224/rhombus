@@ -184,10 +184,10 @@ int main(int argc, char **argv) {
 	event_subscribe(kbd_dev);
 	event_hook("key", fbterm_key_event);
 
-	robject_set_call(term, "clear",       fbterm_rcall_clear);
-	robject_set_call(term, "set_fgjob",   fbterm_rcall_set_fgjob);
-	robject_set_call(term, "set_fgcolor", fbterm_rcall_set_fgcolor);
-	robject_set_call(term, "set_bgcolor", fbterm_rcall_set_bgcolor);
+	robject_set_call(term, "clear",       fbterm_rcall_clear,       STAT_OPEN | STAT_WRITER);
+	robject_set_call(term, "set_fgjob",   fbterm_rcall_set_fgjob,   STAT_OPEN | STAT_WRITER);
+	robject_set_call(term, "set_fgcolor", fbterm_rcall_set_fgcolor, STAT_OPEN | STAT_WRITER);
+	robject_set_call(term, "set_bgcolor", fbterm_rcall_set_bgcolor, STAT_OPEN | STAT_WRITER);
 	rdi_global_read_hook  = fbterm_read;
 	rdi_global_write_hook = fbterm_write;
 

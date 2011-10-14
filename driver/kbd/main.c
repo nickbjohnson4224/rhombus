@@ -20,8 +20,9 @@
 #include <proc.h>
 
 #include <rdi/core.h>
-#include <rdi/vfs.h>
 #include <rdi/arch.h>
+#include <rdi/vfs.h>
+#include <rdi/io.h>
 
 #define ALT  0x00800000
 #define CTRL 0x00800001
@@ -148,7 +149,7 @@ int main(int argc, char **argv) {
 	rdi_init();
 
 	// create device file
-	keyboard = rdi_event_cons(1, ACCS_READ);
+	keyboard = rdi_file_cons(1, ACCS_READ | ACCS_EVENT);
 
 	// set IRQ handler
 	rdi_set_irq(1, kbd_irq);
