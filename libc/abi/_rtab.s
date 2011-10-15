@@ -20,13 +20,19 @@ global _rtab:function _rtab.end-_rtab
 
 _rtab:
 	push ebx
+	push esi
+	push edi
 
-	mov edx, [esp+8]
-	mov ebx, [esp+12]
-	mov ecx, [esp+16]
+	mov ebx, [esp+16]
+	mov ecx, [esp+20]
+	mov edx, [esp+24]
+	mov esi, [esp+28]
+	mov edi, [esp+32]
 
 	int 0x54
 
+	pop edi
+	pop esi
 	pop ebx
 	ret
 .end:

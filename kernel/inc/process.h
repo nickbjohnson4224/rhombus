@@ -30,6 +30,11 @@
 
 /* process structure *******************************************************/
 
+struct rtab {
+	uint64_t a;
+	uint64_t b;
+};
+
 struct process {
 
 	/* address space */
@@ -37,7 +42,7 @@ struct process {
 
 	/* robject table */
 	uint32_t rtab_count;
-	uint64_t *rtab;
+	struct rtab *rtab;
 
 	/* various metadata */
 	uint64_t tick;
@@ -68,11 +73,10 @@ void            process_switch(struct process *proc);
 void            process_freeze(struct process *proc);
 void            process_thaw  (struct process *proc);
 
-/* robject table operations ************************************************/
+/* resource table operations ***********************************************/
 
-void     rtab_close(struct process *proc, uint64_t rp);
-void     rtab_grant(struct process *proc, uint64_t rp);
-uint32_t rtab_count(uint64_t rp);
-void     rtab_free (struct process *proc);
+void rtab_close(struct process *proc, uint64_t a, uint64_t b);
+void rtab_open (struct process *proc, uint64_t a, uint64_t b);
+void rtab_free (struct process *proc);
 
 #endif/*KERNEL_PROCESS_H*/

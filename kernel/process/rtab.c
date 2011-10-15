@@ -15,148 +15,29 @@
  */
 
 #include <process.h>
+#include <thread.h>
+#include <debug.h>
 #include <space.h>
 #include <types.h>
-
-struct _refc_bucket {
-	struct _refc_bucket *next;
-	uint64_t rp;
-	uint32_t refc;
-};
-
-static uint32_t            _refc_count = 8191; // large prime
-static struct _refc_bucket *_refc_table[8191];
-
-/*****************************************************************************
- * _refc_hash
- *
- * Return the index of <rp> in the refc table.
- */
-
-static uint32_t _refc_hash(uint64_t rp) {
-	uint32_t hash;
-
-	hash = rp & 0xFFFFFFFF;
-	hash = (hash << 16) + (hash << 6) - hash + (uint32_t) (rp >> 32);
-
-	return hash % _refc_count;
-}
-
-/*****************************************************************************
- * _refc_get
- *
- * Return the reference count of the robject <rp>.
- */
-
-static uint32_t _refc_get(uint64_t rp) {
-	struct _refc_bucket *bucket;
-
-	// find bucket
-	bucket = _refc_table[_refc_hash(rp)];
-	while (bucket) {
-		if (bucket->rp == rp) {
-			return bucket->refc;
-		}
-		bucket = bucket->next;
-	}
-
-	// entry not found
-	return 0;
-}
-
-/*****************************************************************************
- * _refc_del
- *
- * Set the reference count of the robject <rp> to zero by removing it from
- * the refc table.
- */
-
-static void _refc_del(uint64_t rp) {
-	struct _refc_bucket *bucket;
-	struct _refc_bucket *temp;
-
-	bucket = _refc_table[_refc_hash(rp)];
-
-	// check if first entry is to be deleted
-	if (bucket->rp == rp) {
-		_refc_table[_refc_hash(rp)] = bucket->next;
-		heap_free(bucket, sizeof(struct _refc_bucket));
-		return;
-	}
-
-	// search bucket list for deletable entry
-	while (bucket->next) {
-		if (bucket->next->rp == rp) {
-			temp = bucket->next;
-			bucket->next = temp->next;
-			heap_free(temp, sizeof(struct _refc_bucket));
-			return;
-		}
-		bucket = bucket->next;
-	}
-
-	// entry not found
-	return;
-}
-
-/*****************************************************************************
- * _refc_set
- *
- * Set the reference count of the robject <rp> to <refc>.
- */
-
-static void _refc_set(uint64_t rp, uint32_t refc) {
-	struct _refc_bucket *bucket;
-	uint32_t hash = _refc_hash(rp);
-
-	if (refc == 0) {
-		// delete entry instead
-		_refc_del(rp);
-		return;
-	}
-
-	// find bucket
-	bucket = _refc_table[hash];
-	while (bucket) {
-		if (bucket->rp == rp) {
-			bucket->refc = refc;
-		}
-		bucket = bucket->next;
-	}
-
-	// entry not found; add new entry
-	bucket = heap_alloc(sizeof(struct _refc_bucket));
-	bucket->next = _refc_table[hash];
-	bucket->rp   = rp;
-	bucket->refc = refc;
-	_refc_table[hash] = bucket;
-}
+#include <ipc.h>
 
 /*****************************************************************************
  * rtab_free
  *
- * Delete all robject table entries for the process <proc>. Reference counts
- * for all entries are decremented.
+ * Delete all resource table entries for the process <proc>.
  */
 
 void rtab_free(struct process *proc) {
 	uint32_t i;
-	uint32_t refc;
 
-	// traverse table
+	// close all entries
 	for (i = 0; i < proc->rtab_count; i++) {
-
-		if (proc->rtab[i]) {
-
-			// decrement reference count for entry
-			refc = _refc_get(proc->rtab[i]);
-			if (refc > 0) {
-				_refc_set(proc->rtab[i], refc - 1);
-			}
+		if (proc->rtab[i].a) {
+			rtab_close(proc, proc->rtab[i].a, proc->rtab[i].b);
 		}
 	}
 
-	if (proc->rtab) heap_free(proc->rtab, proc->rtab_count * sizeof(uint64_t));
+	if (proc->rtab) heap_free(proc->rtab, proc->rtab_count * sizeof(struct rtab));
 	proc->rtab = NULL;
 	proc->rtab_count = 0;
 }
@@ -164,24 +45,23 @@ void rtab_free(struct process *proc) {
 /*****************************************************************************
  * rtab_close
  *
- * Delete the robject table entry for the robject <rp> in the process <proc>.
- * The reference count for the robject <rp> is decremented.
+ * Delete the resource table entry for the connection <a>,<b> in the process 
+ * <proc>. A notification is sent to <b> on port PORT_CLOSE if successful.
  */
 
-void rtab_close(struct process *proc, uint64_t rp) {
-	uint32_t refc;
+void rtab_close(struct process *proc, uint64_t a, uint64_t b) {
 	uint32_t i;
 
 	// find slot
 	for (i = 0; i < proc->rtab_count; i++) {
 		
-		if (proc->rtab[i] == rp) {
+		if (proc->rtab[i].a == a || proc->rtab[i].b == b) {
+
 			// found slot
-			proc->rtab[i] = 0;
-			refc = _refc_get(rp);
-			if (refc > 0) {
-				_refc_set(rp, refc - 1);
-			}
+			thread_sendv(b, a, PORT_CLOSE);
+
+			proc->rtab[i].a = 0;
+			proc->rtab[i].b = 0;
 			return;
 		}
 	}
@@ -191,64 +71,56 @@ void rtab_close(struct process *proc, uint64_t rp) {
 }
 
 /*****************************************************************************
- * rtab_grant
+ * rtab_open
  *
- * Add a robject table entry for the robject <rp> to the process <proc>. The
- * reference count for the robject <rp> is incremented.
+ * Add a resource table entry for the connection <a>,<b> to the process 
+ * <proc>.
  */
 
-void rtab_grant(struct process *proc, uint64_t rp) {
+void rtab_open(struct process *proc, uint64_t a, uint64_t b) {
 	uint32_t count;
-	uint64_t *temp;
-	uint64_t *temp2;
+	struct rtab *temp;
+	struct rtab *temp2;
 	uint32_t i;
 
 	// find empty slot for entry
 	for (i = 0; i < proc->rtab_count; i++) {
 
-		if (proc->rtab[i] == rp) {
-			// already contains this robject
+		if (proc->rtab[i].a == a || proc->rtab[i].b == b) {
+			// already contains this connection
 			return;
 		}
 
-		if (proc->rtab[i] == 0) {
+		if (proc->rtab[i].a == 0) {
 			// found suitable entry
-			proc->rtab[i] = rp;
-			_refc_set(rp, 1 + _refc_get(rp));
+			proc->rtab[i].a = a;
+			proc->rtab[i].b = b;
 			return;
 		}
 	}
 
 	// could not find slot; reallocate table
 	count = proc->rtab_count + 16;
-	temp = heap_alloc(count * sizeof(uint64_t));
+	temp = heap_alloc(count * sizeof(struct rtab));
 
 	// copy contents to new table
-	for (i = 0; i < proc->rtab_count; i++) {	
-		temp[i] = proc->rtab[i];
+	for (i = 0; i < proc->rtab_count; i++) {
+		temp[i].a = proc->rtab[i].a;
+		temp[i].b = proc->rtab[i].b;
 	}
 
 	// clear remainder of table
 	for (; i < count; i++) {
-		temp[i] = 0;
+		temp[i].a = 0;
+		temp[i].b = 0;
 	}
 
 	// free old table
 	temp2 = proc->rtab;
 	proc->rtab = temp;
-	if (temp2) heap_free(temp2, proc->rtab_count * sizeof(uint64_t));
+	if (temp2) heap_free(temp2, proc->rtab_count * sizeof(struct rtab));
 	proc->rtab_count = count;
 
 	// add new entry
-	rtab_grant(proc, rp);
-}
-
-/*****************************************************************************
- * rtab_count
- *
- * Returns the reference count of the given robject <rp>.
- */
-
-uint32_t rtab_count(uint64_t rp) {
-	return _refc_get(rp);
+	rtab_open(proc, a, b);
 }

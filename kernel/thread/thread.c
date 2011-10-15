@@ -86,9 +86,11 @@ struct thread *thread_send(struct thread *image, pid_t target, portid_t port, st
 	new_image->eip     = p_targ->entry;
 
 	/* set up registers in new thread */
+	new_image->ebx     = 0;
 	new_image->ecx     = (msg) ? msg->count : 0;
 	new_image->edx     = port;
 	new_image->esi     = (image) ? image->proc->pid : 0;
+	new_image->edi     = 0;
 	new_image->msg     = msg;
 
 	/* set new thread's user id */
@@ -99,6 +101,27 @@ struct thread *thread_send(struct thread *image, pid_t target, portid_t port, st
 
 	/* return new thread */
 	return new_image;
+}
+
+/*****************************************************************************
+ * thread_sendv
+ *
+ * Sends a message to the resource target at port port, pretending to be 
+ * resource source.
+ */
+
+void thread_sendv(uint64_t target, uint64_t source, portid_t port) {
+	struct thread *thread;
+
+	thread = thread_send(NULL, target, port, NULL);
+
+	if (!thread) {
+		return;
+	}
+
+	thread->esi = source;
+	thread->edi = source >> 32;
+	thread->eax = target >> 32;
 }
 
 /****************************************************************************

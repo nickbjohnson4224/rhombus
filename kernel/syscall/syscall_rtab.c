@@ -21,63 +21,65 @@
 /*****************************************************************************
  * syscall_rtab (int 0x54)
  *
- * EBX: index (of rp)
- * ECX: pid (of rp) or target
- * EDX: operation
+ * EBX: operation
+ * ECX:EDX: rp of A
+ * ESI:EDI: rp of B
  *
  * operations:
  *
- * RTAB_GRANT - 0
- *   
- *   Grant the current process' robject with index <index> to PID <target>.
+ * RTAB_OPEN - 0
  *
+ *   Establish a connection between A and B.
+ *   
  * RTAB_CLOSE - 1
  *
- *   Delete the robject <pid:index> from the current process' robject table.
- *
- * RTAB_COUNT - 2
- *
- *   Return the reference count of the robject <pid:index>.
+ *   Close the connection between A and B.
  */
 
 struct thread *syscall_rtab(struct thread *image) {
 	struct process *proc;
-	uint32_t target;
-	uint32_t index;
-	uint64_t rp;
+	uint64_t rp_a;
+	uint64_t rp_b;
 
-	index  = image->ebx;
-	target = image->ecx;
-	rp = (uint64_t) index | ((uint64_t) target << 32);
+	rp_a = (uint64_t) image->ecx | ((uint64_t) image->edx  << 32);
+	rp_b = (uint64_t) image->esi | ((uint64_t) image->edi  << 32);
+
+	debug_printf("RTAB %d %d %d %d %d\n", image->ebx, image->ecx, image->edx, image->esi, image->edi);
 
 	switch (image->edx) {
-	case 0: /* RTAB_GRANT */
+	case 0: /* RTAB_OPEN */
 
-		rp = (uint64_t) index | ((uint64_t) image->proc->pid << 32);
-		proc = process_get(target);
+		if (image->esi != image->proc->pid) {
+			// B must belong to the process
+			image->eax = 1;
+			return image;
+		}
+
+		proc = process_get(image->ecx);
 
 		if (!proc) {
 			image->eax = 1;
 			return image;
 		}
 
-		rtab_grant(proc, rp);
+		rtab_open(proc, rp_a, rp_b);
 		
 		image->eax = 0;
 		return image;
 
 	case 1: /* RTAB_CLOSE */
 
-		rtab_close(image->proc, rp);
+		if (image->ecx != image->proc->pid) {
+			// A must belong to the process
+			image->eax = 1;
+			return image;
+		}
+
+		rtab_close(image->proc, rp_a, rp_b);
 		
 		image->eax = 0;
 		return image;
 
-	case 2: /* RTAB_COUNT */
-
-		image->eax = rtab_count(rp);
-		return image;
-	
 	default:
 
 		image->eax = 1;

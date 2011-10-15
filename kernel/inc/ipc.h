@@ -39,6 +39,8 @@
 #define PORT_USER1	14
 #define PORT_USER2	15
 
+#define PORT_CLOSE	24
+
 struct msg {
 	size_t    count;
 	uint32_t *frame;	

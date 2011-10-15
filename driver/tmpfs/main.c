@@ -107,7 +107,6 @@ char *tmpfs_cons(struct robject *self, rp_t source, int argc, char **argv) {
 	return strdup("! arg");
 }
 
-// XXX SEC - does not check for write access
 char *tmpfs_reset(struct robject *self, rp_t source, int argc, char **argv) {
 	uint8_t *file_data;
 	off_t *file_size;

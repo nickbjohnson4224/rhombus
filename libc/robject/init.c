@@ -82,6 +82,10 @@ static char *__open(struct robject *self, rp_t src, int argc, char **argv) {
 		return strdup("! denied");
 	}
 
+	if (!robject_stat(self, src)) {
+		_rtab(RTAB_OPEN, src, RP_CONS(getpid(), self->index));
+	}
+
 	robject_open(self, src, status | STAT_OPEN);
 	
 	return strdup("T");
@@ -102,6 +106,7 @@ static char *__close(struct robject *self, rp_t src, int argc, char **argv) {
 	}
 	else if (argc == 1) {
 		robject_close(self, src);
+		_rtab(RTAB_CLOSE, src, RP_CONS(getpid(), self->index));
 		return strdup("T");
 	}
 	else {
@@ -208,6 +213,16 @@ static void __rcall_handler(struct msg *msg) {
 	msend(reply);
 }
 
+static void __close_handler(struct msg *msg) {
+	struct robject *ro;
+
+	ro = robject_get(RP_INDEX(msg->target));
+	if (!ro) return;
+
+	free(robject_call(ro, msg->source, "close"));
+	free(msg);
+}
+
 struct robject *robject_root;
 
 struct robject *robject_class_basic;
@@ -233,6 +248,7 @@ void __robject_init(void) {
 	robject_root = robject_cons(0, robject_class_basic);
 	robject_set(0, robject_root);
 
-	// set rcall and event handlers
+	// set rcall and close handlers
 	when(PORT_RCALL, __rcall_handler);
+	when(PORT_CLOSE, __close_handler);
 }

@@ -79,6 +79,7 @@ void _init() {
 	when(PORT_SHARE, reject);
 	when(PORT_RCALL, reject);
 	when(PORT_EVENT, ignore);
+	when(PORT_CLOSE, ignore);
 
 	/* set up robject system */
 	__robject_init();
