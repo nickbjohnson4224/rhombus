@@ -83,7 +83,7 @@ static char *__open(struct robject *self, rp_t src, int argc, char **argv) {
 	}
 
 	if (!robject_stat(self, src)) {
-		_rtab(RTAB_OPEN, src, RP_CONS(getpid(), self->index));
+		rtab_open(src, RP_CONS(getpid(), self->index));
 	}
 
 	robject_open(self, src, status | STAT_OPEN);
@@ -106,7 +106,6 @@ static char *__close(struct robject *self, rp_t src, int argc, char **argv) {
 	}
 	else if (argc == 1) {
 		robject_close(self, src);
-		_rtab(RTAB_CLOSE, src, RP_CONS(getpid(), self->index));
 		return strdup("T");
 	}
 	else {

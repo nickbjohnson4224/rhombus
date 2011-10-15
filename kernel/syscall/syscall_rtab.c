@@ -44,8 +44,6 @@ struct thread *syscall_rtab(struct thread *image) {
 	rp_a = (uint64_t) image->ecx | ((uint64_t) image->edx  << 32);
 	rp_b = (uint64_t) image->esi | ((uint64_t) image->edi  << 32);
 
-	debug_printf("RTAB %d %d %d %d %d\n", image->ebx, image->ecx, image->edx, image->esi, image->edi);
-
 	switch (image->edx) {
 	case 0: /* RTAB_OPEN */
 

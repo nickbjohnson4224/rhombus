@@ -119,6 +119,12 @@ rp_t ator(const char *str);
  * connection between A and B with equivalent status. However, rp_stat, 
  * rp_close, and rp_open will act as if there is no connection between A and 
  * B.
+ *
+ * The kernel also maintains a list of open connections for each process 
+ * called the "rtab", for the sole purpose of sending close messages to 
+ * drivers when that process exits. This table can have elements removed by 
+ * the process controlling resource A (this sends the message), and can have 
+ * elements added by the process controlling resource B.
  */
 
 #define STAT_OPEN	0x01
@@ -128,13 +134,19 @@ rp_t ator(const char *str);
 #define STAT_EVENT	0x10
 
 // create or update a connection between <a> and <b> with status <status>
-int rp_open (rp_t a, rp_t b, int status);
+int rp_open(rp_t a, rp_t b, int status);
 
 // check the status of the connection between <a> and <b>
-int rp_stat (rp_t a, rp_t b);
+int rp_stat(rp_t a, rp_t b);
 
 // close the connection between <a> and <b>
 int rp_close(rp_t a, rp_t b);
+
+// add a connection to the rtab
+int rtab_open(rp_t a, rp_t b);
+
+// remove a connection from the rtab (and implcitly send close message)
+int rtab_close(rp_t a, rp_t b);
 
 /*****************************************************************************
  * Resource Access Control Lists

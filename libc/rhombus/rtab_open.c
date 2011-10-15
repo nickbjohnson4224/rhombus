@@ -14,36 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <natio.h>
-#include <errno.h>
+#include <rhombus.h>
+#include <abi.h>
 
 /*****************************************************************************
- * rp_close
+ * rtab_open
+ *
+ * Add the connection <a>,<b> to the rtab of the process controlling <a>.
+ * This may only be done if this process controls <b>. Returns zero on 
+ * success, nonzero on error.
  */
 
-int rp_close(rp_t a, rp_t b) {
-	char *reply;
-
-	reply = rcalls(b, a, "close");
-
-	if (!reply) {
-		errno = ENOSYS;
-		return 1;
-	}
-
-	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nosys"))		errno = ENOSYS;
-		else if (!strcmp(reply, "! denied"))	errno = EACCES;
-		else if (!strcmp(reply, "! nfound"))	errno = ENOENT;
-		else									errno = EUNK;
-		free(reply);
-		return 1;
-	}
-
-	free(reply);
-
-	rtab_close(a, b);
-	return 0;
+int rtab_open(rp_t a, rp_t b) {
+	return _rtab(RTAB_OPEN, a, b);
 }
