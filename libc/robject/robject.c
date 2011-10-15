@@ -90,7 +90,7 @@ void *robject_get_data(struct robject *ro, const char *field) {
  */
 
 static void _iter(void *arg0, const char *key, void *value) {
-	if ((int) value & STAT_EVENT) event(RP_HEAD(ator(key)), arg0);
+	if ((int) value & STAT_EVENT) event(ator(key), arg0);
 }
 
 void robject_event(struct robject *ro, const char *event) {
@@ -130,9 +130,10 @@ char *robject_call(struct robject *ro, rp_t source, const char *args) {
 	mutex_free(&ro->mutex);
 
 	if (status) {
-//		if (!robject_check_status(ro, source, status)) {
-//			return strdup("! denied");
-//		}
+		if (!robject_check_status(ro, source, status) 
+			&& !robject_check_status(ro, RP_HEAD(source), status)) {
+			return strdup("! denied");
+		}
 	}
 
 	rets = call(ro, source, argc, argv);
@@ -151,7 +152,7 @@ int robject_open(struct robject *ro, rp_t source, int status) {
 
 	if (ro) {
 		mutex_spin(&ro->mutex);
-		ro->open_table = s_table_setv(ro->open_table, (void*) status, "%r", RP_HEAD(source));
+		ro->open_table = s_table_setv(ro->open_table, (void*) status, "%r", source);
 		mutex_free(&ro->mutex);
 	}
 
@@ -163,7 +164,7 @@ int robject_stat(struct robject *ro, rp_t source) {
 
 	if (ro) {
 		mutex_spin(&ro->mutex);
-		status = (int) s_table_getv(ro->open_table, "%r", RP_HEAD(source));
+		status = (int) s_table_getv(ro->open_table, "%r", source);
 		mutex_free(&ro->mutex);
 	}
 
@@ -178,7 +179,7 @@ void robject_close(struct robject *ro, rp_t source) {
 
 	if (ro) {
 		mutex_spin(&ro->mutex);
-		ro->open_table = s_table_setv(ro->open_table, NULL, "%r", RP_HEAD(source));
+		ro->open_table = s_table_setv(ro->open_table, NULL, "%r", source);
 		mutex_free(&ro->mutex);
 	}
 }

@@ -28,5 +28,5 @@
  */
 
 int setaccess(const char *path, uint32_t user, uint8_t access) {
-	return setaccess_rp(fs_find(path), user, access);
+	return setaccess_rp(fs_open(path, STAT_ADMIN), user, access);
 }

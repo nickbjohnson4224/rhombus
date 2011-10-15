@@ -34,7 +34,7 @@ int sync(uint64_t file) {
 
 	msg = aalloc(sizeof(struct msg), PAGESZ);
 	if (!msg) return 1;
-	msg->source = RP_CONS(getpid(), 0);
+	msg->source = RP_CURRENT;
 	msg->target = file;
 	msg->length = 0;
 	msg->port   = PORT_SYNC;

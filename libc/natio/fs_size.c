@@ -29,5 +29,5 @@
  */
 
 off_t fs_size(const char *path) {
-	return rp_size(fs_find(path));
+	return rp_size(fs_open(path, STAT_READER));
 }

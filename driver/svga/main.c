@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
 
 	rdi_init();
 
-	canvas = rdi_file_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
+	canvas = rdi_file_cons(robject_new_index(), ACCS_READ | ACCS_WRITE | ACCS_EVENT);
 	robject_set_data(canvas, "type", (void*) "canvas share");
 
 	svga_init();

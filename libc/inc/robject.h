@@ -81,6 +81,8 @@ typedef uint64_t rp_t;
 #define RP_HEAD(rp)       ((uint64_t) ((rp) & 0xFFFFFFFF))
 #define RP_NULL           ((uint64_t) 0)
 
+#define RP_CURRENT        RP_CONS(getpid(), -(1+gettid()))
+
 char *rtoa(rp_t rp);         // convert robject pointer to string
 rp_t  ator(const char *str); // convert string to robject pointer
 
@@ -100,7 +102,8 @@ rp_t  ator(const char *str); // convert string to robject pointer
 // rcall hook format
 typedef char *(*rcall_t)(struct robject *self, rp_t src, int argc, char **argv);
 
-char *rcall(rp_t rp, const char *fmt, ...);
+char *rcall (rp_t rp, const char *fmt, ...);
+char *rcallh(rp_t rp, const char *fmt, ...);
 
 /*****************************************************************************
  * Rhombus Object Indexing and Lookup

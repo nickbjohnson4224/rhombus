@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,32 +14,29 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
+#include <robject.h>
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 #include <natio.h>
-#include <proc.h>
-#include <ipc.h>
 
-/****************************************************************************
- * reset
- *
- * Deletes the contents of the file <file>.
- */
+int rp_open(rp_t rp, int status) {
+	char *reply;
 
-int reset(uint64_t file) {
-	struct msg *msg;
+	reply = rcall(rp, "open %d", status);
 
-	msg = aalloc(sizeof(struct msg), PAGESZ);
-	if (!msg) return 1;
-	msg->source = RP_CURRENT;
-	msg->target = file;
-	msg->length = 0;
-	msg->port   = PORT_RESET;
-	msg->arch   = ARCH_NAT;
+	if (!reply) {
+		errno = ENOSYS;
+		return 1;
+	}
 
-	if (msend(msg)) return 1;
-	msg = mwait(PORT_REPLY, file);
+	if (reply[0] == '!') {
+		if (!strcmp(reply, "! denied")) errno = EACCES;
+		else                            errno = EUNK;
+		free(reply);
+		return 1;
+	}
 
-	free(msg);
+	free(reply);
 	return 0;
-}	
+}

@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <event.h>
 #include <stdio.h>
+#include <natio.h>
 #include <proc.h>
 #include <exec.h>
 
@@ -154,8 +155,8 @@ int main(int argc, char **argv) {
 		}
 	}
 	else {
-		kbd_dev = fs_find(argv[1]);
-		fb_dev  = fs_find(argv[2]);
+		kbd_dev = fs_openh(argv[1], STAT_EVENT);
+		fb_dev  = fs_openh(argv[2], STAT_READER | STAT_WRITER | STAT_EVENT);
 
 		if (!kbd_dev) {
 			fprintf(stderr, "%s: %s: keyboard not found\n", argv[0], argv[1]);
@@ -177,17 +178,15 @@ int main(int argc, char **argv) {
 	screen_flip();
 
 	// listen to graphics events
-	event_subscribe(fb_dev);
 	event_hook("graph", fbterm_graph_event);
 
 	// set up keyboard
-	event_subscribe(kbd_dev);
 	event_hook("key", fbterm_key_event);
 
-	robject_set_call(term, "clear",       fbterm_rcall_clear,       STAT_OPEN | STAT_WRITER);
-	robject_set_call(term, "set_fgjob",   fbterm_rcall_set_fgjob,   STAT_OPEN | STAT_WRITER);
-	robject_set_call(term, "set_fgcolor", fbterm_rcall_set_fgcolor, STAT_OPEN | STAT_WRITER);
-	robject_set_call(term, "set_bgcolor", fbterm_rcall_set_bgcolor, STAT_OPEN | STAT_WRITER);
+	robject_set_call(term, "clear",       fbterm_rcall_clear,       STAT_WRITER);
+	robject_set_call(term, "set_fgjob",   fbterm_rcall_set_fgjob,   STAT_WRITER);
+	robject_set_call(term, "set_fgcolor", fbterm_rcall_set_fgcolor, STAT_WRITER);
+	robject_set_call(term, "set_bgcolor", fbterm_rcall_set_bgcolor, STAT_WRITER);
 	rdi_global_read_hook  = fbterm_read;
 	rdi_global_write_hook = fbterm_write;
 

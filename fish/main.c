@@ -89,8 +89,6 @@ int fish_exec_fg(int argc, char **argv, FILE *in, FILE *out, FILE *err) {
 
 	pid = fork();
 	if (pid < 0) {
-		rcall(stdin->fd, "set_fgjob %d", getpid());
-
 		if (in)  stdin  = in;
 		if (out) stdout = out;
 		if (err) stderr = err;
@@ -110,8 +108,9 @@ int fish_exec_fg(int argc, char **argv, FILE *in, FILE *out, FILE *err) {
 			abort();
 		}
 	}
+	rcall(stdout->fd, "set_fgjob %d", pid);
 	mwait(PORT_CHILD, RP_CONS(pid, 0));
-	rcall(stdin->fd, "set_fgjob %d", 0);
+	rcall(stdout->fd, "set_fgjob %d", 0);
 	
 	return 0;
 }

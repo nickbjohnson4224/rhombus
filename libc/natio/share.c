@@ -52,7 +52,7 @@ int share(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot) {
 
 	msg = aalloc(PAGESZ + size, PAGESZ);
 	if (!msg) return 1;
-	msg->source = RP_CONS(getpid(), 0);
+	msg->source = RP_CURRENT;
 	msg->target = rp;
 	msg->length = PAGESZ - sizeof(struct msg) + size;
 	msg->port   = PORT_SHARE;

@@ -49,6 +49,29 @@ int rp_open(rp_t rp, int status) {
 	return 0;
 }
 
+int rp_openh(rp_t rp, int status) {
+	char *reply;
+
+	reply = rcallh(rp, "open %d", status);
+
+	if (!reply) {
+		errno = ENOSYS;
+		return 1;
+	}
+	
+	if (reply[0] == '!') {
+		if      (!strcmp(reply, "! nosys"))		errno = ENOSYS;
+		else if (!strcmp(reply, "! denied"))	errno = EACCES;
+		else if (!strcmp(reply, "! nfound"))	errno = ENOENT;
+		else									errno = EUNK;
+		free(reply);
+		return 1;
+		}
+
+	free(reply);
+	return 0;
+}
+
 /*****************************************************************************
  * fs_open
  *
@@ -66,6 +89,29 @@ rp_t fs_open(const char *path, int status) {
 	}
 
 	if (rp_open(rp, status)) {
+		return 0;
+	}
+
+	return rp;
+}
+
+/*****************************************************************************
+ * fs_open
+ *
+ * Attempt to open the resource at <path>. Returns a pointer to the opened
+ * resource on success, zero on error.
+ */
+
+rp_t fs_openh(const char *path, int status) {
+	uint64_t rp;
+
+	rp = fs_find(path);
+
+	if (!rp) {
+		return 0;
+	}
+
+	if (rp_openh(rp, status)) {
 		return 0;
 	}
 

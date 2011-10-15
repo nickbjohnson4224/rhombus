@@ -29,8 +29,8 @@
 
 FILE *fopen(const char *path, const char *mode) {
 	uint64_t fd;
-	uint8_t accs;
 	FILE *stream;
+	int status;
 
 	// check mode
 	if (mode[0] != 'a' && mode[0] != 'w' && mode[0] != 'r') {
@@ -41,8 +41,8 @@ FILE *fopen(const char *path, const char *mode) {
 	// attempt to find the file
 	fd = fs_find(path);
 
-	/* check if the object is a directory */
-	if (fd && checktype_rp(fd, "dir")) {
+	// check if the object is not a file
+	if (fd && !checktype_rp(fd, "file")) {
 		errno = EISDIR;
 		return NULL;
 	}
@@ -62,22 +62,21 @@ FILE *fopen(const char *path, const char *mode) {
 		}
 	}
 
-	accs = getaccess_rp(fd, getuser(getpid()));
+	status = 0;
 
 	// check read permissions
 	if (mode[0] == 'r' || mode[1] == '+') {
-		if ((accs & ACCS_READ) == 0) {
-			errno = EACCES;
-			return NULL;
-		}
+		status |= STAT_READER;
 	}
 
 	// check write permissions
 	if (mode[0] == 'w' || mode[0] == 'a' || mode[1] == '+') {
-		if ((accs & ACCS_WRITE) == 0) {
-			errno = EACCES;
-			return NULL;
-		}
+		status |= STAT_WRITER;
+	}
+
+	// open file for real
+	if (rp_openh(fd, status)) {
+		return NULL;
 	}
 
 	// reset (erase) the file contents

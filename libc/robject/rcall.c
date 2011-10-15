@@ -49,7 +49,7 @@ static char *__rcall(uint64_t rp, const char *args) {
 
 	msg = aalloc(sizeof(struct msg) + length, PAGESZ);
 	if (!msg) return NULL;
-	msg->source = RP_CONS(getpid(), 0);
+	msg->source = RP_CURRENT;
 	msg->target = rp;
 	msg->length = length;
 	msg->port   = PORT_RCALL;
@@ -106,6 +106,96 @@ char *rcall(uint64_t rp, const char *fmt, ...) {
 		
 		// just use the format string
 		ret = __rcall(rp, fmt);
+	}
+
+	return ret;
+}
+
+/*****************************************************************************
+ * __rcall
+ *
+ * Generic remote procedure call protocol. Sends a string to the given
+ * resource, and recieves a string in return. This function can be used to
+ * implement any sort of ad-hoc textual protocol, and is a cover-all for any
+ * things that cannot be done with the standard I/O and filesystem routines.
+ * Returns NULL on error or empty return string.
+ *
+ * protocol:
+ *   port: PORT_RCALL
+ *
+ *   request:
+ *     char args[]
+ *
+ *   reply:
+ *     char rets[]
+ */
+
+static char *__rcallh(uint64_t rp, const char *args) {
+	struct msg *msg;
+	size_t length;
+	char *rets;
+
+	length = strlen(args) + 1;
+
+	msg = aalloc(sizeof(struct msg) + length, PAGESZ);
+	if (!msg) return NULL;
+	msg->source = RP_HEAD(RP_CURRENT);
+	msg->target = rp;
+	msg->length = length;
+	msg->port   = PORT_RCALL;
+	msg->arch   = ARCH_NAT;
+	memcpy(msg->data, args, length);
+
+	if (msend(msg)) return NULL;
+	msg = mwait(PORT_REPLY, rp);
+
+	if (msg->length && msg->data[0] != '\0') {
+		rets = strdup((char*) msg->data);
+	}
+	else {
+		rets = NULL;
+	}
+
+	free(msg);
+	return rets;
+}
+
+/*****************************************************************************
+ * rcall
+ *
+ * Generic remote procedure call protocol. Sends a formatted string to the 
+ * given resource, and recieves a string in return. This function can be used 
+ * to implement any sort of ad-hoc textual protocol, and is a cover-all for 
+ * any things that cannot be done with the standard I/O and filesystem 
+ * routines. Returns NULL on error or empty return string.
+ */
+
+char *rcallh(uint64_t rp, const char *fmt, ...) {
+	va_list ap;
+	char *args;
+	char *ret;
+
+	if (strchr(fmt, '%')) {
+
+		// format argument string
+		va_start(ap, fmt);
+		args = vsaprintf(fmt, ap);
+		va_end(ap);
+
+		if (!args) {
+			return NULL;
+		}
+
+		// perform rcall
+		ret = __rcallh(rp, args);
+
+		// free argument string
+		free(args);
+	}
+	else {
+		
+		// just use the format string
+		ret = __rcallh(rp, fmt);
 	}
 
 	return ret;
