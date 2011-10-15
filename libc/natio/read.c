@@ -43,7 +43,7 @@ size_t read(uint64_t file, void *buf, size_t size, uint64_t offset) {
 
 	msg = aalloc(sizeof(struct msg) + sizeof(uint64_t) + sizeof(uint32_t), PAGESZ);
 	if (!msg) return 0;
-	msg->source = RP_CURRENT;
+	msg->source = RP_CURRENT_THREAD;
 	msg->target = file;
 	msg->length = sizeof(uint64_t) + sizeof(uint32_t);
 	msg->port   = PORT_READ;

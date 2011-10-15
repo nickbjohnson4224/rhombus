@@ -44,7 +44,7 @@ int fs_link(const char *path, const char *link) {
 
 	err = rp_link(dir, name, rp);
 
-	rp_close(dir);
+	rp_close(RP_CURRENT_THREAD, dir);
 
 	free(parent);
 	free(name);
@@ -93,7 +93,7 @@ int fs_ulink(const char *path) {
 
 	err = rp_ulink(dir, name);
 
-	rp_close(dir);
+	rp_close(RP_CURRENT_THREAD, dir);
 
 	free(parent);
 	free(name);

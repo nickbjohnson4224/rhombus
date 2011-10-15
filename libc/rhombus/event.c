@@ -21,7 +21,7 @@
 #include <proc.h>
 #include <ipc.h>
 
-#include <event.h>
+#include <rhombus.h>
 
 static struct s_table *event_table = NULL;
 

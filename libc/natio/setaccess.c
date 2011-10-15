@@ -27,6 +27,6 @@
  * <access>. Returns zero on success, nonzero on error.
  */
 
-int setaccess(const char *path, uint32_t user, uint8_t access) {
-	return setaccess_rp(fs_open(path, STAT_ADMIN), user, access);
+int setaccess(const char *path, uint32_t user, int access) {
+	return rp_admin(fs_open(path, STAT_ADMIN), user, access);
 }

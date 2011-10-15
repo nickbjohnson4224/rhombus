@@ -41,7 +41,7 @@ FILE *fdopen(rp_t fd, const char *mode) {
 	}
 
 	// check if the object is not a file
-	if (fd && !checktype_rp(fd, "file")) {
+	if (fd && !rp_type(fd, "file")) {
 		errno = EISDIR;
 		return NULL;
 	}
@@ -59,7 +59,7 @@ FILE *fdopen(rp_t fd, const char *mode) {
 	}
 
 	// open file for real
-	if (rp_openh(fd, status)) {
+	if (rp_open(RP_CURRENT_PROC, fd, status)) {
 		return NULL;
 	}
 

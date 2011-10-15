@@ -23,54 +23,11 @@
 
 #include <rdi/core.h>
 
-static char *_get_access(struct robject *r, rp_t src, int argc, char **argv) {
-	uint32_t bitmap;
-	uint32_t user;
-
-	if (argc == 1) {
-		user = getuser(RP_PID(src));
-	}
-	else if (argc == 2) {
-		user = atoi(argv[1]);
-	}
-	else {
-		return strdup("! arg");
-	}
-
-	bitmap = rdi_get_access(r, user);
-
-	return saprintf("%X", bitmap);
-}
-
-static char *_set_access(struct robject *r, rp_t src, int argc, char **argv) {
-	uint32_t bitmap;
-	uint32_t user;
-
-	if (argc == 2) {
-		user = getuser(RP_PID(src));
-		sscanf(argv[1], "%X", &bitmap);
-	}
-	else if (argc == 3) {
-		user = atoi(argv[1]);
-		sscanf(argv[2], "%X", &bitmap);
-	}
-	else {
-		return strdup("! arg");
-	}
-
-	rdi_set_access(r, user, bitmap);
-
-	return strdup("T");
-}
-
 struct robject *rdi_class_core;
 
 void __rdi_class_core_setup() {
 	
 	rdi_class_core = robject_cons(0, robject_class_basic);
-
-	robject_set_call(rdi_class_core, "get-access", _get_access, 0);
-	robject_set_call(rdi_class_core, "set-access", _set_access, STAT_ADMIN);
 
 	robject_set_data(rdi_class_core, "type", (void*) "driver");
 	robject_set_data(rdi_class_core, "name", (void*) "RDI-class-core");

@@ -27,6 +27,6 @@
  * <user>. Returns zero on error.
  */
 
-uint8_t getaccess(const char *path, uint32_t user) {
-	return getaccess_rp(fs_find(path), user);
+int getaccess(const char *path, uint32_t user) {
+	return rp_access(fs_find(path), user);
 }

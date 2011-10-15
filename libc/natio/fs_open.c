@@ -26,10 +26,10 @@
  * Returns zero on success, nonzero on error.
  */
 
-int rp_open(rp_t rp, int status) {
+int rp_open(rp_t a, rp_t b, int status) {
 	char *reply;
 
-	reply = rcall(rp, "open %d", status);
+	reply = rcalls(b, a, "open %d", status);
 
 	if (!reply) {
 		errno = ENOSYS;
@@ -44,29 +44,6 @@ int rp_open(rp_t rp, int status) {
 		free(reply);
 		return 1;
 	}
-
-	free(reply);
-	return 0;
-}
-
-int rp_openh(rp_t rp, int status) {
-	char *reply;
-
-	reply = rcallh(rp, "open %d", status);
-
-	if (!reply) {
-		errno = ENOSYS;
-		return 1;
-	}
-	
-	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nosys"))		errno = ENOSYS;
-		else if (!strcmp(reply, "! denied"))	errno = EACCES;
-		else if (!strcmp(reply, "! nfound"))	errno = ENOENT;
-		else									errno = EUNK;
-		free(reply);
-		return 1;
-		}
 
 	free(reply);
 	return 0;
@@ -88,7 +65,7 @@ rp_t fs_open(const char *path, int status) {
 		return 0;
 	}
 
-	if (rp_open(rp, status)) {
+	if (rp_open(RP_CURRENT_THREAD, rp, status)) {
 		return 0;
 	}
 
@@ -111,7 +88,7 @@ rp_t fs_openh(const char *path, int status) {
 		return 0;
 	}
 
-	if (rp_openh(rp, status)) {
+	if (rp_open(RP_CURRENT_PROC, rp, status)) {
 		return 0;
 	}
 

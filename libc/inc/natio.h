@@ -17,7 +17,7 @@
 #ifndef __RLIBC_NATIO_H
 #define __RLIBC_NATIO_H
 
-#include <robject.h>
+#include <rhombus.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -38,28 +38,13 @@ int    share(rp_t rp, void *buf, size_t size, off_t offset, int prot);
 rp_t  rp_cons(rp_t rp, const char *type);
 off_t rp_size(rp_t rp);
 
-/* opening and closing files ************************************************/
-
-#define STAT_OPEN	0x01
-#define STAT_READER	0x02
-#define STAT_WRITER	0x04
-#define STAT_ADMIN	0x08
-#define STAT_EVENT	0x10
-
-int  rp_open  (rp_t rp, int status);
-int  rp_openh (rp_t rp, int status);
-int  rp_stat  (rp_t rp);
-int  rp_stath (rp_t rp);
-void rp_close (rp_t rp);
-void rp_closeh(rp_t rp);
-
 /* filesystem operations ****************************************************/
 
 extern rp_t fs_root;
 
 rp_t  fs_find (const char *path);
 rp_t  fs_lfind(const char *path);
-rp_t  fs_open (const char *path, int status); // XXX IMP
+rp_t  fs_open (const char *path, int status);
 rp_t  fs_openh(const char *path, int status);
 rp_t  fs_cons (const char *path, const char *type);
 char *fs_list (const char *path);
@@ -96,45 +81,12 @@ int rp_link (rp_t dir, const char *name, rp_t link);
 
 /* robject type system ******************************************************/
 
-bool checktype   (const char *path, const char *type);
+bool checktype(const char *path, const char *type);
 bool checktype_rp(rp_t rp, const char *type);
 
-/*****************************************************************************
- * access bitmap
- *
- * The following flags correspond to bits that may be set in the access
- * bitmap. Permissions can be assigned on a per-user basis.
- *
- * ACCS_READ  - 0x2
- *
- * This flag allows read access. For directories and links, this means 
- * finding and listing. For files, this means reading file contents.
- *
- * ACCS_WRITE - 0x4
- *
- * This flag allows write access. For directories, this means the creation and
- * deletion of hard links. For files, this means writing, clearing, and 
- * deleting files/file contents, as well as requesting file synchronization.
- * 
- * ACCS_ALTER - 0x8
- *
- * This flag allows the access bitmap to be modified. Some drivers simply
- * do not allow certain operations (usually writing, if the filesystem is
- * read-only) and this does not ensure that the permission bitmap will 
- * actually be modified as specified.
- *
- * These three flags are guaranteed to be implemented by all drivers.
- */
+/* access bitmap ************************************************************/
 
-#define ACCS_READ	STAT_READER
-#define ACCS_WRITE	STAT_WRITER
-#define ACCS_ALTER	STAT_ADMIN
-#define ACCS_EVENT	STAT_EVENT
-
-uint8_t getaccess   (const char *path, uint32_t user);
-uint8_t getaccess_rp(rp_t rp, uint32_t user);
-
-int     setaccess   (const char *path, uint32_t user, uint8_t access);
-int     setaccess_rp(rp_t rp, uint32_t user, uint8_t access);
+int getaccess(const char *path, uint32_t user);
+int setaccess(const char *path, uint32_t user, int access);
 
 #endif/*__RLIBC_NATIO_H*/

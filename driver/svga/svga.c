@@ -16,6 +16,7 @@
 
 #include "svga.h"
 
+#include <robject.h>
 #include <string.h>
 #include <stdlib.h>
 #include <graph.h>

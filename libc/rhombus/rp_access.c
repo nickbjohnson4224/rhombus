@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <rhombus.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
@@ -21,14 +22,14 @@
 #include <errno.h>
 
 /*****************************************************************************
- * getaccess_rp
+ * rp_access
  *
  * Returns the access bitmap of the robject <rp> that applies to the UID
  * <user>. Returns zero on error.
  */
 
-uint8_t getaccess_rp(rp_t rp, uint32_t user) {
-	uint8_t access;
+int rp_access(rp_t rp, uint32_t user) {
+	int access;
 	char *reply;
 
 	if (!rp) {

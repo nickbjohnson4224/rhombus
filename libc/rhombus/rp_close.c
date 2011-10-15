@@ -14,56 +14,34 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <robject.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
 #include <natio.h>
+#include <errno.h>
 
-int rp_stat(rp_t rp) {
+/*****************************************************************************
+ * rp_close
+ */
+
+int rp_close(rp_t a, rp_t b) {
 	char *reply;
-	int status;
 
-	reply = rcall(rp, "stat");
+	reply = rcalls(b, a, "close");
 
 	if (!reply) {
 		errno = ENOSYS;
-		return 0;
+		return 1;
 	}
 
 	if (reply[0] == '!') {
-		if (!strcmp(reply, "! denied")) errno = EACCES;
-		else                            errno = EUNK;
+		if      (!strcmp(reply, "! nosys"))		errno = ENOSYS;
+		else if (!strcmp(reply, "! denied"))	errno = EACCES;
+		else if (!strcmp(reply, "! nfound"))	errno = ENOENT;
+		else									errno = EUNK;
 		free(reply);
-		return 0;
+		return 1;
 	}
 
-	status = atoi(reply);
 	free(reply);
-
-	return status;
-}
-
-int rp_stath(rp_t rp) {
-	char *reply;
-	int status;
-
-	reply = rcallh(rp, "stat");
-
-	if (!reply) {
-		errno = ENOSYS;
-		return 0;
-	}
-
-	if (reply[0] == '!') {
-		if (!strcmp(reply, "! denied")) errno = EACCES;
-		else                            errno = EUNK;
-		free(reply);
-		return 0;
-	}
-
-	status = atoi(reply);
-	free(reply);
-
-	return status;
+	return 0;
 }

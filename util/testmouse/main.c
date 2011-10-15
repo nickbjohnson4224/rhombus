@@ -17,7 +17,6 @@
 
 #include <natio.h>
 #include <stdio.h>
-#include <event.h>
 #include <proc.h>
 
 void mouse_event(rp_t source, int argc, char **argv) {

@@ -82,7 +82,7 @@ static char *__open(struct robject *self, rp_t src, int argc, char **argv) {
 		return strdup("! denied");
 	}
 
-	robject_open(self, src, status | STAT_OPEN | robject_stat(self, src));
+	robject_open(self, src, status | STAT_OPEN);
 	
 	return strdup("T");
 }
@@ -140,6 +140,46 @@ static char *__name(struct robject *self, rp_t src, int argc, char **argv) {
 	return full;
 }
 
+static char *_get_access(struct robject *r, rp_t src, int argc, char **argv) {
+	uint32_t bitmap;
+	uint32_t user;
+
+	if (argc == 1) {
+		user = getuser(RP_PID(src));
+	}
+	else if (argc == 2) {
+		user = atoi(argv[1]);
+	}
+	else {
+		return strdup("! arg");
+	}
+
+	bitmap = robject_get_access(r, user);
+
+	return saprintf("%X", bitmap);
+}
+
+static char *_set_access(struct robject *r, rp_t src, int argc, char **argv) {
+	uint32_t bitmap;
+	uint32_t user;
+
+	if (argc == 2) {
+		user = getuser(RP_PID(src));
+		sscanf(argv[1], "%X", &bitmap);
+	}
+	else if (argc == 3) {
+		user = atoi(argv[1]);
+		sscanf(argv[2], "%X", &bitmap);
+	}
+	else {
+		return strdup("! arg");
+	}
+
+	robject_set_access(r, user, bitmap);
+
+	return strdup("T");
+}
+
 static void __rcall_handler(struct msg *msg) {
 	struct robject *ro;
 	struct msg *reply;
@@ -177,7 +217,7 @@ void __robject_init(void) {
 	// create basic class
 	robject_class_basic = robject_cons(0, NULL);
 
-	robject_set_data(robject_class_basic, "type", (void*) "event");
+	robject_set_data(robject_class_basic, "type", (void*) "event basic");
 	robject_set_data(robject_class_basic, "name", (void*) "RLIBC-class-basic");
 
 	robject_set_call(robject_class_basic, "type", __type, 0);
@@ -186,6 +226,8 @@ void __robject_init(void) {
 	robject_set_call(robject_class_basic, "open", __open, 0);
 	robject_set_call(robject_class_basic, "stat", __stat, 0);
 	robject_set_call(robject_class_basic, "find", __find, 0);
+	robject_set_call(robject_class_basic, "get-access", _get_access, 0);
+	robject_set_call(robject_class_basic, "set-access", _set_access, STAT_ADMIN);
 
 	// allocate root object
 	robject_root = robject_cons(0, robject_class_basic);

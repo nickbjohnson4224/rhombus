@@ -20,23 +20,26 @@
 #include <errno.h>
 #include <natio.h>
 
-int rp_open(rp_t rp, int status) {
+int rp_stat(rp_t a, rp_t b) {
 	char *reply;
+	int status;
 
-	reply = rcall(rp, "open %d", status);
+	reply = rcalls(b, a, "stat");
 
 	if (!reply) {
 		errno = ENOSYS;
-		return 1;
+		return 0;
 	}
 
 	if (reply[0] == '!') {
 		if (!strcmp(reply, "! denied")) errno = EACCES;
 		else                            errno = EUNK;
 		free(reply);
-		return 1;
+		return 0;
 	}
 
+	status = atoi(reply);
 	free(reply);
-	return 0;
+
+	return status;
 }

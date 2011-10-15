@@ -49,7 +49,7 @@ static char *__rcall(uint64_t rp, const char *args) {
 
 	msg = aalloc(sizeof(struct msg) + length, PAGESZ);
 	if (!msg) return NULL;
-	msg->source = RP_CURRENT;
+	msg->source = RP_CURRENT_THREAD;
 	msg->target = rp;
 	msg->length = length;
 	msg->port   = PORT_RCALL;
@@ -130,7 +130,7 @@ char *rcall(uint64_t rp, const char *fmt, ...) {
  *     char rets[]
  */
 
-static char *__rcallh(uint64_t rp, const char *args) {
+static char *__rcalls(rp_t rp, rp_t src, const char *args) {
 	struct msg *msg;
 	size_t length;
 	char *rets;
@@ -139,7 +139,7 @@ static char *__rcallh(uint64_t rp, const char *args) {
 
 	msg = aalloc(sizeof(struct msg) + length, PAGESZ);
 	if (!msg) return NULL;
-	msg->source = RP_HEAD(RP_CURRENT);
+	msg->source = src;
 	msg->target = rp;
 	msg->length = length;
 	msg->port   = PORT_RCALL;
@@ -170,7 +170,7 @@ static char *__rcallh(uint64_t rp, const char *args) {
  * routines. Returns NULL on error or empty return string.
  */
 
-char *rcallh(uint64_t rp, const char *fmt, ...) {
+char *rcalls(rp_t rp, rp_t src, const char *fmt, ...) {
 	va_list ap;
 	char *args;
 	char *ret;
@@ -187,7 +187,7 @@ char *rcallh(uint64_t rp, const char *fmt, ...) {
 		}
 
 		// perform rcall
-		ret = __rcallh(rp, args);
+		ret = __rcalls(rp, src, args);
 
 		// free argument string
 		free(args);
@@ -195,7 +195,7 @@ char *rcallh(uint64_t rp, const char *fmt, ...) {
 	else {
 		
 		// just use the format string
-		ret = __rcallh(rp, fmt);
+		ret = __rcalls(rp, src, fmt);
 	}
 
 	return ret;

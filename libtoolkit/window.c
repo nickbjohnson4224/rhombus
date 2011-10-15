@@ -14,7 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <event.h>
 #include "window.h"
 #include <ctype.h>
 #include <graph.h>

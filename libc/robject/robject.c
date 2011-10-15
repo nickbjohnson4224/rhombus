@@ -18,7 +18,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <event.h>
 #include <natio.h>
 #include <mutex.h>
 #include <proc.h>

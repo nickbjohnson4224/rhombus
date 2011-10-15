@@ -17,6 +17,7 @@
 #ifndef __RLIBC_ROBJECT_H
 #define __RLIBC_ROBJECT_H
 
+#include <rhombus.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -24,16 +25,18 @@
 /*****************************************************************************
  * Rhombus Objects (robjects)
  *
- * Rhombus objects are the way in which processes and drivers running on a
- * Rhombus system interact with each other. A process can be seen from an
- * external standpoint as being a collection of one or more robjects, to which
- * messages can be sent. Robjects can represent files, directories, pipes,
- * windows, interfaces, devices, drivers, processes... pretty much anything
- * that processes or users might want to interact with.
+ * Rhombus objects (robjects) are a framework implementing the server side of
+ * the Rhombus resource protocols in C. Robjects can be made to represent
+ * files, directories, pipes, windows, interfaces, devices, drivers,
+ * processes... anything that processes or users might want to interact with.
  *
  * The things contained within this sublibrary are used to send, route, and
  * recieve requests to and from robjects, usually via the low-level message 
  * passing IPC layer.
+ *
+ * For normal processes, this framework is used only to handle rcall requests
+ * to the process head, and generally has only one instantiated robject at
+ * index 0.
  */
 
 // defined below
@@ -45,65 +48,8 @@ extern struct robject *robject_class_basic;
 // called from libc initialization; sets up robject_class_basic
 void __robject_init(void);
 
-/*****************************************************************************
- * Rhombus object pointers (robject pointers)
- *
- * This stuff right here, this is important. Robject pointers are the way
- * that Rhombus indentifies pretty much everything on the system. Every file
- * can be uniquely identified by a robject pointer, which, because it is an 
- * integer type, is easy to pass to and from functions. Robject pointers 
- * also have canonical string representations which are used in the rcall and 
- * event interfaces, and are human-readable.
- *
- * The string representations have the following format:
- *
- *   @p:i
- *
- * Where p is the PID of the pointer and i is the index, both in decimal.
- * For example, if the PID is 42 and the index is 123, the string 
- * representation would be "@42:123".
- *
- * There are also four macros used to portably interface with robject
- * pointer contents:
- *
- *   RP_CONS(pid, index) - construct a rp with the given PID and index.
- *   RP_PID(rp)          - evaluate to the PID of the rp.
- *   RP_INDEX(rp)        - evaluate to the index of the rp.
- *   RP_NULL             - universally represents no robject; false-like
- */
-
-// guaranteed to be an integer type
-typedef uint64_t rp_t;
-
-#define RP_CONS(idx, pid) ((((uint64_t) (pid)) << 32) | (uint64_t) (idx))
-#define RP_INDEX(rp)      ((uint32_t) ((rp) >> 32))
-#define RP_PID(rp)        ((uint32_t) ((rp) & 0xFFFFFFFF))
-#define RP_HEAD(rp)       ((uint64_t) ((rp) & 0xFFFFFFFF))
-#define RP_NULL           ((uint64_t) 0)
-
-#define RP_CURRENT        RP_CONS(getpid(), -(1+gettid()))
-
-char *rtoa(rp_t rp);         // convert robject pointer to string
-rp_t  ator(const char *str); // convert string to robject pointer
-
-/*****************************************************************************
- * Rhombus Object Message Passing (rcall)
- *
- * Robjects can accept a bunch of I/O specific messages (see natio.h), but
- * more commonly use a generic text-based message protocol called rcall.
- *
- * This protocol is very simple. The only argument is an ASCII string, and the
- * only return value is an ASCII string. Within the argument, there is some
- * structure, however. The argument string is interpreted as a sequence of
- * space-separated tokens (much like the arguments to a command line utility),
- * with the first token being the name of the robject method to be called.
- */
-
 // rcall hook format
 typedef char *(*rcall_t)(struct robject *self, rp_t src, int argc, char **argv);
-
-char *rcall (rp_t rp, const char *fmt, ...);
-char *rcallh(rp_t rp, const char *fmt, ...);
 
 /*****************************************************************************
  * Rhombus Object Indexing and Lookup
@@ -147,13 +93,9 @@ rcall_t robject_get_call(struct robject *ro, const char *call);
 void    robject_set_data(struct robject *ro, const char *field, void *data);
 void   *robject_get_data(struct robject *ro, const char *field);
 
-// event management
-void    robject_add_subscriber(struct robject *ro, rp_t target);
-void    robject_del_subscriber(struct robject *ro, rp_t target);
-
 // type system
-int     robject_is_type(const char *typestr, const char *type);
-int     robject_check_type(struct robject *ro, const char *type);
+int robject_is_type(const char *typestr, const char *type);
+int robject_check_type(struct robject *ro, const char *type);
 
 // permission system
 int  robject_check_access(struct robject *ro, rp_t source, int access);
