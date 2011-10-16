@@ -23,11 +23,49 @@
 
 #include <rdi/core.h>
 
+rdi_cons_hook rdi_global_cons_file_hook;
+rdi_cons_hook rdi_global_cons_dir_hook;
+rdi_cons_hook rdi_global_cons_link_hook;
+
+static char *_cons(struct robject *self, rp_t src, int argc, char **argv) {
+	struct robject *new_robject = NULL;
+	char *type;
+
+	if (argc >= 2) {
+		type = argv[1];
+
+		if (!strcmp(type, "file")) {
+			if (rdi_global_cons_file_hook) {
+				new_robject = rdi_global_cons_file_hook(src, argc, argv);
+			}
+		}
+		else if (!strcmp(type, "link")) {
+			if (rdi_global_cons_link_hook) {
+				new_robject = rdi_global_cons_link_hook(src, argc, argv);
+			}
+		}
+		else if (!strcmp(type, "dir")) {
+			if (rdi_global_cons_dir_hook) {
+				new_robject = rdi_global_cons_dir_hook(src, argc, argv);
+			}
+		}
+
+		if (new_robject) {
+			robject_open(new_robject, src, STAT_OPEN);
+			return rtoa(RP_CONS(getpid(), new_robject->index));
+		}
+	}
+
+	return strdup("! arg");
+}
+
 struct robject *rdi_class_core;
 
 void __rdi_class_core_setup() {
 	
 	rdi_class_core = robject_cons(0, robject_class_basic);
+
+	robject_set_call(rdi_class_core, "cons", _cons, 0);
 
 	robject_set_data(rdi_class_core, "type", (void*) "driver");
 	robject_set_data(rdi_class_core, "name", (void*) "RDI-class-core");

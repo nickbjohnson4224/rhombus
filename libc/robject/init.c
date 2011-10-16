@@ -62,12 +62,6 @@ static char *__find(struct robject *self, rp_t src, int argc, char **argv) {
 static char *__open(struct robject *self, rp_t src, int argc, char **argv) {
 	int status;
 
-	if (argc == 3) {
-		if (!strcmp(argv[1], "global")) {
-			status = atoi(argv[2]);
-			src = RP_HEAD(src);
-		}
-	}
 	if (argc == 2) {
 		status = atoi(argv[1]);
 	}

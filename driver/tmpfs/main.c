@@ -82,29 +82,16 @@ size_t tmpfs_write(struct robject *self, rp_t source, uint8_t *buffer, size_t si
 	return size;
 }
 
-char *tmpfs_cons(struct robject *self, rp_t source, int argc, char **argv) {
-	struct robject *new_r = NULL;
-	char *type;
+struct robject *tmpfs_file_cons(rp_t source, int argc, char **argv) {
+	return rdi_file_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
+}
 
-	if (argc == 2) {
-		type = argv[1];
+struct robject *tmpfs_dir_cons(rp_t source, int argc, char **argv) {
+	return rdi_dir_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
+}
 
-		if (!strcmp(type, "file")) {
-			new_r = rdi_file_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
-		}
-		else if (!strcmp(type, "dir")) {
-			new_r = rdi_dir_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
-		}
-		else if (!strcmp(type, "link")) {
-			new_r = rdi_link_cons(robject_new_index(), ACCS_READ | ACCS_WRITE, NULL);
-		}
-
-		if (new_r) {
-			return rtoa(RP_CONS(getpid(), new_r->index));
-		}
-	}
-
-	return strdup("! arg");
+struct robject *tmpfs_link_cons(rp_t source, int argc, char **argv) {
+	return rdi_link_cons(robject_new_index(), ACCS_READ | ACCS_WRITE, NULL);
 }
 
 char *tmpfs_reset(struct robject *self, rp_t source, int argc, char **argv) {
@@ -136,10 +123,12 @@ int main(int argc, char **argv) {
 	root = rdi_dir_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
 
 	// set interface functions
-	robject_set_call(rdi_class_core, "cons",  tmpfs_cons,  0);
 	robject_set_call(rdi_class_file, "reset", tmpfs_reset, STAT_WRITER);
 	rdi_global_read_hook  = tmpfs_read;
 	rdi_global_write_hook = tmpfs_write;
+	rdi_global_cons_file_hook = tmpfs_file_cons;
+	rdi_global_cons_dir_hook  = tmpfs_dir_cons;
+	rdi_global_cons_link_hook = tmpfs_link_cons;
 
 	// daemonize
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);

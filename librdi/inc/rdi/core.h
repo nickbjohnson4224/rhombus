@@ -39,15 +39,6 @@ void rdi_init();
  *
  * Calls:
  *
- * find <path> - R
- *
- *   Attempt to locate the robject with the given path relative to this one.
- *
- *   Default behavior is to return a pointer to the called robject. This is
- *   overridden by most subclasses, however.
- *
- *   Return: "%r" <pointer to robject>
- *
  * cons <type> (additional args based on type) - none
  *   
  *   Requests the creation of a new robject of the given type. The three valid
@@ -57,21 +48,6 @@ void rdi_init();
  *   not at all secure.
  *
  *   Return: a robject pointer to the new robject
- * 
- * get-access (user) - R
- *
- *   Requests the access bitmap of the robject for a given user ID. This 
- *   "bitmap" is actually a hexadecimal string value. See natio.h for details 
- *   on its contents. If (user) is nonexistent, the default access bitmap is
- *   accessed.
- *
- *   Return: an access bitmap (hexadecimal string) valid for the given user.
- *
- * set-access (user) <bitmap> - A
- *
- *   Requests the the access bitmap of the robject for a given user ID be
- *   changed. If (user) is nonexistent, the default access bitmap is
- *   changed.
  *
  * sync - W
  *
@@ -87,5 +63,11 @@ void __rdi_class_core_setup();
 
 struct robject *rdi_core_cons(uint32_t index, uint32_t access);
 void            rdi_core_free(struct robject *r);
+
+typedef struct robject *(*rdi_cons_hook)(rp_t src, int argc, char **argv);
+
+extern rdi_cons_hook rdi_global_cons_file_hook;
+extern rdi_cons_hook rdi_global_cons_dir_hook;
+extern rdi_cons_hook rdi_global_cons_link_hook;
 
 #endif/*__LIBRDI_CORE_H*/

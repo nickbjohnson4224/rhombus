@@ -66,26 +66,8 @@ static uintptr_t getvalue(char *field, size_t size) {
 	return sum;
 }
 
-char *tarfs_cons(struct robject *self, rp_t source, int argc, char **argv) {
-	struct robject *new_r = NULL;
-	char *type;
-
-	if (argc == 2) {
-		type = argv[1];
-
-		if (!strcmp(type, "link")) {
-			new_r = rdi_link_cons(robject_new_index(), ACCS_READ | ACCS_WRITE, NULL);
-		}
-		else {
-			return strdup("! type");
-		}
-
-		if (new_r) {
-			return rtoa(RP_CONS(getpid(), new_r->index));
-		}
-	}
-
-	return strdup("! arg");
+struct robject *tarfs_link_cons(rp_t source, int argc, char **argv) {
+	return rdi_link_cons(robject_new_index(), ACCS_READ | ACCS_WRITE, NULL);
 }
 
 size_t tarfs_read(struct robject *self, rp_t source, uint8_t *buffer, size_t size, off_t offset) {
@@ -194,8 +176,8 @@ int main(int argc, char **argv) {
 	free(block);
 
 	/* set up interface */
-	robject_set_call(rdi_class_core, "cons", tarfs_cons, 0);
 	rdi_global_read_hook = tarfs_read;
+	rdi_global_cons_link_hook = tarfs_link_cons;
 
 	/* daemonize */
 	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
