@@ -51,7 +51,8 @@ static char *_cons(struct robject *self, rp_t src, int argc, char **argv) {
 		}
 
 		if (new_robject) {
-			robject_open(new_robject, src, STAT_OPEN);
+			rtab_open(src, RP_CONS(getpid(), new_robject->index));
+			robject_open(new_robject, src, STAT_OPEN | robject_stat(new_robject, src));
 			return rtoa(RP_CONS(getpid(), new_robject->index));
 		}
 	}

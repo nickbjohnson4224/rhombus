@@ -125,6 +125,10 @@ rp_t ator(const char *str);
  * drivers when that process exits. This table can have elements removed by 
  * the process controlling resource A (this sends the message), and can have 
  * elements added by the process controlling resource B.
+ *
+ * The process maintains it's own list of open connections in userspace called
+ * the "ftab". This is instead used to open connections after a fork(), so
+ * that things like pipes are not lost.
  */
 
 #define STAT_OPEN	0x01
@@ -147,6 +151,12 @@ int rtab_open(rp_t a, rp_t b);
 
 // remove a connection from the rtab (and implcitly send close message)
 int rtab_close(rp_t a, rp_t b);
+
+// add a connection to the ftab
+int ftab_set(rp_t a, rp_t b, int status);
+
+// open all connections in the ftab
+int ftab_reopen(void);
 
 /*****************************************************************************
  * Resource Access Control Lists

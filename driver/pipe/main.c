@@ -101,6 +101,10 @@ size_t pipe_read(struct robject *self, rp_t source, uint8_t *buffer, size_t size
 		datum = pipe_getc(pipe);
 
 		while (datum == ERR_EMPTY) {
+			if (!robject_count_status(self, STAT_WRITER)) {
+				datum = ERR_EOF;
+				break;
+			}
 			sleep();
 			datum = pipe_getc(pipe);
 		}

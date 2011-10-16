@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <rhombus.h>
 #include <stdint.h>
 #include <abi.h>
 #include <proc.h>
@@ -23,6 +24,8 @@ int fork(void) {
 
 	pid = _fork();
 	resetpid();
+
+	ftab_reopen();
 
 	return pid;
 }

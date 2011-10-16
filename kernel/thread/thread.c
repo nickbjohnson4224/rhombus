@@ -121,7 +121,7 @@ void thread_sendv(uint64_t target, uint64_t source, portid_t port) {
 
 	thread->esi = source;
 	thread->edi = source >> 32;
-	thread->eax = target >> 32;
+	thread->ebx = target >> 32;
 }
 
 /****************************************************************************

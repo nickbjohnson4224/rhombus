@@ -76,10 +76,7 @@ static char *__open(struct robject *self, rp_t src, int argc, char **argv) {
 		return strdup("! denied");
 	}
 
-	if (!robject_stat(self, src)) {
-		rtab_open(src, RP_CONS(getpid(), self->index));
-	}
-
+	rtab_open(src, RP_CONS(getpid(), self->index));
 	robject_open(self, src, status | STAT_OPEN);
 	
 	return strdup("T");
@@ -87,7 +84,7 @@ static char *__open(struct robject *self, rp_t src, int argc, char **argv) {
 
 static char *__close(struct robject *self, rp_t src, int argc, char **argv) {
 	int status;
-	
+
 	if (argc == 2) {
 		status = atoi(argv[1]);
 		if (status & STAT_OPEN) {
@@ -232,6 +229,7 @@ void __robject_init(void) {
 	robject_set_call(robject_class_basic, "ping", __ping, 0);
 	robject_set_call(robject_class_basic, "name", __name, 0);
 	robject_set_call(robject_class_basic, "open", __open, 0);
+	robject_set_call(robject_class_basic, "close", __close, STAT_OPEN);
 	robject_set_call(robject_class_basic, "stat", __stat, 0);
 	robject_set_call(robject_class_basic, "find", __find, 0);
 	robject_set_call(robject_class_basic, "get-access", _get_access, 0);

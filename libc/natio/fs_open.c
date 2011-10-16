@@ -46,6 +46,8 @@ int rp_open(rp_t a, rp_t b, int status) {
 	}
 
 	free(reply);
+
+	ftab_set(a, b, status);
 	return 0;
 }
 

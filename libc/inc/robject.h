@@ -100,6 +100,7 @@ int robject_check_type(struct robject *ro, const char *type);
 // permission system
 int  robject_check_access(struct robject *ro, rp_t source, int access);
 int  robject_check_status(struct robject *ro, rp_t source, int status);
+int  robject_count_status(struct robject *ro, int status);
 
 void robject_set_access  (struct robject *ro, rp_t source, int access);
 int  robject_get_access  (struct robject *ro, rp_t source);

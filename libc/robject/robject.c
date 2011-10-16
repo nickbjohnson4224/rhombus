@@ -174,6 +174,29 @@ int robject_check_status(struct robject *ro, rp_t source, int status) {
 	return ((status & robject_stat(ro, source)) == status);
 }
 
+static void _iter2(void *arg0, const char *key, void *value) {
+	int *arg = arg0;
+
+	if (((int) value & arg[0]) == arg[0]) {
+		arg[1]++;
+	}
+}
+
+int robject_count_status(struct robject *ro, int status) {
+	int arg[2];
+
+	arg[0] = status;
+	arg[1] = 0;
+
+	if (ro) {
+		mutex_spin(&ro->mutex);
+		s_table_iter(ro->open_table, (void*) arg, _iter2);
+		mutex_free(&ro->mutex);
+	}
+
+	return arg[1];
+}
+
 void robject_close(struct robject *ro, rp_t source) {
 
 	if (ro) {

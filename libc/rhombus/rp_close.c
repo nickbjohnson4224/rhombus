@@ -45,5 +45,6 @@ int rp_close(rp_t a, rp_t b) {
 	free(reply);
 
 	rtab_close(a, b);
+	ftab_set(a, b, 0);
 	return 0;
 }

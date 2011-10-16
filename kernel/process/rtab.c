@@ -86,7 +86,7 @@ void rtab_open(struct process *proc, uint64_t a, uint64_t b) {
 	// find empty slot for entry
 	for (i = 0; i < proc->rtab_count; i++) {
 
-		if (proc->rtab[i].a == a || proc->rtab[i].b == b) {
+		if (proc->rtab[i].a == a && proc->rtab[i].b == b) {
 			// already contains this connection
 			return;
 		}
