@@ -235,7 +235,6 @@ struct robject *rdi_dir_cons(uint32_t index, uint32_t access) {
 
 	r = robject_cons(index, rdi_class_dir);
 	robject_set_default_access(r, access);
-	rdi_set_access_default(r, access);
 
 	return r;
 }

@@ -80,14 +80,6 @@ void rdi_init();
  *   applicable.
  *
  *   Default behavior is a no-op.
- *
- * Fields:
- *
- * access
- *
- *   A structure containing UID-specific access rules.
- *
- *   Type: struct rdi_access * (heap-allocated)
  */
 
 extern struct robject *rdi_class_core;
@@ -95,32 +87,5 @@ void __rdi_class_core_setup();
 
 struct robject *rdi_core_cons(uint32_t index, uint32_t access);
 void            rdi_core_free(struct robject *r);
-
-/*****************************************************************************
- * RDI Access Control
- */
-
-struct rdi_access_node {
-	struct rdi_access_node *l;
-	struct rdi_access_node *r;
-	int32_t balance;
-	uint32_t height;
-
-	uint32_t uid;
-	uint8_t access;
-};
-
-struct rdi_access {
-	bool mutex;
-	struct rdi_access_node *root;
-	uint8_t access_default;
-};
-
-uint8_t rdi_get_access  (struct robject *ro, uint32_t uid);
-bool    rdi_check_access(struct robject *ro, rp_t source,  uint8_t access);
-void    rdi_set_access  (struct robject *ro, uint32_t uid, uint8_t access);
-void    rdi_del_access  (struct robject *ro, uint32_t uid);
-uint8_t rdi_get_access_default(struct robject *ro, uint8_t access);
-void    rdi_set_access_default(struct robject *ro, uint8_t access);
 
 #endif/*__LIBRDI_CORE_H*/

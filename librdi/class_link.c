@@ -92,7 +92,6 @@ struct robject *rdi_link_cons(uint32_t index, uint32_t access, const char *link)
 
 	r = robject_cons(index, rdi_class_link);
 	robject_set_default_access(r, access);
-	rdi_set_access_default(r, access);
 	if (link) robject_set_data(r, "link", strdup(link));
 
 	return r;
