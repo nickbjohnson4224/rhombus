@@ -23,10 +23,10 @@
  * rp_close
  */
 
-int rp_close(rp_t a, rp_t b) {
+int rp_close(rp_t rp) {
 	char *reply;
 
-	reply = rcalls(b, a, "close");
+	reply = rcall(rp, "close");
 
 	if (!reply) {
 		errno = ENOSYS;
@@ -44,7 +44,7 @@ int rp_close(rp_t a, rp_t b) {
 
 	free(reply);
 
-	rtab_close(a, b);
-	ftab_set(a, b, 0);
+	rtab_close(rp);
+	ftab_set(rp, 0);
 	return 0;
 }

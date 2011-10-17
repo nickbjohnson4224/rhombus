@@ -45,7 +45,6 @@ extern rp_t fs_root;
 rp_t  fs_find (const char *path);
 rp_t  fs_lfind(const char *path);
 rp_t  fs_open (const char *path, int status);
-rp_t  fs_openh(const char *path, int status);
 rp_t  fs_cons (const char *path, const char *type);
 char *fs_list (const char *path);
 off_t fs_size (const char *path);

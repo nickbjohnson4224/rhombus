@@ -33,7 +33,7 @@ char *fs_list(const char *path) {
 
 	dir = fs_open(path, STAT_READER);
 	list = rp_list(dir);
-	rp_close(RP_CURRENT_THREAD, dir);
+	rp_close(dir);
 
 	return list;
 }

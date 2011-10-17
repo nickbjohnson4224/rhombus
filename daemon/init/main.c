@@ -39,7 +39,7 @@ static uint64_t start(struct tar_file *file, char const **argv) {
 
 	if (pid < 0) {
 		execiv(file->start, file->size, argv);
-		for(;;);
+		abort();
 	}
 
 	mwait(PORT_CHILD, pid);
@@ -105,8 +105,8 @@ int main() {
 	temp = start(file, argv);
 
 	/* Link /dev and /sys and change root */
-	temp1 = fs_find("/dev");
-	temp2 = fs_find("/sys");
+	temp1 = fs_open("/dev", STAT_OPEN);
+	temp2 = fs_open("/sys", STAT_OPEN);
 	fs_root = temp;
 	fs_plink("/dev", temp1, NULL);
 	fs_plink("/sys", temp2, NULL);
@@ -130,6 +130,12 @@ int main() {
 	argv[1] = NULL;
 	file = tar_find(boot_image, "sbin/time");
 	fs_plink("/dev/time", start(file, argv), NULL);
+
+	/* Pipe Driver */
+	argv[0] = "pipe";
+	argv[1] = NULL;
+	file = tar_find(boot_image, "sbin/pipe");
+	fs_plink("/sys/pipe", start(file, argv), NULL);
 
 	setname("init");
 	

@@ -26,10 +26,10 @@
  * Returns zero on success, nonzero on error.
  */
 
-int rp_open(rp_t a, rp_t b, int status) {
+int rp_open(rp_t rp, int status) {
 	char *reply;
 
-	reply = rcalls(b, a, "open %d", status);
+	reply = rcall(rp, "open %d", status);
 
 	if (!reply) {
 		errno = ENOSYS;
@@ -47,7 +47,7 @@ int rp_open(rp_t a, rp_t b, int status) {
 
 	free(reply);
 
-	ftab_set(a, b, status);
+	ftab_set(rp, status);
 	return 0;
 }
 
@@ -67,30 +67,7 @@ rp_t fs_open(const char *path, int status) {
 		return 0;
 	}
 
-	if (rp_open(RP_CURRENT_THREAD, rp, status)) {
-		return 0;
-	}
-
-	return rp;
-}
-
-/*****************************************************************************
- * fs_open
- *
- * Attempt to open the resource at <path>. Returns a pointer to the opened
- * resource on success, zero on error.
- */
-
-rp_t fs_openh(const char *path, int status) {
-	uint64_t rp;
-
-	rp = fs_find(path);
-
-	if (!rp) {
-		return 0;
-	}
-
-	if (rp_open(RP_CURRENT_PROC, rp, status)) {
+	if (rp_open(rp, status)) {
 		return 0;
 	}
 

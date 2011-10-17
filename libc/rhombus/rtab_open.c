@@ -25,6 +25,6 @@
  * success, nonzero on error.
  */
 
-int rtab_open(rp_t a, rp_t b) {
-	return _rtab(RTAB_OPEN, a, b);
+int rtab_open(uint32_t pid, rp_t rp) {
+	return _rtab(RTAB_OPEN, pid, rp);
 }

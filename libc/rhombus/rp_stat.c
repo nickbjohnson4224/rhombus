@@ -20,11 +20,11 @@
 #include <errno.h>
 #include <natio.h>
 
-int rp_stat(rp_t a, rp_t b) {
+int rp_stat(rp_t rp) {
 	char *reply;
 	int status;
 
-	reply = rcalls(b, a, "stat");
+	reply = rcall(rp, "stat");
 
 	if (!reply) {
 		errno = ENOSYS;

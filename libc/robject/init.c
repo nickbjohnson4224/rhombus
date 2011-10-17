@@ -63,7 +63,7 @@ static char *__open(struct robject *self, rp_t src, int argc, char **argv) {
 	int status;
 
 	if (argc == 2) {
-		status = atoi(argv[1]);
+		status = atoi(argv[1]) &~ STAT_OPEN;
 	}
 	else if (argc == 1) {
 		status = 0;
@@ -76,7 +76,7 @@ static char *__open(struct robject *self, rp_t src, int argc, char **argv) {
 		return strdup("! denied");
 	}
 
-	rtab_open(src, RP_CONS(getpid(), self->index));
+	rtab_open(RP_PID(src), RP_CONS(getpid(), self->index));
 	robject_open(self, src, status | STAT_OPEN);
 	
 	return strdup("T");

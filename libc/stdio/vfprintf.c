@@ -20,16 +20,26 @@
 #include <stdarg.h>
 
 int vfprintf(FILE *stream, const char *format, va_list ap) {
-	size_t i, fbt;
+/*	size_t i, fbt;
 	char *fmtbuffer;
 	const char *format_tmp;
+	char *string; */
 	char *string;
 
 	if (!stream) {
 		return -1;
 	}
 
-	fmtbuffer = malloc(sizeof(char) * (strlen(format) + 1));
+	string = vsaprintf(format, ap);
+
+	if (!string) {
+		return -1;
+	}
+
+	fwrite(string, strlen(string), sizeof(char), stream);
+	free(string);
+
+/*	fmtbuffer = malloc(sizeof(char) * (strlen(format) + 1));
 	fbt = 0;
 
 	for (i = 0; format[i]; i++) {
@@ -50,7 +60,7 @@ int vfprintf(FILE *stream, const char *format, va_list ap) {
 	}
 	
 	fwrite(fmtbuffer, fbt, sizeof(char), stream);
-	free(fmtbuffer);
+	free(fmtbuffer); */
 
 	return 0;
 }

@@ -25,7 +25,9 @@ int fork(void) {
 	pid = _fork();
 	resetpid();
 
-	ftab_reopen();
+	if (pid < 0) {
+		ftab_reopen();
+	}
 
 	return pid;
 }

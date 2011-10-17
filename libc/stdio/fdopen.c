@@ -46,7 +46,7 @@ FILE *fdopen(rp_t fd, const char *mode) {
 		return NULL;
 	}
 
-	status = 0;
+	status = rp_stat(fd);
 
 	// check read permissions
 	if (mode[0] == 'r' || mode[1] == '+') {
@@ -59,7 +59,7 @@ FILE *fdopen(rp_t fd, const char *mode) {
 	}
 
 	// open file for real
-	if (rp_open(RP_CURRENT_PROC, fd, status)) {
+	if (rp_open(fd, status)) {
 		return NULL;
 	}
 

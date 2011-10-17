@@ -152,9 +152,7 @@ int main(int argc, char **argv) {
 	rdi_init();
 
 	// create device file
-	root = rdi_core_cons(0, ACCS_READ | ACCS_WRITE);
-	robject_set(0, root);
-	robject_root = root;
+	root = rdi_core_cons(1, ACCS_READ | ACCS_WRITE);
 
 	// set interface functions
 	rdi_global_cons_file_hook = pipe_file_cons;

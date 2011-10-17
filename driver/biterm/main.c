@@ -154,8 +154,8 @@ int main(int argc, char **argv) {
 		}
 	}
 	else {
-		kbd_dev = fs_openh(argv[1], STAT_EVENT);
-		fb_dev  = fs_openh(argv[2], STAT_READER | STAT_WRITER | STAT_EVENT);
+		kbd_dev = fs_open(argv[1], STAT_EVENT);
+		fb_dev  = fs_open(argv[2], STAT_READER | STAT_WRITER | STAT_EVENT);
 
 		if (!kbd_dev) {
 			fprintf(stderr, "%s: %s: keyboard not found\n", argv[0], argv[1]);
@@ -195,10 +195,11 @@ int main(int argc, char **argv) {
 		setenv("PATH", "/bin");
 		stdout = stderr = fdopen(RP_CONS(-pid, term->index), "w");
 		stdin = fdopen(RP_CONS(-pid, term->index), "r");
+		rp_open(RP_CONS(-pid, term->index), STAT_READER);
 		exec("/bin/fish");
 	}
 
-	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
+	msendb(getppid(), PORT_CHILD);
 	_done();
 
 	return 0;

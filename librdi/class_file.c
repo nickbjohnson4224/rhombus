@@ -54,8 +54,8 @@ static void __rdi_read (struct msg *msg) {
 		return;
 	}
 
-	if (!robject_check_access(file, msg->source, ACCS_READ)) {
-		// access denied
+	if (!robject_check_status(file, msg->source, STAT_READER)) {
+		// access denied (connection not open)
 		merror(msg);
 		return;
 	}
@@ -118,7 +118,7 @@ static void __rdi_write(struct msg *msg) {
 		return;
 	}
 
-	if (!robject_check_access(file, msg->source, ACCS_WRITE)) {
+	if (!robject_check_status(file, msg->source, STAT_WRITER)) {
 		// access denied
 		merror(msg);
 		return;

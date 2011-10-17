@@ -115,7 +115,7 @@ void thread_sendv(uint64_t target, uint64_t source, portid_t port) {
 
 	thread = thread_send(NULL, target, port, NULL);
 
-	if (!thread) {
+	if (!thread || thread->proc->pid != (uint32_t) target) {
 		return;
 	}
 

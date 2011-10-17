@@ -148,12 +148,14 @@ int main() {
 			}
 		}
 
-		argv[n = 0] = strtok(buffer, " ");
+		argv[n = 1] = strtok(buffer, " ");
 		while ((argv[++n] = strtok(NULL, " ")) != NULL);
 
-		if (argv[0][0] == '\0') {
+		if (argv[1][0] == '\0') {
 			continue;
 		}
+
+		argv[0] = strdup("pipe");
 
 		fish_do(n, argv);
 	}

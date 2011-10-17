@@ -25,6 +25,6 @@
  * success, nonzero on error.
  */
 
-int rtab_close(rp_t a, rp_t b) {
-	return _rtab(RTAB_CLOSE, a, b);
+int rtab_close(rp_t b) {
+	return _rtab(RTAB_CLOSE, RP_CURRENT_PROC, b);
 }
