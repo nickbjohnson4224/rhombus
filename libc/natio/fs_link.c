@@ -39,10 +39,11 @@ int fs_link(const char *path, const char *link) {
 	parent = path_parent(path);
 	name   = path_name(path);
 
-	dir = fs_find(parent);
 	rp  = fs_find(link);
 
+	dir = fs_open(parent, STAT_WRITER);
 	err = rp_link(dir, name, rp);
+	rp_close(dir);
 
 	free(parent);
 	free(name);
@@ -87,9 +88,9 @@ int fs_ulink(const char *path) {
 	parent = path_parent(path);
 	name   = path_name(path);
 
-	dir = fs_find(parent);
-
+	dir = fs_open(parent, STAT_WRITER);
 	err = rp_ulink(dir, name);
+	rp_close(dir);
 
 	free(parent);
 	free(name);

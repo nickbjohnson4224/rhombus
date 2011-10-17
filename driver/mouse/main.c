@@ -21,7 +21,7 @@
 #include <proc.h>
 
 #include <rdi/core.h>
-#include <rdi/vfs.h>
+#include <rdi/io.h>
 #include <rdi/arch.h>
 
 #define USE_IRQ 0
@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
 
 	rdi_init();
 
-	mouse = rdi_event_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
+	mouse = rdi_file_cons(robject_new_index(), ACCS_READ | ACCS_EVENT);
 
 #if USE_IRQ
 	rdi_set_irq(12, mouse_irq);

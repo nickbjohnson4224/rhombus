@@ -340,7 +340,7 @@ void *s_table_getv(struct s_table *table, const char *field, ...) {
 
 	free(_field);
 
-	return table;
+	return data;
 }
 
 void s_table_iter(struct s_table *table, void *arg0, void (*iter)(void *, const char *, void *)) {

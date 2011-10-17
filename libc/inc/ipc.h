@@ -51,6 +51,7 @@
 #define PORT_SHARE	21
 #define PORT_RCALL	22
 #define PORT_EVENT	23
+#define PORT_CLOSE	24
 
 /* message structure ********************************************************/
 

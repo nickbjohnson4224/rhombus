@@ -87,6 +87,8 @@ struct process *process_clone(struct process *parent, struct thread *active) {
 	child->parent = parent;
 	child->pid    = pid;
 	child->rirq   = IRQ_NULL;
+	child->rtab   = NULL;
+	child->rtab_count = 0;
 
 	memclr(child->thread, sizeof(struct thread*) * 256);
 
@@ -187,6 +189,8 @@ void process_thaw(struct process *proc) {
 void process_kill(struct process *proc) {
 	size_t i;
 
+	rtab_free(proc);
+
 	if (proc->rirq != IRQ_NULL) {
 		irq_set_redirect(0, proc->rirq);
 	}
@@ -196,8 +200,6 @@ void process_kill(struct process *proc) {
 			thread_free(proc->thread[i]);
 		}
 	}
-
-	rtab_free(proc);
 
 	space_free(proc->space);
 	process_free(proc);

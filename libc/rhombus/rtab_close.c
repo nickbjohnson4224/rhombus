@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,19 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
-#include <natio.h>
-#include <errno.h>
+#include <rhombus.h>
+#include <abi.h>
 
 /*****************************************************************************
- * getaccess
+ * rtab_close
  *
- * Returns the access bitmap of the robject at <path> that applies to the UID 
- * <user>. Returns zero on error.
+ * Remove the connection <a>,<b> from the rtab of the process controlling <a>.
+ * This may only be done if this process controls <a>. Returns zero on 
+ * success, nonzero on error.
  */
 
-int getaccess(const char *path, uint32_t user) {
-	return rp_access(fs_find(path), user);
+int rtab_close(rp_t b) {
+	return _rtab(RTAB_CLOSE, RP_CURRENT_PROC, b);
 }

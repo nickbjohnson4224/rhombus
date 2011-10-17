@@ -20,30 +20,32 @@
 #include <natio.h>
 #include <errno.h>
 
-static char buffer[2048];
+#define BLOCK_SIZE 1024
+
+static char buffer[BLOCK_SIZE];
 
 int main(int argc, char **argv) {
 	FILE *dest;
 	size_t size;
 
 	if (argc < 2) {
-		fprintf(stderr, "write: missing destination\n");
-		return EXIT_FAILURE;
+		dest = stdout;
 	}
-
-	dest = fopen(argv[2], "w");
-	if (!dest) {
-		fprintf(stderr, "write: cannot open %s: ", argv[1]);
-		perror(NULL);
-		return EXIT_FAILURE;
+	else {
+		dest = fopen(argv[1], "w");
+		if (!dest) {
+			fprintf(stderr, "write: cannot open %s: ", argv[1]);
+			perror(NULL);
+			return EXIT_FAILURE;
+		}
 	}
 
 	while (1) {
-		size = fread(buffer, sizeof(char), 2048, stdin);
+		size = fread(buffer, sizeof(char), BLOCK_SIZE, stdin);
 		if (!size) {
 			break;
 		}
-		size = fwrite(buffer, sizeof(char), size, stdout);
+		size = fwrite(buffer, sizeof(char), size, dest);
 		if (!size) {
 			fprintf(stderr, "error writing to %s ", argv[1]);
 			perror(NULL);

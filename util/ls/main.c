@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
 		path = argv[1];
 	}
 
-	dir = fs_find(path);
+	dir = fs_open(path, STAT_READER);
 
 	if (!dir) {
 		fprintf(stderr, "%s: ", path_simplify(path));
@@ -41,11 +41,17 @@ int main(int argc, char **argv) {
 		abort();
 	}
 
+	errno = 0;
 	list = rp_list(dir);
 	if (!list) {
-		fprintf(stderr, "%s: ", path);
-		perror(NULL);
-		abort();
+		if (errno) {
+			fprintf(stderr, "%s: ", path);
+			perror(NULL);
+			abort();
+		}
+		else {
+			list = strdup("");
+		}
 	}
 
 	listv = strparse(list, "\t");

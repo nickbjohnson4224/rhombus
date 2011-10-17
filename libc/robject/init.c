@@ -55,8 +55,57 @@ static char *__ping(struct robject *self, rp_t src, int argc, char **argv) {
 	return strdup("T");
 }
 
+static char *__find(struct robject *self, rp_t src, int argc, char **argv) {
+	return rtoa(RP_CONS(getpid(), self->index));
+}
+
 static char *__open(struct robject *self, rp_t src, int argc, char **argv) {
+	int status;
+
+	if (argc == 2) {
+		status = atoi(argv[1]) &~ STAT_OPEN;
+	}
+	else if (argc == 1) {
+		status = 0;
+	}
+	else {
+		return strdup("! arg");
+	}
+
+	if (!robject_check_access(self, src, status)) {
+		return strdup("! denied");
+	}
+
+	rtab_open(RP_PID(src), RP_CONS(getpid(), self->index));
+	robject_open(self, src, status | STAT_OPEN);
+	
 	return strdup("T");
+}
+
+static char *__close(struct robject *self, rp_t src, int argc, char **argv) {
+	int status;
+
+	if (argc == 2) {
+		status = atoi(argv[1]);
+		if (status & STAT_OPEN) {
+			robject_close(self, src);
+		}
+		else {
+			robject_open(self, src, robject_stat(self, src) &~ status);
+		}
+		return strdup("T");
+	}
+	else if (argc == 1) {
+		robject_close(self, src);
+		return strdup("T");
+	}
+	else {
+		return strdup("! arg");
+	}
+}
+
+static char *__stat(struct robject *self, rp_t src, int argc, char **argv) {
+	return saprintf("%d", robject_stat(self, src));
 }
 
 static char *__name(struct robject *self, rp_t src, int argc, char **argv) {
@@ -86,50 +135,44 @@ static char *__name(struct robject *self, rp_t src, int argc, char **argv) {
 	return full;
 }
 
-static char *__subscribe(struct robject *self, rp_t src, int argc, char **argv) {
-	rp_t target;
+static char *_get_access(struct robject *r, rp_t src, int argc, char **argv) {
+	uint32_t bitmap;
+	uint32_t user;
 
 	if (argc == 1) {
-		robject_add_subscriber(self, src);
-		return strdup("T");
+		user = getuser(RP_PID(src));
 	}
-	
-	if (argc == 2) {
-		target = ator(argv[1]);
-		
-		if (RP_PID(target) == RP_PID(src)) {
-			robject_add_subscriber(self, target);
-			return strdup("T");
-		}
-		else {
-			return strdup("!permit");
-		}
+	else if (argc == 2) {
+		user = atoi(argv[1]);
+	}
+	else {
+		return strdup("! arg");
 	}
 
-	return strdup("!arg");
+	bitmap = robject_get_access(r, user);
+
+	return saprintf("%X", bitmap);
 }
 
-static char *__unsubscribe(struct robject *self, rp_t src, int argc, char **argv) {
-	rp_t target;
+static char *_set_access(struct robject *r, rp_t src, int argc, char **argv) {
+	uint32_t bitmap;
+	uint32_t user;
 
-	if (argc == 1) {
-		robject_del_subscriber(self, src);
-		return strdup("T");
-	}
-	
 	if (argc == 2) {
-		target = ator(argv[1]);
-		
-		if (RP_PID(target) == RP_PID(src)) {
-			robject_del_subscriber(self, target);
-			return strdup("T");
-		}
-		else {
-			return strdup("!permit");
-		}
+		user = getuser(RP_PID(src));
+		sscanf(argv[1], "%X", &bitmap);
+	}
+	else if (argc == 3) {
+		user = atoi(argv[1]);
+		sscanf(argv[2], "%X", &bitmap);
+	}
+	else {
+		return strdup("! arg");
 	}
 
-	return strdup("!arg");
+	robject_set_access(r, user, bitmap);
+
+	return strdup("T");
 }
 
 static void __rcall_handler(struct msg *msg) {
@@ -160,6 +203,16 @@ static void __rcall_handler(struct msg *msg) {
 	msend(reply);
 }
 
+static void __close_handler(struct msg *msg) {
+	struct robject *ro;
+
+	ro = robject_get(RP_INDEX(msg->target));
+	if (!ro) return;
+
+	free(robject_call(ro, msg->source, "close"));
+	free(msg);
+}
+
 struct robject *robject_root;
 
 struct robject *robject_class_basic;
@@ -169,20 +222,24 @@ void __robject_init(void) {
 	// create basic class
 	robject_class_basic = robject_cons(0, NULL);
 
-	robject_set_data(robject_class_basic, "type", (void*) "basic");
+	robject_set_data(robject_class_basic, "type", (void*) "event basic");
 	robject_set_data(robject_class_basic, "name", (void*) "RLIBC-class-basic");
 
-	robject_set_call(robject_class_basic, "type", __type);
-	robject_set_call(robject_class_basic, "ping", __ping);
-	robject_set_call(robject_class_basic, "name", __name);
-	robject_set_call(robject_class_basic, "open", __open);
-	robject_set_call(robject_class_basic, "subscribe",   __subscribe);
-	robject_set_call(robject_class_basic, "unsubscribe", __unsubscribe);
+	robject_set_call(robject_class_basic, "type", __type, 0);
+	robject_set_call(robject_class_basic, "ping", __ping, 0);
+	robject_set_call(robject_class_basic, "name", __name, 0);
+	robject_set_call(robject_class_basic, "open", __open, 0);
+	robject_set_call(robject_class_basic, "close", __close, STAT_OPEN);
+	robject_set_call(robject_class_basic, "stat", __stat, 0);
+	robject_set_call(robject_class_basic, "find", __find, 0);
+	robject_set_call(robject_class_basic, "get-access", _get_access, 0);
+	robject_set_call(robject_class_basic, "set-access", _set_access, STAT_ADMIN);
 
 	// allocate root object
 	robject_root = robject_cons(0, robject_class_basic);
 	robject_set(0, robject_root);
 
-	// set rcall and event handlers
+	// set rcall and close handlers
 	when(PORT_RCALL, __rcall_handler);
+	when(PORT_CLOSE, __close_handler);
 }

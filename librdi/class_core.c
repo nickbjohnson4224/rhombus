@@ -23,61 +23,41 @@
 
 #include <rdi/core.h>
 
-static char *_find(struct robject *r, rp_t src, int argc, char **argv) {
-	return rtoa(RP_CONS(getpid(), r->index));
-}
+rdi_cons_hook rdi_global_cons_file_hook;
+rdi_cons_hook rdi_global_cons_dir_hook;
+rdi_cons_hook rdi_global_cons_link_hook;
 
-static char *_open(struct robject *r, rp_t src, int argc, char **argv) {
+static char *_cons(struct robject *self, rp_t src, int argc, char **argv) {
+	struct robject *new_robject = NULL;
+	char *type;
 
-	if (!rdi_check_access(r, src, ACCS_READ)) return strdup("! denied");
+	if (argc >= 2) {
+		type = argv[1];
 
-	return strdup("T");
-}
+		if (!strcmp(type, "file")) {
+			if (rdi_global_cons_file_hook) {
+				new_robject = rdi_global_cons_file_hook(src, argc, argv);
+			}
+		}
+		else if (!strcmp(type, "link")) {
+			if (rdi_global_cons_link_hook) {
+				new_robject = rdi_global_cons_link_hook(src, argc, argv);
+			}
+		}
+		else if (!strcmp(type, "dir")) {
+			if (rdi_global_cons_dir_hook) {
+				new_robject = rdi_global_cons_dir_hook(src, argc, argv);
+			}
+		}
 
-static char *_get_access(struct robject *r, rp_t src, int argc, char **argv) {
-	uint32_t bitmap;
-	uint32_t user;
-
-	if (argc == 1) {
-		user = getuser(RP_PID(src));
-	}
-	else if (argc == 2) {
-		user = atoi(argv[1]);
-	}
-	else {
-		return strdup("! arg");
-	}
-
-	bitmap = rdi_get_access(r, user);
-
-	return saprintf("%X", bitmap);
-}
-
-static char *_set_access(struct robject *r, rp_t src, int argc, char **argv) {
-	uint32_t bitmap;
-	uint32_t user;
-
-	if (!rdi_check_access(r, src, ACCS_ALTER)) return strdup("! denied");
-
-	if (argc == 2) {
-		user = getuser(RP_PID(src));
-		sscanf(argv[1], "%X", &bitmap);
-	}
-	else if (argc == 3) {
-		user = atoi(argv[1]);
-		sscanf(argv[2], "%X", &bitmap);
-	}
-	else {
-		return strdup("! arg");
+		if (new_robject) {
+			rtab_open(src, RP_CONS(getpid(), new_robject->index));
+			robject_open(new_robject, src, STAT_OPEN | robject_stat(new_robject, src));
+			return rtoa(RP_CONS(getpid(), new_robject->index));
+		}
 	}
 
-	rdi_set_access(r, user, bitmap);
-
-	return strdup("T");
-}
-
-static char *_sync(struct robject *r, rp_t src, int argc, char **argv) {
-	return strdup("T");
+	return strdup("! arg");
 }
 
 struct robject *rdi_class_core;
@@ -86,11 +66,7 @@ void __rdi_class_core_setup() {
 	
 	rdi_class_core = robject_cons(0, robject_class_basic);
 
-	robject_set_call(rdi_class_core, "find", _find);
-	robject_set_call(rdi_class_core, "get-access", _get_access);
-	robject_set_call(rdi_class_core, "set-access", _set_access);
-	robject_set_call(rdi_class_core, "sync", _sync);
-	robject_set_call(rdi_class_core, "open", _open);
+	robject_set_call(rdi_class_core, "cons", _cons, 0);
 
 	robject_set_data(rdi_class_core, "type", (void*) "driver");
 	robject_set_data(rdi_class_core, "name", (void*) "RDI-class-core");
@@ -100,7 +76,7 @@ struct robject *rdi_core_cons(uint32_t index, uint32_t access) {
 	struct robject *r;
 
 	r = robject_cons(index, rdi_class_core);
-	rdi_set_access_default(r, access);
+	robject_set_default_access(r, access);
 
 	return r;
 }

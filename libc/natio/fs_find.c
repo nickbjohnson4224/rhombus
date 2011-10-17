@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <rhombus.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>

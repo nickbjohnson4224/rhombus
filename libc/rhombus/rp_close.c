@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
- * Copyright (C) 2011 Jaagup Repan <jrepan at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,34 +14,37 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include <natio.h>
-#include <proc.h>
-#include <ipc.h>
+#include <errno.h>
 
-/****************************************************************************
- * sync
- *
- * "Synchronizes" the given resource. The specifics of this are very 
- * dependent on the resource, but in general, the operation flushes caches of
- * some sort and guarantees pending writes are performed.
+/*****************************************************************************
+ * rp_close
  */
 
-int sync(uint64_t file) {
-	struct msg *msg;
+int rp_close(rp_t rp) {
+	char *reply;
 
-	msg = aalloc(sizeof(struct msg), PAGESZ);
-	if (!msg) return 1;
-	msg->source = RP_CURRENT_THREAD;
-	msg->target = file;
-	msg->length = 0;
-	msg->port   = PORT_SYNC;
-	msg->arch   = ARCH_NAT;
+	reply = rcall(rp, "close");
 
-	if (msend(msg)) return 1;
-	msg = mwait(PORT_REPLY, file);
+	if (!reply) {
+		errno = ENOSYS;
+		return 1;
+	}
 
-	free(msg);
+	if (reply[0] == '!') {
+		if      (!strcmp(reply, "! nosys"))		errno = ENOSYS;
+		else if (!strcmp(reply, "! denied"))	errno = EACCES;
+		else if (!strcmp(reply, "! nfound"))	errno = ENOENT;
+		else									errno = EUNK;
+		free(reply);
+		return 1;
+	}
+
+	free(reply);
+
+	rtab_close(rp);
+	ftab_set(rp, 0);
 	return 0;
 }

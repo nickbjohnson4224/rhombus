@@ -22,11 +22,13 @@ extern _done
 section .text
 
 _on_event:
-	
+
+	push ebx
+	push edi
 	push esi
 	push edx
 	push ecx
 	call on_event
-	add esp, 12
+	add esp, 20
 
 	call _done

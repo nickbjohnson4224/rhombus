@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <natio.h>
 #include <mutex.h>
 #include <proc.h>
 #include <abi.h>
@@ -28,11 +29,12 @@
  * various field manipulations
  */
 
-void robject_set_call(struct robject *ro, const char *call, rcall_t hook) {
+void robject_set_call(struct robject *ro, const char *call, rcall_t hook, int status) {
 	
 	if (ro) {
 		mutex_spin(&ro->mutex);
 		ro->call_table = s_table_set(ro->call_table, call, (void*) (uintptr_t) hook);
+		ro->call_stat_table = s_table_set(ro->call_stat_table, call, (void*) status);
 		mutex_free(&ro->mutex);
 	}
 }
@@ -42,8 +44,13 @@ rcall_t robject_get_call(struct robject *ro, const char *call) {
 	
 	if (ro) {
 		mutex_spin(&ro->mutex);
+
+		// read hook
 		hook = (rcall_t) (uintptr_t) s_table_get(ro->call_table, call);
+
+		// if not defined, fall back to parent
 		if (!hook) hook = robject_get_call(ro->parent, call);
+
 		mutex_free(&ro->mutex);
 
 		return hook;
@@ -78,40 +85,18 @@ void *robject_get_data(struct robject *ro, const char *field) {
 }
 
 /*
- * event management
- */
-
-void robject_add_subscriber(struct robject *ro, rp_t target) {
-	
-	if (ro) {
-		mutex_spin(&ro->mutex);
-		ro->subs_table = s_table_setv(ro->subs_table, (void*) 1, "%r", target);
-		mutex_free(&ro->mutex);
-	}
-}
-
-void robject_del_subscriber(struct robject *ro, rp_t target) {
-	
-	if (ro) {
-		mutex_spin(&ro->mutex);
-		ro->subs_table = s_table_setv(ro->subs_table, NULL, "%r", target);
-		mutex_free(&ro->mutex);
-	}
-}
-
-/*
  * basic interface
  */
 
-void __iter(void *arg0, const char *key, void *value) {
-	event(ator(key), arg0);
+static void _iter(void *arg0, const char *key, void *value) {
+	if ((int) value & STAT_EVENT) event(atoi(key), arg0);
 }
 
 void robject_event(struct robject *ro, const char *event) {
 	
 	if (ro) {
 		mutex_spin(&ro->mutex);
-		s_table_iter(ro->subs_table, (void*) event, __iter);
+		s_table_iter(ro->open_table, (void*) event, _iter);
 		mutex_free(&ro->mutex);
 	}
 }
@@ -119,6 +104,7 @@ void robject_event(struct robject *ro, const char *event) {
 char *robject_call(struct robject *ro, rp_t source, const char *args) {
 	rcall_t call;
 	int argc;
+	int status;
 	char **argv;
 	char *rets;
 
@@ -137,6 +123,17 @@ char *robject_call(struct robject *ro, rp_t source, const char *args) {
 		return NULL;
 	}
 
+	// check access and status restrictions
+	mutex_spin(&ro->mutex);
+	status = (int) s_table_get(ro->call_stat_table, argv[0]);
+	mutex_free(&ro->mutex);
+
+	if (status) {
+		if (!robject_check_status(ro, source, status)) {
+			return strdup("! denied");
+		}
+	}
+
 	rets = call(ro, source, argc, argv);
 
 	for (argc = 0; argv[argc]; argc++) free(argv[argc]);
@@ -147,4 +144,103 @@ char *robject_call(struct robject *ro, rp_t source, const char *args) {
 
 void *robject_data(struct robject *ro, const char *field) {
 	return robject_get_data(ro, field);
+}
+
+int robject_open(struct robject *ro, rp_t source, int status) {
+
+	if (ro) {
+		mutex_spin(&ro->mutex);
+		ro->open_table = s_table_setv(ro->open_table, (void*) status, "%d", RP_PID(source));
+		mutex_free(&ro->mutex);
+	}
+
+	return 0;
+}
+
+int robject_stat(struct robject *ro, rp_t source) {
+	int status = 0;
+
+	if (ro) {
+		mutex_spin(&ro->mutex);
+		status = (int) s_table_getv(ro->open_table, "%d", RP_PID(source));
+		mutex_free(&ro->mutex);
+	}
+
+	return status;
+}
+
+int robject_check_status(struct robject *ro, rp_t source, int status) {
+	return ((status & robject_stat(ro, source)) == status);
+}
+
+static void _iter2(void *arg0, const char *key, void *value) {
+	int *arg = arg0;
+
+	if (((int) value & arg[0]) == arg[0]) {
+		arg[1]++;
+	}
+}
+
+int robject_count_status(struct robject *ro, int status) {
+	int arg[2];
+
+	arg[0] = status;
+	arg[1] = 0;
+
+	if (ro) {
+		mutex_spin(&ro->mutex);
+		s_table_iter(ro->open_table, (void*) arg, _iter2);
+		mutex_free(&ro->mutex);
+	}
+
+	return arg[1];
+}
+
+void robject_close(struct robject *ro, rp_t source) {
+
+	if (ro) {
+		mutex_spin(&ro->mutex);
+		ro->open_table = s_table_setv(ro->open_table, NULL, "%d", RP_PID(source));
+		mutex_free(&ro->mutex);
+	}
+}
+
+int robject_get_access(struct robject *ro, rp_t source) {
+	int access_level = 0;
+
+	if (ro) {
+		mutex_spin(&ro->mutex);
+		access_level = (int) s_table_getv(ro->accs_table, "uid-%u", getuser(source));
+		if ((access_level & 0x100) == 0) {
+			access_level = (int) s_table_get(ro->accs_table, "default");
+		}
+		access_level &= ~0x100;
+		mutex_free(&ro->mutex);
+	}
+
+	return access_level;
+}
+
+int robject_check_access(struct robject *ro, rp_t source, int access) {
+	return ((access & robject_get_access(ro, source)) == access);
+}
+
+void robject_set_access(struct robject *ro, rp_t source, int access) {
+	
+	access |= 0x100;
+
+	if (ro) {
+		mutex_spin(&ro->mutex);
+		ro->accs_table = s_table_setv(ro->accs_table, (void*) access, "uid-%u", getuser(source));
+		mutex_free(&ro->mutex);
+	}
+}
+
+void robject_set_default_access(struct robject *ro, int access) {
+	
+	if (ro) {
+		mutex_spin(&ro->mutex);
+		ro->accs_table = s_table_set(ro->accs_table, "default", (void*) access);
+		mutex_free(&ro->mutex);
+	}
 }

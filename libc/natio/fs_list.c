@@ -28,5 +28,12 @@
  */
 
 char *fs_list(const char *path) {
-	return rp_list(fs_find(path));
+	char *list;
+	rp_t dir;
+
+	dir = fs_open(path, STAT_READER);
+	list = rp_list(dir);
+	rp_close(dir);
+
+	return list;
 }

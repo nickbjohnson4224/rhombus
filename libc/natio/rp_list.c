@@ -33,8 +33,7 @@ char *rp_list(rp_t dir) {
 	reply = rcall(dir, "list");
 	
 	if (!reply) {
-		errno = ENOSYS;
-		return NULL;
+		return strdup("");
 	}
 
 	if (reply[0] == '!') {

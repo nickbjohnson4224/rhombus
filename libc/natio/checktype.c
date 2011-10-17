@@ -27,5 +27,5 @@
  */
 
 bool checktype(const char *path, const char *type) {
-	return checktype_rp(fs_find(path), type);
+	return (rp_type(fs_find(path), type)) ? true : false;
 }

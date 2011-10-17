@@ -18,6 +18,7 @@
 #include <natio.h>
 #include <stdio.h>
 #include <mutex.h>
+#include <proc.h>
 
 /****************************************************************************
  * fclose - close a stream

@@ -21,13 +21,13 @@
 #include <errno.h>
 
 /*****************************************************************************
- * setaccess_rp
+ * rp_admin
  *
  * Set the access bitmap of the robject <rp> for the UID <user> to <access>.
  * Returns zero on success, nonzero on error.
  */
 
-int setaccess_rp(rp_t rp, uint32_t user, uint8_t access) {
+int rp_admin(rp_t rp, uint32_t user, int access) {
 	char *reply;
 
 	if (!rp) {

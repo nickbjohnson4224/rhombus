@@ -49,7 +49,7 @@ static char *__rcall(uint64_t rp, const char *args) {
 
 	msg = aalloc(sizeof(struct msg) + length, PAGESZ);
 	if (!msg) return NULL;
-	msg->source = RP_CONS(getpid(), 0);
+	msg->source = RP_CURRENT_THREAD;
 	msg->target = rp;
 	msg->length = length;
 	msg->port   = PORT_RCALL;

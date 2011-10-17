@@ -42,9 +42,9 @@ void *load_exec(const char *name) {
 	else {
 		path = strvcat(getenv("PATH"), "/", name, NULL);
 	}
-	fd = fs_find(path);
+	fd = fs_open(path, STAT_READER);
 
-	if (!fd || !checktype_rp(fd, "file")) {
+	if (!fd || !rp_type(fd, "file")) {
 		/* file not found */
 		return NULL;
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,15 +26,46 @@
  * a pointer to the new stream on success, NULL on failure.
  */
 
-#define MODE_WRTE 0x01
-#define MODE_RSET 0x02
-#define MODE_CONS 0x04
-
-FILE *fdopen(uint64_t fd, const char *mode) {
+FILE *fdopen(rp_t fd, const char *mode) {
 	FILE *stream;
+	int status;
 	
 	if (!fd) {
 		return NULL;
+	}
+
+	// check mode
+	if (mode[0] != 'a' && mode[0] != 'w' && mode[0] != 'r') {
+		errno = EINVAL;
+		return NULL;
+	}
+
+	// check if the object is not a file
+	if (fd && !rp_type(fd, "file")) {
+		errno = EISDIR;
+		return NULL;
+	}
+
+	status = rp_stat(fd);
+
+	// check read permissions
+	if (mode[0] == 'r' || mode[1] == '+') {
+		status |= STAT_READER;
+	}
+
+	// check write permissions
+	if (mode[0] == 'w' || mode[0] == 'a' || mode[1] == '+') {
+		status |= STAT_WRITER;
+	}
+
+	// open file for real
+	if (rp_open(fd, status)) {
+		return NULL;
+	}
+
+	// reset (erase) the file contents
+	if (mode[0] == 'w') {
+		reset(fd);
 	}
 
 	stream = calloc(sizeof(FILE), 1);
@@ -52,7 +83,19 @@ FILE *fdopen(uint64_t fd, const char *mode) {
 	stream->buffsize = 0;
 	stream->buffpos  = 0;
 	stream->revbuf   = EOF;
-	stream->flags    = FILE_NBF | FILE_READ | FILE_WRITE;
+	stream->flags    = FILE_NBF | FILE_READ;
+
+	if (mode[0] == 'w' || mode[0] == 'a' || mode[1] == '+') {
+		stream->flags |= FILE_WRITE;
+	}
+
+	// position the stream properly
+	if (mode[0] == 'a' && mode[1] != '+') {
+		fseek(stream, 0, SEEK_END);
+	}
+	else {
+		fseek(stream, 0, SEEK_SET);
+	}
 
 	return stream;
 }

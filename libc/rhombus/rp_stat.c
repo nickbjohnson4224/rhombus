@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,19 +14,32 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <robject.h>
 #include <stdlib.h>
-#include <natio.h>
+#include <string.h>
 #include <errno.h>
+#include <natio.h>
 
-/*****************************************************************************
- * getaccess
- *
- * Returns the access bitmap of the robject at <path> that applies to the UID 
- * <user>. Returns zero on error.
- */
+int rp_stat(rp_t rp) {
+	char *reply;
+	int status;
 
-int getaccess(const char *path, uint32_t user) {
-	return rp_access(fs_find(path), user);
+	reply = rcall(rp, "stat");
+
+	if (!reply) {
+		errno = ENOSYS;
+		return 0;
+	}
+
+	if (reply[0] == '!') {
+		if (!strcmp(reply, "! denied")) errno = EACCES;
+		else                            errno = EUNK;
+		free(reply);
+		return 0;
+	}
+
+	status = atoi(reply);
+	free(reply);
+
+	return status;
 }

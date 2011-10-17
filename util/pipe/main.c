@@ -22,14 +22,14 @@
 #include <proc.h>
 #include <exec.h>
 
-int pipe_exec_bg(char const **argv, FILE *in, FILE *out) {
+int pipe_exec_bg(char const **argv, rp_t in, rp_t out) {
 	int pid;
 
 	pid = fork();
 	if (pid < 0) {
 
-		if (in)  stdin  = in;
-		if (out) stdout = out;
+		if (in)  stdin  = fdopen(in, "r");
+		if (out) stdout = fdopen(out, "w");
 
 		if (execv(argv[0], argv)) {
 			if (errno == ENOENT) {
@@ -42,18 +42,21 @@ int pipe_exec_bg(char const **argv, FILE *in, FILE *out) {
 			abort();
 		}
 	}
+	if (in != stdout->fd) rp_open(in, STAT_OPEN);
+	if (out != stdout->fd) rp_open(out, STAT_OPEN);
+//	mwait(PORT_CHILD, pid); // XXX this serializes the pipeline!
 	
 	return 0;
 }
 
-int pipe_exec_fg(char const **argv, FILE *in, FILE *out) {
+int pipe_exec_fg(char const **argv, rp_t in, rp_t out) {
 	int pid;
 
 	pid = fork();
 	if (pid < 0) {
 
-		if (in)  stdin  = in;
-		if (out) stdout = out;
+		if (in)  stdin  = fdopen(in, "r");
+		if (out) stdout = fdopen(out, "w");
 
 		if (execv(argv[0], argv)) {
 			if (errno == ENOENT) {
@@ -66,8 +69,10 @@ int pipe_exec_fg(char const **argv, FILE *in, FILE *out) {
 			abort();
 		}
 	}
-	mwait(PORT_CHILD, RP_CONS(pid, 0));
-	
+	if (in != stdout->fd) rp_open(in, STAT_OPEN);
+	if (out != stdout->fd) rp_open(out, STAT_OPEN);
+	mwait(PORT_CHILD, pid);
+
 	return 0;
 }
 
@@ -84,30 +89,30 @@ char const **argv_copy(int argc, char **argv) {
 struct pipe_list {
 	struct pipe_list *next;
 	char const **argv;
-	FILE *out;
+	rp_t out;
 };
 
 struct pipe_list *pipe_list_add(struct pipe_list *list, int argc, char **argv) {
 	struct pipe_list *node;
-	FILE *pipe;
+	rp_t pipe_rp;
 
 	if (list) {
 		list->next = pipe_list_add(list->next, argc, argv);
 		return list;
 	}
 	else {
-		pipe = fdopen(rp_cons(fs_find("/sys/pipe"), "file"), "w+");
+		pipe_rp = rp_cons(fs_find("/sys/pipe"), "file");
 
 		node = malloc(sizeof(struct pipe_list));
 		node->next = NULL;
 		node->argv = argv_copy(argc, argv);
-		node->out  = pipe;
+		node->out  = pipe_rp;
 
 		return node;
 	}
 }
 
-int pipe_list_exec(struct pipe_list *list, FILE *in, FILE *out) {
+int pipe_list_exec(struct pipe_list *list, rp_t in, rp_t out) {
 
 	if (!list) {
 		return 0;
@@ -115,6 +120,7 @@ int pipe_list_exec(struct pipe_list *list, FILE *in, FILE *out) {
 
 	while (list->next) {
 		pipe_exec_bg(list->argv, in, list->out);
+		if (in != stdin->fd) rp_close(in);
 		in = list->out;
 		list = list->next;
 	}
@@ -138,7 +144,7 @@ int main(int argc, char **argv) {
 	}
 	list = pipe_list_add(list, i - start, &argv[start]);
 
-	pipe_list_exec(list, stdin, stdout);
+	pipe_list_exec(list, stdin->fd, stdout->fd);
 
 	return 0;
 }

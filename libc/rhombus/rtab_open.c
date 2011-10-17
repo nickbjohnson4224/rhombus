@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,43 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
-#include <natio.h>
-#include <errno.h>
+#include <rhombus.h>
+#include <abi.h>
 
 /*****************************************************************************
- * checktype_rp
+ * rtab_open
  *
- * Returns true iff the robject <rp> is a member of the type class <type>.
+ * Add the connection <a>,<b> to the rtab of the process controlling <a>.
+ * This may only be done if this process controls <b>. Returns zero on 
+ * success, nonzero on error.
  */
 
-bool checktype_rp(rp_t rp, const char *type) {
-	char *reply;
-	bool is_type;
-	
-	if (!rp) {
-		return false;
-	}
-
-	reply = rcall(rp, "type");
-
-	if (!reply) {
-		errno = ENOSYS;
-		return false;
-	}
-
-	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nfound")) errno = ENOENT;
-		else if (!strcmp(reply, "! nosys"))  errno = ENOSYS;
-		else                                 errno = EUNK;
-		free(reply);
-		return false;
-	}
-
-	is_type = strstr(reply, type) ? true : false;
-	free(reply);
-
-	return is_type;
+int rtab_open(uint32_t pid, rp_t rp) {
+	return _rtab(RTAB_OPEN, pid, rp);
 }

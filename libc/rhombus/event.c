@@ -21,14 +21,9 @@
 #include <proc.h>
 #include <ipc.h>
 
-static struct s_table *event_table = NULL;
+#include <rhombus.h>
 
-/*****************************************************************************
- * event
- *
- * Asynchronous event protocol. Sends an 8-byte value to the given resource,
- * without waiting for a reply. Returns zero on success, nonzero on error.
- */
+static struct s_table *event_table = NULL;
 
 int event(rp_t rp, const char *value) {
 	struct msg *msg;
@@ -50,7 +45,7 @@ int event(rp_t rp, const char *value) {
 int event_subscribe(rp_t rp) {
 	char *reply;
 
-	reply = rcall(rp, "subscribe");
+	reply = rcall(rp, "open %d", STAT_EVENT);
 
 	if (!reply) return 1;
 	
@@ -61,7 +56,7 @@ int event_subscribe(rp_t rp) {
 int event_unsubscribe(rp_t rp) {
 	char *reply;
 
-	reply = rcall(rp, "unsubscribe");
+	reply = rcall(rp, "close %d", STAT_EVENT);
 
 	if (!reply) return 1;
 

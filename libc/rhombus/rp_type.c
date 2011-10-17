@@ -14,15 +14,50 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <natio.h>
-#include <abi.h>
+#include <rhombus.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 
 /*****************************************************************************
- * rp_close
+ * rp_type
  *
- * Inform the owner of <rp> that it is no longer being used by this process.
+ * Check whether the resource <rp> implements the type <type>. Returns 1 if
+ * it does, 0 otherwise.
  */
 
-void rp_close(rp_t rp) {
-//	_rtab(RTAB_CLOSE, RP_INDEX(rp), RP_PID(rp));
+int rp_type(rp_t rp, const char *type) {
+	char *reply;
+
+	if (!rp) {
+		return 0;
+	}
+
+	reply = rcall(rp, "type");
+
+	if (!reply) {
+		errno = ENOSYS;
+		return 0;
+	}
+
+	if (reply[0] == '!') {
+		if      (!strcmp(reply, "! nfound")) errno = ENOENT;
+		else if (!strcmp(reply, "! denied")) errno = EACCES;
+		else if (!strcmp(reply, "! nosys"))  errno = ENOSYS;
+		else                                 errno = EUNK;
+		free(reply);
+		return 0;
+	}
+	else {
+		errno = 0;
+	}
+
+	if (strstr(reply, type)) {
+		free(reply);
+		return 1;
+	}
+	else {
+		free(reply);
+		return 0;
+	}
 }

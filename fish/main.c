@@ -89,8 +89,6 @@ int fish_exec_fg(int argc, char **argv, FILE *in, FILE *out, FILE *err) {
 
 	pid = fork();
 	if (pid < 0) {
-		rcall(stdin->fd, "set_fgjob %d", getpid());
-
 		if (in)  stdin  = in;
 		if (out) stdout = out;
 		if (err) stderr = err;
@@ -110,8 +108,9 @@ int fish_exec_fg(int argc, char **argv, FILE *in, FILE *out, FILE *err) {
 			abort();
 		}
 	}
+	rcall(stdout->fd, "set_fgjob %d", pid);
 	mwait(PORT_CHILD, RP_CONS(pid, 0));
-	rcall(stdin->fd, "set_fgjob %d", 0);
+	rcall(stdout->fd, "set_fgjob %d", 0);
 	
 	return 0;
 }
@@ -149,12 +148,14 @@ int main() {
 			}
 		}
 
-		argv[n = 0] = strtok(buffer, " ");
+		argv[n = 1] = strtok(buffer, " ");
 		while ((argv[++n] = strtok(NULL, " ")) != NULL);
 
-		if (argv[0][0] == '\0') {
+		if (argv[1][0] == '\0') {
 			continue;
 		}
+
+		argv[0] = strdup("pipe");
 
 		fish_do(n, argv);
 	}

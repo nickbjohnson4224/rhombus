@@ -58,5 +58,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	fclose(src);
+	fclose(dest);
 	return EXIT_SUCCESS;
 }

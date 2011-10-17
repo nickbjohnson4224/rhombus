@@ -101,6 +101,10 @@ size_t pipe_read(struct robject *self, rp_t source, uint8_t *buffer, size_t size
 		datum = pipe_getc(pipe);
 
 		while (datum == ERR_EMPTY) {
+			if (!robject_count_status(self, STAT_WRITER)) {
+				datum = ERR_EOF;
+				break;
+			}
 			sleep();
 			datum = pipe_getc(pipe);
 		}
@@ -129,26 +133,17 @@ size_t pipe_write(struct robject *self, rp_t source, uint8_t *buffer, size_t siz
 	return size;
 }
 
-char *pipe_cons(struct robject *self, rp_t src, int argc, char **argv) {
+struct robject *pipe_file_cons(rp_t source, int argc, char **argv) {
+	struct robject *new_r;
 	struct pipe *pipe;
-	struct robject *new_r = NULL;
-	char *type;
 
-	if (argc == 2) {
-		type = argv[1];
+	new_r = rdi_file_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
+	pipe = pipe_new();
+	robject_set_data(new_r, "pipe", pipe);
 
-		if (!strcmp(type, "file")) {
-			new_r = rdi_file_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
-			pipe = pipe_new();
-			robject_set_data(new_r, "pipe", pipe);
+	robject_open(new_r, source, STAT_OPEN | STAT_READER | STAT_WRITER);
 
-			return rtoa(RP_CONS(getpid(), new_r->index));
-		}
-
-		return strdup("! type");
-	}
-
-	return strdup("! arg");
+	return new_r;
 }
 
 int main(int argc, char **argv) {
@@ -157,12 +152,10 @@ int main(int argc, char **argv) {
 	rdi_init();
 
 	// create device file
-	root = rdi_core_cons(0, ACCS_READ | ACCS_WRITE);
-	robject_set(0, root);
-	robject_root = root;
+	root = rdi_core_cons(1, ACCS_READ | ACCS_WRITE);
 
 	// set interface functions
-	robject_set_call(rdi_class_core, "cons", pipe_cons);
+	rdi_global_cons_file_hook = pipe_file_cons;
 	rdi_global_write_hook = pipe_write;
 	rdi_global_read_hook  = pipe_read;
 

@@ -38,7 +38,7 @@ bool m_event_handler;
  * virtual packet register and redirects the event to proper event handler.
  */
 
-void on_event(size_t count, uint32_t port, uint32_t source) {
+void on_event(size_t count, uint32_t port, uint32_t source, uint32_t source_idx, uint32_t target_idx) {
 	struct msg *msg;
 
 	if (count) {
@@ -71,8 +71,8 @@ void on_event(size_t count, uint32_t port, uint32_t source) {
 		msg = aalloc(sizeof(struct msg), PAGESZ);
 		if (!msg) return;
 
-		msg->source = RP_CONS(source, 0);
-		msg->target = RP_CONS(getpid(), 0);
+		msg->source = RP_CONS(source, source_idx);
+		msg->target = RP_CONS(getpid(), target_idx);
 		msg->length = 0;
 		msg->port   = port;
 		msg->arch   = ARCH_NAT;
