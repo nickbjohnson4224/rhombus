@@ -23,19 +23,21 @@
  */
 
 struct fdtab {
-	int mode;
-	rp_t rp;
+	int mode;		// file connection status
+	rp_t rp;		// file resource pointer
+	uint64_t pos;	// file position
 };
 
-static struct fdtab *_fdtab;
-static bool _fdtab_mutex;
-static int _fdtab_size;
+static struct fdtab *_fdtab = NULL;
+static bool  _fdtab_mutex   = false;
+static int   _fdtab_size    = 0;
 
 int fd_alloc(void) {
 	int i;
 
 	mutex_spin(&_fdtab_mutex);
 
+	// find the smallest open file descriptor with index >= 4
 	for (i = 4; i < _fdtab_size; i++) {
 		if (_fdtab[i].rp == RP_NULL) {
 			mutex_free(&_fdtab_mutex);
@@ -43,6 +45,7 @@ int fd_alloc(void) {
 		}
 	}
 
+	// if table is not large enough, default to 4
 	i = (_fdtab_size < 4) ? 4 : _fdtab_size;
 
 	mutex_free(&_fdtab_mutex);
@@ -53,21 +56,26 @@ int fd_alloc(void) {
 int fd_set(int fd, rp_t rp, int mode) {
 	int i;
 
-	if (fd < 0) {
+	if (fd < 0 || fd >= 4096) {
+		// file descriptor out of range
 		return -1;
 	}
 
 	mutex_spin(&_fdtab_mutex);
 
-	if (_fdtab_size <= fd && fd < 4096) {
+	if (_fdtab_size <= fd) {
+
+		// reallocate table
 		_fdtab_size = fd + 1;
 		_fdtab = realloc(_fdtab, _fdtab_size * sizeof(struct fdtab));
 
+		// clear remainder of table
 		for (i = fd; i < _fdtab_size; i++) {
 			_fdtab[i].rp = RP_NULL;
 		}
 	}
 
+	// set table entry
 	_fdtab[fd].rp = rp;
 	_fdtab[fd].mode = mode;
 
@@ -110,56 +118,35 @@ rp_t fd_rp(int fd) {
 	return rp;
 }
 
-int fd_free(int fd) {
-	return fd_set(fd, RP_NULL, 0);
-}
+int fd_seek(int fd, uint64_t pos) {
+	
+	mutex_spin(&_fdtab_mutex);
 
-int ropen(int fd, rp_t rp, int mode) {
-	int old_mode;
-	int err;
-	rp_t old_rp;
-
-	if (!rp) {
-		return fd_set(fd, rp, 0);
+	if (fd >= 0 && _fdtab_size > fd) {
+		_fdtab[fd].pos = pos;
+	
+		mutex_free(&_fdtab_mutex);
+		return 0;
 	}
 
-	if (fd < 0) fd = fd_alloc();
+	mutex_free(&_fdtab_mutex);
 
-	mode |= STAT_OPEN;
+	return -1;
+}
 
-	old_mode = fd_mode(fd);
-	old_rp = fd_rp(fd);
+uint64_t fd_pos(int fd) {
+	uint64_t pos;
 
-	err = 0;
-	if (old_rp == rp) {
-		err += rp_setstat(rp, mode);
-		err += rp_clrstat(rp, old_mode &~ mode);
+	mutex_spin(&_fdtab_mutex);
+
+	if (fd < 0 || _fdtab_size <= fd) {
+		pos = 0;
 	}
 	else {
-		err += rp_setstat(rp, mode);
-		if (old_rp) err += rp_clrstat(old_rp, old_mode);
+		pos = _fdtab[fd].pos;
 	}
 
-	if (err) {
-		return -err;
-	}
+	mutex_free(&_fdtab_mutex);
 
-	return (fd_set(fd, rp, mode)) ? -1 : fd;
-}
-
-int close(int fd) {
-	int mode = fd_mode(fd);
-	rp_t rp  = fd_rp(fd);
-
-	if (!rp) return -1;
-
-	if (rp_clrstat(rp, mode)) {
-		return -1;
-	}
-
-	return fd_set(fd, rp, 0);
-}
-
-int dup(int fd) {
-	return ropen(-1, fd_rp(fd), fd_mode(fd));
+	return pos;
 }

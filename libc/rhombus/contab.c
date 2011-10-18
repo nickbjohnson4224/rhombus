@@ -221,155 +221,63 @@ int __reconnect(void) {
 	return 0;
 }
 
+static int _rp_connect(rp_t rp, int status) {
+	char *reply;
+
+	if (status) {
+		reply = rcall(rp, "open %d", status);
+	}
+	else {
+		reply = rcall(rp, "close");
+	}
+
+	if (!reply) {
+		errno = ENOSYS;
+		return 1;
+	}
+
+	if (reply[0] == '!') {
+		if      (!strcmp(reply, "! nosys"))		errno = ENOSYS;
+		else if (!strcmp(reply, "! denied"))	errno = EACCES;
+		else if (!strcmp(reply, "! nfound"))	errno = ENOENT;
+		else									errno = EUNK;
+		free(reply);
+		return 1;
+	}
+	
+	free(reply);
+	return 0;
+}
+
+/*****************************************************************************
+ * rp_getstat
+ *
+ * Return the state of the connection to <rp> as registered in the connection
+ * table.
+ */
+
 int rp_getstat(rp_t rp) {
 	return _contab_get(rp);
 }
+
+/*****************************************************************************
+ * rp_setstat
+ *
+ * Create a new connection with status <status> to <rp> in the connection
+ * table. The real connection will have a status that is a superset of 
+ * <status> until this connection is removed.
+ */
 
 int rp_setstat(rp_t rp, int status) {
 	return _contab_add(rp, status | STAT_OPEN);
 }
 
+/*****************************************************************************
+ * rp_clrstat
+ *
+ * Remove a connection with status <status> from the connection to <rp>.
+ */
+
 int rp_clrstat(rp_t rp, int status) {
 	return _contab_del(rp, status | STAT_OPEN);
-}
-
-/*****************************************************************************
- * rp_open
- *
- * Indicates to the driver that the resource <rp> is in use by this process.
- * Returns zero on success, nonzero on error.
- */
-
-static int _rp_connect(rp_t rp, int status) {
-	char *reply;
-
-	if (status) {
-
-		reply = rcall(rp, "open %d", status);
-
-		if (!reply) {
-			errno = ENOSYS;
-			return 1;
-		}
-
-		if (reply[0] == '!') {
-			if      (!strcmp(reply, "! nosys"))		errno = ENOSYS;
-			else if (!strcmp(reply, "! denied"))	errno = EACCES;
-			else if (!strcmp(reply, "! nfound"))	errno = ENOENT;
-			else									errno = EUNK;
-			free(reply);
-			return 1;
-		}
-	
-		free(reply);
-
-		ftab_set(rp, status);
-		return 0;
-	}
-	else {
-	
-		reply = rcall(rp, "close");
-
-		if (!reply) {
-			errno = ENOSYS;
-			return 1;
-		}
-
-		if (reply[0] == '!') {
-			if      (!strcmp(reply, "! nosys"))		errno = ENOSYS;
-			else if (!strcmp(reply, "! denied"))	errno = EACCES;
-			else if (!strcmp(reply, "! nfound"))	errno = ENOENT;
-			else									errno = EUNK;
-			free(reply);
-			return 1;
-		}
-
-		free(reply);
-	
-		rtab_close(rp);
-		return 0;
-	}
-}
-
-int rp_open(rp_t rp, int status) {
-	char *reply;
-
-	reply = rcall(rp, "open %d", status);
-
-	if (!reply) {
-		errno = ENOSYS;
-		return 1;
-	}
-
-	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nosys"))		errno = ENOSYS;
-		else if (!strcmp(reply, "! denied"))	errno = EACCES;
-		else if (!strcmp(reply, "! nfound"))	errno = ENOENT;
-		else									errno = EUNK;
-		free(reply);
-		return 1;
-	}
-
-	free(reply);
-
-	ftab_set(rp, status);
-	return 0;
-}
-
-/*****************************************************************************
- * rp_stat
- */
-
-int rp_stat(rp_t rp) {
-	char *reply;
-	int status;
-
-	reply = rcall(rp, "stat");
-
-	if (!reply) {
-		errno = ENOSYS;
-		return 0;
-	}
-
-	if (reply[0] == '!') {
-		if (!strcmp(reply, "! denied")) errno = EACCES;
-		else                            errno = EUNK;
-		free(reply);
-		return 0;
-	}
-
-	status = atoi(reply);
-	free(reply);
-
-	return status;
-}
-
-/*****************************************************************************
- * rp_close
- */
-
-int rp_close(rp_t rp) {
-	char *reply;
-
-	reply = rcall(rp, "close");
-
-	if (!reply) {
-		errno = ENOSYS;
-		return 1;
-	}
-
-	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nosys"))		errno = ENOSYS;
-		else if (!strcmp(reply, "! denied"))	errno = EACCES;
-		else if (!strcmp(reply, "! nfound"))	errno = ENOENT;
-		else									errno = EUNK;
-		free(reply);
-		return 1;
-	}
-
-	free(reply);
-
-	rtab_close(rp);
-	ftab_set(rp, 0);
-	return 0;
 }

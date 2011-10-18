@@ -14,9 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <natio.h>
-#include <errno.h>
+#include <rhombus.h>
 
+/*****************************************************************************
+ * dup2
+ *
+ * (Re)open <newfd> with the same connection attributes as <fd>.
+ */
 
+int dup2(int fd, int newfd) {
+	return ropen(newfd, fd_rp(fd), fd_mode(fd));
+}
