@@ -40,7 +40,7 @@ int fb_setbmp(struct fb *fb, uint32_t *bitmap) {
 
 	// unshare old bitmap
 	if (fb->flags & FB_SHARED) {
-		share(fb->rp, NULL, 0, 0, 0);
+		rp_share(fb->rp, NULL, 0, 0, 0);
 		fb->flags &= ~FB_SHARED;
 	}
 
@@ -54,7 +54,7 @@ int fb_setbmp(struct fb *fb, uint32_t *bitmap) {
 	fb->flags |= FB_USRBMP;
 
 	// check for shared memory interface
-	if (!share(fb->rp, fb->bitmap, 
+	if (!rp_share(fb->rp, fb->bitmap, 
 			fb->xdim * fb->ydim * sizeof(uint32_t), 0, PROT_READ)) {
 		// successful
 		fb->flags |= FB_SHARED;

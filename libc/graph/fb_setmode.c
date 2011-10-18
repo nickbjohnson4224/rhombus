@@ -38,7 +38,7 @@ int fb_setmode(struct fb *fb, int xdim, int ydim) {
 
 	if (fb->flags & FB_SHARED) {
 		// release shared memory
-		share(fb->rp, NULL, 0, 0, 0);
+		rp_share(fb->rp, NULL, 0, 0, 0);
 	}
 
 	sprintf(args, "setmode %d %d 32", xdim, ydim);

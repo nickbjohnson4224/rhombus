@@ -80,7 +80,7 @@ char *rtoa(rp_t rp);
 rp_t ator(const char *str);
 
 /*****************************************************************************
- * Connection management
+ * Connections
  *
  * For most operations (like I/O), a connection must be established to a 
  * resource R. This connection has some status, which indicates what sort of 
@@ -127,13 +127,18 @@ rp_t ator(const char *str);
 #define STAT_ADMIN	0x08
 #define STAT_EVENT	0x10
 
+int rp_setstat(rp_t rp, int status);
+int rp_clrstat(rp_t rp, int status);
+int rp_getstat(rp_t rp);
+int __reconnect(void);
+
 // create or update a connection to <rp> with status <status>
 int rp_open(rp_t rp, int status);
 
 // check the status of the connection to <rp)
 int rp_stat(rp_t rp);
 
-// close the connection between <rp>
+// close the connection to <rp>
 int rp_close(rp_t rp);
 
 // add a connection to the rtab
@@ -147,6 +152,20 @@ int ftab_set(rp_t rp, int status);
 
 // open all connections in the ftab
 int ftab_reopen(void);
+
+/*****************************************************************************
+ * UNIX-style File Descriptors
+ */
+
+int  fd_alloc(void);
+int  fd_set  (int fd, rp_t rp, int mode);
+int  fd_mode (int fd);
+rp_t fd_rp   (int fd);
+int  fd_free (int fd);
+
+int ropen(int fd, rp_t rp, int mode);
+int close(int fd);
+int dup(int fd);
 
 /*****************************************************************************
  * Resource Access Control Lists

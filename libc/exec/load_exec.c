@@ -30,7 +30,7 @@
  */
 
 void *load_exec(const char *name) {
-	uint64_t fd;
+	int fd;
 	uint64_t size;
 	char *path;
 	void *image;
@@ -42,15 +42,16 @@ void *load_exec(const char *name) {
 	else {
 		path = strvcat(getenv("PATH"), "/", name, NULL);
 	}
-	fd = fs_open(path, STAT_READER);
 
-	if (!fd || !rp_type(fd, "file")) {
+	fd = ropen(-1, fs_find(path), STAT_READER);
+
+	if (fd < 0 || !rp_type(fd_rp(fd), "file")) {
 		/* file not found */
 		return NULL;
 	}
 	else {
 		/* read whole file into buffer */
-		size = rp_size(fd);
+		size = rp_size(fd_rp(fd));
 
 		if (!size) {
 			return NULL;
@@ -62,11 +63,13 @@ void *load_exec(const char *name) {
 			return NULL;
 		}
 
-		if (read(fd, image, size, 0) != size) {
+		if (rp_read(fd_rp(fd), image, size, 0) != size) {
 			free(image);
+			close(fd);
 			return NULL;
 		}
 
+		close(fd);
 		return image;
 	}
 }

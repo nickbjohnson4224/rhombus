@@ -28,7 +28,8 @@
  */
 
 FILE *fopen(const char *path, const char *mode) {
-	uint64_t fd;
+	rp_t rp;
+	int fd;
 	FILE *stream;
 	int status;
 
@@ -39,20 +40,20 @@ FILE *fopen(const char *path, const char *mode) {
 	}
 
 	// attempt to find the file
-	fd = fs_find(path);
+	rp = fs_find(path);
 
 	// check if the object is not a file
-	if (fd && !rp_type(fd, "file")) {
+	if (rp && !rp_type(rp, "file")) {
 		errno = EISDIR;
 		return NULL;
 	}
 
-	if (!fd) {
+	if (!rp) {
 
 		// create the file
 		if (mode[0] == 'w' || mode[0] == 'a') {
-			fd = fs_cons(path, "file");
-			if (!fd) {
+			rp = fs_cons(path, "file");
+			if (!rp) {
 				return NULL;
 			}
 		}
@@ -62,7 +63,7 @@ FILE *fopen(const char *path, const char *mode) {
 		}
 	}
 
-	status = rp_stat(fd);
+	status = 0;
 
 	// check read permissions
 	if (mode[0] == 'r' || mode[1] == '+') {
@@ -75,13 +76,14 @@ FILE *fopen(const char *path, const char *mode) {
 	}
 
 	// open file for real
-	if (rp_open(fd, status)) {
+	fd = ropen(-1, rp, status);
+	if (fd < 0) {
 		return NULL;
 	}
 
 	// reset (erase) the file contents
 	if (mode[0] == 'w') {
-		reset(fd);
+		rp_reset(rp);
 	}
 
 	// open a stream on the file
@@ -96,7 +98,7 @@ FILE *fopen(const char *path, const char *mode) {
 	stream->fd       = fd;
 	stream->mutex    = false;
 	stream->position = 0;
-	stream->size     = rp_size(fd);
+	stream->size     = rp_size(rp);
 	stream->buffer   = NULL;
 	stream->buffsize = 0;
 	stream->buffpos  = 0;

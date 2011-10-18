@@ -26,11 +26,11 @@
  * a pointer to the new stream on success, NULL on failure.
  */
 
-FILE *fdopen(rp_t fd, const char *mode) {
+FILE *fdopen(int fd, const char *mode) {
 	FILE *stream;
 	int status;
 	
-	if (!fd) {
+	if (fd < 0) {
 		return NULL;
 	}
 
@@ -41,12 +41,12 @@ FILE *fdopen(rp_t fd, const char *mode) {
 	}
 
 	// check if the object is not a file
-	if (fd && !rp_type(fd, "file")) {
+	if (!rp_type(fd_rp(fd), "file")) {
 		errno = EISDIR;
 		return NULL;
 	}
 
-	status = rp_stat(fd);
+	status = 0;
 
 	// check read permissions
 	if (mode[0] == 'r' || mode[1] == '+') {
@@ -59,13 +59,14 @@ FILE *fdopen(rp_t fd, const char *mode) {
 	}
 
 	// open file for real
-	if (rp_open(fd, status)) {
+	fd = ropen(fd, fd_rp(fd), status);
+	if (fd < 0) {
 		return NULL;
 	}
 
 	// reset (erase) the file contents
 	if (mode[0] == 'w') {
-		reset(fd);
+		rp_reset(fd_rp(fd));
 	}
 
 	stream = calloc(sizeof(FILE), 1);
@@ -78,7 +79,7 @@ FILE *fdopen(rp_t fd, const char *mode) {
 	stream->fd       = fd;
 	stream->mutex    = false;
 	stream->position = 0;
-	stream->size     = rp_size(fd);
+	stream->size     = rp_size(fd_rp(fd));
 	stream->buffer   = NULL;
 	stream->buffsize = 0;
 	stream->buffpos  = 0;

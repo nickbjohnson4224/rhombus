@@ -49,9 +49,9 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 	list[0].name[0] = '\0';
 
 	/* save standard streams and filesystem root */
-	if (stdin)  fdsave(0,  stdin->fd);
-	if (stdout) fdsave(1, stdout->fd);
-	if (stderr) fdsave(2, stderr->fd);
+	fdsave(0, fd_rp(0));
+	fdsave(1, fd_rp(1));
+	fdsave(2, fd_rp(2));
 	fdsave(3, fs_root);
 
 	/* save argument list */

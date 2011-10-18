@@ -68,13 +68,16 @@ int main() {
 	fs_root = start(file, argv);
 	fs_cons("/dev", "dir");
 	fs_cons("/sys", "dir");
-
+	
 	/* Serial Driver */
 	argv[0] = "serial";
 	argv[1] = NULL;
 	file = tar_find(boot_image, "sbin/serial");
 	fs_plink("/dev/serial", start(file, argv), NULL);
-	stdout = stderr = fopen("/dev/serial", "w");
+	ropen(1, fs_find("/dev/serial"), STAT_WRITER);
+	ropen(2, fs_find("/dev/serial"), STAT_WRITER);
+	stdout = fdopen(1, "w");
+	stderr = fdopen(2, "w");
 
 	fs_plink("/dev/stderr", fs_find("/dev/serial"), NULL);
 
@@ -105,8 +108,8 @@ int main() {
 	temp = start(file, argv);
 
 	/* Link /dev and /sys and change root */
-	temp1 = fs_open("/dev", STAT_OPEN);
-	temp2 = fs_open("/sys", STAT_OPEN);
+	temp1 = fs_find("/dev");
+	temp2 = fs_find("/sys");
 	fs_root = temp;
 	fs_plink("/dev", temp1, NULL);
 	fs_plink("/sys", temp2, NULL);

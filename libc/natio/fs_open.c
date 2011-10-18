@@ -20,38 +20,6 @@
 #include <errno.h>
 
 /*****************************************************************************
- * rp_open
- *
- * Indicates to the driver that the resource <rp> is in use by this process.
- * Returns zero on success, nonzero on error.
- */
-
-int rp_open(rp_t rp, int status) {
-	char *reply;
-
-	reply = rcall(rp, "open %d", status);
-
-	if (!reply) {
-		errno = ENOSYS;
-		return 1;
-	}
-
-	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nosys"))		errno = ENOSYS;
-		else if (!strcmp(reply, "! denied"))	errno = EACCES;
-		else if (!strcmp(reply, "! nfound"))	errno = ENOENT;
-		else									errno = EUNK;
-		free(reply);
-		return 1;
-	}
-
-	free(reply);
-
-	ftab_set(rp, status);
-	return 0;
-}
-
-/*****************************************************************************
  * fs_open
  *
  * Attempt to open the resource at <path>. Returns a pointer to the opened

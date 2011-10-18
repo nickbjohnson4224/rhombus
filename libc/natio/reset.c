@@ -26,7 +26,7 @@
  * Deletes the contents of the file <file>.
  */
 
-int reset(uint64_t file) {
+int rp_reset(uint64_t file) {
 	struct msg *msg;
 
 	msg = aalloc(sizeof(struct msg), PAGESZ);

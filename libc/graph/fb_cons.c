@@ -60,7 +60,7 @@ struct fb *fb_cons(uint64_t rp) {
 	memclr(fb->bitmap, sizeof(uint32_t) * fb->xdim * fb->ydim);
 
 	// check for shared memory interface
-	if (!share(fb->rp, fb->bitmap, 
+	if (!rp_share(fb->rp, fb->bitmap, 
 			fb->xdim * fb->ydim * sizeof(uint32_t), 0, PROT_READ)) {
 		// successful
 		fb->flags |= FB_SHARED;

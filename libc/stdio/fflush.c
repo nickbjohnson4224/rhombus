@@ -30,7 +30,7 @@ int fflush(FILE *stream) {
 	mutex_spin(&stream->mutex);
 
 	if (stream->buffer && stream->buffpos) {
-		write(stream->fd, stream->buffer, stream->buffpos, stream->position);
+		rp_write(fd_rp(stream->fd), stream->buffer, stream->buffpos, stream->position);
 		stream->position += stream->buffpos;
 		stream->buffpos = 0;
 	}

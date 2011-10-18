@@ -38,7 +38,7 @@
  *     uint8_t data[]
  */
 
-size_t read(uint64_t file, void *buf, size_t size, uint64_t offset) {
+size_t rp_read(uint64_t file, void *buf, size_t size, uint64_t offset) {
 	struct msg *msg;
 
 	msg = aalloc(sizeof(struct msg) + sizeof(uint64_t) + sizeof(uint32_t), PAGESZ);

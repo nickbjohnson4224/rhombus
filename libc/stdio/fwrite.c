@@ -43,7 +43,7 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
 
 	if (stream->flags & FILE_NBF) {
 
-		ret = write(stream->fd, (void*) ptr, size * nmemb, stream->position);
+		ret = rp_write(fd_rp(stream->fd), (void*) ptr, size * nmemb, stream->position);
 		stream->position += ret;
 
 		if (size == 0) {

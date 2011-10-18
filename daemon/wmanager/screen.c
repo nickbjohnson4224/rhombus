@@ -32,8 +32,8 @@ void resize_screen(int width, int height) {
 
 	screen = malloc(screen_width * screen_height * 4);
 	memset(screen, 0, screen_width * screen_height * 4);
-	share(vgafd, screen, screen_width * screen_height * 4, 0, PROT_READ);
-	sync(vgafd);
+	rp_share(vgafd, screen, screen_width * screen_height * 4, 0, PROT_READ);
+	rp_sync(vgafd);
 
 	if (panel) {
 		resize_window(panel, screen_width, panel->height, true);
