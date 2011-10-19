@@ -88,38 +88,40 @@ char const **argv_copy(int argc, char **argv) {
 struct pipe_list {
 	struct pipe_list *next;
 	char const **argv;
-	int out;
 };
 
 struct pipe_list *pipe_list_add(struct pipe_list *list, int argc, char **argv) {
 	struct pipe_list *node;
-	rp_t pipe_rp;
 
 	if (list) {
 		list->next = pipe_list_add(list->next, argc, argv);
 		return list;
 	}
 	else {
-		pipe_rp = rp_cons(fs_find("/sys/pipe"), "file");
-
 		node = malloc(sizeof(struct pipe_list));
 		node->next = NULL;
 		node->argv = argv_copy(argc, argv);
-		node->out  = ropen(-1, pipe_rp, STAT_READER | STAT_WRITER);
 
 		return node;
 	}
 }
 
 int pipe_list_exec(struct pipe_list *list, int in, int out) {
+	int pipefd[2];
 
 	if (!list) {
 		return 0;
 	}
 
 	while (list->next) {
-		pipe_exec_bg(list->argv, in, list->out);
-		in = list->out;
+		if (pipe(pipefd)) {
+			fprintf(stderr, "%s: error: could not open pipe\n", getname_s());
+			abort();
+		}
+
+		pipe_exec_bg(list->argv, in, pipefd[1]);
+		in = pipefd[0];
+
 		list = list->next;
 	}
 

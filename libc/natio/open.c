@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,28 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
+#include <rhombus.h>
 #include <natio.h>
-#include <errno.h>
 
-/*****************************************************************************
- * fs_size
- *
- * Returns the file size of the file at <path> in bytes. If this value is 
- * zero, the file may not exist, be the wrong type, or be a character device. 
- * checktype can be used to differentiate between these cases.
- */
+int open(const char *pathname, int flags) {
+	rp_t rp;
 
-off_t fs_size(const char *path) {
-	off_t size;
-	rp_t file;
+	rp = fs_find(pathname);
 
-	file = fs_find(path);
-	if (!rp_setstat(file, STAT_READER)) return 0;
-	size = rp_size(file);
-	rp_clrstat(file, STAT_READER);
+	if (!rp) {
+		return -1;
+	}
 
-	return size;
+	return ropen(-1, rp, flags);
 }
