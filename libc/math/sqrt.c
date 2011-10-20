@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,65 +14,99 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <math.h>
+#include <stdint.h>
 #include <float.h>
+#include <math.h>
+
+static float __sqrt_approx(float x) {
+	int32_t i;
+
+	// floats + bit manipulation = +inf fun!
+	i = *((int32_t*) &x);
+	i = 0x1FC00000 + (i >> 1);
+	x = *((float*) &i);
+
+	return x;
+}
 
 float sqrtf(float x) {
-	float y0, y1, e;
+	float y;
 
-	if (x < 0.0) {
-		return NAN;
-	}
+	// filter out invalid/trivial inputs
+	if (x == INFINITY) return INFINITY;
+	if (x < 0.0)       return NAN;
+	if (x == 0.0)      return 0.0;
 
-	y0 = x;
-	y1 = 0.0;
-	e  = 1.0;
+	// guess square root (using bit manipulation)
+	y = __sqrt_approx(x);
 
-	while (fabsf(y0 - y1) > e) {
-		y0 = y1;
-		y1 = y1 - (y1 * y1 - x) / (2.0 * y1);
-		e  = FLT_EPSILON * y1;
-	}
+	// perform three iterations of approximation
+	// this number (3) is definitely optimal
+	y = 0.5 * (y + x / y);
+	y = 0.5 * (y + x / y);
+	y = 0.5 * (y + x / y);
 
-	return y1;
+	return y;
 }
 
 double sqrt(double x) {
-	double y0, y1, e;
+	long double y, y1;
+	
+	// filter out invalid/trivial inputs
+	if (x == INFINITY) return INFINITY;
+	if (x < 0.0)       return NAN;
+	if (x == 0.0)      return 0.0;
 
-	if (x < 0.0) {
-		return NAN;
+	// guess square root (using bit manipulation)
+	y = __sqrt_approx(x);
+
+	// perform four iterations of approximation
+	// this number (4) is definitely optimal
+	y = 0.5 * (y + x / y);
+	y = 0.5 * (y + x / y);
+	y = 0.5 * (y + x / y);
+	y = 0.5 * (y + x / y);
+
+	// if guess was terribe (out of range of float)
+	// repeat approximation until convergence
+	if (y * y < x - 1.0 || y * y > x + 1.0) {
+		y1 = -1.0;
+		while (y != y1) {
+			y1 = y;
+			y = 0.5 * (y + x / y);
+		}
 	}
 
-	y0 = x;
-	y1 = 0.0;
-	e  = 1.0;
-
-	while (fabs(y0 - y1) > e) {
-		y0 = y1;
-		y1 = y1 - (y1 * y1 - x) / (2.0 * y1);
-		e  = DBL_EPSILON * y1;
-	}
-
-	return y1;
+	return y;
 }
 
 long double sqrtl(long double x) {
-	long double y0, y1, e;
+	long double y, y1;
 
-	if (x < 0.0) {
-		return NAN;
+	// filter out invalid/trivial inputs
+	if (x == INFINITY) return INFINITY;
+	if (x < 0.0)       return NAN;
+	if (x == 0.0)      return 0.0;
+
+	// guess square root (using bit manipulation)
+	y = __sqrt_approx(x);
+
+	// perform four iterations of approximation
+	// this number (4) is definitely optimal
+	y = 0.5 * (y + x / y);
+	y = 0.5 * (y + x / y);
+	y = 0.5 * (y + x / y);
+	y = 0.5 * (y + x / y);
+
+	// if guess was terribe (out of range of float)
+	// repeat approximation until convergence
+	if (y * y < x - 1.0 || y * y > x + 1.0) {
+		y1 = -1.0;
+		while (y != y1) {
+			y1 = y;
+			y = 0.5 * (y + x / y);
+		}
 	}
 
-	y0 = x;
-	y1 = 0.0;
-	e  = 1.0;
-
-	while (fabsl(y0 - y1) > e) {
-		y0 = y1;
-		y1 = y1 - (y1 * y1 - x) / (2.0 * y1);
-		e  = LDBL_EPSILON * y1;
-	}
-
-	return y1;
+	return y;
 }
