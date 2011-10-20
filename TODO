@@ -69,7 +69,9 @@ For 0.9 Alpha:
 	- canvas/blitter API
 
 - drivers
-	- device manager (PCI driver)
+	- PCI driver
+	- ISA "driver"
+	- device manager
 	- ATA/ATAPI driver
 	- iso9660 driver
 	- ext2 driver

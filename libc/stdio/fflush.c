@@ -27,6 +27,10 @@
 
 int fflush(FILE *stream) {
 
+	if (!stream) {
+		return -1;
+	}
+
 	mutex_spin(&stream->mutex);
 
 	if (stream->buffer && stream->buffpos) {

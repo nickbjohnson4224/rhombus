@@ -27,6 +27,10 @@
 
 int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
 	
+	if (!stream) {
+		return -1;
+	}
+
 	fflush(stream);
 
 	mutex_spin(&stream->mutex);
