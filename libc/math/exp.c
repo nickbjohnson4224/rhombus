@@ -19,23 +19,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-/* If GCC/CLang builtins are available, use them */
-#ifdef __GNUC__
-
-float expf(float x) {
-	return __builtin_expf(x);
-}
-
-double exp(double x) {
-	return __builtin_exp(x);
-}
-
-long double expl(long double x) {
-	return __builtin_expl(x);
-}
-
-#else
-
 #define M_E2 	(M_E * M_E)
 #define M_E4 	(M_E2 * M_E2)
 #define M_E8	(M_E4 * M_E4)
@@ -267,5 +250,3 @@ long double expl(long double x) {
 		return value;
 	}
 }
-
-#endif

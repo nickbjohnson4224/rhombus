@@ -16,6 +16,7 @@
 
 #include <stdint.h>
 #include <float.h>
+#include <errno.h>
 #include <math.h>
 
 static float __sqrt_approx(float x) {
@@ -33,9 +34,10 @@ float sqrtf(float x) {
 	float y;
 
 	// filter out invalid/trivial inputs
-	if (x == INFINITY) return INFINITY;
-	if (x < 0.0)       return NAN;
-	if (x == 0.0)      return 0.0;
+	if (x < 0.0) { errno = EDOM; return NAN; }
+	if (isnan(x)) return NAN;
+	if (isinf(x)) return INFINITY;
+	if (x == 0.0) return 0.0;
 
 	// guess square root (using bit manipulation)
 	y = __sqrt_approx(x);
@@ -53,9 +55,10 @@ double sqrt(double x) {
 	long double y, y1;
 	
 	// filter out invalid/trivial inputs
-	if (x == INFINITY) return INFINITY;
-	if (x < 0.0)       return NAN;
-	if (x == 0.0)      return 0.0;
+	if (x < 0.0) { errno = EDOM; return NAN; }
+	if (isnan(x)) return NAN;
+	if (isinf(x)) return INFINITY;
+	if (x == 0.0) return 0.0;
 
 	// guess square root (using bit manipulation)
 	y = __sqrt_approx(x);
@@ -84,9 +87,10 @@ long double sqrtl(long double x) {
 	long double y, y1;
 
 	// filter out invalid/trivial inputs
-	if (x == INFINITY) return INFINITY;
-	if (x < 0.0)       return NAN;
-	if (x == 0.0)      return 0.0;
+	if (x < 0.0) { errno = EDOM; return NAN; }
+	if (isnan(x)) return NAN;
+	if (isinf(x)) return INFINITY;
+	if (x == 0.0) return 0.0;
 
 	// guess square root (using bit manipulation)
 	y = __sqrt_approx(x);
