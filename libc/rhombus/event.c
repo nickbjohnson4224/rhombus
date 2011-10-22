@@ -43,26 +43,16 @@ int event(rp_t rp, const char *value) {
 	return msend(msg);
 }
 
+int fevent(int fd, const char *value) {
+	return event(fd_rp(fd), value);
+}
+
 int event_subscribe(rp_t rp) {
-	char *reply;
-
-	reply = rcall(rp, "open %d", STAT_EVENT);
-
-	if (!reply) return 1;
-	
-	free(reply);
-	return 0;
-} 
+	return rp_setstat(rp, STAT_EVENT);
+}
 
 int event_unsubscribe(rp_t rp) {
-	char *reply;
-
-	reply = rcall(rp, "close %d", STAT_EVENT);
-
-	if (!reply) return 1;
-
-	free(reply);
-	return 0;
+	return rp_clrstat(rp, STAT_EVENT);
 }
 
 static void __event_handler(struct msg *msg) {

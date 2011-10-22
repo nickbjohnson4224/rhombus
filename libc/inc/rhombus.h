@@ -235,6 +235,7 @@ int event_hook(const char *type, event_t hook);
 
 // send an event
 int event(rp_t rp, const char *value);
+int fevent(int fd, const char *value);
 
 /*****************************************************************************
  * Resource Type System
