@@ -49,7 +49,7 @@ size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 		rev_count = 0;
 	}
 
-	ret = read(stream->fd, ptr, nmemb - rev_count, stream->position);
+	ret = rp_read(fd_rp(stream->fd), ptr, nmemb - rev_count, stream->position);
 	stream->position += ret;
 	ret += rev_count;
 

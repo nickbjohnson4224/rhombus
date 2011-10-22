@@ -14,32 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <robject.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <natio.h>
+#include <rhombus.h>
 
-int rp_stat(rp_t rp) {
-	char *reply;
-	int status;
+/*****************************************************************************
+ * dup2
+ *
+ * (Re)open <newfd> with the same connection attributes as <fd>.
+ */
 
-	reply = rcall(rp, "stat");
-
-	if (!reply) {
-		errno = ENOSYS;
-		return 0;
-	}
-
-	if (reply[0] == '!') {
-		if (!strcmp(reply, "! denied")) errno = EACCES;
-		else                            errno = EUNK;
-		free(reply);
-		return 0;
-	}
-
-	status = atoi(reply);
-	free(reply);
-
-	return status;
+int dup2(int fd, int newfd) {
+	return ropen(newfd, fd_rp(fd), fd_mode(fd));
 }

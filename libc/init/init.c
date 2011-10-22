@@ -61,9 +61,9 @@ void _init() {
 	__loadenv();
 
 	/* setup standard streams */
-	stdin   = fdopen(fdload(0), "r");
-	stdout  = fdopen(fdload(1), "w");
-	stderr  = fdopen(fdload(2), "w");
+	stdin   = fdopen(ropen(0, fdload(0), 0), "r");
+	stdout  = fdopen(ropen(1, fdload(1), 0), "w");
+	stderr  = fdopen(ropen(2, fdload(2), 0), "w");
 	fs_root = fdload(3);
 
 	/* set up signals */

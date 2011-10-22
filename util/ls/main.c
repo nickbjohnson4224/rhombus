@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
 		path = argv[1];
 	}
 
-	dir = fs_open(path, STAT_READER);
+	dir = fs_find(path);
 
 	if (!dir) {
 		fprintf(stderr, "%s: ", path_simplify(path));
@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
 	}
 
 	errno = 0;
-	list = rp_list(dir);
+	list = fs_list(path);
 	if (!list) {
 		if (errno) {
 			fprintf(stderr, "%s: ", path);

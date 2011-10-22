@@ -28,5 +28,13 @@
  */
 
 int setaccess(const char *path, uint32_t user, int access) {
-	return rp_admin(fs_open(path, STAT_ADMIN), user, access);
+	rp_t rp;
+	int err;
+
+	rp = fs_find(path);
+	if (rp_setstat(rp, STAT_ADMIN)) return -1;
+	err = rp_admin(rp, user, access);
+	rp_clrstat(rp, STAT_ADMIN);
+
+	return err;
 }

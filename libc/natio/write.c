@@ -38,7 +38,7 @@
  *     uint32_t size
  */
 
-size_t write(uint64_t file, void *buf, size_t size, uint64_t offset) {
+size_t rp_write(uint64_t file, void *buf, size_t size, uint64_t offset) {
 	struct msg *msg;
 
 	msg = aalloc(sizeof(struct msg) + sizeof(uint64_t) + size, PAGESZ);

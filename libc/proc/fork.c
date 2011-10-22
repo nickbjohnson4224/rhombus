@@ -26,7 +26,7 @@ int fork(void) {
 	resetpid();
 
 	if (pid < 0) {
-		ftab_reopen();
+		__reconnect();
 	}
 
 	return pid;

@@ -38,6 +38,9 @@ int screen_resize(uint32_t x, uint32_t y) {
 	if (screen.cell) {
 		old = screen.cell;
 	}
+	else {
+		old = NULL;
+	}
 
 	old_w = screen.w;
 	old_h = screen.h;

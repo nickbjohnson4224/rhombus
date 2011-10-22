@@ -20,10 +20,6 @@
 #include <stdarg.h>
 
 int vfprintf(FILE *stream, const char *format, va_list ap) {
-/*	size_t i, fbt;
-	char *fmtbuffer;
-	const char *format_tmp;
-	char *string; */
 	char *string;
 
 	if (!stream) {
@@ -38,29 +34,6 @@ int vfprintf(FILE *stream, const char *format, va_list ap) {
 
 	fwrite(string, strlen(string), sizeof(char), stream);
 	free(string);
-
-/*	fmtbuffer = malloc(sizeof(char) * (strlen(format) + 1));
-	fbt = 0;
-
-	for (i = 0; format[i]; i++) {
-		if (format[i] == '%') {
-			fwrite(fmtbuffer, sizeof(char), fbt, stream);
-			fbt = 0;
-
-			format_tmp = &format[i];
-			string = __format(&format_tmp, &ap);
-			i = (uintptr_t) format_tmp - (uintptr_t) format;
-			if (!string) continue;
-			fwrite(string, strlen(string), sizeof(char), stream);
-			free(string);
-		}
-		else {
-			fmtbuffer[fbt++] = format[i];
-		}
-	}
-	
-	fwrite(fmtbuffer, fbt, sizeof(char), stream);
-	free(fmtbuffer); */
 
 	return 0;
 }

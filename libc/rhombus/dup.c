@@ -14,30 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <natio.h>
-#include <errno.h>
+#include <rhombus.h>
 
 /*****************************************************************************
- * fs_open
+ * dup
  *
- * Attempt to open the resource at <path>. Returns a pointer to the opened
- * resource on success, zero on error.
+ * Return a new file descriptor with the same connection attributes as <fd>.
  */
 
-rp_t fs_open(const char *path, int status) {
-	uint64_t rp;
-
-	rp = fs_find(path);
-
-	if (!rp) {
-		return 0;
-	}
-
-	if (rp_setstat(rp, status)) {
-		return 0;
-	}
-
-	return rp;
+int dup(int fd) {
+	return ropen(-1, fd_rp(fd), fd_mode(fd));
 }

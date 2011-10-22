@@ -14,30 +14,29 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <natio.h>
-#include <errno.h>
+#include <rhombus.h>
 
 /*****************************************************************************
- * fs_open
+ * close
  *
- * Attempt to open the resource at <path>. Returns a pointer to the opened
- * resource on success, zero on error.
+ * Close a file descriptor. This file descriptor may be reused by other
+ * calls to open()/ropen().
  */
 
-rp_t fs_open(const char *path, int status) {
-	uint64_t rp;
-
-	rp = fs_find(path);
+int close(int fd) {
+	int mode = fd_mode(fd);
+	rp_t rp  = fd_rp(fd);
 
 	if (!rp) {
-		return 0;
+		// is not valid file descriptor
+		return -1;
 	}
 
-	if (rp_setstat(rp, status)) {
-		return 0;
+	if (rp_clrstat(rp, mode)) {
+		// could not close connection
+		return -1;
 	}
 
-	return rp;
+	// clear file descriptor entry
+	return fd_set(fd, rp, 0);
 }

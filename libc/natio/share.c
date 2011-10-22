@@ -41,7 +41,7 @@
  *     uint8_t err;
  */
 
-int share(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot) {
+int rp_share(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot) {
 	struct msg *msg;
 	int err;
 

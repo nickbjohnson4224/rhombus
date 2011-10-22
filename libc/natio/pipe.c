@@ -14,37 +14,27 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <string.h>
+#include <rhombus.h>
 #include <natio.h>
-#include <errno.h>
 
-/*****************************************************************************
- * rp_close
- */
+int pipe(int pipefd[2]) {
+	rp_t rp;
+	rp_t pipe_driver;
 
-int rp_close(rp_t rp) {
-	char *reply;
+	pipe_driver = fs_find("/sys/pipe");
 
-	reply = rcall(rp, "close");
-
-	if (!reply) {
-		errno = ENOSYS;
-		return 1;
+	if (!pipe_driver) {
+		return -1;
 	}
 
-	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nosys"))		errno = ENOSYS;
-		else if (!strcmp(reply, "! denied"))	errno = EACCES;
-		else if (!strcmp(reply, "! nfound"))	errno = ENOENT;
-		else									errno = EUNK;
-		free(reply);
-		return 1;
+	rp = rp_cons(pipe_driver, "file");
+
+	if (!rp) {
+		return -1;
 	}
 
-	free(reply);
+	pipefd[0] = ropen(-1, rp, STAT_READER);
+	pipefd[1] = ropen(-1, rp, STAT_WRITER);
 
-	rtab_close(rp);
-	ftab_set(rp, 0);
 	return 0;
 }

@@ -63,39 +63,31 @@ static char *__open(struct robject *self, rp_t src, int argc, char **argv) {
 	int status;
 
 	if (argc == 2) {
-		status = atoi(argv[1]) &~ STAT_OPEN;
+		status = atoi(argv[1]);
 	}
 	else if (argc == 1) {
-		status = 0;
+		status = STAT_OPEN;
 	}
 	else {
 		return strdup("! arg");
 	}
 
-	if (!robject_check_access(self, src, status)) {
+	if (!robject_check_access(self, src, status &~ STAT_OPEN)) {
 		return strdup("! denied");
 	}
 
-	rtab_open(RP_PID(src), RP_CONS(getpid(), self->index));
-	robject_open(self, src, status | STAT_OPEN);
+	if (status) {
+		rtab_open(RP_PID(src), RP_CONS(getpid(), self->index));
+	}
+
+	robject_open(self, src, status);
 	
 	return strdup("T");
 }
 
 static char *__close(struct robject *self, rp_t src, int argc, char **argv) {
-	int status;
 
-	if (argc == 2) {
-		status = atoi(argv[1]);
-		if (status & STAT_OPEN) {
-			robject_close(self, src);
-		}
-		else {
-			robject_open(self, src, robject_stat(self, src) &~ status);
-		}
-		return strdup("T");
-	}
-	else if (argc == 1) {
+	if (argc == 1) {
 		robject_close(self, src);
 		return strdup("T");
 	}

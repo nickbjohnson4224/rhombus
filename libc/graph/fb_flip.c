@@ -57,7 +57,7 @@ int fb_flip(struct fb *fb) {
 	}
 	else {
 		// not shared: write whole buffer
-		if (!write(fb->rp, fb->bitmap, 
+		if (!rp_write(fb->rp, fb->bitmap, 
 				fb->xdim * fb->ydim * sizeof(uint32_t), 0)) {
 			mutex_free(&fb->mutex);
 			return 1;

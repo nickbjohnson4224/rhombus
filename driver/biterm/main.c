@@ -125,9 +125,9 @@ void fbterm_graph_event(rp_t source, int argc, char **argv) {
 int main(int argc, char **argv) {
 	struct robject *term;
 	struct font *font;
-	uint64_t kbd_dev;
-	uint64_t fb_dev;
-	uint64_t wmanager;
+	int kbd_dev;
+	int fb_dev;
+	rp_t wmanager;
 	char *ret;
 	int w, h;
 	int pid;
@@ -154,22 +154,22 @@ int main(int argc, char **argv) {
 		}
 	}
 	else {
-		kbd_dev = fs_open(argv[1], STAT_EVENT);
-		fb_dev  = fs_open(argv[2], STAT_READER | STAT_WRITER | STAT_EVENT);
+		kbd_dev = ropen(-1, fs_find(argv[1]), STAT_EVENT);
+		fb_dev  = ropen(-1, fs_find(argv[2]), STAT_READER | STAT_WRITER | STAT_EVENT);
 
-		if (!kbd_dev) {
+		if (kbd_dev < 0) {
 			fprintf(stderr, "%s: %s: keyboard not found\n", argv[0], argv[1]);
 			return 1;
 		}
 
-		if (!fb_dev) {
+		if (fb_dev < 0) {
 			fprintf(stderr, "%s: %s: graphics device not found\n", argv[0], argv[2]);
 			return 1;
 		}
 	}
 
 	// set up screen
-	fb = fb_cons(fb_dev);
+	fb = fb_cons(fd_rp(fb_dev));
 	font = font_load("builtin");
 	screen.font = font;
 	fb_getmode(fb, &w, &h);
@@ -193,9 +193,9 @@ int main(int argc, char **argv) {
 	pid = fork();
 	if (pid < 0) {
 		setenv("PATH", "/bin");
-		stdout = stderr = fdopen(RP_CONS(-pid, term->index), "w");
-		stdin = fdopen(RP_CONS(-pid, term->index), "r");
-		rp_open(RP_CONS(-pid, term->index), STAT_READER);
+		ropen(0, RP_CONS(-pid, term->index), STAT_READER);
+		ropen(1, RP_CONS(-pid, term->index), STAT_WRITER);
+		ropen(2, RP_CONS(-pid, term->index), STAT_WRITER);
 		exec("/bin/fish");
 	}
 

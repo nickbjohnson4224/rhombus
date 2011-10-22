@@ -14,30 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <string.h>
+#include <rhombus.h>
 #include <natio.h>
-#include <errno.h>
 
-/*****************************************************************************
- * fs_open
- *
- * Attempt to open the resource at <path>. Returns a pointer to the opened
- * resource on success, zero on error.
- */
+int open(const char *pathname, int flags) {
+	rp_t rp;
 
-rp_t fs_open(const char *path, int status) {
-	uint64_t rp;
-
-	rp = fs_find(path);
+	rp = fs_find(pathname);
 
 	if (!rp) {
-		return 0;
+		return -1;
 	}
 
-	if (rp_setstat(rp, status)) {
-		return 0;
-	}
-
-	return rp;
+	return ropen(-1, rp, flags);
 }

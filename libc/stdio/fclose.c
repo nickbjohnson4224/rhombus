@@ -43,7 +43,7 @@ int fclose(FILE *stream) {
 
 	mutex_free(&stream->mutex);
 
-	rp_close(stream->fd);
+	close(stream->fd);
 
 	free(stream);
 

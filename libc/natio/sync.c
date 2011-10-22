@@ -29,7 +29,7 @@
  * some sort and guarantees pending writes are performed.
  */
 
-int sync(uint64_t file) {
+int rp_sync(uint64_t file) {
 	struct msg *msg;
 
 	msg = aalloc(sizeof(struct msg), PAGESZ);

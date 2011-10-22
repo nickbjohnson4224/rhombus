@@ -22,14 +22,14 @@
 #include <proc.h>
 #include <exec.h>
 
-int pipe_exec_bg(char const **argv, rp_t in, rp_t out) {
+int pipe_exec_bg(char const **argv, int in, int out) {
 	int pid;
 
 	pid = fork();
 	if (pid < 0) {
 
-		if (in)  stdin  = fdopen(in, "r");
-		if (out) stdout = fdopen(out, "w");
+		ropen(0, fd_rp(in), STAT_READER);
+		ropen(1, fd_rp(out), STAT_WRITER);
 
 		if (execv(argv[0], argv)) {
 			if (errno == ENOENT) {
@@ -42,21 +42,20 @@ int pipe_exec_bg(char const **argv, rp_t in, rp_t out) {
 			abort();
 		}
 	}
-	if (in != stdout->fd) rp_open(in, STAT_OPEN);
-	if (out != stdout->fd) rp_open(out, STAT_OPEN);
-//	mwait(PORT_CHILD, pid); // XXX this serializes the pipeline!
+	close(in);
+	close(out);
 	
 	return 0;
 }
 
-int pipe_exec_fg(char const **argv, rp_t in, rp_t out) {
+int pipe_exec_fg(char const **argv, int in, int out) {
 	int pid;
 
 	pid = fork();
 	if (pid < 0) {
 
-		if (in)  stdin  = fdopen(in, "r");
-		if (out) stdout = fdopen(out, "w");
+		ropen(0, fd_rp(in), STAT_READER);
+		ropen(1, fd_rp(out), STAT_WRITER);
 
 		if (execv(argv[0], argv)) {
 			if (errno == ENOENT) {
@@ -69,8 +68,8 @@ int pipe_exec_fg(char const **argv, rp_t in, rp_t out) {
 			abort();
 		}
 	}
-	if (in != stdout->fd) rp_open(in, STAT_OPEN);
-	if (out != stdout->fd) rp_open(out, STAT_OPEN);
+	close(in);
+	close(out);
 	mwait(PORT_CHILD, pid);
 
 	return 0;
@@ -89,39 +88,40 @@ char const **argv_copy(int argc, char **argv) {
 struct pipe_list {
 	struct pipe_list *next;
 	char const **argv;
-	rp_t out;
 };
 
 struct pipe_list *pipe_list_add(struct pipe_list *list, int argc, char **argv) {
 	struct pipe_list *node;
-	rp_t pipe_rp;
 
 	if (list) {
 		list->next = pipe_list_add(list->next, argc, argv);
 		return list;
 	}
 	else {
-		pipe_rp = rp_cons(fs_find("/sys/pipe"), "file");
-
 		node = malloc(sizeof(struct pipe_list));
 		node->next = NULL;
 		node->argv = argv_copy(argc, argv);
-		node->out  = pipe_rp;
 
 		return node;
 	}
 }
 
-int pipe_list_exec(struct pipe_list *list, rp_t in, rp_t out) {
+int pipe_list_exec(struct pipe_list *list, int in, int out) {
+	int pipefd[2];
 
 	if (!list) {
 		return 0;
 	}
 
 	while (list->next) {
-		pipe_exec_bg(list->argv, in, list->out);
-		if (in != stdin->fd) rp_close(in);
-		in = list->out;
+		if (pipe(pipefd)) {
+			fprintf(stderr, "%s: error: could not open pipe\n", getname_s());
+			abort();
+		}
+
+		pipe_exec_bg(list->argv, in, pipefd[1]);
+		in = pipefd[0];
+
 		list = list->next;
 	}
 
@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
 	}
 	list = pipe_list_add(list, i - start, &argv[start]);
 
-	pipe_list_exec(list, stdin->fd, stdout->fd);
+	pipe_list_exec(list, dup(stdin->fd), dup(stdout->fd));
 
 	return 0;
 }

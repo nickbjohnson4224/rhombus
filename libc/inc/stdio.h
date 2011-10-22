@@ -17,10 +17,11 @@
 #ifndef __RLIBC_STDIO_H
 #define __RLIBC_STDIO_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdbool.h>
 #include <stdarg.h>
+#include <natio.h>
 #include <arch.h>
 
 /* type definitions *********************************************************/
@@ -30,7 +31,7 @@ typedef uint64_t fpos_t;
 /* file structure ***********************************************************/
 
 typedef struct _file {
-	uint64_t fd;       // File descriptor
+	int fd;            // File descriptor
 
 	bool mutex;        // Mutex for buffers/position
 
@@ -88,7 +89,7 @@ char *tmpnam (char *s);
 
 int   fclose (FILE *stream);
 FILE *fopen  (const char *path, const char *mode);
-FILE *fdopen (uint64_t fd, const char *mode);
+FILE *fdopen (int fd, const char *mode);
 FILE *freopen(const char *path, const char *mode, FILE *stream);
 
 int  fflush  (FILE *stream);
