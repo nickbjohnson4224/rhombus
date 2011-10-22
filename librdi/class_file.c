@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <robject.h>
+#include <rdi/robject.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>

@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <struct.h>
 #include <natio.h>
 #include <proc.h>
 #include <ipc.h>
@@ -109,4 +110,46 @@ char *rcall(uint64_t rp, const char *fmt, ...) {
 	}
 
 	return ret;
+}
+
+static struct s_table *_rcall_table;
+
+/*****************************************************************************
+ * rcall_hook
+ *
+ * Sets the rcall hook to be called when an rcall to function <func> is sent 
+ * to this process at target index 0.
+ */
+
+int rcall_hook(const char *func, rcall_hook_t hook) {
+	_rcall_table = s_table_set(_rcall_table, func, (void*) hook);
+
+	return 0;
+}
+
+char *rcall_call(rp_t source, const char *args) {
+	rcall_hook_t hook;
+	char **argv;
+	char *rets;
+	int argc;
+
+	argv = strparse(args, " ");
+	if (!argv) return NULL;
+	
+	hook = (rcall_hook_t) s_table_get(_rcall_table, argv[0]);
+	if (!hook) {
+		for (argc = 0; argv[argc]; argc++) free(argv[argc]);
+		free(argv);
+		
+		return NULL;
+	}
+
+	for (argc = 0; argv[argc]; argc++);
+
+	rets = hook(source, argc, argv);
+
+	for (argc = 0; argv[argc]; argc++) free(argv[argc]);
+	free(argv);
+
+	return rets;
 }

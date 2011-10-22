@@ -15,7 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <robject.h>
+#include <rdi/robject.h>
 #include "toolkit.h"
 #include <natio.h>
 #include <stdlib.h>

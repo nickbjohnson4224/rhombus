@@ -134,9 +134,7 @@ int main(int argc, char **argv) {
 
 	rdi_init();
 
-	term = rdi_file_cons(0, ACCS_READ | ACCS_WRITE);
-	robject_set(0, term);
-	robject_root = term;
+	term = rdi_file_cons(1, ACCS_READ | ACCS_WRITE);
 
 	robject_set_data(term, "type", (void*) "term");
 

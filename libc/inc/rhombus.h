@@ -196,7 +196,16 @@ int rp_admin (rp_t rp, uint32_t user, int access);
  * with the first token being the name of the function to be called.
  */
 
+// perform an rcall
 char *rcall(rp_t rp, const char *fmt, ...);
+
+// root rcall hook format
+typedef char *(*rcall_hook_t)(rp_t src, int argc, char **argv);
+
+// set the rcall hook for a given rcall function
+int    rcall_hook(const char *func, rcall_hook_t hook);
+char  *rcall_call(rp_t source, const char *args);
+void __rcall_init(void);
 
 /**************************************************************************** 
  * High Level Event System (event)

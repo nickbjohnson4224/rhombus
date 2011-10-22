@@ -17,7 +17,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <robject.h>
+#include <rdi/robject.h>
 
 int robject_is_type(const char *typestr, const char *type) {
 	

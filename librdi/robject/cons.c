@@ -19,7 +19,7 @@
 #include <mutex.h>
 #include <natio.h>
 
-#include <robject.h>
+#include <rdi/robject.h>
 
 struct robject *robject_cons(uint32_t index, struct robject *parent) {
 	struct robject *robject;
@@ -44,11 +44,6 @@ struct robject *robject_cons(uint32_t index, struct robject *parent) {
 }
 
 void robject_free(struct robject *ro) {
-
-	// refuse to free root object
-	if (ro == robject_root) {
-		return;
-	}
 
 	// remove from table (if in table)
 	if (ro->index) {

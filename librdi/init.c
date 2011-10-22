@@ -14,12 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <rdi/robject.h>
 #include <rdi/core.h>
 #include <rdi/vfs.h>
 #include <rdi/io.h>
 
 void rdi_init() {
 	
+	__robject_init();
 	__rdi_class_core_setup();
 	__rdi_class_dir_setup();
 	__rdi_class_link_setup();

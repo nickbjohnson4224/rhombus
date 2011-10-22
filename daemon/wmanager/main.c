@@ -359,9 +359,7 @@ int main(int argc, char **argv) {
 	}
 	mwait(PORT_CHILD, 0);
 
-	root = rdi_dir_cons(0, ACCS_READ | ACCS_WRITE);
-	robject_set(0, root);
-	robject_root = root;
+	root = rdi_dir_cons(1, ACCS_READ | ACCS_WRITE);
 	robject_set_data(root, "type", (void*) "wm");
 	robject_set_call(root, "createwindow", wmanager_rcall_createwindow, 0);
 	robject_set_call(root, "cons",         wmanager_rcall_cons, 0);
@@ -384,7 +382,7 @@ int main(int argc, char **argv) {
 	
 	rdi_global_share_hook = wmanager_share;
 
-	fs_plink("/sys/wmanager", RP_CONS(getpid(), 0), NULL);
+	fs_plink("/sys/wmanager", RP_CONS(getpid(), root->index), NULL);
 
 	vgafd = fs_find("/dev/svga0");
 	sscanf(rcall(vgafd, "getmode"), "%i %i", &width, &height);

@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <mutex.h>
 
-#include <robject.h>
+#include <rdi/robject.h>
 
 static bool _mutex = false;
 

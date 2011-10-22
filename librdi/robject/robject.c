@@ -23,7 +23,7 @@
 #include <proc.h>
 #include <abi.h>
 
-#include <robject.h>
+#include <rdi/robject.h>
 
 /*
  * various field manipulations

@@ -16,12 +16,12 @@
 
 #include "svga.h"
 
-#include <robject.h>
 #include <string.h>
 #include <stdlib.h>
 #include <graph.h>
 #include <page.h>
 
+#include <rdi/robject.h>
 #include <rdi/arch.h>
 
 struct svga svga;

@@ -17,8 +17,9 @@
 #ifndef __LIBRDI_CORE_H
 #define __LIBRDI_CORE_H
 
-#include <robject.h>
 #include <natio.h>
+
+#include <rdi/robject.h>
 
 /*****************************************************************************
  * Rhombus Driver Interface (RDI)

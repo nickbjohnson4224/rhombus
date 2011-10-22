@@ -14,13 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <robject.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <proc.h>
 #include <ipc.h>
 #include <abi.h>
+
+#include <rdi/robject.h>
 
 static char *__type(struct robject *self, rp_t src, int argc, char **argv) {
 	const char *type;
@@ -108,7 +109,7 @@ static char *__name(struct robject *self, rp_t src, int argc, char **argv) {
 	name = robject_data(self, "name");
 
 	if (!name) {
-		if (self->index || self == robject_root) {
+		if (self->index) {
 			name = saprintf("%u", self->index);
 		}
 		else {
@@ -172,15 +173,21 @@ static void __rcall_handler(struct msg *msg) {
 	struct msg *reply;
 	char *rets;
 	
-	ro = robject_get(RP_INDEX(msg->target));
+	if (RP_INDEX(msg->target) != 0) {
+		ro = robject_get(RP_INDEX(msg->target));
 
-	if (!ro) {
-		merror(msg);
-		return;
+		if (!ro) {
+			merror(msg);
+			return;
+		}
+
+		rets = robject_call(ro, msg->source, (const char*) msg->data);
+		if (!rets) rets = strdup("");
 	}
-
-	rets = robject_call(ro, msg->source, (const char*) msg->data);
-	if (!rets) rets = strdup("");
+	else {	
+		rets = rcall_call(msg->source, (const char*) msg->data);
+		if (!rets) rets = strdup("");
+	}
 
 	reply = aalloc(sizeof(struct msg) + strlen(rets) + 1, PAGESZ);
 	reply->source = msg->target;
@@ -205,7 +212,7 @@ static void __close_handler(struct msg *msg) {
 	free(msg);
 }
 
-struct robject *robject_root;
+//struct robject *robject_root;
 
 struct robject *robject_class_basic;
 
@@ -228,8 +235,8 @@ void __robject_init(void) {
 	robject_set_call(robject_class_basic, "set-access", _set_access, STAT_ADMIN);
 
 	// allocate root object
-	robject_root = robject_cons(0, robject_class_basic);
-	robject_set(0, robject_root);
+//	robject_root = robject_cons(0, robject_class_basic);
+//	robject_set(0, robject_root);
 
 	// set rcall and close handlers
 	when(PORT_RCALL, __rcall_handler);
