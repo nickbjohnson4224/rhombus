@@ -4,7 +4,7 @@ WIDGETS := $(shell find widgets -name "*.lua")
 WINDOWS := $(shell find windows -name "*.txt")
 SUBDIR	:= libtoolkit
 STATIC	:= libtoolkit.a
-CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
+CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc -I$(BUILDDIR)/ports/lua
 
 .PHONY: headers_dir widgets_dir windows_dir themes_dir $(HEADERS) clean
 
@@ -24,7 +24,7 @@ windows_dir:
 
 themes_dir:
 	@ echo " CP	" $(SUBDIR)/themes "->" $(BUILDDIR)/etc/themes
-	@ rm -r $(BUILDDIR)/etc/themes
+	@ rm -rf $(BUILDDIR)/etc/themes
 	@ cp -r $(BUILDDIR)/$(SUBDIR)/themes $(BUILDDIR)/etc/themes
 
 $(HEADERS): headers_dir

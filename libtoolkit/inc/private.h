@@ -18,6 +18,7 @@
 #define _TOOLKIT_PRIVATE_H
 
 #include <stdbool.h>
+#include <lua.h>
 #include "window.h"
 
 #define EXPORT_FUNC(x) \
