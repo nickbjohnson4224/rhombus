@@ -17,8 +17,9 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#include <natio.h>
 #include <errno.h>
+
+#include <rho/natio.h>
 
 /*****************************************************************************
  * fs_size

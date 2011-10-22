@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <proc.h>
+#include <rho/proc.h>
 
 uint32_t getuid(void) {
 	return getuser(getpid());

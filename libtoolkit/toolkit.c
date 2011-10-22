@@ -17,7 +17,7 @@
 
 #include <rdi/robject.h>
 #include "toolkit.h"
-#include <natio.h>
+#include <rho/natio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "private.h"

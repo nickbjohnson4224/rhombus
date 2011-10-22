@@ -16,11 +16,12 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <natio.h>
-#include <proc.h>
-#include <page.h>
-#include <abi.h>
-#include <ipc.h>
+
+#include <rho/natio.h>
+#include <rho/proc.h>
+#include <rho/page.h>
+#include <rho/abi.h>
+#include <rho/ipc.h>
 
 int msend(struct msg *msg) {
 	uint8_t  port;

@@ -17,10 +17,11 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include <struct.h>
-#include <natio.h>
-#include <proc.h>
-#include <ipc.h>
+
+#include <rho/struct.h>
+#include <rho/natio.h>
+#include <rho/proc.h>
+#include <rho/ipc.h>
 
 /*****************************************************************************
  * __rcall

@@ -19,7 +19,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <graph.h>
+
+#include <rho/graph.h>
 
 struct screen screen = {
 	10,

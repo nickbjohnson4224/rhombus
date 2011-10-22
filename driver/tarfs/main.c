@@ -18,10 +18,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <natio.h>
-#include <mutex.h>
-#include <proc.h>
-#include <ipc.h>
+
+#include <rho/natio.h>
+#include <rho/mutex.h>
+#include <rho/proc.h>
+#include <rho/ipc.h>
 
 #include <rdi/vfs.h>
 #include <rdi/io.h>

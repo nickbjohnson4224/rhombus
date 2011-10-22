@@ -17,8 +17,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <pack.h>
-#include <page.h>
+
+#include <rho/pack.h>
+#include <rho/page.h>
 
 struct pack_vector *__pack_vector = (void*) PACK_VECT_ADDR;
 

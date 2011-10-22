@@ -17,7 +17,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include <natio.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>

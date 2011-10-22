@@ -15,8 +15,9 @@
  */
 
 #include <stdint.h>
-#include <proc.h>
-#include <abi.h>
+
+#include <rho/proc.h>
+#include <rho/abi.h>
 
 void freeze(uint32_t tid) {
 	_stop(tid);

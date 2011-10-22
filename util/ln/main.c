@@ -15,7 +15,8 @@
  */
 
 #include <stdio.h>
-#include <natio.h>
+
+#include <rho/natio.h>
 
 /*****************************************************************************
  * ln - create hard and symbolic links

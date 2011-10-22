@@ -17,9 +17,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <proc.h>
-#include <ipc.h>
-#include <abi.h>
+
+#include <rho/proc.h>
+#include <rho/ipc.h>
+#include <rho/abi.h>
 
 #include <rdi/robject.h>
 

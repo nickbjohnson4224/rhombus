@@ -15,9 +15,9 @@
  */
 
 #include <stdint.h>
-#include <abi.h>
-#include <arch.h>
-#include <proc.h>
+#include <rho/arch.h>
+#include <rho/proc.h>
+#include <rho/abi.h>
 
 /****************************************************************************
  * gettid

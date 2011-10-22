@@ -15,7 +15,8 @@
  */
 
 #include <stdint.h>
-#include <ipc.h>
+
+#include <rho/ipc.h>
 
 int mreply(struct msg *msg) {
 	uint64_t target;

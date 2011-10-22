@@ -15,7 +15,7 @@
  */
 
 #include <rhombus.h>
-#include <abi.h>
+#include <rho/abi.h>
 
 /*****************************************************************************
  * rtab_close

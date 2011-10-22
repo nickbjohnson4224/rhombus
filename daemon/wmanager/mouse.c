@@ -16,7 +16,7 @@
 
 #include "wmanager.h"
 #include <stdlib.h>
-#include <mutex.h>
+#include <rho/mutex.h>
 
 const size_t cursor_width = 3, cursor_height = 3;
 const uint32_t cursor_bitmap[3 * 3] = {

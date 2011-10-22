@@ -15,11 +15,11 @@
  */
 
 #include "wmanager.h"
-#include <graph.h>
+#include <rho/graph.h>
 #include <stdlib.h>
-#include <mutex.h>
-#include <natio.h>
-#include <page.h>
+#include <rho/mutex.h>
+#include <rho/natio.h>
+#include <rho/page.h>
 
 struct window_t *windows, *windows_end;
 struct window_t *active_window;

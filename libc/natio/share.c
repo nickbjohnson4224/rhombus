@@ -16,10 +16,11 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <natio.h>
-#include <proc.h>
-#include <page.h>
-#include <ipc.h>
+
+#include <rho/natio.h>
+#include <rho/proc.h>
+#include <rho/page.h>
+#include <rho/ipc.h>
 
 /*****************************************************************************
  * share

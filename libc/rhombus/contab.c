@@ -18,8 +18,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <natio.h>
-#include <mutex.h>
+#include <rho/natio.h>
+#include <rho/mutex.h>
 
 /*****************************************************************************
  * Connection Table

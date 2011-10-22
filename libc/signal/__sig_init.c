@@ -16,10 +16,11 @@
 
 #include <stdlib.h>
 #include <signal.h>
-#include <mutex.h>
-#include <natio.h>
-#include <proc.h>
-#include <ipc.h>
+
+#include <rho/mutex.h>
+#include <rho/natio.h>
+#include <rho/proc.h>
+#include <rho/ipc.h>
 
 /****************************************************************************
  * _sigwrap

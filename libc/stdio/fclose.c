@@ -15,10 +15,11 @@
  */
 
 #include <stdlib.h>
-#include <natio.h>
 #include <stdio.h>
-#include <mutex.h>
-#include <proc.h>
+
+#include <rho/natio.h>
+#include <rho/mutex.h>
+#include <rho/proc.h>
 
 /****************************************************************************
  * fclose - close a stream

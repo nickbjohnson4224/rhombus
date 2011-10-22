@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <graph.h>
-#include <mutex.h>
+#include <rho/graph.h>
+#include <rho/mutex.h>
 
 /*****************************************************************************
  * fb_unlock

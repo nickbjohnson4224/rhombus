@@ -16,9 +16,9 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <arch.h>
-#include <page.h>
-#include <elf.h>
+#include <rho/arch.h>
+#include <rho/page.h>
+#include <rho/elf.h>
 
 /*****************************************************************************
  * dl_load

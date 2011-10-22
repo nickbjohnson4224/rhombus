@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <proc.h>
-#include <abi.h>
+#include <rho/proc.h>
+#include <rho/abi.h>
 
 int getpgid(uint32_t pid) {
 	return 1;

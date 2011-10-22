@@ -17,7 +17,7 @@
 #ifndef __RLIBC_PROC_H
 #define __RLIBC_PROC_H
 
-#include <abi.h>
+#include <rho/abi.h>
 
 /* constants ***************************************************************/
 

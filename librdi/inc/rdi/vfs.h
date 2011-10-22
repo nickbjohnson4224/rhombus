@@ -18,7 +18,7 @@
 #define _RDI_VFS_H
 
 #include <rdi/core.h>
-#include <natio.h>
+#include <rho/natio.h>
 
 /*****************************************************************************
  * rdi_class_dir (extends rdi_class_core) - dir

@@ -21,7 +21,7 @@
 #include <thread.h>
 #include <space.h>
 #include <types.h>
-#include <arch.h>
+#include <rho/arch.h>
 
 /* limits ******************************************************************/
 

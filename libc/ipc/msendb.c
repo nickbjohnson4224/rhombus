@@ -16,8 +16,9 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <proc.h>
-#include <ipc.h>
+
+#include <rho/proc.h>
+#include <rho/ipc.h>
 
 int msendb(uint64_t target, uint8_t port) {
 	struct msg *msg;

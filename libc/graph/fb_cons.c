@@ -17,11 +17,12 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <natio.h>
 #include <stdio.h>
-#include <graph.h>
-#include <mutex.h>
-#include <page.h>
+
+#include <rho/natio.h>
+#include <rho/graph.h>
+#include <rho/mutex.h>
+#include <rho/page.h>
 
 /****************************************************************************
  * fb_cons

@@ -16,10 +16,11 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <natio.h>
 #include <stdio.h>
-#include <graph.h>
-#include <mutex.h>
+
+#include <rho/natio.h>
+#include <rho/graph.h>
+#include <rho/mutex.h>
 
 /*****************************************************************************
  * fb_blit

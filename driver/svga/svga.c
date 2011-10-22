@@ -18,8 +18,9 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <graph.h>
-#include <page.h>
+
+#include <rho/graph.h>
+#include <rho/page.h>
 
 #include <rdi/robject.h>
 #include <rdi/arch.h>

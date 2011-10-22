@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <ipc.h>
+#include <rho/ipc.h>
 
 int merror(struct msg *msg) {
 	msg->length = 0;

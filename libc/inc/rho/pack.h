@@ -19,7 +19,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <arch.h>
+#include <rho/arch.h>
 
 #define PACK_VECT_ADDR	(ESPACE + 0x10000000)
 #define PACK_HEAP_ADDR	(ESPACE + 0x10010000)

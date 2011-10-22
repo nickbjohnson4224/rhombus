@@ -17,7 +17,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <proc.h>
+#include <rho/proc.h>
 
 /****************************************************************************
  * _sigpanic

@@ -17,7 +17,7 @@
 #include <rdi/arch.h>
 
 #include <string.h>
-#include <page.h>
+#include <rho/page.h>
 
 int vm86_setup(void) {
 	return page_phys((void*) 0, 0x100000, PROT_READ | PROT_WRITE | PROT_EXEC, 0);

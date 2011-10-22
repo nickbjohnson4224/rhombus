@@ -18,7 +18,7 @@
 #define __RLIBC_GRAPH_H
 
 #include <stdint.h>
-#include <mutex.h>
+#include <rho/mutex.h>
 
 /* pixel format and colors **************************************************/
 

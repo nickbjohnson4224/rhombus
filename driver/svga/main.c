@@ -17,10 +17,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <mutex.h>
-#include <page.h>
-#include <proc.h>
-#include <ipc.h>
+
+#include <rho/mutex.h>
+#include <rho/page.h>
+#include <rho/proc.h>
+#include <rho/ipc.h>
 
 #include <rdi/core.h>
 #include <rdi/arch.h>

@@ -19,7 +19,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <ipc.h>
+#include <rho/ipc.h>
 
 /* signal numbers */
 

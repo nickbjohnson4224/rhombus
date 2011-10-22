@@ -16,7 +16,8 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include <natio.h>
+
+#include <rho/natio.h>
 
 /*****************************************************************************
  * io_find

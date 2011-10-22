@@ -19,7 +19,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <struct.h>
+#include <rho/struct.h>
 
 static uint32_t _hash(const char *key) {
 	const uint8_t *key8 = (const uint8_t*) key;

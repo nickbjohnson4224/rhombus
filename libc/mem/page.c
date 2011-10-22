@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <page.h>
-#include <abi.h>
+#include <rho/page.h>
+#include <rho/abi.h>
 
 int page(void *addr, size_t length, int prot, int source, uintptr_t off) {
 

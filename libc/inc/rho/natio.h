@@ -22,8 +22,8 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
-#include <path.h>
-#include <ipc.h>
+#include <rho/path.h>
+#include <rho/ipc.h>
 
 /* core I/O *****************************************************************/
 

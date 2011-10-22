@@ -17,7 +17,7 @@
 #ifndef __LIBRDI_CORE_H
 #define __LIBRDI_CORE_H
 
-#include <natio.h>
+#include <rho/natio.h>
 
 #include <rdi/robject.h>
 

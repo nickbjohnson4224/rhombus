@@ -16,8 +16,8 @@
 
 #include "window.h"
 #include <ctype.h>
-#include <graph.h>
-#include <natio.h>
+#include <rho/graph.h>
+#include <rho/natio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

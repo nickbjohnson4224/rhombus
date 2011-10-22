@@ -15,7 +15,7 @@
  */
 
 #include <rhombus.h>
-#include <natio.h>
+#include <rho/natio.h>
 
 int pipe(int pipefd[2]) {
 	rp_t rp;

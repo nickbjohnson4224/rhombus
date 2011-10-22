@@ -17,7 +17,7 @@
 #ifndef __RLIBC_ERRNO_H
 #define __RLIBC_ERRNO_H
 
-#include <proc.h>
+#include <rho/proc.h>
 
 /* errno *******************************************************************/
 

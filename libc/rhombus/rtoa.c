@@ -16,9 +16,7 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <natio.h>
 #include <stdio.h>
-#include <proc.h>
 
 /*****************************************************************************
  * rtoa

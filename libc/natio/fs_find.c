@@ -19,8 +19,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <natio.h>
 #include <errno.h>
+
+#include <rho/natio.h>
 
 /*****************************************************************************
  * fs_find

@@ -14,9 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <exec.h>
-#include <proc.h>
-#include <natio.h>
+#include <rho/exec.h>
+#include <rho/proc.h>
+#include <rho/natio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

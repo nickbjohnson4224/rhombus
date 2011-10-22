@@ -18,7 +18,7 @@
 #define STDLIB_MALLOC_H
 
 #include <stdlib.h>
-#include <arch.h>
+#include <rho/arch.h>
 
 /*****************************************************************************
  * dynamic memory allocator layout

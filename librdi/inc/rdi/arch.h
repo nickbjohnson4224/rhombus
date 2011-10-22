@@ -18,8 +18,9 @@
 #define _RDI_ARCH_H
 
 #include <stdint.h>
-#include <arch.h>
-#include <ipc.h>
+
+#include <rho/arch.h>
+#include <rho/ipc.h>
 
 #if ARCH == X86
 

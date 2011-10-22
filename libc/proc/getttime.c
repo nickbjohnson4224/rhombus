@@ -15,8 +15,8 @@
  */
 
 #include <stdint.h>
-#include <proc.h>
-#include <abi.h>
+#include <rho/proc.h>
+#include <rho/abi.h>
 
 uint64_t getttime(void) {
 	return _time(TIME_THREAD);

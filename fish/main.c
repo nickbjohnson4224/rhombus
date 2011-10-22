@@ -17,11 +17,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <natio.h>
 #include <errno.h>
-#include <exec.h>
-#include <proc.h>
-#include <ipc.h>
+
+#include <rho/natio.h>
+#include <rho/exec.h>
+#include <rho/proc.h>
+#include <rho/ipc.h>
 
 int fish_cd(int argc, char **argv) {
 	char *path;

@@ -14,12 +14,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <struct.h>
 #include <stdlib.h>
 #include <string.h>
-#include <natio.h>
-#include <proc.h>
-#include <ipc.h>
+
+#include <rho/struct.h>
+#include <rho/natio.h>
+#include <rho/proc.h>
+#include <rho/ipc.h>
 
 #include <rhombus.h>
 

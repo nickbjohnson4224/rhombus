@@ -15,8 +15,9 @@
  */
 
 #include <stdlib.h>
-#include <mutex.h>
-#include <ipc.h>
+
+#include <rho/mutex.h>
+#include <rho/ipc.h>
 
 struct mqueue_msg {
 	struct mqueue_msg *next;

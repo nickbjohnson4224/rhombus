@@ -15,7 +15,8 @@
  */
 
 #include <string.h>
-#include <natio.h>
+
+#include <rho/natio.h>
 
 /****************************************************************************
  * path_peek

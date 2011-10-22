@@ -14,9 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <proc.h>
-#include <ipc.h>
-#include <abi.h>
+#include <rho/proc.h>
+#include <rho/ipc.h>
+#include <rho/abi.h>
 
 int daemonize(void) {
 

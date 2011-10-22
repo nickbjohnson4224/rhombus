@@ -16,8 +16,9 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <mutex.h>
-#include <proc.h>
+
+#include <rho/mutex.h>
+#include <rho/proc.h>
 
 #include <rdi/core.h>
 #include <rdi/arch.h>

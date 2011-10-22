@@ -16,7 +16,7 @@
 
 #include <time.h>
 #include <stdio.h>
-#include <natio.h>
+#include <rho/natio.h>
 #include <stdlib.h>
 #include "calico.h"
 

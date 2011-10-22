@@ -15,7 +15,8 @@
  */
 
 #include <string.h>
-#include <natio.h>
+
+#include <rho/natio.h>
 
 int path_prev(struct path *path) {
 	

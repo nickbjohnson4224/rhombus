@@ -18,7 +18,7 @@
 #define _RDI_IO_H
 
 #include <rdi/core.h>
-#include <ipc.h>
+#include <rho/ipc.h>
 
 /*****************************************************************************
  * rdi_class_file (extends rdi_class_core) - file

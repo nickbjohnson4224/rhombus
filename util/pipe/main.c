@@ -16,11 +16,12 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
-#include <natio.h>
 #include <errno.h>
-#include <proc.h>
-#include <exec.h>
+#include <stdio.h>
+
+#include <rho/natio.h>
+#include <rho/proc.h>
+#include <rho/exec.h>
 
 int pipe_exec_bg(char const **argv, int in, int out) {
 	int pid;

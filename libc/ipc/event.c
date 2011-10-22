@@ -15,12 +15,13 @@
  */
 
 #include <stdlib.h>
-#include <natio.h>
-#include <mutex.h>
-#include <page.h>
-#include <proc.h>
-#include <abi.h>
-#include <ipc.h>
+
+#include <rho/natio.h>
+#include <rho/mutex.h>
+#include <rho/page.h>
+#include <rho/proc.h>
+#include <rho/abi.h>
+#include <rho/ipc.h>
 
 /****************************************************************************
  * event_handler

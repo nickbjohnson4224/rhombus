@@ -16,7 +16,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <proc.h>
+
+#include <rho/proc.h>
 
 struct proc_info {
 	uint32_t pid;

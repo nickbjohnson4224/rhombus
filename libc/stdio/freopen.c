@@ -18,7 +18,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
-#include <natio.h>
+
+#include <rho/natio.h>
 
 /****************************************************************************
  * freopen

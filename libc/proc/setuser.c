@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <proc.h>
-#include <abi.h>
+#include <rho/proc.h>
+#include <rho/abi.h>
 
 int setuser(uint32_t pid, uint32_t user) {
 	return _proc(pid, PROC_WRITE_UID, user);

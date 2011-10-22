@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <proc.h>
+#include <rho/proc.h>
 
 int setuid(uint32_t uid) {
 	return setuser(getpid(), uid);

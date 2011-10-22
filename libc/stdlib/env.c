@@ -19,8 +19,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
-#include <mutex.h>
-#include <pack.h>
+
+#include <rho/mutex.h>
+#include <rho/pack.h>
 
 /****************************************************************************
  * environ

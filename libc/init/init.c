@@ -18,13 +18,14 @@
 #include <string.h>
 #include <signal.h>
 #include <stdio.h>
-#include <natio.h>
-#include <pack.h>
-#include <arch.h>
-#include <proc.h>
-#include <exec.h>
-#include <abi.h>
-#include <ipc.h>
+
+#include <rho/natio.h>
+#include <rho/pack.h>
+#include <rho/arch.h>
+#include <rho/proc.h>
+#include <rho/exec.h>
+#include <rho/abi.h>
+#include <rho/ipc.h>
 
 /****************************************************************************
  * __reject/__ignore

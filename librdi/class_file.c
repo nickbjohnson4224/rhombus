@@ -14,14 +14,15 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <rdi/robject.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <proc.h>
-#include <page.h>
-#include <ipc.h>
 
+#include <rho/proc.h>
+#include <rho/page.h>
+#include <rho/ipc.h>
+
+#include <rdi/robject.h>
 #include <rdi/core.h>
 #include <rdi/io.h>
 

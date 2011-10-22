@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <natio.h>
-#include <pack.h>
+#include <rho/natio.h>
+#include <rho/pack.h>
 
 /*****************************************************************************
  * fdsave

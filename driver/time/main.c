@@ -17,9 +17,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <mutex.h>
-#include <natio.h>
-#include <proc.h>
+
+#include <rho/mutex.h>
+#include <rho/natio.h>
+#include <rho/proc.h>
 
 #include <rdi/core.h>
 #include <rdi/vfs.h>

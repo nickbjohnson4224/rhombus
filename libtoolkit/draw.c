@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <graph.h>
+#include <rho/graph.h>
 #include <string.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H

@@ -15,9 +15,10 @@
  */
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
-#include <natio.h>
+#include <stdio.h>
+
+#include <rho/natio.h>
 
 int main(int argc, char **argv) {
 	uint64_t rp;

@@ -16,7 +16,8 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include <mutex.h>
+
+#include <rho/mutex.h>
 
 #include <rdi/robject.h>
 

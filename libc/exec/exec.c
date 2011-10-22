@@ -19,12 +19,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <natio.h>
 #include <errno.h>
-#include <arch.h>
-#include <exec.h>
-#include <page.h>
-#include <pack.h>
+
+#include <rho/natio.h>
+#include <rho/arch.h>
+#include <rho/exec.h>
+#include <rho/page.h>
+#include <rho/pack.h>
 
 /****************************************************************************
  * execiv

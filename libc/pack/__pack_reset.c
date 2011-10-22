@@ -15,8 +15,9 @@
  */
 
 #include <stdbool.h>
-#include <pack.h>
-#include <page.h>
+
+#include <rho/pack.h>
+#include <rho/page.h>
 
 bool __pack_usable = false;
 

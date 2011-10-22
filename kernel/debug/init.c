@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <arch.h>
+#include <rho/arch.h>
 #include <debug.h>
 #include <ports.h>
 

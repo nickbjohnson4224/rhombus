@@ -18,7 +18,8 @@
 #define FBTERM_H
 
 #include <stdint.h>
-#include <graph.h>
+
+#include <rho/graph.h>
 
 /* graphics device **********************************************************/
 

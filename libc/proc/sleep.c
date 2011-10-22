@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <arch.h>
-#include <abi.h>
+#include <rho/arch.h>
+#include <rho/abi.h>
 
 /****************************************************************************
  * sleep

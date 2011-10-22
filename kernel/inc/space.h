@@ -20,7 +20,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <types.h>
-#include <arch.h>
+#include <rho/arch.h>
 
 /* page flags ***************************************************************/
 

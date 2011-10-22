@@ -18,8 +18,9 @@
 #include "fbterm.h"
 
 #include <stdlib.h>
-#include <graph.h>
 #include <stdio.h>
+
+#include <rho/graph.h>
 
 struct cache {
 	uint32_t *bitmap;

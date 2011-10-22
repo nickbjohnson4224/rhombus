@@ -15,9 +15,9 @@
  */
 
 #include "widget.h"
-#include <graph.h>
-#include <natio.h>
-#include <mutex.h>
+#include <rho/graph.h>
+#include <rho/natio.h>
+#include <rho/mutex.h>
 #include <string.h>
 #include <stdlib.h>
 #include <lua.h>

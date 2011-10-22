@@ -19,9 +19,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <natio.h>
-#include <proc.h>
-#include <exec.h>
+
+#include <rho/natio.h>
+#include <rho/proc.h>
+#include <rho/exec.h>
 
 #include <rdi/core.h>
 #include <rdi/vfs.h>

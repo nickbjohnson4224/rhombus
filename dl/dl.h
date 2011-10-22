@@ -18,10 +18,11 @@
 #define DL_H
 
 #include <stdint.h>
-#include <exec.h>
-#include <page.h>
-#include <arch.h>
-#include <elf.h>
+
+#include <rho/exec.h>
+#include <rho/page.h>
+#include <rho/arch.h>
+#include <rho/elf.h>
 
 /*****************************************************************************
  * the dynamic linker

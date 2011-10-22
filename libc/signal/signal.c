@@ -15,7 +15,8 @@
  */
 
 #include <signal.h>
-#include <mutex.h>
+
+#include <rho/mutex.h>
 
 /****************************************************************************
  * __sighandlerv

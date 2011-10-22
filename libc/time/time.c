@@ -16,9 +16,10 @@
 
 #include <time.h>
 #include <stdio.h>
-#include <natio.h>
 #include <stdint.h>
 #include <stdlib.h>
+
+#include <rho/natio.h>
 
 /****************************************************************************
  * _time_dev

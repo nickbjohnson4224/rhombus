@@ -16,9 +16,10 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <natio.h>
-#include <exec.h>
-#include <page.h>
+
+#include <rho/natio.h>
+#include <rho/exec.h>
+#include <rho/page.h>
 
 /*****************************************************************************
  * load_exec

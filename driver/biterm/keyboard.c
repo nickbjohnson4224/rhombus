@@ -20,8 +20,9 @@
 #include <signal.h>
 #include <string.h>
 #include <stdlib.h>
-#include <mutex.h>
-#include <proc.h>
+
+#include <rho/mutex.h>
+#include <rho/proc.h>
 
 struct line {
 	struct line *next;

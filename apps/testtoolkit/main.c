@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <proc.h>
+#include <rho/proc.h>
 #include <stdio.h>
 #include <toolkit/toolkit.h>
 

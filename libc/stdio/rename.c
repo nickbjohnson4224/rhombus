@@ -15,7 +15,8 @@
  */
 
 #include <stdio.h>
-#include <natio.h>
+
+#include <rho/natio.h>
 
 int rename(const char *oldpath, const char *newpath) {
 //	uint64_t old, newdir, new;

@@ -15,7 +15,8 @@
  */
 
 #include <stdio.h>
-#include <mutex.h>
+
+#include <rho/mutex.h>
 
 /****************************************************************************
  * ungetc

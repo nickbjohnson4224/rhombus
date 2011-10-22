@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <page.h>
-#include <abi.h>
+#include <rho/page.h>
+#include <rho/abi.h>
 
 uintptr_t phys(void *addr) {
 	return _phys((uintptr_t) addr);

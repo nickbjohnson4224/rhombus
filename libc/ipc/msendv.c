@@ -17,8 +17,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <proc.h>
-#include <ipc.h>
+
+#include <rho/proc.h>
+#include <rho/ipc.h>
 
 int msendv(uint64_t target, uint8_t port, void *data, size_t length) {
 	struct msg *msg;

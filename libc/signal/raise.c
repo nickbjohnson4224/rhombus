@@ -15,8 +15,9 @@
  */
 
 #include <signal.h>
-#include <proc.h>
-#include <ipc.h>
+
+#include <rho/proc.h>
+#include <rho/ipc.h>
 
 /****************************************************************************
  * raise

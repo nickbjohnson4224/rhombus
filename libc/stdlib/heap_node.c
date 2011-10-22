@@ -15,8 +15,9 @@
  */
 
 #include "malloc.h"
-#include <mutex.h>
-#include <page.h>
+
+#include <rho/mutex.h>
+#include <rho/page.h>
 
 static uintptr_t brk = HEAP2_START;
 static struct heap_node *stack;

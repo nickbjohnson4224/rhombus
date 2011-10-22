@@ -16,7 +16,8 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <mutex.h>
+
+#include <rho/mutex.h>
 
 /****************************************************************************
  * TT800S RNG for Rhombus

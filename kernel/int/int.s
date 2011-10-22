@@ -13,7 +13,7 @@
 ; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #define ASM
-#include <arch.h>
+#include <rho/arch.h>
 
 %macro INTN 1
   global int%1

@@ -1,20 +1,24 @@
 SOURCES := $(patsubst %.c,%.o,$(shell find . -name "*.c"))
 SOURCES += $(patsubst %.s,%.o,$(shell find . -mindepth 2 -name "*.s"))
 CNAUGHT := c0.o
-HEADERS := $(shell find . -name "*.h")
+HEADERS := $(shell find inc -name "*.h")
 SUBDIR	:= libc
 STATIC	:= libc.a
 SHARED	:= libc.so
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
 ASFLAGS := -felf
 
-.PHONY: $(HEADERS) clean
+.PHONY: headers_dir $(HEADERS) clean
 
 all: $(STATIC) $(CNAUGHT) # $(SHARED)
 
-$(HEADERS):
-	@ echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/inc
-	@ cp $@ $(BUILDDIR)/inc
+headers_dir:
+	@ echo " MKDIR	" $(BUILDDIR)/inc/rho
+	@ mkdir -p $(BUILDDIR)/inc/rho
+
+$(HEADERS): headers_dir
+	@ echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/$@
+	@ cp $@ $(BUILDDIR)/$@
 
 $(STATIC): $(HEADERS) $(SOURCES)
 	@ echo " AR	" $(SUBDIR)/$(STATIC)

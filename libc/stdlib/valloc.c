@@ -16,7 +16,8 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include <arch.h>
+
+#include <rho/arch.h>
 
 /****************************************************************************
  * valloc

@@ -17,7 +17,7 @@
 //requirements for BMP: BITMAPINFOHEADER; 32bbp RGBA; not compressed
 
 #include <assert.h>
-#include <graph.h>
+#include <rho/graph.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>

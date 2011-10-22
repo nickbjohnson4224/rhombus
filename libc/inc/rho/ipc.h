@@ -19,8 +19,8 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <natio.h>
-#include <arch.h>
+#include <rho/natio.h>
+#include <rho/arch.h>
 
 /* port numbers ************************************************************/
 

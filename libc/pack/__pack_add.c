@@ -16,8 +16,9 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <mutex.h>
-#include <pack.h>
+
+#include <rho/mutex.h>
+#include <rho/pack.h>
 
 struct pack_list *__pack_list = NULL;
 static bool _m_pack_list;

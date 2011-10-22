@@ -15,7 +15,7 @@
  */
 
 #include <stdint.h>
-#include <natio.h>
+#include <rho/natio.h>
 
 /*****************************************************************************
  * fs_root

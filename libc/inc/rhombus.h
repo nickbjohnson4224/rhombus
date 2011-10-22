@@ -18,7 +18,7 @@
 #define __RLIBC_RHOMBUS_H
 
 #include <stdint.h>
-#include <proc.h>
+#include <rho/proc.h>
 
 /*****************************************************************************
  * Resource pointers

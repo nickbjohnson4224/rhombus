@@ -15,10 +15,11 @@
  */
 
 #include <stdlib.h>
-#include <natio.h>
-#include <proc.h>
-#include <ipc.h>
-#include <abi.h>
+
+#include <rho/natio.h>
+#include <rho/proc.h>
+#include <rho/ipc.h>
+#include <rho/abi.h>
 
 /****************************************************************************
  * exit

@@ -15,8 +15,9 @@
  */
 
 #include <stdint.h>
-#include <proc.h>
-#include <abi.h>
+
+#include <rho/proc.h>
+#include <rho/abi.h>
 
 uint32_t also(void (*func)(void)) {
 	return _also((uintptr_t) func);

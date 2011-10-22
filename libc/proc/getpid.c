@@ -15,8 +15,8 @@
  */
 
 #include <stdint.h>
-#include <abi.h>
-#include <proc.h>
+#include <rho/proc.h>
+#include <rho/abi.h>
 
 /****************************************************************************
  * getpid

@@ -17,11 +17,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <mutex.h>
 #include <errno.h>
-#include <page.h>
-#include <proc.h>
-#include <arch.h>
+
+#include <rho/mutex.h>
+#include <rho/page.h>
+#include <rho/proc.h>
+#include <rho/arch.h>
 
 #include "malloc.h"
 

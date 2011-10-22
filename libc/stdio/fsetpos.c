@@ -16,7 +16,8 @@
 
 #include <stdio.h>
 #include <errno.h>
-#include <mutex.h>
+
+#include <rho/mutex.h>
 
 /****************************************************************************
  * fsetpos

@@ -15,8 +15,9 @@
  */
 
 #include <stdint.h>
-#include <proc.h>
-#include <abi.h>
+
+#include <rho/proc.h>
+#include <rho/abi.h>
 
 void done(void) {
 	_done();

@@ -14,10 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <struct.h>
 #include <stdlib.h>
-#include <mutex.h>
-#include <natio.h>
+
+#include <rho/struct.h>
+#include <rho/mutex.h>
+#include <rho/natio.h>
 
 #include <rdi/robject.h>
 

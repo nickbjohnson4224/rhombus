@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <proc.h>
+#include <rho/proc.h>
 
 int setppid(uint32_t ppid) {
 	return setparent(getpid(), ppid);

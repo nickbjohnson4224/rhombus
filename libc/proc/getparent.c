@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <proc.h>
-#include <abi.h>
+#include <rho/proc.h>
+#include <rho/abi.h>
 
 uint32_t getparent(uint32_t pid) {
 	return (uint32_t) _proc(pid, PROC_READ_PPID, 0);

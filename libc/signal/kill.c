@@ -16,9 +16,10 @@
 
 #include <stdlib.h>
 #include <signal.h>
-#include <natio.h>
-#include <proc.h>
-#include <ipc.h>
+
+#include <rho/natio.h>
+#include <rho/proc.h>
+#include <rho/ipc.h>
 
 /****************************************************************************
  * kill

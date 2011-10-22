@@ -18,8 +18,9 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include <abi.h>
-#include <ipc.h>
+
+#include <rho/abi.h>
+#include <rho/ipc.h>
 
 /****************************************************************************
  * rdi_set_irq

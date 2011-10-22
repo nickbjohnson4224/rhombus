@@ -15,7 +15,7 @@
  */
 
 #include <rhombus.h>
-#include <natio.h>
+#include <rho/natio.h>
 
 int open(const char *pathname, int flags) {
 	rp_t rp;

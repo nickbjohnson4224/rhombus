@@ -18,11 +18,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <natio.h>
 #include <errno.h>
-#include <proc.h>
-#include <exec.h>
-#include <ipc.h>
+
+#include <rho/natio.h>
+#include <rho/proc.h>
+#include <rho/exec.h>
+#include <rho/ipc.h>
 
 #include "inc/tar.h"
 #include "initrd.h"

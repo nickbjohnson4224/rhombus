@@ -16,9 +16,10 @@
 
 #include "fbterm.h"
 
-#include <mutex.h>
-#include <graph.h>
 #include <stdio.h>
+
+#include <rho/mutex.h>
+#include <rho/graph.h>
 
 static bool mutex;
 static int cursor = 0;

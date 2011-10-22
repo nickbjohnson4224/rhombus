@@ -16,7 +16,8 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <proc.h>
+
+#include <rho/proc.h>
 
 int setname(const char *name) {
 	char name_str[16];

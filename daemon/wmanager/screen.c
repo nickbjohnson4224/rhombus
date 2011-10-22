@@ -15,9 +15,9 @@
  */
 
 #include "wmanager.h"
-#include <graph.h>
-#include <natio.h>
-#include <page.h>
+#include <rho/graph.h>
+#include <rho/natio.h>
+#include <rho/page.h>
 #include <stdlib.h>
 #include <string.h>
 

@@ -15,9 +15,10 @@
  */
 
 #include <stdio.h>
-#include <natio.h>
 #include <errno.h>
-#include <mutex.h>
+
+#include <rho/natio.h>
+#include <rho/mutex.h>
 
 /****************************************************************************
  * fwrite

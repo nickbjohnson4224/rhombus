@@ -15,8 +15,9 @@
  */
 
 #include <stdlib.h>
-#include <proc.h>
-#include <ipc.h>
+
+#include <rho/proc.h>
+#include <rho/ipc.h>
 
 struct msg *mwait(uint8_t port, uint64_t source) {
 	struct msg *msg;

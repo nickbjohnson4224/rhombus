@@ -16,7 +16,7 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <natio.h>
+#include <rho/natio.h>
 
 /*****************************************************************************
  * ator

@@ -17,8 +17,8 @@
 #ifndef __RLIBC_PAGE_H
 #define __RLIBC_PAGE_H
 
-#include <arch.h>
-#include <abi.h>
+#include <rho/arch.h>
+#include <rho/abi.h>
 
 #define PROT_NONE 	0
 #define PROT_READ 	1

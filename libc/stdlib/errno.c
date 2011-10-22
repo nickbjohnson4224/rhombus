@@ -15,6 +15,7 @@
  */
 
 #include <errno.h>
-#include <proc.h>
+
+#include <rho/proc.h>
 
 int errnov[MAX_THREADS];

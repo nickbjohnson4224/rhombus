@@ -16,7 +16,8 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <proc.h>
+
+#include <rho/proc.h>
 
 static char     buffer[L_tmpnam];
 static uint32_t state;

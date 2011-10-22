@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <graph.h>
+#include <rho/graph.h>
 
 /*****************************************************************************
  * fb_getbmp

@@ -15,8 +15,8 @@
  */
 
 #include <stdint.h>
-#include <proc.h>
-#include <abi.h>
+#include <rho/proc.h>
+#include <rho/abi.h>
 
 void wake(uint32_t tid) {
 	_wake(tid);

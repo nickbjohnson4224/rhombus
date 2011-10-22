@@ -16,8 +16,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <mutex.h>
 #include <errno.h>
+
+#include <rho/mutex.h>
 
 /****************************************************************************
  * setvbuf

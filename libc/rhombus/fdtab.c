@@ -16,7 +16,7 @@
 
 #include <rhombus.h>
 #include <stdlib.h>
-#include <mutex.h>
+#include <rho/mutex.h>
 	
 /*****************************************************************************
  * File Descriptor Table

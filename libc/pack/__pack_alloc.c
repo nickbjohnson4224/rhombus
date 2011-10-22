@@ -14,9 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <mutex.h>
-#include <pack.h>
-#include <page.h>
+#include <rho/mutex.h>
+#include <rho/pack.h>
+#include <rho/page.h>
 
 static uintptr_t _brk = PACK_HEAP_ADDR;
 static bool _m_brk;

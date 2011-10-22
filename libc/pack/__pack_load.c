@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <pack.h>
-#include <page.h>
+#include <rho/pack.h>
+#include <rho/page.h>
 
 void *__pack_load(uint32_t key, size_t *size) {
 	size_t i;

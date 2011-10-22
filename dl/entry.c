@@ -15,7 +15,7 @@
  */
 
 #include <stdint.h>
-#include <arch.h>
+#include <rho/arch.h>
 #include "dl.h"
 
 __attribute__ ((section (".head")))
