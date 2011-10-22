@@ -197,7 +197,8 @@ int rp_admin (rp_t rp, uint32_t user, int access);
  */
 
 // perform an rcall
-char *rcall(rp_t rp, const char *fmt, ...);
+char *rcall (rp_t rp, const char *fmt, ...);
+char *frcall(int fd, const char *fmt, ...);
 
 // root rcall hook format
 typedef char *(*rcall_hook_t)(rp_t src, int argc, char **argv);

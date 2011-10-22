@@ -22,7 +22,7 @@
 
 int main(int argc, char **argv) {
 	
-	rcall(stdout->fd, "clear");
+	frcall(stdout->fd, "clear");
 	
 	return 0;
 }

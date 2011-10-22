@@ -82,10 +82,44 @@ static char *__rcall(uint64_t rp, const char *args) {
  * routines. Returns NULL on error or empty return string.
  */
 
-char *rcall(uint64_t rp, const char *fmt, ...) {
+char *rcall(rp_t rp, const char *fmt, ...) {
 	va_list ap;
 	char *args;
 	char *ret;
+
+	if (strchr(fmt, '%')) {
+
+		// format argument string
+		va_start(ap, fmt);
+		args = vsaprintf(fmt, ap);
+		va_end(ap);
+
+		if (!args) {
+			return NULL;
+		}
+
+		// perform rcall
+		ret = __rcall(rp, args);
+
+		// free argument string
+		free(args);
+	}
+	else {
+		
+		// just use the format string
+		ret = __rcall(rp, fmt);
+	}
+
+	return ret;
+}
+
+char *frcall(int fd, const char *fmt, ...) {
+	va_list ap;
+	char *args;
+	char *ret;
+	rp_t rp;
+
+	rp = fd_rp(fd);
 
 	if (strchr(fmt, '%')) {
 
