@@ -33,7 +33,7 @@ rp_t rp_cons(rp_t driver, const char *type) {
 	rp_t rp;
 	char *reply;
 
-	reply = rcall(driver, "cons %s", type);
+	reply = rcall(RP_PID(driver), "cons %s", type);
 
 	if (!reply) {
 		errno = ENOSYS;

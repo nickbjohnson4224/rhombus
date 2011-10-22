@@ -14,21 +14,167 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 #include <rho/proc.h>
+#include <rho/ipc.h>
 #include <rho/abi.h>
 
 #include <rdi/robject.h>
 #include <rdi/core.h>
 
+static char *__type(struct robject *self, rp_t src, int argc, char **argv) {
+	const char *type;
+	char *parent_type;
+	char *final_type;
+
+	type = robject_data(self, "type");	
+	parent_type = robject_call(self->parent, src, "type");
+
+	if (parent_type) {
+		if (type) {
+			final_type = strvcat(type, " ", parent_type, NULL);
+			free(parent_type);
+		}
+		else {
+			final_type = parent_type;
+		}
+
+		return final_type;
+	}
+	else {
+		if (type) {
+			return strdup(type);
+		}
+		else {
+			return NULL;
+		}
+	}
+}
+
+static char *__ping(struct robject *self, rp_t src, int argc, char **argv) {
+	return strdup("T");
+}
+
+static char *__find(struct robject *self, rp_t src, int argc, char **argv) {
+	return rtoa(RP_CONS(getpid(), self->index));
+}
+
+static char *__open(struct robject *self, rp_t src, int argc, char **argv) {
+	int status;
+
+	if (argc == 2) {
+		status = atoi(argv[1]);
+	}
+	else if (argc == 1) {
+		status = STAT_OPEN;
+	}
+	else {
+		return strdup("! arg");
+	}
+
+	if (!robject_check_access(self, src, status &~ STAT_OPEN)) {
+		return strdup("! denied");
+	}
+
+	if (status) {
+		rtab_open(RP_PID(src), RP_CONS(getpid(), self->index));
+	}
+
+	robject_open(self, src, status);
+	
+	return strdup("T");
+}
+
+static char *__close(struct robject *self, rp_t src, int argc, char **argv) {
+
+	if (argc == 1) {
+		robject_close(self, src);
+		return strdup("T");
+	}
+	else {
+		return strdup("! arg");
+	}
+}
+
+static char *__stat(struct robject *self, rp_t src, int argc, char **argv) {
+	return saprintf("%d", robject_stat(self, src));
+}
+
+static char *__name(struct robject *self, rp_t src, int argc, char **argv) {
+	char *name;
+	char *full;
+	char *proc;
+
+	name = robject_data(self, "name");
+
+	if (!name) {
+		if (self->index) {
+			name = saprintf("%u", self->index);
+		}
+		else {
+			// XXX SEC - should probably scramble this pointer somehow
+			name = saprintf("abstract-%u", (uint32_t) self);
+		}
+	}
+	else {
+		name = strdup(name);
+	}
+
+	proc = getname(getpid());
+	full = strvcat("[", proc, ":", name, "]", NULL);
+	free(proc);
+	free(name);
+	return full;
+}
+
+static char *_get_access(struct robject *r, rp_t src, int argc, char **argv) {
+	uint32_t bitmap;
+	uint32_t user;
+
+	if (argc == 1) {
+		user = getuser(RP_PID(src));
+	}
+	else if (argc == 2) {
+		user = atoi(argv[1]);
+	}
+	else {
+		return strdup("! arg");
+	}
+
+	bitmap = robject_get_access(r, user);
+
+	return saprintf("%X", bitmap);
+}
+
+static char *_set_access(struct robject *r, rp_t src, int argc, char **argv) {
+	uint32_t bitmap;
+	uint32_t user;
+
+	if (argc == 2) {
+		user = getuser(RP_PID(src));
+		sscanf(argv[1], "%X", &bitmap);
+	}
+	else if (argc == 3) {
+		user = atoi(argv[1]);
+		sscanf(argv[2], "%X", &bitmap);
+	}
+	else {
+		return strdup("! arg");
+	}
+
+	robject_set_access(r, user, bitmap);
+
+	return strdup("T");
+}
+
 rdi_cons_hook rdi_global_cons_file_hook;
 rdi_cons_hook rdi_global_cons_dir_hook;
 rdi_cons_hook rdi_global_cons_link_hook;
 
-static char *_cons(struct robject *self, rp_t src, int argc, char **argv) {
+static char *_cons(rp_t src, int argc, char **argv) {
 	struct robject *new_robject = NULL;
 	char *type;
 
@@ -61,16 +207,76 @@ static char *_cons(struct robject *self, rp_t src, int argc, char **argv) {
 	return strdup("! arg");
 }
 
+static void __rcall_handler(struct msg *msg) {
+	struct robject *ro;
+	struct msg *reply;
+	char *rets;
+	
+	if (RP_INDEX(msg->target) != 0) {
+		ro = robject_get(RP_INDEX(msg->target));
+
+		if (!ro) {
+			merror(msg);
+			return;
+		}
+
+		rets = robject_call(ro, msg->source, (const char*) msg->data);
+		if (!rets) rets = strdup("");
+	}
+	else {	
+		rets = rcall_call(msg->source, (const char*) msg->data);
+		if (!rets) rets = strdup("");
+	}
+
+	reply = aalloc(sizeof(struct msg) + strlen(rets) + 1, PAGESZ);
+	reply->source = msg->target;
+	reply->target = msg->source;
+	reply->length = strlen(rets) + 1;
+	reply->port   = PORT_REPLY;
+	reply->arch   = ARCH_NAT;
+	strcpy((char*) reply->data, rets);
+	free(rets);
+
+	free(msg);
+	msend(reply);
+}
+
+static void __close_handler(struct msg *msg) {
+	struct robject *ro;
+
+	ro = robject_get(RP_INDEX(msg->target));
+	if (!ro) return;
+
+	free(robject_call(ro, msg->source, "close"));
+	free(msg);
+}
+
 struct robject *rdi_class_core;
 
-void __rdi_class_core_setup() {
-	
-	rdi_class_core = robject_cons(0, robject_class_basic);
+void __rdi_class_core_setup(void) {
 
-	robject_set_call(rdi_class_core, "cons", _cons, 0);
+	// create core class
+	rdi_class_core = robject_cons(0, NULL);
 
-	robject_set_data(rdi_class_core, "type", (void*) "driver");
+	robject_set_data(rdi_class_core, "type", (void*) "event basic");
 	robject_set_data(rdi_class_core, "name", (void*) "RDI-class-core");
+
+	robject_set_call(rdi_class_core, "type", __type, 0);
+	robject_set_call(rdi_class_core, "ping", __ping, 0);
+	robject_set_call(rdi_class_core, "name", __name, 0);
+	robject_set_call(rdi_class_core, "open", __open, 0);
+	robject_set_call(rdi_class_core, "close", __close, STAT_OPEN);
+	robject_set_call(rdi_class_core, "stat", __stat, 0);
+	robject_set_call(rdi_class_core, "find", __find, 0);
+	robject_set_call(rdi_class_core, "get-access", _get_access, 0);
+	robject_set_call(rdi_class_core, "set-access", _set_access, STAT_ADMIN);
+
+	// set rcall and close handlers
+	when(PORT_RCALL, __rcall_handler);
+	when(PORT_CLOSE, __close_handler);
+
+	// set constructor
+	rcall_hook("cons", _cons);
 }
 
 struct robject *rdi_core_cons(uint32_t index, uint32_t access) {
