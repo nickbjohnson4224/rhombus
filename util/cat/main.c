@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,28 +19,30 @@
 #include <string.h>
 #include <ctype.h>
 
-static char buffer[2048];
+static char buffer[4096];
 
 int main(int argc, char **argv) {
 	size_t n, i;
 	FILE *file;
 
-	setvbuf(stdout, NULL, _IOFBF, BUFSIZ + 8192);
+	setvbuf(stdout, NULL, _IOFBF, 65536);
 
 	for (n = 1; n < (size_t) argc; n++) {
 		file = fopen(argv[n], "r");
 
 		if (!file) {
-			printf("cat: %s: ", argv[n]);
+			fprintf(stderr, "cat: %s: ", argv[n]);
 			perror(NULL);
 		}
 
 		while (1) {
-			i = fread(buffer, sizeof(char), 2048, file);
+			i = fread(buffer, sizeof(char), 4096, file);
 			if (i == 0) break;
 			fwrite(buffer, sizeof(char), i, stdout);
 		}
 	}
+
+	fflush(stdout);
 
 	return 0;
 }

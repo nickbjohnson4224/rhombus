@@ -123,6 +123,7 @@ void _init() {
 	fs_root = fdload(3);
 
 	setvbuf(stdout, NULL, _IOLBF, BUFSIZ);
+	setvbuf(stderr, NULL, _IOLBF, BUFSIZ);
 
 	/* set up signals */
 	__sig_init();
