@@ -31,7 +31,7 @@
 
 struct robject *class_window;
 
-uint64_t vgafd, mousefd, kbdfd;
+rp_t vgafd, mousefd, kbdfd;
 bool winkey;
 int next_index = 1;
 
@@ -284,7 +284,7 @@ void wmanager_key_event(rp_t source, int argc, char **argv) {
 	int data;
 
 	if (argc != 3) return;
-	if (source != kbdfd) return;
+	if (RP_PID(source) != RP_PID(kbdfd)) return;
 
 	if (!strcmp(argv[1], "press")) pressed = true;
 	else if (!strcmp(argv[1], "release")) pressed = false;
@@ -312,7 +312,7 @@ void wmanager_key_event(rp_t source, int argc, char **argv) {
 void wmanager_mouse_event(rp_t source, int argc, char **argv) {
 	char *event_str;
 	
-	if (source != mousefd) return;
+	if (RP_PID(source) != RP_PID(mousefd)) return;
 	if (argc < 2) return;
 
 	if (!strcmp(argv[1], "delta")) {
@@ -341,7 +341,7 @@ void wmanager_mouse_event(rp_t source, int argc, char **argv) {
 
 void wmanager_graph_event(rp_t source, int argc, char **argv) {
 	
-	if (source != vgafd) return;
+	if (RP_PID(source) != RP_PID(vgafd)) return;
 	if (argc != 4) return;
 	
 	if (!strcmp(argv[1], "resize")) {
@@ -385,7 +385,7 @@ int main(int argc, char **argv) {
 
 	fs_plink("/sys/wmanager", RP_CONS(getpid(), root->index), NULL);
 
-	vgafd = fs_find("/dev/svga0");
+	vgafd  = fd_rp(ropen(-1, fs_find("/dev/svga0"), STAT_READER | STAT_WRITER | STAT_EVENT));
 	sscanf(rcall(vgafd, "getmode"), "%i %i", &width, &height);
 	resize_screen(width, height);
 
