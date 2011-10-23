@@ -135,6 +135,8 @@ int main() {
 	size_t i, n;
 	char *argv[100];
 
+	printf("%d %s\n", geterror(errorstr(ENOTSUP)), errorstr(ENOTSUP));
+
 	setenv("PWD", "/");
 
 	while (1) {

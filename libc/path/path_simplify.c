@@ -65,7 +65,6 @@ char *path_simplify(const char *path) {
 				free(name);
 			}
 			else {
-				errno = EPATH;
 				return NULL;
 			}
 		}
