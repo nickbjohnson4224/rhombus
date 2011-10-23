@@ -61,18 +61,9 @@ int rp_ulink(rp_t dir, const char *name) {
 	}
 
 	reply = rcall(dir, "unlink %s", name);
-
-	if (!reply) {
-		errno = ENOSYS;
-		return 1;
-	}
-
-	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nfound"))   errno = ENOENT;
-		else if (!strcmp(reply, "! denied"))   errno = EACCES;
-		else if (!strcmp(reply, "! type"))     errno = ENOTDIR;
-		else if (!strcmp(reply, "! notempty")) errno = ENOTEMPTY;
-		else                                   errno = EUNK;
+	
+	if (iserror(reply)) {
+		errno = geterror(reply);
 		free(reply);
 		return 1;
 	}
@@ -114,17 +105,8 @@ int rp_link(uint64_t dir, const char *name, uint64_t link) {
 
 	reply = rcall(dir, "link %s %r", name, link);
 
-	if (!reply) {
-		errno = ENOSYS;
-		return 1;
-	}
-
-	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nfound"))   errno = ENOENT;
-		else if (!strcmp(reply, "! denied"))   errno = EACCES;
-		else if (!strcmp(reply, "! type"))     errno = ENOTDIR;
-		else if (!strcmp(reply, "! notempty")) errno = ENOTEMPTY;
-		else                                   errno = EUNK;
+	if (iserror(reply)) {
+		errno = geterror(reply);
 		free(reply);
 		return 1;
 	}

@@ -39,21 +39,10 @@ int rp_access(rp_t rp, uint32_t user) {
 
 	reply = rcall(rp, "get-access %d", user);
 
-	if (!reply) {
-		errno = ENOSYS;
-		return 0;
-	}
-
-	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nfound")) errno = ENOENT;
-		else if (!strcmp(reply, "! denied")) errno = EACCES;
-		else if (!strcmp(reply, "! nosys"))  errno = ENOSYS;
-		else                                 errno = EUNK;
+	if (iserror(reply)) {
+		errno = geterror(reply);
 		free(reply);
 		return 0;
-	}
-	else {
-		errno = 0;
 	}
 
 	access = atoi(reply);

@@ -119,7 +119,7 @@ extern int errnov[MAX_THREADS];
  * and NULL otherwise.
  *
  * iserror() returns nonzero iff <error_str> has the format of an error string 
- * (i.e. if it begins with "! ".)
+ * (i.e. if it begins with "! " or is NULL.)
  *
  * geterror() returns the number of the error associated with <error_str>. If
  * <error_str> is NULL or has the format of an error, but does not match any 

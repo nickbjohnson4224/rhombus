@@ -123,13 +123,13 @@ const char *errorstr(int errnum) {
  * iserror
  *
  * Returns nonzero iff <error_str> has the format of an error string, i.e.
- * if it begins with "! ".
+ * if it begins with "! " or is NULL.
  */
 
 int iserror(const char *error_str) {
 	
 	if (!error_str) {
-		return 0;
+		return 1;
 	}
 
 	if (error_str[0] == '!' && error_str[1] == ' ') {

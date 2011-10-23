@@ -230,16 +230,8 @@ static int _rp_connect(rp_t rp, int status) {
 		reply = rcall(rp, "close");
 	}
 
-	if (!reply) {
-		errno = ENOSYS;
-		return 1;
-	}
-
-	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nosys"))		errno = ENOSYS;
-		else if (!strcmp(reply, "! denied"))	errno = EACCES;
-		else if (!strcmp(reply, "! nfound"))	errno = ENOENT;
-		else									errno = EUNK;
+	if (iserror(reply)) {
+		errno = geterror(reply);
 		free(reply);
 		return 1;
 	}

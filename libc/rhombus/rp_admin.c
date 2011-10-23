@@ -37,24 +37,12 @@ int rp_admin(rp_t rp, uint32_t user, int access) {
 
 	reply = rcall(rp, "set-access %d %d", user, access);
 
-	if (!reply) {
-		errno = ENOSYS;
-		return 1;
-	}
-
-	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nfound")) errno = ENOENT;
-		else if (!strcmp(reply, "! denied")) errno = EACCES;
-		else if (!strcmp(reply, "! nosys"))  errno = ENOSYS;
-		else                                 errno = EUNK;
+	if (iserror(reply)) {
+		errno = geterror(reply);
 		free(reply);
 		return 1;
 	}
-	else {
-		errno = 0;
-	}
 
 	free(reply);
-
 	return 0;
 }

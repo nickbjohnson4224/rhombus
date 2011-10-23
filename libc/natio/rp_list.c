@@ -37,12 +37,8 @@ char *rp_list(rp_t dir) {
 		return strdup("");
 	}
 
-	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! denied")) errno = EACCES;
-		else if (!strcmp(reply, "! nfound")) errno = ENOENT;
-		else if (!strcmp(reply, "! nosys"))  errno = ENOSYS;
-		else if (!strcmp(reply, "! type"))   errno = ENOTDIR;
-		else                                 errno = EUNK;
+	if (iserror(reply)) {
+		errno = geterror(reply);
 		free(reply);
 		return NULL;
 	}

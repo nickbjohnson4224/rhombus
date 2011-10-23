@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include <rho/natio.h>
 
@@ -57,6 +58,17 @@ int main(int argc, char **argv) {
 
 	reply = rcall(ctrl, args);
 
-	printf("%s\n", reply);
+	if (!reply) {
+		printf("(no reply)\n");
+		return 1;
+	}
+
+	if (iserror(reply)) {
+		printf("reply: %s (%s)\n", reply, strerror(geterror(reply)));
+	}
+	else {
+		printf("reply: %s\n", reply);
+	}
+
 	return 0;
 }

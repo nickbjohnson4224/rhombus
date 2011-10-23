@@ -37,7 +37,6 @@ const char *strerror(int errnum) {
 	case EINVAL:	return "invalid argument";
 	case EIO:		return "I/O error";
 	case EISDIR:	return "is a directory";
-	case EPATH:		return "invalid path";
 	case ENOENT:	return "no such file or directory";
 	case ENOEXEC:	return "invalid executable";
 	case ENOMEM:	return "out of memory";

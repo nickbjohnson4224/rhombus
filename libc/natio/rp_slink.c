@@ -33,16 +33,8 @@ int rp_slink(uint64_t rp, const char *link) {
 
 	reply = rcall(rp, "set-link %s", link);
 
-	if (!reply) {
-		errno = ENOSYS;
-		return 1;
-	}
-
-	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nfound")) errno = ENOENT;
-		else if (!strcmp(reply, "! denied")) errno = EACCES;
-		else if (!strcmp(reply, "! type"))   errno = EINVAL;
-		else                                 errno = EUNK;
+	if (iserror(reply)) {
+		errno = geterror(reply);
 		free(reply);
 		return 1;
 	}

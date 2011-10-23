@@ -43,7 +43,7 @@ off_t  rp_size(rp_t rp);
 extern rp_t fs_root;
 
 rp_t  fs_find (const char *path);
-rp_t  fs_lfind(const char *path);
+rp_t  fs_findl(const char *path);
 rp_t  fs_cons (const char *path, const char *type);
 char *fs_list (const char *path);
 off_t fs_size (const char *path);
@@ -87,11 +87,5 @@ int rp_link (rp_t dir, const char *name, rp_t link);
 /* robject type system ******************************************************/
 
 bool checktype(const char *path, const char *type);
-bool checktype_rp(rp_t rp, const char *type);
-
-/* access bitmap ************************************************************/
-
-int getaccess(const char *path, uint32_t user);
-int setaccess(const char *path, uint32_t user, int access);
 
 #endif/*__RLIBC_NATIO_H*/
