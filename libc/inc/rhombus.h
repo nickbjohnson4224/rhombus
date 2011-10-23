@@ -19,6 +19,7 @@
 
 #include <stdint.h>
 #include <rho/proc.h>
+#include <rho/types.h>
 
 /*****************************************************************************
  * Resource pointers
@@ -60,9 +61,6 @@
  * of that process and the process itself. It may be used as both a resource
  * or a thread.
  */
-
-// guaranteed to be an integer type
-typedef uint64_t rp_t;
 
 #define RP_CONS(pid, idx) ((((uint64_t) (idx)) << 32) | (uint64_t) (pid))
 #define RP_INDEX(rp)      ((uint32_t) ((rp) >> 32))

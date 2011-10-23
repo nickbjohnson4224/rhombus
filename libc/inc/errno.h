@@ -51,5 +51,6 @@ extern int errnov[MAX_THREADS];
 #define EUNK	22
 #define ENOTEMPTY 23
 #define ETIMEDOUT 24
+#define EBADF	25
 
 #endif/*__RLIBC_ERRNO_H*/

@@ -15,6 +15,8 @@ all: $(STATIC) $(CNAUGHT) # $(SHARED)
 headers_dir:
 	@ echo " MKDIR	" $(BUILDDIR)/inc/rho
 	@ mkdir -p $(BUILDDIR)/inc/rho
+	@ echo " MKDIR	" $(BUILDDIR)/inc/sys
+	@ mkdir -p $(BUILDDIR)/inc/sys
 
 $(HEADERS): headers_dir
 	@ echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/$@

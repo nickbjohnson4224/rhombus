@@ -22,12 +22,12 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
+
+#include <rho/types.h>
 #include <rho/path.h>
 #include <rho/ipc.h>
 
 /* core I/O *****************************************************************/
-
-typedef uint64_t off_t;
 
 size_t rp_read (rp_t rp, void *buf, size_t size, off_t offset);
 size_t rp_write(rp_t rp, void *buf, size_t size, off_t offset);
@@ -48,6 +48,8 @@ rp_t  fs_cons (const char *path, const char *type);
 char *fs_list (const char *path);
 off_t fs_size (const char *path);
 
+rp_t  rp_find (rp_t dir, const char *path);
+rp_t  rp_findl(rp_t dir, const char *path);
 char *rp_list (rp_t dir);
 
 /* file descriptor operations ***********************************************/
