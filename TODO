@@ -60,7 +60,7 @@ For 0.9 Alpha:
 - pipes and shell improvements
 	+ pipe driver
 	+ shell pipe support
-	- stdio buffering
+	+ stdio buffering
 	- user/password manager
 	- login shell
 

@@ -49,14 +49,18 @@ int main(int argc, char **argv) {
 	struct goban *goban;
 	int x, y, color, move;
 
+	setvbuf(stdout, NULL, _IOFBF, BUFSIZ);
+
 	goban = goban_cons();
 	color = COL_B;
 	move  = 1;
 
 	print_goban(goban);
+	fflush(stdout);
 	while (1) {
 
 		printf("%s(%d): ", (color == COL_B) ? "black" : "white", move);
+		fflush(stdout);
 		if (read_move(&x, &y)) return 0;
 
 		if (goban_check(goban, x, y, color)) {

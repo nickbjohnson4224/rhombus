@@ -15,6 +15,7 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #include <rho/natio.h>
 #include <rho/proc.h>
@@ -30,6 +31,9 @@
 
 void exit(int status) {
 	struct __atexit_func *f;
+
+	fflush(stderr);
+	fflush(stdout);
 	
 	while (__atexit_func_list) {
 		f = __atexit_func_list;

@@ -60,18 +60,22 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
 		stream->buffer[stream->buffpos++] = data[i];
 
 		if (stream->flags & FILE_LBF) {
-			if ((data[i] == '\n') || (stream->buffpos > stream->buffsize)) {
+			if ((data[i] == '\n') || (stream->buffpos >= stream->buffsize)) {
 				mutex_free(&stream->mutex);
 				fflush(stream);
+				mutex_spin(&stream->mutex);
 			}
 		}
 		else {
 			if (stream->buffpos >= stream->buffsize) {
 				mutex_free(&stream->mutex);
 				fflush(stream);
+				mutex_spin(&stream->mutex);
 			}
 		}
 	}
+	
+	mutex_free(&stream->mutex);
 
 	return nmemb;
 }

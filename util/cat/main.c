@@ -25,6 +25,8 @@ int main(int argc, char **argv) {
 	size_t n, i;
 	FILE *file;
 
+	setvbuf(stdout, NULL, _IOFBF, BUFSIZ + 8192);
+
 	for (n = 1; n < (size_t) argc; n++) {
 		file = fopen(argv[n], "r");
 

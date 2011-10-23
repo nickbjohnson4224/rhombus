@@ -122,6 +122,8 @@ void _init() {
 	stderr  = fdopen(ropen(2, fdload(2), 0), "w");
 	fs_root = fdload(3);
 
+	setvbuf(stdout, NULL, _IOLBF, BUFSIZ);
+
 	/* set up signals */
 	__sig_init();
 	when(PORT_CHILD, NULL);

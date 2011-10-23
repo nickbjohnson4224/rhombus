@@ -117,7 +117,7 @@ int fish_exec_fg(int argc, char **argv, FILE *in, FILE *out, FILE *err) {
 }
 
 int fish_do(int argc, char **argv) {
-	
+
 	if (!strcmp(argv[0], "cd")) {
 		return fish_cd(argc, argv);
 	}
@@ -140,6 +140,7 @@ int main() {
 	while (1) {
 		printf(getenv("PWD"));
 		printf(" $ ");
+		fflush(stdout);
 
 		fgets(buffer, 100, stdin);
 

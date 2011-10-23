@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -22,11 +22,12 @@
 /****************************************************************************
  * fflush
  *
- * Forces a write of all userspace buffered data for the given output stream
+ * Forces a write of all userspace-buffered data for the given output stream
  * via the stream's underlying write function.
  */
 
 int fflush(FILE *stream) {
+	size_t size;
 
 	if (!stream) {
 		return -1;
@@ -35,9 +36,9 @@ int fflush(FILE *stream) {
 	mutex_spin(&stream->mutex);
 
 	if (stream->buffer && stream->buffpos) {
-		rp_write(fd_rp(stream->fd), stream->buffer, stream->buffpos, stream->position);
-		stream->position += stream->buffpos;
-		stream->buffpos = 0;
+		size = rp_write(fd_rp(stream->fd), stream->buffer, stream->buffpos, stream->position);
+		stream->position += size;
+		stream->buffpos -= size;
 	}
 
 	mutex_free(&stream->mutex);
