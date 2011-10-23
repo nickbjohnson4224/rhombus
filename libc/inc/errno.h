@@ -127,7 +127,7 @@ extern int errnov[MAX_THREADS];
  * the format of an error, ENONE (zero) is returned.
  */
 
-const char *errorstr(int errnum);
+char *errorstr(int errnum);
 
 int iserror (const char *error_str);
 int geterror(const char *error_str);

@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include <rho/proc.h>
 #include <rho/page.h>
@@ -31,7 +32,7 @@ rdi_write_hook rdi_global_write_hook;
 rdi_mmap_hook  rdi_global_mmap_hook;
 rdi_share_hook rdi_global_share_hook;
 
-static void __rdi_read (struct msg *msg) {
+static void __rdi_read(struct msg *msg) {
 	rdi_read_hook read_hook;
 	struct robject *file;
 	struct msg *reply;
@@ -258,7 +259,7 @@ static char *_size(struct robject *r, rp_t src, int argc, char **argv) {
 }
 
 static char *_reset(struct robject *r, rp_t src, int argc, char **argv) {
-	return strdup("! nosys");
+	return errorstr(ENOSYS);
 }
 
 struct robject *rdi_class_file;

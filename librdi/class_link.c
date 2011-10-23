@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include <rho/proc.h>
 
@@ -41,16 +42,12 @@ static char *_find(struct robject *r, rp_t src, int argc, char **argv) {
 		return rtoa(RP_CONS(getpid(), r->index));
 	}
 
-	return strdup("! arg");
+	return errorstr(EINVAL);
 }
 
 static char *_set_link(struct robject *r, rp_t src, int argc, char **argv) {
 	char *link;
 	char *old;
-
-	if (!robject_check_access(r, src, ACCS_WRITE)) {
-		return strdup("! denied");
-	}
 
 	if (argc == 2) {
 		link = argv[1];
@@ -62,15 +59,10 @@ static char *_set_link(struct robject *r, rp_t src, int argc, char **argv) {
 		return strdup("T");
 	}
 
-	return strdup("! arg");
+	return errorstr(EINVAL);
 }
 
 static char *_get_link(struct robject *r, rp_t src, int argc, char **argv) {
-
-	if (!robject_check_access(r, src, ACCS_READ)) {
-		return strdup("! denied");
-	}
-
 	return strdup(robject_get_data(r, "link"));
 }
 

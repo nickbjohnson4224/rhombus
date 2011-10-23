@@ -59,15 +59,15 @@ int main(int argc, char **argv) {
 	reply = rcall(ctrl, args);
 
 	if (!reply) {
-		printf("(no reply)\n");
+		printf("! nosys (not implemented)\n");
 		return 1;
 	}
 
 	if (iserror(reply)) {
-		printf("reply: %s (%s)\n", reply, strerror(geterror(reply)));
+		printf("%s (%s)\n", reply, strerror(geterror(reply)));
 	}
 	else {
-		printf("reply: %s\n", reply);
+		printf("%s\n", reply);
 	}
 
 	return 0;

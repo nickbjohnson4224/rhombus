@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include <rho/proc.h>
 
@@ -67,7 +68,7 @@ static char *_find(struct robject *r, rp_t src, int argc, char **argv) {
 	const char *tail;
 	bool link;
 
-	if (argc <= 1) return strdup("! arg");
+	if (argc <= 1) return errorstr(EINVAL);
 
 	// check for link follow flag
 	if (argc == 2) {
@@ -85,7 +86,7 @@ static char *_find(struct robject *r, rp_t src, int argc, char **argv) {
 	// find resource
 	file = __find(r, path, &tail);
 
-	if (!file) return strdup("! nfound");
+	if (!file) return errorstr(ENOENT);
 
 	if (robject_check_type(file, "link") && !(!tail && link)) {
 		/* return redirect to symlink */
@@ -138,13 +139,13 @@ static char *_link(struct robject *r, rp_t src, int argc, char **argv) {
 		index = RP_INDEX(ator(argv[2]));
 
 		if (RP_PID(ator(argv[2])) != getpid()) {
-			return strdup("! extern");
+			return errorstr(EXDEV);
 		}
 
 		hardlink = robject_get(index);
 		if (!hardlink) {
 			// link does not exist
-			return strdup("! noent");
+			return errorstr(ENOENT);
 		}
 
 		lookup = strvcat("dirent-", entry, NULL);
@@ -170,7 +171,7 @@ static char *_link(struct robject *r, rp_t src, int argc, char **argv) {
 		return strdup("T");
 	}
 
-	return strdup("! arg");
+	return errorstr(EINVAL);
 }
 
 static char *_unlink(struct robject *r, rp_t src, int argc, char **argv) {
@@ -186,7 +187,7 @@ static char *_unlink(struct robject *r, rp_t src, int argc, char **argv) {
 		if (!robject_get_data(r, lookup)) {
 			// entry does not exist, fail
 			free(lookup);
-			return strdup("! noent");
+			return errorstr(ENOENT);
 		}
 
 		robject_set_data(r, lookup, NULL);
@@ -213,7 +214,7 @@ static char *_unlink(struct robject *r, rp_t src, int argc, char **argv) {
 		return strdup("T");
 	}
 
-	return strdup("! arg");
+	return errorstr(EINVAL);
 }
 
 struct robject *rdi_class_dir;

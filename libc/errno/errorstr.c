@@ -23,7 +23,7 @@
 static const char *__errorstr_table[EUNK] = {
 	NULL,					// 0	ENONE
 	"! toobig",				// 1	E2BIG
-	"! access",				// 2	EACCES
+	"! denied",				// 2	EACCES
 	"! addrinuse",			// 3	EADDRINUSE
 	"! addrnotavail",		// 4	EADDRNOTAVAIL
 	"! afnosupport",		// 5	EAFNOSUPPORT
@@ -108,10 +108,10 @@ static struct s_table *__errorstr_lookup = NULL;
  * not, NULL is returned and errno is set to EINVAL.
  */
 
-const char *errorstr(int errnum) {
+char *errorstr(int errnum) {
 
 	if (errnum > 0 && errnum < EUNK) {
-		return __errorstr_table[errnum];
+		return strdup(__errorstr_table[errnum]);
 	}
 	else {
 		errno = EINVAL;

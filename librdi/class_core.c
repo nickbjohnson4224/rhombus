@@ -17,6 +17,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include <rho/proc.h>
 #include <rho/ipc.h>
@@ -72,11 +73,11 @@ static char *__open(struct robject *self, rp_t src, int argc, char **argv) {
 		status = STAT_OPEN;
 	}
 	else {
-		return strdup("! arg");
+		return errorstr(EINVAL);
 	}
 
 	if (!robject_check_access(self, src, status &~ STAT_OPEN)) {
-		return strdup("! denied");
+		return errorstr(EACCES);
 	}
 
 	if (status) {
@@ -95,7 +96,7 @@ static char *__close(struct robject *self, rp_t src, int argc, char **argv) {
 		return strdup("T");
 	}
 	else {
-		return strdup("! arg");
+		return errorstr(EINVAL);
 	}
 }
 
@@ -141,7 +142,7 @@ static char *_get_access(struct robject *r, rp_t src, int argc, char **argv) {
 		user = atoi(argv[1]);
 	}
 	else {
-		return strdup("! arg");
+		return errorstr(EINVAL);
 	}
 
 	bitmap = robject_get_access(r, user);
@@ -162,7 +163,7 @@ static char *_set_access(struct robject *r, rp_t src, int argc, char **argv) {
 		sscanf(argv[2], "%X", &bitmap);
 	}
 	else {
-		return strdup("! arg");
+		return errorstr(EINVAL);
 	}
 
 	robject_set_access(r, user, bitmap);
@@ -204,7 +205,7 @@ static char *_cons(rp_t src, int argc, char **argv) {
 		}
 	}
 
-	return strdup("! arg");
+	return errorstr(EINVAL);
 }
 
 static void __rcall_handler(struct msg *msg) {
