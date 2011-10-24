@@ -19,6 +19,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <rho/types.h>
 #include "config.h"
 
 enum window_flags {
@@ -39,7 +40,7 @@ struct window_t {
 	struct window_t *next, *prev;
 };
 
-extern uint64_t vgafd;
+extern rp_t vgafd;
 extern uint32_t *screen;
 extern int screen_width, screen_height;
 extern struct window_t *windows;
