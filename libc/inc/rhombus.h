@@ -34,11 +34,11 @@
  *
  * The string representations have the following format:
  *
- *   @p:i
+ *   @p.i
  *
  * Where p is the PID of the pointer and i is the index, both in decimal.
  * For example, if the PID is 42 and the index is 123, the string 
- * representation would be "@42:123".
+ * representation would be "@42.123".
  *
  * There are also some macros used to portably interface with robject
  * pointer contents:

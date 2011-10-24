@@ -16,6 +16,8 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
+
 #include <rho/natio.h>
 
 /*****************************************************************************
@@ -30,18 +32,14 @@ uint64_t ator(const char *str) {
 	char *substr;
 
 	if (!str || str[0] != '@') {
-		return 0;
+		errno = EINVAL;
+		return RP_NULL;
 	}
 
 	str++;
 
-	// check for nil
-	if (str[0] == 'n') {
-		return 0;
-	}
-
 	// extract pid
-	substr = struntil(str, ":", &str);
+	substr = struntil(str, ".", &str);
 	pid = atoi(substr);
 	free(substr);
 
