@@ -109,9 +109,9 @@ int fish_exec_fg(int argc, char **argv, FILE *in, FILE *out, FILE *err) {
 			abort();
 		}
 	}
-	rcall(stdout->fd, "set_fgjob %d", pid);
+	frcall(stdout->fd, "set_fgjob %d", pid);
 	mwait(PORT_CHILD, RP_CONS(pid, 0));
-	rcall(stdout->fd, "set_fgjob %d", 0);
+	frcall(stdout->fd, "set_fgjob %d", 0);
 	
 	return 0;
 }

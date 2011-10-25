@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,21 +14,38 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdlib.h>
 #include <stdio.h>
 
-/****************************************************************************
- * fgetc
- *
- * Reads the next character from <stream> and returns it cast to an int on 
- * success. Returns EOF on error.
- */
+int main(int argc, char **argv) {
+	int ch;
+	int i;
 
-int fgetc(FILE *stream) {
-	int c = 0;
+	i = 0;
+	while (1) {
+		ch = getchar();
 
-	if (fread(&c, sizeof(char), 1, stream) == 0) {
-		return EOF;
+		if (ch == EOF) {
+			printf("\n");
+			return 0;
+		}
+
+		if (i % 16 == 0) {
+			printf("%08X  ", i);
+		}
+
+		printf("%X%X", (ch & 0xF0) >> 4, ch & 0xF);
+
+		if (i % 2 == 1) {
+			printf(" ");
+		}
+
+		if (i % 16 == 15) {
+			printf("\n");
+		}
+
+		i++;
 	}
 
-	return c;
+	return 0;
 }

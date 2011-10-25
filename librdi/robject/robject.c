@@ -124,14 +124,16 @@ char *robject_call(struct robject *ro, rp_t source, const char *args) {
 		return NULL;
 	}
 
-	// check access and status restrictions
-	mutex_spin(&ro->mutex);
-	status = (int) s_table_get(ro->call_stat_table, argv[0]);
-	mutex_free(&ro->mutex);
+	if (source) {
+		// check access and status restrictions
+		mutex_spin(&ro->mutex);
+		status = (int) s_table_get(ro->call_stat_table, argv[0]);
+		mutex_free(&ro->mutex);
 
-	if (status) {
-		if (!robject_check_status(ro, source, status)) {
-			return strdup("! denied");
+		if (status) {
+			if (!robject_check_status(ro, source, status)) {
+				return strdup("! denied");
+			}
 		}
 	}
 

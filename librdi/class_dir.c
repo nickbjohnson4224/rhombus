@@ -68,7 +68,7 @@ static char *_find(struct robject *r, rp_t src, int argc, char **argv) {
 	const char *tail;
 	bool link;
 
-	if (argc <= 1) return errorstr(EINVAL);
+	if (argc <= 1) rtoa(RP_CONS(getpid(), r->index));
 
 	// check for link follow flag
 	if (argc == 2) {

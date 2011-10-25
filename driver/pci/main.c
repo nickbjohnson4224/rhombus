@@ -15,10 +15,12 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 
 #include <rdi/core.h>
 #include <rdi/vfs.h>
 #include <rdi/arch.h>
+#include <rdi/io.h>
 
 struct pci_header {
 	uint16_t vendor_id;
@@ -47,7 +49,7 @@ struct pci_header {
 	uint8_t  max_latency;
 };
 
-static void pci_read(uint32_t bus, uint32_t slot, uint32_t func, struct pci_header *hdr) {
+static void _pci_read(uint32_t bus, uint32_t slot, uint32_t func, struct pci_header *hdr) {
 	uint32_t addr;
 	uint32_t i;
 	uint32_t *hdr_data = (void*) hdr;
@@ -60,56 +62,85 @@ static void pci_read(uint32_t bus, uint32_t slot, uint32_t func, struct pci_head
 	}
 }
 
-static bool pci_ping(uint32_t bus, uint32_t slot, uint32_t func) {
+static bool _pci_ping(uint32_t bus, uint32_t slot, uint32_t func) {
 	uint32_t addr;
+	uint32_t input;
 
 	addr = (bus << 16) | (slot << 11) | (func << 8) | 0x80000000;
 
-	if (ind(0xCFC) == 0xFFFFFFFF) return false;
+	input = ind(0xCFC);
+
+	if ((input & 0xFFFF0000) == 0xFFFF0000 || (input & 0xFFFF0000) == 0) {
+		return false;
+	}
 	
 	return true;
 }
 
+static size_t pci_read(struct robject *self, rp_t source, uint8_t *buffer, size_t size, off_t offset) {
+	uint8_t *data;
+
+	data = robject_data(self, "pci-header");
+
+	if (!data) {
+		return 0;
+	}
+
+	if (offset > sizeof(struct pci_header)) {
+		return 0;
+	}
+
+	if (offset + size >= sizeof(struct pci_header)) {
+		size = sizeof(struct pci_header) - offset;
+	}
+
+	memcpy(buffer, &data[offset], size);
+
+	return size;
+}
+
 int main(int argc, char **argv) {
 	uint32_t slot, func, bus;
-	struct pci_header hdr;
+	struct pci_header *hdr;
+	struct robject *root;
+	struct robject *device;
+	char *name;
 
-/*	if (argc < 2) {
-		fprintf(stderr, "%s: error: no bus number specified\n", getname_s());
-		return 1;
-	}
+	rdi_init();
 
-	bus = atoi(argv[1]);
-
-	if (bus > 255) {
-		fprintf(stderr, "%s: error: bus number out of range\n", getname_s());
-		return 1;
-	} */
+	root = rdi_dir_cons(1, ACCS_READ | ACCS_WRITE);
 
 	for (bus = 0; bus < 256; bus++) {
+		for (slot = 0; slot < 32; slot++) {
+			for (func = 0; func < 8; func++) {
+				if (_pci_ping(bus, slot, func)) {
 
-	if (!pci_ping(bus, 0, 0)) {
-		continue;
-	}
-	
-	for (slot = 0; slot < 32; slot++) {
-		for (func = 0; func < 8; func++) {
-			if (pci_ping(bus, slot, func)) {
-				pci_read(bus, slot, func, &hdr);
+					hdr = malloc(sizeof(struct pci_header));
+					_pci_read(bus, slot, func, hdr);
 
-				printf("%02x:%02x.%x :\n", bus, slot, func);
-				printf("\tdevice ID: %X\n", hdr.device_id);
-				printf("\tvendor ID: %X\n", hdr.vendor_id);
-				printf("\tclass: %X %X\n", hdr.class_code, hdr.subclass);
+					device = rdi_file_cons((bus << 16) | (slot << 11) | (func << 8) + 2, ACCS_READ);
+					robject_set_data(device, "pci-header", hdr);
+					name = saprintf("/b%2Xs%2Xf%1X", bus, slot, func);
+					rdi_vfs_add(root, name, device);
+					free(name);
 
-				for (int i = 0; i < 5; i++) {
-					printf("\tBAR%d: %X\n", i, hdr.bar[i]);
+					printf("%02x:%02x.%x :\n", bus, slot, func);
+					printf("\tdevice ID: %X\n", hdr->device_id);
+					printf("\tvendor ID: %X\n", hdr->vendor_id);
+					printf("\tclass: %X %X\n", hdr->class_code, hdr->subclass);
+
+					for (int i = 0; i < 5; i++) {
+						printf("\tBAR%d: %X\n", i, hdr->bar[i]);
+					}
 				}
 			}
 		}
 	}
 
-	}
+	rdi_global_read_hook = pci_read;
+
+	msendb(getppid(), PORT_CHILD);
+	_done();
 
 	return 0;
 }
