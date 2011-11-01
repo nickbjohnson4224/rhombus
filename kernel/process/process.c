@@ -96,12 +96,12 @@ struct process *process_clone(struct process *parent, struct thread *active) {
 
 	/* copy parent thread */
 	if (active) {
-		heap_free(new_thread->fxdata, 512);
+		if (new_thread->fxdata) heap_free(new_thread->fxdata, 512);
 		memcpy(new_thread, active, sizeof(struct thread));
-		new_thread->fxdata = heap_alloc(512);
 
 		/* copy parent FPU/SSE state */
 		if (active->fxdata) {
+			new_thread->fxdata = heap_alloc(512);
 			memcpy(new_thread->fxdata, active->fxdata, 512);
 		}
 	}

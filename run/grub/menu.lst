@@ -1,7 +1,7 @@
 default 0
-timeout 0
+timeout 1
 
-title 	Flux 0.6a
+title 	Rhombus
 root 	(cd)
 kernel	/kernel
 module	/init
