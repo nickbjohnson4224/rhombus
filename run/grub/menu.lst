@@ -1,5 +1,5 @@
 default 0
-timeout 1
+timeout 0
 
 title 	Rhombus
 root 	(cd)
