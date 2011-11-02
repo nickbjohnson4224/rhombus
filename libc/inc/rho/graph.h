@@ -69,6 +69,8 @@
 
 struct fb {
 	uint64_t rp;      // resource pointer of device
+	int fd;
+
 	uint32_t *bitmap; // framebuffer contents
 	bool mutex;
 	int xdim;

@@ -195,6 +195,75 @@ static void __rdi_share(struct msg *msg) {
 	mreply(msg);
 }
 
+static void __rdi_mmap(struct msg *msg) {
+	struct robject *file;
+	struct msg *reply;
+	uint64_t offset;
+	uint32_t size;
+	uint32_t prot;
+	void *pages;
+
+	if (msg->length != sizeof(uint64_t) + 2 * sizeof(uint32_t)) {
+		// message is of the wrong size
+		merror(msg);
+		return;
+	}
+
+	file = robject_get(RP_INDEX(msg->target));
+	if (!file) {
+		// there is no corresponding robject
+		merror(msg);
+		return;
+	}
+
+	prot = ((uint32_t*) msg->data)[3];
+
+	if (prot & PROT_WRITE) {
+		if (!robject_check_status(file, msg->source, STAT_WRITER)) {
+			merror(msg);
+			return;
+		}
+	}
+	else {
+		if (!robject_check_status(file, msg->source, STAT_READER)) {
+			merror(msg);
+			return;
+		}
+	}
+
+	if (!robject_check_type(file, "share")) {
+		merror(msg);
+		return;
+	}
+
+	if (!rdi_global_mmap_hook) {
+		merror(msg);
+		return;
+	}
+
+	offset = ((uint64_t*) msg->data)[0];
+	size   = ((uint32_t*) msg->data)[2];
+
+	pages = rdi_global_mmap_hook(file, msg->source, size, offset, prot);
+
+	if (!pages) {
+		merror(msg);
+		return;
+	}
+
+	reply = aalloc(PAGESZ + size, PAGESZ);
+	reply->source = msg->target;
+	reply->target = msg->source;
+	reply->length = PAGESZ + size - sizeof(struct msg);
+	reply->port   = PORT_REPLY;
+	reply->arch   = ARCH_NAT;
+
+	page_self(pages, &reply->data[PAGESZ - sizeof(struct msg)], size);
+
+	free(msg);
+	msend(reply);
+}
+
 static void __rdi_sync(struct msg *msg) {
 	struct robject *file;
 
@@ -279,6 +348,7 @@ void __rdi_class_file_setup() {
 	when(PORT_SYNC,  __rdi_sync);
 	when(PORT_RESET, __rdi_reset);
 	when(PORT_SHARE, __rdi_share);
+	when(PORT_MMAP,  __rdi_mmap);
 }
 
 struct robject *rdi_file_cons(uint32_t index, uint32_t access) {

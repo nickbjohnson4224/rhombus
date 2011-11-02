@@ -77,9 +77,9 @@
  *     Allow execution from the page.
  *
  * PROT_LOCK  - 8
- *     Prevent permissions from being changed further. This is useful for
- *     shared memory, to prevent the reciever from changing the permissions of
- *     a granted memory region.
+ *     Prevent read, write, execute, and lock flags from being changed further. 
+ *     This is useful for shared memory, to prevent the reciever from changing 
+ *     the permissions of a granted memory region.
  *
  * PROT_LINK  - 16
  *     Page is linked instead of copied during fork(), creating a shared 
@@ -91,6 +91,7 @@ struct thread *syscall_page(struct thread *image) {
 	uintptr_t address;
 	uintptr_t count;
 	uintptr_t perm;
+	uintptr_t perm1;
 	uintptr_t source;
 	uintptr_t offset;
 	uintptr_t i;
@@ -251,13 +252,19 @@ struct thread *syscall_page(struct thread *image) {
 				continue;
 			}
 
-			/* skip locked frames */
+			/* respect locked frames */
 			if (page_get(i) & PF_LOCK) {
-				continue;
-			}
+				perm1 = page_get(i) & (PF_RW | PF_LOCK);
+				perm1 |= perm &~ (PF_RW | PF_LOCK);
 
-			/* set new permissions */
-			page_set(i, page_fmt(page_get(i), perm));
+				/* set new permissions */
+				page_set(i, page_fmt(page_get(i), perm1));
+			}
+			else {
+
+				/* set new permissions */
+				page_set(i, page_fmt(page_get(i), perm));
+			}
 		}
 
 		break;

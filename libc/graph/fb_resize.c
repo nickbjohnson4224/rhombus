@@ -31,6 +31,7 @@
  */
 
 int fb_resize(struct fb *fb, int xdim, int ydim) {
+
 	if (!fb) {
 		return 1;
 	}
@@ -40,21 +41,15 @@ int fb_resize(struct fb *fb, int xdim, int ydim) {
 		return 0;
 	}
 
-	if (fb->flags & FB_SHARED) {
-		// release shared memory
-		rp_share(fb->rp, NULL, 0, 0, 0);
-	}
-
 	// resize bitmap
 	fb->xdim = xdim;
 	fb->ydim = ydim;
 	free(fb->bitmap);
 	fb->bitmap = aalloc(sizeof(uint32_t) * xdim * ydim, PAGESZ);
-	memclr(fb->bitmap, sizeof(uint32_t) * xdim * ydim);
 
 	if (fb->flags & FB_SHARED) {
-		// re-register shared memory
-		rp_share(fb->rp, fb->bitmap, xdim * ydim * sizeof(uint32_t), 0, PROT_READ);
+		// re-acquire shared memory
+		rp_mmap(fb->rp, fb->bitmap, xdim * ydim * sizeof(uint32_t), 0, PROT_READ | PROT_WRITE);
 	}
 
 	// reset flip acceleration

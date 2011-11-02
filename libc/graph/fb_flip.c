@@ -30,7 +30,6 @@
  */
 
 int fb_flip(struct fb *fb) {
-	char buf[40];
 	char *ret;
 
 	if (!fb) {
@@ -47,9 +46,8 @@ int fb_flip(struct fb *fb) {
 
 	if (fb->flags & FB_SHARED) {
 		// shared: just sync
-		sprintf(buf, "syncrect %d %d %d %d", fb->minx, fb->miny, 
+		ret = rcall(fd_rp(fb->fd), "syncrect %d %d %d %d", fb->minx, fb->miny, 
 			fb->maxx - fb->minx, fb->maxy - fb->miny);
-		ret = rcall(fb->rp, buf);
 		if (!ret || !strcmp(ret, "")) {
 			mutex_free(&fb->mutex);
 			return 1;
@@ -58,7 +56,7 @@ int fb_flip(struct fb *fb) {
 	}
 	else {
 		// not shared: write whole buffer
-		if (!rp_write(fb->rp, fb->bitmap, 
+		if (!rp_write(fd_rp(fb->fd), fb->bitmap, 
 				fb->xdim * fb->ydim * sizeof(uint32_t), 0)) {
 			mutex_free(&fb->mutex);
 			return 1;

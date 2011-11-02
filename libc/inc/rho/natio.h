@@ -34,6 +34,7 @@ size_t rp_write(rp_t rp, void *buf, size_t size, off_t offset);
 int    rp_sync (rp_t rp);
 int    rp_reset(rp_t rp);
 int    rp_share(rp_t rp, void *buf, size_t size, off_t offset, int prot);
+void  *rp_mmap (rp_t rp, void *addr, size_t size, off_t offset, int prot);
 
 rp_t   rp_cons(rp_t rp, const char *type);
 off_t  rp_size(rp_t rp);

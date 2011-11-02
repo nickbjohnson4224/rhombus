@@ -114,6 +114,23 @@ int svga_share(struct robject *self, rp_t source, uint8_t *_buffer, size_t size,
 	return 0;
 }
 
+void *svga_mmap(struct robject *self, rp_t source, size_t size, off_t off, int prot) {
+	void *pages;
+
+	if (size != svga.w * svga.h * 4) {
+		return NULL;
+	}
+	if (off != 0) {
+		return NULL;
+	}
+
+	pages = aalloc(size, PAGESZ);
+	page_self(buffer, pages, size);
+	page_prot(pages, size, prot | PROT_LOCK);
+
+	return pages;
+}
+
 int main(int argc, char **argv) {
 	struct robject *canvas;
 	char *modesstr0;
@@ -138,7 +155,7 @@ int main(int argc, char **argv) {
 	}
 
 	svga_set_mode(svga_find_mode(640, 480, 24));
-	buffer = malloc(svga.w * svga.h * 4);
+	buffer = aalloc(svga.w * svga.h * 4, PAGESZ);
 
 	/* set up driver interface */
 	robject_set_call(canvas, "getmode",   svga_rcall_getmode,   STAT_READER);
@@ -148,6 +165,7 @@ int main(int argc, char **argv) {
 	robject_set_call(canvas, "syncrect",  svga_rcall_syncrect,  STAT_WRITER);
 	robject_set_call(canvas, "sync",      svga_rcall_sync,      STAT_WRITER);
 	rdi_global_share_hook = svga_share;
+	rdi_global_mmap_hook  = svga_mmap;
 
 	/* register the driver as /dev/svga0 */
 	fs_plink("/dev/svga0", RP_CONS(getpid(), canvas->index), NULL);

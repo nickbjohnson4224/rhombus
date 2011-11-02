@@ -41,7 +41,7 @@ struct fb *fb_cons(uint64_t rp) {
 
 	// allocate and setup framebuffer
 	fb = malloc(sizeof(struct fb));
-	fb->rp    = rp;
+	fb->fd    = ropen(-1, rp, STAT_WRITER);
 	fb->mutex = false;
 	fb->flags = 0;
 	
@@ -49,6 +49,7 @@ struct fb *fb_cons(uint64_t rp) {
 	mode = rcall(rp, "getmode");
 
 	if (!mode) {
+		close(fb->fd);
 		free(fb);
 		return NULL;
 	}
@@ -61,8 +62,8 @@ struct fb *fb_cons(uint64_t rp) {
 	memclr(fb->bitmap, sizeof(uint32_t) * fb->xdim * fb->ydim);
 
 	// check for shared memory interface
-	if (!rp_share(fb->rp, fb->bitmap, 
-			fb->xdim * fb->ydim * sizeof(uint32_t), 0, PROT_READ)) {
+	if (rp_mmap(rp, fb->bitmap, 
+			fb->xdim * fb->ydim * sizeof(uint32_t), 0, PROT_READ | PROT_WRITE)) {
 		// successful
 		fb->flags |= FB_SHARED;
 	}

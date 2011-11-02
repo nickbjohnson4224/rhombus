@@ -34,10 +34,8 @@ void fb_free(struct fb *fb) {
 		return;
 	}
 
-	// deactivate shared memory
-	if (fb->flags & FB_SHARED) {
-		rp_share(fb->rp, NULL, 0, 0, 0);
-	}
+	// close file descriptor
+	close(fb->fd);
 
 	// free bitmap
 	free(fb->bitmap);
