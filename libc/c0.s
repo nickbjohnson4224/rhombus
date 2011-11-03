@@ -1,4 +1,4 @@
-; Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+; Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
 ; 
 ; Permission to use, copy, modify, and distribute this software for any
 ; purpose with or without fee is hereby granted, provided that the above
@@ -20,4 +20,4 @@ global _start
 extern _init
 
 _start:
-	call _init ; libc initialization, runs main and exits
+	call _init wrt ..plt; libc initialization, runs main and exits

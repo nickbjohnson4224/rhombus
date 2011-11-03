@@ -20,8 +20,8 @@ CFLAGS	:= -pipe -Wall -Werror -Wextra -pedantic -std=c99
 CFLAGS	+= -Wpointer-arith -Wwrite-strings
 CFLAGS	+= -Wno-unused-parameter -Wno-unused-function
 CFLAGS	+= -O3 -fomit-frame-pointer
-CFLAGS	+= -I$(BUILDDIR)/inc -ffreestanding
-LDFLAGS := -L$(BUILDDIR)/lib
+CFLAGS	+= -I$(BUILDDIR)/inc -ffreestanding -fPIC
+LDFLAGS := -L$(BUILDDIR)/lib -static
 ARFLAGS := rcs
 PPFLAGS := -x assembler-with-cpp -I$(BUILDDIR)/inc
 
@@ -65,7 +65,7 @@ image:	all
 	@ cp bin/* boot/bin
 	@ cp lib/dl.so boot/lib
 	@ cp sbin/* boot/sbin
-	@ cp -r etc/* boot/etc
+#	@ cp -r etc/* boot/etc
 
 	@ export BUILDDIR
 	@ run/make_image.sh

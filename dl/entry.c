@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
 #include <rho/arch.h>
+#include <stdint.h>
 #include "dl.h"
 
 __attribute__ ((section (".head")))
@@ -49,6 +49,8 @@ int dl_entry(struct dl_list *list, size_t count) {
 		return 1;
 	}
 
+	/*** POINT OF MAYBE RETURNING IF YOU, y'know, have to... ***/
+
 	/* copy executable high */
 	size = exec_entry->size;
 	exec = (void*) DL_HEAP;
@@ -64,6 +66,8 @@ int dl_entry(struct dl_list *list, size_t count) {
 		dl_page_self(exec_entry->base, exec, size);
 		dl_page_prot(exec, size, PROT_READ);
 	}
+
+	/*** POINT OF NO RETURN ***/
 
 	/* clear lower memory */
 	dl_page_free(NULL, 0x80000000);

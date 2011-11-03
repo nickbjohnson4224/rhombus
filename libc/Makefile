@@ -5,12 +5,12 @@ HEADERS := $(shell find inc -name "*.h")
 SUBDIR	:= libc
 STATIC	:= libc.a
 SHARED	:= libc.so
-CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
+CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc -fPIC
 ASFLAGS := -felf
 
 .PHONY: headers_dir $(HEADERS) clean
 
-all: $(STATIC) $(CNAUGHT) # $(SHARED)
+all: $(STATIC) $(CNAUGHT) $(SHARED)
 
 headers_dir:
 	@ echo " MKDIR	" $(BUILDDIR)/inc/rho

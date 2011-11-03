@@ -1,4 +1,4 @@
-; Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+; Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
 ; 
 ; Permission to use, copy, modify, and distribute this software for any
 ; purpose with or without fee is hereby granted, provided that the above
@@ -28,7 +28,7 @@ _on_event:
 	push esi
 	push edx
 	push ecx
-	call on_event
+	call on_event wrt ..plt
 	add esp, 20
 
-	call _done
+	call _done wrt ..plt

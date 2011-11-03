@@ -24,7 +24,7 @@
  * success, nonzero on error.
  */
 
-int fb_lock(struct fb *fb) {
+int fb_unlock(struct fb *fb) {
 	
 	if (!fb) {
 		return 1;
