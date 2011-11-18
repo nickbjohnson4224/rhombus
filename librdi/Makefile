@@ -3,16 +3,17 @@ SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
 HEADERS := $(shell find inc -name "*.h")
 SUBDIR	:= librdi
 STATIC	:= librdi.a
+SHARED	:= librdi.so
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
 ASFLAGS := -felf
 
 .PHONY: headers_dir $(HEADERS) clean
 
-all: $(STATIC)
+all: $(STATIC) $(SHARED)
 
 headers_dir:
 	@ echo " MKDIR	" $(BUILDDIR)/inc/rdi
-	@ mkdir -p $(BUILDDIR)/inc/rdi	
+	@ mkdir -p $(BUILDDIR)/inc/rdi
 
 $(HEADERS): headers_dir
 	@ echo " CP	" $(SUBDIR)/$@ "->" $(BUILDDIR)/inc
@@ -23,6 +24,12 @@ $(STATIC): $(HEADERS) $(SOURCES)
 	@ $(AR) $(ARFLAGS) $(STATIC) $(SOURCES)
 	@ echo " CP	" $(SUBDIR)/$(STATIC) "->" $(BUILDDIR)/lib
 	@ cp $(STATIC) $(BUILDDIR)/lib
+
+$(SHARED): $(HEADERS) $(SOURCES)
+	@ echo " LD	" $(SUBDIR)/$(SHARED)
+	@ $(LD) $(LDFLAGS) -shared $(SOURCES) -o $(SHARED)
+	@ echo " CP	" $(SUBDIR)/$(SHARED) "->" $(BUILDDIR)/lib
+	@ cp $(SHARED) $(BUILDDIR)/lib
 
 %.o: %.s
 	@ echo " AS	" $(SUBDIR)/$<

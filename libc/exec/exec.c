@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * Copyright (C) 2011 Jaagup Repan <jrepan at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
@@ -43,7 +43,8 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 	}
 
 	/* build list for linker */
-	list = malloc(sizeof(struct dl_list));
+	list = malloc(sizeof(struct dl_list) * 1);
+
 	list[0].type = DL_EXEC;
 	list[0].base = image;
 	list[0].size = size;

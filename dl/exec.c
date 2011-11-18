@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,6 +26,7 @@ static void _elf_load_phdr(struct elf32_ehdr *file, struct elf32_phdr *phdr) {
 	file_base = (void*) file;
 
 	switch (phdr->p_type) {
+	case PT_DYNAMIC:
 	case PT_LOAD:
 		/* load segment */
 	
@@ -35,21 +36,30 @@ static void _elf_load_phdr(struct elf32_ehdr *file, struct elf32_phdr *phdr) {
 		/* get pointer to destination */
 		dst = (void*) phdr->p_vaddr;
 
-		/* allocate memory */
-		dl_page_anon(dst, phdr->p_memsz, PROT_READ | PROT_WRITE);
+		if (phdr->p_flags & PF_W) {
+			/* is a writable data segment */
+		
+			/* allocate memory */
+			dl_page_anon(dst, phdr->p_memsz, PROT_READ | PROT_WRITE);
 
-		/* copy data */
-		dl_memcpy(dst, seg_base, phdr->p_filesz);
+			/* copy data */
+			dl_memcpy(dst, seg_base, phdr->p_filesz);
 
-		/* clear remaining space */
-		dl_memclr(&dst[phdr->p_filesz], phdr->p_memsz - phdr->p_filesz);
+			/* clear rest of segment */
+			dl_memclr(&dst[phdr->p_filesz], phdr->p_memsz - phdr->p_filesz);
+		}
+		else {
+			/* is a read-only data/code segment */
+
+			/* move memory */
+			dl_page_self(seg_base, dst, phdr->p_filesz);
+		}
 
 		/* set proper permissions */
 		prot = 0;
 		if (phdr->p_flags & PF_R) prot |= PROT_READ;
 		if (phdr->p_flags & PF_W) prot |= PROT_WRITE;
 		if (phdr->p_flags & PF_X) prot |= PROT_EXEC;
-
 		dl_page_prot(dst, phdr->p_memsz, prot);
 		
 		break;

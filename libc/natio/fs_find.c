@@ -64,6 +64,9 @@ static rp_t __fs_find(const char *path, int linkmax, int link) {
 		while (*path != '/' && *path) path++;
 	}
 	else {
+		if (!fs_root) {
+			return RP_NULL;
+		}
 		root = fs_root;
 	}
 

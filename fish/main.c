@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include <rho/layout.h>
 #include <rho/natio.h>
 #include <rho/exec.h>
 #include <rho/proc.h>
@@ -134,6 +135,15 @@ int main() {
 	char buffer[100];
 	size_t i, n;
 	char *argv[100];
+
+	struct slt32_entry *entry = (void*) SLT_BASE;
+	struct slt32_header *hdr  = (void*) SLT_BASE;
+
+	for (i = hdr->first; i; i = entry[i].next) {
+		printf("%d: %p %p %p %s\n", 
+			entry[i].type, entry[i].base, entry[i].base + entry[i].size, entry[i].hash, entry[i].name);
+	}
+	printf("\n");
 
 	setenv("PWD", "/");
 

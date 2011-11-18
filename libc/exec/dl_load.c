@@ -65,14 +65,14 @@ int dl_load(void *dl_image) {
 			if (phdr[i].p_flags & PF_X) prot |= PROT_EXEC;
 
 			/* allocate memory */
-			page_anon((void*) dst, phdr[i].p_filesz, prot | PROT_WRITE);
+			page_anon((void*) dst, phdr[i].p_memsz, prot | PROT_WRITE);
 
 			/* copy segment */
 			memcpy((void*) dst, (void*) src, phdr[i].p_filesz);
 			memclr((void*) (dst + phdr[i].p_filesz), phdr[i].p_memsz - phdr[i].p_filesz);
 
 			/* fix flags */
-			page_prot((void*) dst, phdr[i].p_filesz, prot);
+			page_prot((void*) dst, phdr[i].p_memsz, prot);
 		}
 	}
 

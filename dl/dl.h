@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -31,11 +31,24 @@
  * Rhombus, all execution is done completely from userspace: the dynamic linker
  * is a key part of this execution cycle. The C library will set up a certain
  * environment for the linker, then load it at address 0xC0000000.
- *
- * Currently, the dynamic linker (despite its name) can only handle statically
- * linked executables. It will ignore any shared libraries given, and choke on
- * any relocations.
  */
+
+struct dl_object {
+	char soname[16];
+	uint32_t base;
+	uint32_t size;
+	uint32_t *got;
+	struct elf32_sym *symtab;
+	struct elf32_dyn *dyntab;
+};
+
+extern struct dl_object dl_object_tab[256];
+
+int      dl__init(void);
+int      dl__get (const char *soname);
+int      dl__load(void *image, uint32_t size, const char *soname);
+int      dl__fix (int object, int index, uint32_t value);
+uint32_t dl__sym (int object, const char *symbol);
 
 /* dynamic linker string functions ******************************************/
 
@@ -65,5 +78,7 @@ int dl_elf_load (struct elf32_ehdr *file);
 int dl_elf_check(struct elf32_ehdr *file);
 
 int dl_enter(void *entry_ptr);
+
+int dl_plt_resolve(uint32_t *got, uint32_t index);
 
 #endif/*DL_H*/

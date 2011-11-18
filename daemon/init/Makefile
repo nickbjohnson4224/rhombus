@@ -4,7 +4,7 @@ SOURCES += $(BUILDDIR)/lib/c0.o
 SUBDIR	:= daemon/init
 TARGET	:= init
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -static -lrdi -lc
+LDFLAGS += -lrdi -lc
 ASFLAGS := -felf
 
 all: $(TARGET)

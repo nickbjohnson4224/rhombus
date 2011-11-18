@@ -25,7 +25,9 @@ int dl_entry(struct dl_list *list, size_t count) {
 	size_t size;
 	void  *entry;
 	size_t i;
-	
+
+	dl__init();
+
 	/* check for null list */
 	if (list == NULL) {
 		return 1;
@@ -59,12 +61,10 @@ int dl_entry(struct dl_list *list, size_t count) {
 		/* not aligned, copy */
 		dl_page_anon(exec, size, PROT_READ | PROT_WRITE);
 		dl_memcpy(exec, exec_entry->base, size);
-		dl_page_prot(exec, size, PROT_READ);
 	}
 	else {
 		/* aligned, use paging */
 		dl_page_self(exec_entry->base, exec, size);
-		dl_page_prot(exec, size, PROT_READ);
 	}
 
 	/*** POINT OF NO RETURN ***/

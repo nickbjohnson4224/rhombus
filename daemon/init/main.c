@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include <rho/layout.h>
 #include <rho/natio.h>
 #include <rho/proc.h>
 #include <rho/exec.h>

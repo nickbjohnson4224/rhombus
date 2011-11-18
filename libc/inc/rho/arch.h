@@ -37,6 +37,8 @@
 	#define DL_BASE		0xC0000000
 	#define DL_HEAP		0xC2000000
 
+	#define SLT_BASE	0xEFFF0000
+
 	#define TMP_DST     0xFF000000
 	#define TMP_SRC     0xFF010000
 	#define TMP_MAP     0xFF800000

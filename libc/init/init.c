@@ -19,6 +19,7 @@
 #include <signal.h>
 #include <stdio.h>
 
+#include <rho/layout.h>
 #include <rho/natio.h>
 #include <rho/pack.h>
 #include <rho/arch.h>
@@ -111,6 +112,10 @@ void _init() {
 	size_t length;
 	int argc;
 
+	/* set up SLT if needed */
+	sltreset();
+
+	/* register message handler */
 	_when((uintptr_t) _on_event);
 
 	/* unpack environment variables */

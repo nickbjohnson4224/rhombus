@@ -367,7 +367,10 @@ char *__format(const char **_fmt, va_list *argp) {
 		type = TYPE_DOUBLE;
 		flags |= FLAG_EXP;
 		break;
-	case 'X': case 'p': flags |= FLAG_UPPER;
+	case 'p': 
+		flags |= FLAG_ZERO;
+		width = 8;
+	case 'X': flags |= FLAG_UPPER;
 	case 'x':
 		type = TYPE_UINT;
 		flags |= FLAG_HEX;

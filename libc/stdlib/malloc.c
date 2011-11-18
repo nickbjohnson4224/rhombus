@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include <rho/layout.h>
 #include <rho/mutex.h>
 #include <rho/page.h>
 #include <rho/proc.h>
@@ -220,6 +221,7 @@ static uintptr_t ilog2(uintptr_t n) {
 
 static struct heap_node *_find_node(uintptr_t index) {
 	struct heap_node *node;
+	struct slt32_entry *slt;
 
 	if (index >= 32) {
 		return NULL;
@@ -228,8 +230,16 @@ static struct heap_node *_find_node(uintptr_t index) {
 	if (!_tree) {
 		// construct new tree (only happens on first allocation)
 		_tree = new_heap_node();
-		_tree->base = HEAP_START;
-		_tree->size = ilog2(HEAP_END - HEAP_START);
+
+		if (sltget_name("usr.heap0")) {
+			sltfree_name("usr.heap0");
+		}
+		sltalloc("usr.heap0", 0x20000000);
+		slt = sltget_name("usr.heap0");
+
+		_tree->base = slt->base + slt->aslr_off;
+		_tree->size = ilog2(0x20000000);
+		
 		_tree->status = 0;
 
 		_add_to_list(_tree);

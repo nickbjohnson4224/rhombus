@@ -37,7 +37,9 @@ int ropen(int fd, rp_t rp, int mode) {
 
 	if (!rp) {
 		// simply clear file descriptor
-		return fd_set(fd, RP_NULL, 0);
+		fd_set(fd, RP_NULL, 0);
+
+		return fd;
 	}
 
 	if (fd < 0) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,6 +16,7 @@
 
 #include <string.h>
 #include <space.h>
+#include <debug.h>
 #include <cpu.h>
 
 /****************************************************************************
@@ -72,6 +73,8 @@ space_t space_clone() {
 		}
 	}
 
+	cpu_flush_tlb_full();
+
 	return dest;
 }
 
@@ -80,18 +83,10 @@ static void segment_clone(frame_t *extbl, frame_t *exmap, uintptr_t seg) {
 	uintptr_t i;
 
 	exmap[seg / SEGSZ] = frame_new() | PF_PRES | PF_USER | PF_RW;
-	memclr(&extbl[seg / PAGESZ], PAGESZ);
 
 	for (i = seg / PAGESZ; i < (seg + SEGSZ) / PAGESZ; i++) {
-		if (ctbl[i] & PF_PRES) {
-			if (ctbl[i] & PF_LINK) {
-				extbl[i] = ctbl[i];
-				cpu_flush_tlb_full();
-			}
-			else {
-				extbl[i] = frame_copy(ctbl[i]);
-			}
-		}
+		extbl[i] = (ctbl[i] & PF_PRES) ?
+			(ctbl[i] & PF_LINK) ? ctbl[i] : frame_copy(ctbl[i]) : 0;
 	}
 }
 

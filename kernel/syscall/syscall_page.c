@@ -109,7 +109,7 @@ struct thread *syscall_page(struct thread *image) {
 	}
 
 	/* check bounds of region */
-	if (address >= KSPACE || address + (count * PAGESZ) >= KSPACE) {
+	if (address >= KSPACE || address + (count * PAGESZ) > KSPACE) {
 		image->eax = 1;
 		return image;
 	}
