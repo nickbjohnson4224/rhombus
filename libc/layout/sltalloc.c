@@ -48,6 +48,7 @@ void *sltalloc(const char *name, size_t size) {
 			strlcpy(slt[t].name, name, 28);
 
 			slt_hdr->count++;
+			base = slt[t].base + slt[t].aslr_off;
 			break;
 		}
 		i = slt[i].next;

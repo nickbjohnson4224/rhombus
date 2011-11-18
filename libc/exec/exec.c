@@ -21,11 +21,11 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include <rho/layout.h>
 #include <rho/natio.h>
 #include <rho/arch.h>
 #include <rho/exec.h>
 #include <rho/page.h>
-#include <rho/pack.h>
 
 /****************************************************************************
  * execiv
@@ -34,8 +34,11 @@
  */
 
 int execiv(uint8_t *image, size_t size, char const **argv) {
+	extern char **environ;
 	struct dl_list *list;
-	char *argv_pack;
+	rp_t *fdtab_pack;
+	char *pack;
+	void *pack_region;
 
 	if (!image) {
 		errno = ENOENT;
@@ -51,23 +54,31 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 	list[0].name[0] = '\0';
 
 	/* save standard streams and filesystem root */
-	fdsave(0, fd_rp(0));
-	fdsave(1, fd_rp(1));
-	fdsave(2, fd_rp(2));
-	fdsave(3, fs_root);
+	pack_region = sltalloc("libc.fdtab", sizeof(rp_t) * 4);
+	page_anon(pack_region, sizeof(rp_t) * 4, PROT_READ | PROT_WRITE);
+	fdtab_pack = (void*) pack_region;
+	fdtab_pack[0] = fd_rp(0);
+	fdtab_pack[1] = fd_rp(1);
+	fdtab_pack[2] = fd_rp(2);
+	fdtab_pack[3] = fs_root;
 
 	/* save argument list */
 	if (argv) {
-		argv_pack = packarg(argv);
-		__pack_add(PACK_KEY_ARG, argv_pack, msize(argv_pack));
-		free(argv_pack);
+		pack = packarg(argv);
+		pack_region = sltalloc("libc.argv", msize(pack));
+		page_anon(pack_region, msize(pack), PROT_READ | PROT_WRITE);
+		memcpy(pack_region, pack, msize(pack));
+		free(pack);
 	}
 
 	/* save environment variables */
-	__saveenv();
-
-	/* persist saved stuff */
-	__pack_save();
+	pack = packenv((const char **) environ);
+	if (pack) {
+		pack_region = sltalloc("libc.env", msize(pack));
+		page_anon(pack_region, msize(pack), PROT_READ | PROT_WRITE);
+		memcpy(pack_region, pack, msize(pack));
+		free(pack);
+	}
 
 	if (dl_exec(list, 1)) {
 		errno = ENOEXEC;

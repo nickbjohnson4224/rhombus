@@ -31,7 +31,7 @@ void sltreset(void) {
 
 	page_anon(slt, 0x10000, PROT_READ | PROT_WRITE);
 	
-	slt_hdr->count = 4;
+	slt_hdr->count = 5;
 	slt_hdr->mutex = 1;
 	slt_hdr->first = 3;
 
@@ -51,7 +51,7 @@ void sltreset(void) {
 	slt[2].size     = ESPACE - SSPACE;
 	slt[2].flags    = 0;
 	slt[2].sub_type = 0;
-	slt[2].next     = 1;
+	slt[2].next     = 5;
 	strlcpy(slt[2].name, "sys.stack", 28);
 	slt[2].hash = slthash(slt[2].name);
 
@@ -75,9 +75,19 @@ void sltreset(void) {
 	strlcpy(slt[4].name, "sys.exec", 28);
 	slt[4].hash = slthash(slt[4].name);
 
+	// region 5 - dynamic linker
+	slt[5].type     = SLT_TYPE_OBJECT;
+	slt[5].base     = ESPACE;
+	slt[5].size     = 0x100000;
+	slt[5].flags    = 0;
+	slt[5].sub_type = SLT_OBJ_ELF_SO;
+	slt[5].next     = 1;
+	strlcpy(slt[5].name, "sys.dl.so", 28);
+	slt[5].hash     = slthash(slt[5].name);
+
 	// free regions
-	slt_hdr->free = 5;
-	for (i = 5; i < 1024; i++) {
+	slt_hdr->free = 6;
+	for (i = 6; i < 1024; i++) {
 		slt[i].type = SLT_TYPE_NULL;
 		slt[i].next = i + 1;
 	}

@@ -231,11 +231,16 @@ static struct heap_node *_find_node(uintptr_t index) {
 		// construct new tree (only happens on first allocation)
 		_tree = new_heap_node();
 
-		if (sltget_name("usr.heap0")) {
-			sltfree_name("usr.heap0");
+		if (sltget_name("libc.heap")) {
+			sltfree_name("libc.heap");
 		}
-		sltalloc("usr.heap0", 0x20000000);
-		slt = sltget_name("usr.heap0");
+		sltalloc("libc.heap", 0x20000000);
+		slt = sltget_name("libc.heap");
+
+		slt->flags    = SLT_FLAG_CLEANUP;
+		slt->type     = SLT_TYPE_ALLOC;
+		slt->sub_type = SLT_ALLOC_LIBC;
+		slt->aslr_off = 0x1000;
 
 		_tree->base = slt->base + slt->aslr_off;
 		_tree->size = ilog2(0x20000000);

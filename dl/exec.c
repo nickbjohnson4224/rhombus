@@ -14,6 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <string.h>
+#include <rho/page.h>
+
 #include "dl.h"
 
 static void _elf_load_phdr(struct elf32_ehdr *file, struct elf32_phdr *phdr) {
@@ -40,19 +43,19 @@ static void _elf_load_phdr(struct elf32_ehdr *file, struct elf32_phdr *phdr) {
 			/* is a writable data segment */
 		
 			/* allocate memory */
-			dl_page_anon(dst, phdr->p_memsz, PROT_READ | PROT_WRITE);
+			page_anon(dst, phdr->p_memsz, PROT_READ | PROT_WRITE);
 
 			/* copy data */
-			dl_memcpy(dst, seg_base, phdr->p_filesz);
+			memcpy(dst, seg_base, phdr->p_filesz);
 
 			/* clear rest of segment */
-			dl_memclr(&dst[phdr->p_filesz], phdr->p_memsz - phdr->p_filesz);
+			memclr(&dst[phdr->p_filesz], phdr->p_memsz - phdr->p_filesz);
 		}
 		else {
 			/* is a read-only data/code segment */
 
 			/* move memory */
-			dl_page_self(seg_base, dst, phdr->p_filesz);
+			page_self(seg_base, dst, phdr->p_filesz);
 		}
 
 		/* set proper permissions */
@@ -60,7 +63,7 @@ static void _elf_load_phdr(struct elf32_ehdr *file, struct elf32_phdr *phdr) {
 		if (phdr->p_flags & PF_R) prot |= PROT_READ;
 		if (phdr->p_flags & PF_W) prot |= PROT_WRITE;
 		if (phdr->p_flags & PF_X) prot |= PROT_EXEC;
-		dl_page_prot(dst, phdr->p_memsz, prot);
+		page_prot(dst, phdr->p_memsz, prot);
 		
 		break;
 	default:

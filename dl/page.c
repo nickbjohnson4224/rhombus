@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,9 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "dl.h"
+#include <rho/page.h>
 
-int dl_page(void *addr, size_t length, int prot, int source, uintptr_t off) {
+int page(void *addr, size_t length, int prot, int source, uintptr_t off) {
 
 	if ((uintptr_t) addr % PAGESZ) {
 		length += (uintptr_t) addr % PAGESZ;
@@ -30,21 +30,21 @@ int dl_page(void *addr, size_t length, int prot, int source, uintptr_t off) {
 		length = length / PAGESZ;
 	}
 
-	return _dl_page(addr, length, prot, source, off);
+	return _page((uintptr_t) addr, length, prot, source, off);
 }
 
-int dl_page_free(void *addr, size_t length) {
-	return dl_page(addr, length, 0, PAGE_NULL, 0);
+int page_free(void *addr, size_t length) {
+	return page(addr, length, 0, PAGE_NULL, 0);
 }
 
-int dl_page_anon(void *addr, size_t length, int prot) {
-	return dl_page(addr, length, prot, PAGE_ANON, 0);
+int page_anon(void *addr, size_t length, int prot) {
+	return page(addr, length, prot, PAGE_ANON, 0);
 }
 
-int dl_page_self(void *addrs, void *addrd, size_t length) {
-	return dl_page(addrd, length, 0, PAGE_SELF, (uintptr_t) addrs);
+int page_self(void *addrs, void *addrd, size_t length) {
+	return page(addrd, length, 0, PAGE_SELF, (uintptr_t) addrs);
 }
 
-int dl_page_prot(void *addr, size_t length, int prot) {
-	return dl_page(addr, length, prot, PAGE_PROT, 0);
+int page_prot(void *addr, size_t length, int prot) {
+	return page(addr, length, prot, PAGE_PROT, 0);
 }

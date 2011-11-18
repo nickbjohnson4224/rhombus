@@ -14,6 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <string.h>
+
+#include <rho/page.h>
+
 #include "dl.h"
 
 struct dl_object dl_object_tab[256];
@@ -37,7 +41,7 @@ int dl__get(const char *soname) {
 			return -1;
 		}
 
-		if (!dl_strcmp(dl_object_tab[i].soname, soname)) {
+		if (!strcmp(dl_object_tab[i].soname, soname)) {
 			return i;
 		}
 	}
@@ -63,7 +67,7 @@ int dl__load(void *image, uint32_t size, const char *soname) {
 	}
 
 	dl_elf_load(image);
-	dl_page_free(image, size);
+	page_free(image, size);
 
 	return 0;
 }

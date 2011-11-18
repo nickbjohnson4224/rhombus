@@ -158,9 +158,13 @@ int main() {
 			continue;
 		}
 
-		argv[0] = strdup("pipe");
-
-		fish_do(n, argv);
+		if (!strcmp(argv[1], "cd")) {
+			fish_cd(n - 1, &argv[1]);
+		}
+		else {
+			argv[0] = strdup("pipe");
+			fish_do(n, argv);
+		}
 	}
 
 	return 0;

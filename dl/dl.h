@@ -50,28 +50,6 @@ int      dl__load(void *image, uint32_t size, const char *soname);
 int      dl__fix (int object, int index, uint32_t value);
 uint32_t dl__sym (int object, const char *symbol);
 
-/* dynamic linker string functions ******************************************/
-
-void  *dl_memcpy(void *dst, const void *src, size_t size);
-void  *dl_memclr(void *ptr, size_t size);
-char  *dl_strcpy(char *dst, const char *src);
-int    dl_strcmp(const char *s1, const char *s2);
-size_t dl_strlen(const char *str);
-
-/* dynamic linker memory management *****************************************/
-
-int dl_page(void *addr, size_t length, int prot, int source, uintptr_t off);
-
-int dl_page_free(void *addr, size_t length);
-int dl_page_anon(void *addr, size_t length, int prot);
-int dl_page_self(void *addrs, void *addrd, size_t length);
-int dl_page_prot(void *addr, size_t length, int prot);
-
-/* dynamic linker syscalls **************************************************/
-
-int  _dl_page(void *addr, size_t count, uint32_t perm, int source, uintptr_t offset);
-void _dl_when(uintptr_t entry);
-
 /* ELF loading **************************************************************/
 
 int dl_elf_load (struct elf32_ehdr *file);

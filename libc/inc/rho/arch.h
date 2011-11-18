@@ -34,9 +34,6 @@
 	#define EXEC_START	0x00100000
 	#define BOOT_IMAGE	0x40000000
 
-	#define DL_BASE		0xC0000000
-	#define DL_HEAP		0xC2000000
-
 	#define SLT_BASE	0xEFFF0000
 
 	#define TMP_DST     0xFF000000

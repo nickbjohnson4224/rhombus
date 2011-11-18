@@ -1,4 +1,4 @@
-; Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+; Copyright (C) 2010-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
 ; 
 ; Permission to use, copy, modify, and distribute this software for any
 ; purpose with or without fee is hereby granted, provided that the above
@@ -16,10 +16,10 @@
 
 section .text
 
-global _dl_page:function _dl_page.end-_dl_page
-global _dl_when:function _dl_when.end-_dl_when
+global _page:function _page.end-_page
+global _when:function _when.end-_when
 
-_dl_page:
+_page:
 	push ebx
 	push edi
 	push esi
@@ -37,7 +37,7 @@ _dl_page:
 	ret
 .end:
 
-_dl_when:
+_when:
 	mov ecx, [esp+4]
 	int 0x42
 	ret

@@ -21,8 +21,8 @@
 
 #include <rho/layout.h>
 #include <rho/natio.h>
-#include <rho/pack.h>
 #include <rho/arch.h>
+#include <rho/page.h>
 #include <rho/proc.h>
 #include <rho/exec.h>
 #include <rho/abi.h>
@@ -108,8 +108,9 @@ static char *__type(rp_t source, int argc, char **argv) {
 void _init() {
 	extern int main(int argc, char **argv);
 	extern void _on_event(void);
-	char **argv, *pack;
-	size_t length;
+	struct slt32_entry *slt;
+	rp_t *fdtab_pack;
+	char **argv;
 	int argc;
 
 	/* set up SLT if needed */
@@ -119,13 +120,33 @@ void _init() {
 	_when((uintptr_t) _on_event);
 
 	/* unpack environment variables */
-	__loadenv();
+	if (sltget_name("libc.env")) {
+		slt = sltget_name("libc.env");
+		loadenv((void*) (slt->base + slt->aslr_off));
+		page_free((void*) slt->base, slt->size);
+		sltfree_name("libc.env");
+	}
+	else {
+		loadenv(NULL);
+	}
 
 	/* setup standard streams */
-	stdin   = fdopen(ropen(0, fdload(0), 0), "r");
-	stdout  = fdopen(ropen(1, fdload(1), 0), "w");
-	stderr  = fdopen(ropen(2, fdload(2), 0), "w");
-	fs_root = fdload(3);
+	if (sltget_name("libc.fdtab")) {
+		slt = sltget_name("libc.fdtab");
+		fdtab_pack = (void*) (slt->base + slt->aslr_off);
+		stdin   = fdopen(ropen(0, fdtab_pack[0], 0), "r");
+		stdout  = fdopen(ropen(1, fdtab_pack[1], 0), "w");
+		stderr  = fdopen(ropen(2, fdtab_pack[2], 0), "w");
+		fs_root = fdtab_pack[3];
+		page_free((void*) slt->base, slt->size);
+		sltfree_name("libc.fdtab");
+	}
+	else {
+		stdin   = fdopen(ropen(0, 0, 0), "r");
+		stdout  = fdopen(ropen(1, 0, 0), "w");
+		stderr  = fdopen(ropen(2, 0, 0), "w");
+		fs_root = RP_NULL;
+	}
 
 	setvbuf(stdout, NULL, _IOLBF, BUFSIZ);
 	setvbuf(stderr, NULL, _IOLBF, BUFSIZ);
@@ -151,19 +172,21 @@ void _init() {
 	rcall_hook("name", __name);
 
 	/* unpack argument list */
-	pack = __pack_load(PACK_KEY_ARG, &length);
-	if (pack) {
-		argv = loadarg(pack);
+	if (sltget_name("libc.argv")) {
+		slt = sltget_name("libc.argv");
+		argv = loadarg((void*) (slt->base + slt->aslr_off));
+
 		for (argc = 0; argv[argc]; argc++);
 		setname(path_name(argv[0]));
+		
+		page_free((void*) slt->base, slt->size);
+		sltfree_name("libc.argv");
 	}
 	else {
 		argv = NULL;
 		argc = 0;
 		setname("unknown");
 	}
-
-	__pack_reset();
 
 	/* execute main program */
 	exit(main(argc, argv));

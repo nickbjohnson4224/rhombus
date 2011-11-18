@@ -42,9 +42,6 @@ int exec   (const char *path);
 char  *packarg(const char **argv);
 char **loadarg(char *pack);
 
-uint64_t fdload(int id);
-int      fdsave(int id, uint64_t fd);
-
 /* dynamic linker interface *************************************************/
 
 #define DL_EXEC	0

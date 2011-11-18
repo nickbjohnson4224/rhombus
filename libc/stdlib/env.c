@@ -21,7 +21,6 @@
 #include <errno.h>
 
 #include <rho/mutex.h>
-#include <rho/pack.h>
 
 /****************************************************************************
  * environ
@@ -191,39 +190,5 @@ void loadenv(const char *pack) {
 		top_val = &top_key[strlen(top_key) + 1];
 		setenv(top_key, top_val);
 		top_key = &top_val[strlen(top_val) + 1];
-	}
-}
-
-/****************************************************************************
- * __saveenv
- *
- * Packs all environment variables into exec-persistent space.
- */
-
-void __saveenv(void) {
-	char *pack;
-
-	pack = packenv((const char **) environ);
-
-	if (pack) {
-		__pack_add(PACK_KEY_ENV, pack, msize(pack));
-		free(pack);
-	}
-}
-
-/****************************************************************************
- * __loadenv
- *
- * Loads all environment variables from exec-persistent space.
- */
-
-void __loadenv(void) {
-	char *pack;
-	size_t length;
-
-	pack = __pack_load(PACK_KEY_ENV, &length);
-
-	if (pack) {
-		loadenv(pack);
 	}
 }

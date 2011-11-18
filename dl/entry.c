@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,13 +14,19 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <rho/arch.h>
 #include <stdint.h>
+#include <string.h>
+
+#include <rho/layout.h>
+#include <rho/arch.h>
+
 #include "dl.h"
 
 __attribute__ ((section (".head")))
 int dl_entry(struct dl_list *list, size_t count) {
 	struct dl_list *exec_entry;
+	struct slt32_header *slt_hdr;
+	struct slt32_entry *slt;
 	struct elf32_ehdr *exec;
 	size_t size;
 	void  *entry;
@@ -55,32 +61,40 @@ int dl_entry(struct dl_list *list, size_t count) {
 
 	/* copy executable high */
 	size = exec_entry->size;
-	exec = (void*) DL_HEAP;
+	exec = (void*) sltalloc("dl.exec", size);
 
 	if ((uintptr_t) exec_entry->base % PAGESZ) {
 		/* not aligned, copy */
-		dl_page_anon(exec, size, PROT_READ | PROT_WRITE);
-		dl_memcpy(exec, exec_entry->base, size);
+		page_anon(exec, size, PROT_READ | PROT_WRITE);
+		memcpy(exec, exec_entry->base, size);
 	}
 	else {
 		/* aligned, use paging */
-		dl_page_self(exec_entry->base, exec, size);
+		page_self(exec_entry->base, exec, size);
 	}
 
 	/*** POINT OF NO RETURN ***/
 
 	/* clear lower memory */
-	dl_page_free(NULL, 0x80000000);
+	slt     = (void*) SLT_BASE;
+	slt_hdr = (void*) SLT_BASE;
+
+	for (i = slt_hdr->first; i; i = slt[i].next) {
+		if (slt[i].flags & SLT_FLAG_CLEANUP) {
+			page_free((void*) slt[i].base, slt[i].size);
+		}
+	}
 
 	/* load executable */
 	dl_elf_load(exec);
 	entry = (void*) exec->e_entry;
 
 	/* remove executable image */
-	dl_page_free(exec, size);
+	page_free(exec, size);
+	sltfree_name("dl.exec");
 
 	/* reset event handler */
-	_dl_when(0);
+	_when(0);
 
 	/* enter executable */
 	dl_enter(entry);
