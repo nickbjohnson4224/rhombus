@@ -89,6 +89,7 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	uintptr_t boot_image_size;
 	void *boot_image;
 	struct elf32_ehdr *init_image;
+	struct elf32_ehdr *dl_image;
 
 	/* initialize debugging output */
 	debug_init();
@@ -131,17 +132,23 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	process_switch(init);
 
 	/* get multiboot module information */
-	if (mboot->mods_count < 2) {
-		if (mboot->mods_count < 1) {
-			debug_panic("no init or boot modules found");
+	if (mboot->mods_count < 3) {
+		if (mboot->mods_count < 2) {
+			if (mboot->mods_count < 1) {
+				debug_panic("no boot or init or dl modules found");
+			}
+			else {
+				debug_panic("no boot or dl modules found");
+			}
 		}
 		else {
-			debug_panic("no boot module found");
+			debug_panic("no dl module found");
 		}
 	}
 	module     = (void*) (mboot->mods_addr + KSPACE);
 	init_image = (void*) (module[0].mod_start + KSPACE);
 	boot_image = (void*) (module[1].mod_start + KSPACE);
+	dl_image   = (void*) (module[2].mod_start + KSPACE);
 	boot_image_size = module[1].mod_end - module[1].mod_start;
 
 	/* move boot image to BOOT_IMAGE in userspace */
@@ -156,6 +163,12 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	init->thread[0]->ds      = 0x23;
 	init->thread[0]->cs      = 0x1B;
 	init->thread[0]->eflags  = cpu_get_eflags() | 0x3200; /* IF, IOPL = 3 */
+
+	/* load dl */
+	if (elf_check_file(dl_image)) {
+		debug_panic("dl.so is not a valid ELF executable");
+	}
+	elf_load_file(dl_image);
 
 	/* execute init */
 	if (elf_check_file(init_image)) {

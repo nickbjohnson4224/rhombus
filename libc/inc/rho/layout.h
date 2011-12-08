@@ -36,7 +36,7 @@ struct slt32_entry {
 
 	uint32_t sub_type;
 	uint32_t dyn_base;
-	uint32_t aslr_off;
+	uint32_t reserved0;
 	uint32_t next;
 
 	uint32_t hash;

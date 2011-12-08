@@ -6,3 +6,4 @@ root 	(cd)
 kernel	/kernel
 module	/init
 module	/boot.tar
+module  /dl.so

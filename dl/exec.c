@@ -14,84 +14,67 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdint.h>
 #include <string.h>
-#include <rho/page.h>
+
+#include <rho/layout.h>
+#include <rho/arch.h>
+#include <rho/exec.h>
 
 #include "dl.h"
 
-static void _elf_load_phdr(struct elf32_ehdr *file, struct elf32_phdr *phdr) {
-	uint8_t *file_base;
-	uint8_t *seg_base;
-	uint8_t *dst;
-	int prot;
-	
-	/* get pointer to start of file */
-	file_base = (void*) file;
-
-	switch (phdr->p_type) {
-	case PT_DYNAMIC:
-	case PT_LOAD:
-		/* load segment */
-	
-		/* get pointer to start of segment */
-		seg_base = &file_base[phdr->p_offset];
-		
-		/* get pointer to destination */
-		dst = (void*) phdr->p_vaddr;
-
-		if (phdr->p_flags & PF_W) {
-			/* is a writable data segment */
-		
-			/* allocate memory */
-			page_anon(dst, phdr->p_memsz, PROT_READ | PROT_WRITE);
-
-			/* copy data */
-			memcpy(dst, seg_base, phdr->p_filesz);
-
-			/* clear rest of segment */
-			memclr(&dst[phdr->p_filesz], phdr->p_memsz - phdr->p_filesz);
-		}
-		else {
-			/* is a read-only data/code segment */
-
-			/* move memory */
-			page_self(seg_base, dst, phdr->p_filesz);
-		}
-
-		/* set proper permissions */
-		prot = 0;
-		if (phdr->p_flags & PF_R) prot |= PROT_READ;
-		if (phdr->p_flags & PF_W) prot |= PROT_WRITE;
-		if (phdr->p_flags & PF_X) prot |= PROT_EXEC;
-		page_prot(dst, phdr->p_memsz, prot);
-		
-		break;
-	default:
-		break;
-	}
-}
-
-int dl_elf_load(struct elf32_ehdr *file) {
-	struct elf32_phdr *phdr_tbl;
+int _exec(void *image, size_t size, int flags) {
+	struct slt32_header *slt_hdr;
+	struct slt32_entry *slt;
+	struct elf32_ehdr *exec;
+	void  *entry;
 	size_t i;
 
-	phdr_tbl = (void*) ((uintptr_t) file + file->e_phoff);
-
-	for (i = 0; i < file->e_phnum; i++) {
-		_elf_load_phdr(file, &phdr_tbl[i]);
+	/* check executable */
+	if (dl_elf_check(image)) {
+		return 1;
 	}
 
-	return 0;
-}
+	/*** POINT OF MAYBE RETURNING IF YOU, y'know, have to... ***/
 
-int dl_elf_check(struct elf32_ehdr *file) {
+	/* copy executable high */
+	exec = (void*) sltalloc("dl.img.exec", size);
 
-	if (file->e_ident[EI_MAG0] != ELFMAG0) return 1;
-	if (file->e_ident[EI_MAG1] != ELFMAG1) return 1;
-	if (file->e_ident[EI_MAG2] != ELFMAG2) return 1;
-	if (file->e_ident[EI_MAG3] != ELFMAG3) return 1;
-	if (file->e_machine        != EM_386)  return 1;
-	if (file->e_version        != 1)       return 1;
+	if ((uintptr_t) image % PAGESZ) {
+		/* not aligned, copy */
+		page_anon(exec, size, PROT_READ | PROT_WRITE);
+		memcpy(exec, image, size);
+	}
+	else {
+		/* aligned, use paging */
+		page_self(image, exec, size);
+	}
 
-	return 0;
+	/*** POINT OF NO RETURN ***/
+
+	/* clear lower memory */
+	slt     = (void*) SLT_BASE;
+	slt_hdr = (void*) SLT_BASE;
+
+	for (i = slt_hdr->first; i; i = slt[i].next) {
+		if (slt[i].flags & SLT_FLAG_CLEANUP) {
+			page_free((void*) slt[i].base, slt[i].size);
+		}
+	}
+
+	/* load executable */
+	dl_elf_load(exec, 0);
+	entry = (void*) exec->e_entry;
+
+	/* remove executable image */
+	page_free(exec, size);
+	sltfree_name("dl.img.exec");
+
+	/* reset event handler */
+	_when(0);
+
+	/* enter executable */
+	dl_enter(entry);
+
+	return 1;
 }

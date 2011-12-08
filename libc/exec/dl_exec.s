@@ -1,4 +1,4 @@
-; Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+; Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
 ; 
 ; Permission to use, copy, modify, and distribute this software for any
 ; purpose with or without fee is hereby granted, provided that the above
@@ -21,7 +21,7 @@ global dl_exec:function dl_exec.end-dl_exec
 dl_exec:
 	
 	; get entry point
-	mov ecx, 0xC0000000
+	mov ecx, [0xC0000000]
 
 	; copy arguments
 	mov eax, [esp+4]

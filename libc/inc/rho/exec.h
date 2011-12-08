@@ -44,18 +44,33 @@ char **loadarg(char *pack);
 
 /* dynamic linker interface *************************************************/
 
-#define DL_EXEC	0
-#define DL_LIB	1
-#define DL_SAVE	2
+struct dl {
+	void *(*load) (void *image, size_t size, int flags);
+	int   (*exec) (void *image, size_t size, int flags);
 
-struct dl_list {
-	int    type;
-	void  *base;
-	size_t size;
-	char   name[24];
+	int   (*init) (void *object);
+	int   (*fini) (void *object);
+
+	void *(*sym)  (void *object, const char *symbol);
+    void  (*uload)(void *object);
+	int   (*error)(void);
+
+	void *(*slt_alloc)    (const char *name, size_t size);
+	void  (*slt_free_addr)(void *addr);
+	void  (*slt_free_name)(const char *name);
+	struct slt32_entry *(*slt_get_addr)(void *addr);
+	struct slt32_entry *(*slt_get_name)(const char *name);
 };
 
-int dl_load(void *dl_image);
-int dl_exec(struct dl_list *list, size_t count);
+extern struct dl *dl;
+
+void *dlopen (const char *filename, int flags);
+void *dlload (void *image, size_t size, int flags);
+void  dlinit (void *object);
+void  dlfini (void *object);
+void  dlexec (void *object, char const **argv, char const **envp);
+void  dlclose(void *object);
+void *dlsym  (void *object, const char *symbol);
+char *dlerror(void);
 
 #endif/*__RLIBC_EXEC_H*/

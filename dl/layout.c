@@ -24,7 +24,7 @@ void *sltalloc(const char *name, size_t size) {
 	uint32_t base;
 	uint32_t i, t;
 
-	size = SLT_ASLR_PADDING + ((size & 0xFFF) ? (size & ~0xFFF) + 0x1000 : size);
+	size = (size & 0xFFF) ? (size & ~0xFFF) + 0x1000 : size;
 	base = 0;
 
 	// XXX - lock
@@ -39,12 +39,11 @@ void *sltalloc(const char *name, size_t size) {
 			slt[t].next = slt[i].next;
 			slt[i].next = t;
 			
-			slt[t].base     = base;
-			slt[t].size     = size;
-			slt[t].type     = SLT_TYPE_NULL;
-			slt[t].flags    = 0;
-			slt[t].aslr_off = 0x1000; // XXX - implement ASLR
-			slt[t].hash     = slthash(name);
+			slt[t].base  = base;
+			slt[t].size  = size;
+			slt[t].type  = SLT_TYPE_NULL;
+			slt[t].flags = 0;
+			slt[t].hash  = slthash(name);
 			strlcpy(slt[t].name, name, 28);
 
 			slt_hdr->count++;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,25 +16,21 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <space.h>
-#include <elf.h>
 
-/*****************************************************************************
- * elf_check_file
- *
- * Verifies an ELF header. Returns zero if the header is acceptable for 
- * loading, nonzero otherwise.
- */
+#include <rho/layout.h>
+#include <rho/arch.h>
+#include <rho/exec.h>
 
-int elf_check_file(struct elf32_ehdr *file) {
-	
-	if (file->e_ident[EI_MAG0] != ELFMAG0) return 1;
-	if (file->e_ident[EI_MAG1] != ELFMAG1) return 1;
-	if (file->e_ident[EI_MAG2] != ELFMAG2) return 1;
-	if (file->e_ident[EI_MAG3] != ELFMAG3) return 1;
-/*	if (file->e_type           != ET_EXEC) return 1; */
-	if (file->e_machine        != EM_386 ) return 1;
-	if (file->e_version        != 1)       return 1;
+#include "dl.h"
 
-	return 0;
-}
+__attribute__ ((section (".head")))
+struct dl __interface__ = {
+	.load = _load,
+	.exec = _exec,
+
+	.slt_alloc     = sltalloc,
+	.slt_free_addr = sltfree_addr,
+	.slt_free_name = sltfree_name,
+	.slt_get_addr  = sltget_addr,
+	.slt_get_name  = sltget_name,
+};

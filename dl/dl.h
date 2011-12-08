@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef DL_H
-#define DL_H
+#ifndef __DL_H
+#define __DL_H
 
 #include <stdint.h>
 
@@ -33,30 +33,23 @@
  * environment for the linker, then load it at address 0xC0000000.
  */
 
-struct dl_object {
-	char soname[16];
-	uint32_t base;
-	uint32_t size;
-	uint32_t *got;
-	struct elf32_sym *symtab;
-	struct elf32_dyn *dyntab;
-};
+void *_load(void *image, size_t size, int flags);
+int   _exec(void *image, size_t size, int flags);
 
-extern struct dl_object dl_object_tab[256];
+int   _init(void *object);
+int   _fini(void *object);
 
-int      dl__init(void);
-int      dl__get (const char *soname);
-int      dl__load(void *image, uint32_t size, const char *soname);
-int      dl__fix (int object, int index, uint32_t value);
-uint32_t dl__sym (int object, const char *symbol);
+void *_sym  (void *object);
+void  _uload(void *object);
+int   _error(void);
 
 /* ELF loading **************************************************************/
 
-int dl_elf_load (struct elf32_ehdr *file);
+int dl_elf_load (struct elf32_ehdr *file, uintptr_t base);
 int dl_elf_check(struct elf32_ehdr *file);
 
 int dl_enter(void *entry_ptr);
 
 int dl_plt_resolve(uint32_t *got, uint32_t index);
 
-#endif/*DL_H*/
+#endif/*__DL_H*/

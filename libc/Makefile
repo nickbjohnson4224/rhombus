@@ -36,7 +36,7 @@ $(CNAUGHT): $(patsubst %.o,%.s,$(CNAUGHT))
 
 $(SHARED): $(HEADERS) $(SOURCES) $(CNAUGHT)
 	@ echo " LD	" $(SUBDIR)/$(SHARED)
-	@ $(LD) $(LDFLAGS) -shared $(SOURCES) -o $(SHARED)
+	@ $(LD) $(LDFLAGS) -shared $(SOURCES) -o $(SHARED) -soname libc.so.1
 	@ echo " CP	" $(SUBDIR)/$(SHARED) "->" $(BUILDDIR)/lib
 	@ cp $(SHARED) $(BUILDDIR)/lib
 

@@ -14,60 +14,25 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <string.h>
-
 #include <rho/layout.h>
-#include <rho/mutex.h>
+#include <rho/exec.h>
 
-struct slt32_entry *sltget_name(const char *name) {
-	struct slt32_entry  *slt = (void*) SLT_BASE;
-	struct slt32_header *slt_hdr = (void*) SLT_BASE;
-	uint32_t hash = slthash(name);
-	uint32_t i;
+void *sltalloc(const char *name, size_t size) {
+	return dl->slt_alloc(name, size);
+}
 
-	// XXX - lock
+void sltfree_addr(void *addr) {
+	dl->slt_free_addr(addr);
+}
 
-	i = slt_hdr->first;
-
-	while (i) {
-		if (slt[i].hash == hash && !strcmp(slt[i].name, name)) {
-			break;
-		}
-		i = slt[i].next;
-	}
-
-	// XXX - unlock
-
-	if (i) {
-		return &slt[i];
-	}
-	else {
-		return NULL;
-	}
+void sltfree_name(const char *name) {
+	dl->slt_free_name(name);
 }
 
 struct slt32_entry *sltget_addr(void *addr) {
-	struct slt32_entry  *slt = (void*) SLT_BASE;
-	struct slt32_header *slt_hdr = (void*) SLT_BASE;
-	uint32_t i;
+	return dl->slt_get_addr(addr);
+}
 
-	// XXX - lock
-
-	i = slt_hdr->first;
-
-	while (i) {
-		if (slt[i].base <= (uint32_t) addr && (uint32_t) addr < slt[i].base + slt[i].size) {
-			break;
-		}
-		i = slt[i].next;
-	}
-
-	// XXX - unlock
-
-	if (i) {
-		return &slt[i];
-	}
-	else {
-		return NULL;
-	}
+struct slt32_entry *sltget_name(const char *name) {
+	return dl->slt_get_name(name);
 }

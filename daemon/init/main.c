@@ -59,10 +59,6 @@ int main() {
 	/* Boot Image */
 	boot_image = tar_parse((void*) BOOT_IMAGE);
 
-	/* Dynamic Linker */
-	file = tar_find(boot_image, "lib/dl.so");
-	dl_load(file->start);
-
 	/* Initial Root Filesystem / Device Filesystem / System Filesystem (tmpfs) */
 	argv[0] = "tmpfs";
 	argv[1] = NULL;

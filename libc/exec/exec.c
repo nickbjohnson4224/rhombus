@@ -35,7 +35,6 @@
 
 int execiv(uint8_t *image, size_t size, char const **argv) {
 	extern char **environ;
-	struct dl_list *list;
 	rp_t *fdtab_pack;
 	char *pack;
 	void *pack_region;
@@ -44,14 +43,6 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 		errno = ENOENT;
 		return -1;
 	}
-
-	/* build list for linker */
-	list = malloc(sizeof(struct dl_list) * 1);
-
-	list[0].type = DL_EXEC;
-	list[0].base = image;
-	list[0].size = size;
-	list[0].name[0] = '\0';
 
 	/* save standard streams and filesystem root */
 	pack_region = sltalloc("libc.fdtab", sizeof(rp_t) * 4);
@@ -80,7 +71,8 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 		free(pack);
 	}
 
-	if (dl_exec(list, 1)) {
+	
+	if (dl->exec(image, size, 0)) {
 		errno = ENOEXEC;
 		return -1;
 	}
@@ -89,20 +81,14 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 }
 
 /****************************************************************************
- * execi
+ * exec*
  *
- * Execute with executable pointer.
+ * Execute.
  */
 
 int execi(uint8_t *image, size_t size) {
 	return execiv(image, size, NULL);
 }
-
-/****************************************************************************
- * execv
- *
- * Execute with executable path and argument list.
- */
 
 int execv(const char *path, char const **argv) {
 	void *image;
