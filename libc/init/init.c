@@ -122,7 +122,7 @@ void _init() {
 	/* unpack environment variables */
 	if (sltget_name("libc.env")) {
 		slt = sltget_name("libc.env");
-		loadenv((void*) (slt->base + slt->aslr_off));
+		loadenv((void*) slt->base);
 		page_free((void*) slt->base, slt->size);
 		sltfree_name("libc.env");
 	}
@@ -133,7 +133,7 @@ void _init() {
 	/* setup standard streams */
 	if (sltget_name("libc.fdtab")) {
 		slt = sltget_name("libc.fdtab");
-		fdtab_pack = (void*) (slt->base + slt->aslr_off);
+		fdtab_pack = (void*) slt->base;
 		stdin   = fdopen(ropen(0, fdtab_pack[0], 0), "r");
 		stdout  = fdopen(ropen(1, fdtab_pack[1], 0), "w");
 		stderr  = fdopen(ropen(2, fdtab_pack[2], 0), "w");
@@ -174,7 +174,7 @@ void _init() {
 	/* unpack argument list */
 	if (sltget_name("libc.argv")) {
 		slt = sltget_name("libc.argv");
-		argv = loadarg((void*) (slt->base + slt->aslr_off));
+		argv = loadarg((void*) slt->base);
 
 		for (argc = 0; argv[argc]; argc++);
 		setname(path_name(argv[0]));

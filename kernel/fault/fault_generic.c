@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -34,6 +34,13 @@ struct thread *fault_generic(struct thread *image) {
 		debug_printf("EIP:%x NUM:%d ERR:%x\n", image->eip, image->num, image->err);
 		debug_panic("unknown exception");
 	}
+
+	/* fault */
+	debug_printf("%d: generic exception %d, ip = %x, errcode %x\n", 
+		image->proc->pid, image->num, image->err, image->eip);
+	debug_printf("user stack: %x - %x\n", image->stack, image->stack + SEGSZ);
+	debug_printf("user stack dump: (ebp = %x)\n", image->ebp);
+	debug_dumpi((void*) image->useresp, 30);
 
 	process_freeze(image->proc);
 	return thread_send(image, image->proc->pid, PORT_ILL, NULL);

@@ -64,6 +64,7 @@ image:	all
 	@ - mkdir boot/etc
 	@ cp bin/* boot/bin
 	@ cp lib/dl.so boot/lib
+	@ cp lib/libc.so boot/lib
 	@ cp sbin/* boot/sbin
 #	@ cp -r etc/* boot/etc
 

@@ -240,9 +240,8 @@ static struct heap_node *_find_node(uintptr_t index) {
 		slt->flags    = SLT_FLAG_CLEANUP;
 		slt->type     = SLT_TYPE_ALLOC;
 		slt->sub_type = SLT_ALLOC_LIBC;
-		slt->aslr_off = 0x1000;
 
-		_tree->base = slt->base + slt->aslr_off;
+		_tree->base = slt->base;
 		_tree->size = ilog2(0x20000000);
 		
 		_tree->status = 0;

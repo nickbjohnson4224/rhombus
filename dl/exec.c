@@ -31,7 +31,7 @@ int _exec(void *image, size_t size, int flags) {
 	size_t i;
 
 	/* check executable */
-	if (dl_elf_check(image)) {
+	if (elf_check(image)) {
 		return 1;
 	}
 
@@ -63,7 +63,7 @@ int _exec(void *image, size_t size, int flags) {
 	}
 
 	/* load executable */
-	dl_elf_load(exec, 0);
+	elf_load(exec, 0);
 	entry = (void*) exec->e_entry;
 
 	/* remove executable image */

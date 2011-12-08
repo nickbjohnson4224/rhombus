@@ -46,7 +46,7 @@ struct elf32_ehdr {
 	uint16_t e_shentsize;
 	uint16_t e_shnum;
 	uint16_t e_shstrndx;
-};
+} __attribute__((packed));
 
 #define ET_NONE		0
 #define ET_REL		1
@@ -73,7 +73,7 @@ struct elf32_shdr {
 	uint32_t sh_info;
 	uint32_t sh_addralign;
 	uint32_t sh_entsize;
-};
+} __attribute__((packed));
 
 #define SHT_NULL		0
 #define SHT_PROGBITS	1
@@ -97,7 +97,7 @@ struct elf32_sym {
 	uint8_t  st_info;
 	uint8_t  st_other;
 	uint16_t st_shndx;
-};
+} __attribute__((packed));
 
 #define STB_LOCAL	0
 #define STB_GLOBAL	1
@@ -118,13 +118,13 @@ struct elf32_sym {
 struct elf32_rel {
 	uint32_t r_offset;
 	uint32_t r_info;
-};
+} __attribute__((packed));
 
 struct elf32_rela {
 	uint32_t r_offset;
 	uint32_t r_info;
 	int32_t  r_addend;
-};
+} __attribute__((packed));
 
 #define R_386_NONE		0
 #define R_386_32		1
@@ -152,7 +152,7 @@ struct elf32_phdr {
 	uint32_t p_memsz;
 	uint32_t p_flags;
 	uint32_t p_align;
-};
+} __attribute__((packed));
 
 #define PT_NULL 	0
 #define PT_LOAD 	1
@@ -171,7 +171,7 @@ struct elf32_phdr {
 struct elf32_dyn {
 	int32_t  tag;
 	uint32_t val;
-};
+} __attribute__((packed));
 
 #define DT_NULL		0
 #define DT_NEEDED	1

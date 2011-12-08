@@ -14,25 +14,19 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-
 #include <rho/layout.h>
-#include <rho/arch.h>
 #include <rho/exec.h>
 
 #include "dl.h"
 
-__attribute__ ((section (".head")))
-struct dl __interface__ = {
-	.load = _load,
-	.exec = _exec,
+void *_sym(void *object, const char *symbol) {
+	const struct elf32_sym *sym;
 
-	.sym = _sym,
+	sym = elf_get_symbol(object, symbol);
 
-	.slt_alloc     = sltalloc,
-	.slt_free_addr = sltfree_addr,
-	.slt_free_name = sltfree_name,
-	.slt_get_addr  = sltget_addr,
-	.slt_get_name  = sltget_name,
-};
+	if (!sym) {
+		return NULL;
+	}
+
+	return (void*) (sym->st_value + (uintptr_t) object);
+}

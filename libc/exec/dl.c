@@ -92,6 +92,8 @@ void  dlexec (void *object, char const **argv, char const **envp);
 
 void  dlclose(void *object);
 
-void *dlsym  (void *object, const char *symbol);
+void *dlsym(void *object, const char *symbol) {
+	return dl->sym(object, symbol);
+}
 
 char *dlerror(void);

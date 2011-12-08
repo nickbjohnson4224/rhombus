@@ -25,11 +25,23 @@
 
 void *_load(void *image, size_t size, int flags) {
 	struct elf32_ehdr *elf32 = image;
-	
+	const char *soname;
+	char regname[28];
+	void *object;
+
 	/* check executable */
-	if (dl_elf_check(elf32)) {
+	if (!elf32 || elf_check(elf32)) {
 		return NULL;
 	}
 
-	return NULL;
+	soname = elf_get_soname(elf32);
+	strlcpy(regname, "dl.so:", 28);
+	strlcat(regname, soname, 28);
+
+	object = sltalloc(regname, elf_get_vsize(elf32));
+
+	elf_load(elf32, (uintptr_t) object);
+	elf_relocate_all(object);
+
+	return (void*) object;
 }

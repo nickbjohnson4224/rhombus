@@ -39,17 +39,26 @@ int   _exec(void *image, size_t size, int flags);
 int   _init(void *object);
 int   _fini(void *object);
 
-void *_sym  (void *object);
+void *_sym  (void *object, const char *symbol);
 void  _uload(void *object);
 int   _error(void);
 
-/* ELF loading **************************************************************/
+/* Executable and Linking Format ********************************************/
 
-int dl_elf_load (struct elf32_ehdr *file, uintptr_t base);
-int dl_elf_check(struct elf32_ehdr *file);
+int elf_load (const struct elf32_ehdr *image, uintptr_t base);
+int elf_check(const struct elf32_ehdr *image);
+
+const struct elf32_phdr *elf_get_segtab  (const struct elf32_ehdr *image);
+uintptr_t                elf_get_vsize   (const struct elf32_ehdr *image);
+const struct elf32_dyn  *elf_get_dynamic (const struct elf32_ehdr *image);
+const struct elf32_sym  *elf_get_symtab  (const struct elf32_ehdr *image);
+const char              *elf_get_strtab  (const struct elf32_ehdr *image);
+const char              *elf_get_soname  (const struct elf32_ehdr *image);
+const struct elf32_sym  *elf_get_symbol  (const struct elf32_ehdr *image, const char *symbol);
+const struct elf32_rel  *elf_get_reltab  (const struct elf32_ehdr *image, size_t *count);
+
+void                     elf_relocate_all(struct elf32_ehdr *image);
 
 int dl_enter(void *entry_ptr);
-
-int dl_plt_resolve(uint32_t *got, uint32_t index);
 
 #endif/*__DL_H*/
