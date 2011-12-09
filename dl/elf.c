@@ -127,6 +127,27 @@ const struct elf32_dyn *elf_get_dynamic(const struct elf32_ehdr *image) {
 	return NULL;
 }
 
+uint32_t elf_get_dynval(const struct elf32_dyn *dynamic, int32_t type, uint32_t index) {
+	size_t i;
+
+	if (!dynamic) {
+		/* no DYNAMIC segment */
+		return 0;
+	}
+
+	for (i = 0; dynamic[i].tag != DT_NULL; i++) {
+		if (dynamic[i].tag == type) {
+			index--;
+			if (!index) {
+				return dynamic[i].val;
+			}
+		}
+	}
+	
+	/* not found */
+	return 0;
+}
+
 const struct elf32_sym *elf_get_symtab(const struct elf32_ehdr *image) {
 	const struct elf32_dyn *dynamic;
 	size_t i;
@@ -194,41 +215,94 @@ const struct elf32_rel *elf_get_reltab(const struct elf32_ehdr *image, size_t *c
 	return reltab;
 }
 
+const struct elf32_rel *elf_get_pltrel(const struct elf32_ehdr *image, size_t *count) {
+	const struct elf32_dyn *dynamic;
+	const struct elf32_rel *reltab = NULL;
+	size_t i;
+
+	dynamic = elf_get_dynamic(image);
+
+	if (!dynamic) {
+		/* no DYNAMIC segment */
+		return NULL;
+	}
+
+	for (i = 0; dynamic[i].tag != DT_NULL; i++) {
+		if (dynamic[i].tag == DT_JMPREL) {
+			reltab = (const struct elf32_rel*) ((uintptr_t) image + dynamic[i].val);
+		}
+		if (dynamic[i].tag == DT_PLTRELSZ) {
+			*count = dynamic[i].val / 8;
+		}
+	}
+
+	/* no JMPREL in DYNAMIC segment */
+	return reltab;
+}
+
+void elf_relocate(struct elf32_ehdr *image, const struct elf32_rel *rel, 
+		const char *strtab, const struct elf32_sym *symtab) {
+
+	const struct elf32_sym *symbol = NULL;
+	uint32_t *image32 = (void*) image;
+	uint32_t symbol_value;
+
+	/* compute symbol value if needed */
+	switch (ELF32_R_TYPE(rel->r_info)) {
+	case R_386_GLOB_DAT:
+	case R_386_JMP_SLOT:
+	case R_386_32:
+		symbol = &symtab[ELF32_R_SYM(rel->r_info)];
+		
+		if (symbol->st_value) {
+			symbol_value = symbol->st_value + (uint32_t) image;
+		}
+		else {
+			symbol_value = elf_resolve(image, &strtab[symbol->st_name]);
+		}
+		break;
+	default:
+		symbol_value = 0;
+	}
+
+	/* perform relocation */
+	switch (ELF32_R_TYPE(rel->r_info)) {
+	case R_386_NONE:
+		break;
+	case R_386_RELATIVE:
+		image32[rel->r_offset / 4] += (uint32_t) image;
+		break;
+	case R_386_GLOB_DAT:
+	case R_386_JMP_SLOT:
+		image32[rel->r_offset / 4] = symbol_value;
+		break;
+	case R_386_32:
+		image32[rel->r_offset / 4] += symbol_value;
+		break;
+	default:
+		break;
+	}
+}	
+
 void elf_relocate_all(struct elf32_ehdr *image) {
 	const struct elf32_rel *reltab = NULL;
 	const struct elf32_sym *symtab = NULL;
-	uint32_t *image32 = (void*) image;
+	const char *strtab;
 	size_t count = 0;
 	size_t i;
 
-	reltab = elf_get_reltab(image, &count);
 	symtab = elf_get_symtab(image);
-
-	if (!reltab || !symtab) {
-		return;
-	}
+	strtab = elf_get_strtab(image);
 	
+	reltab = elf_get_reltab(image, &count);
 	for (i = 0; i < count; i++) {
-		switch (ELF32_R_TYPE(reltab[i].r_info)) {
-		case R_386_NONE:
-			break;
-		case R_386_RELATIVE:
-			image32[reltab[i].r_offset / 4] += (uint32_t) image;
-			break;
-		case R_386_GLOB_DAT:
-		case R_386_JMP_SLOT:
-			image32[reltab[i].r_offset / 4] 
-				= symtab[ELF32_R_SYM(reltab[i].r_info)].st_value 
-					+ (uint32_t) image;
-			break;
-		case R_386_32:
-			image32[reltab[i].r_offset / 4] 
-				+= symtab[ELF32_R_SYM(reltab[i].r_info)].st_value 
-					+ (uint32_t) image;
-			break;
-		default:
-			break;
-		}
+		elf_relocate(image, &reltab[i], strtab, symtab);
+	}
+
+	// TODO - do this lazily
+	reltab = elf_get_pltrel(image, &count);
+	for (i = 0; i < count; i++) {
+		elf_relocate(image, &reltab[i], strtab, symtab);
 	}
 }
 
@@ -255,24 +329,101 @@ const char *elf_get_soname(const struct elf32_ehdr *image) {
 	return NULL;
 }
 
-const struct elf32_sym *elf_get_symbol(const struct elf32_ehdr *image, const char *symbol) {
-	const struct elf32_sym *symtab;
+const uint32_t *elf_get_hash(const struct elf32_ehdr *image) {
+	const struct elf32_dyn *dynamic;
 	const char *strtab;
 	size_t i;
 
 	strtab = elf_get_strtab(image);
-	symtab = elf_get_symtab(image);
 
-	if (!strtab || !symtab) {
+	if (!strtab) {
 		return NULL;
 	}
 
-	// FIXME - determine length of table
-	for (i = 1;; i++) {
-		if (!strcmp(&strtab[symtab[i].st_name], symbol)) {
-			return &symtab[i];
+	dynamic = elf_get_dynamic(image);
+
+	for (i = 0; dynamic[i].tag != DT_NULL; i++) {
+		if (dynamic[i].tag == DT_HASH) {
+			return (const uint32_t*) ((uintptr_t) image + dynamic[i].val);
 		}
 	}
 
+	/* no hash table in DYNAMIC segment */
 	return NULL;
+}
+
+uint32_t elf_hash(const char *symbol) {
+	uint32_t h;
+	uint32_t g;
+
+	h = 0;
+	while (*symbol) {
+		h = (h << 4) + *symbol;
+
+		g = h & 0xF0000000;
+		if (g) h ^= g >> 24;
+		h &= ~g;
+
+		symbol++;
+	}
+
+	return h;
+}
+
+const struct elf32_sym *elf_get_symbol(const struct elf32_ehdr *image, const char *symbol) {
+	const struct elf32_sym *symtab;
+	const uint32_t *hashtab;
+	const uint32_t *bucket;
+	const uint32_t *chain;
+	const char *strtab;
+	uint32_t nbucket;
+	uint32_t nchain;
+	uint32_t hash;
+	uint32_t i;
+
+	strtab  = elf_get_strtab(image);
+	symtab  = elf_get_symtab(image);
+	hashtab = elf_get_hash  (image);
+
+	if (!strtab || !symtab || !hashtab) {
+		return NULL;
+	}
+
+	nbucket = hashtab[0];
+	nchain  = hashtab[1];
+	bucket = &hashtab[2];
+	chain  = &hashtab[2 + nbucket];
+
+	hash = elf_hash(symbol) % nbucket;
+	i = bucket[hash];
+	while (1) {
+
+		if (i == 0) {
+			return NULL;
+		}
+
+		if (!strcmp(&strtab[symtab[i].st_name], symbol)) {
+			return &symtab[i];
+		}
+
+		i = chain[i];
+	}
+
+	return NULL;
+}
+
+uint32_t elf_resolve_local(const struct elf32_ehdr *image, const char *symbol) {
+	const struct elf32_sym *syment;
+
+	syment = elf_get_symbol(image, symbol);
+	if (!syment) {
+		return 0;
+	}
+
+	return (syment->st_value + (uint32_t) image);
+}
+
+uint32_t elf_resolve(const struct elf32_ehdr *image, const char *symbol) {
+	// TODO - search the dependency graph
+	return elf_resolve_local(image, symbol);
 }

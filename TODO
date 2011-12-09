@@ -82,6 +82,15 @@ For 0.9 Alpha:
 	- start unistd.h as wrapper
 	- implement coreutils
 
+- ELF dynamic linking
+	+ address space layout
+	+ shared object relocation
+	+ shared object symbol lookup (basic)
+	- dynamic symbol resolution (PLT)
+	- dependency graph traversal
+	- dependency loading
+	- finishing touches
+
 For 1.0 Beta:
 
 - CLI improvements
@@ -127,6 +136,7 @@ For 1.1 Beta:
 - web browser (port Links, WebKit?)
 - multiprocessor support
 - ACPI driver
+- security improvements
 
 For later:
 

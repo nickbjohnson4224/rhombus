@@ -59,6 +59,9 @@ const struct elf32_rel  *elf_get_reltab  (const struct elf32_ehdr *image, size_t
 
 void                     elf_relocate_all(struct elf32_ehdr *image);
 
+uint32_t elf_resolve_local(const struct elf32_ehdr *image, const char *symbol);
+uint32_t elf_resolve      (const struct elf32_ehdr *image, const char *symbol);
+
 int dl_enter(void *entry_ptr);
 
 #endif/*__DL_H*/

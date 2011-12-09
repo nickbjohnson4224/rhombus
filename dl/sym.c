@@ -20,13 +20,5 @@
 #include "dl.h"
 
 void *_sym(void *object, const char *symbol) {
-	const struct elf32_sym *sym;
-
-	sym = elf_get_symbol(object, symbol);
-
-	if (!sym) {
-		return NULL;
-	}
-
-	return (void*) (sym->st_value + (uintptr_t) object);
+	return (void*) elf_resolve(object, symbol);
 }
