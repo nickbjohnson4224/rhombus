@@ -1,6 +1,6 @@
 BUILDDIR=$(PWD)
 
-LIB_DIRS  = libc dl librdi libtest ports/lua ports/freetype libtoolkit
+LIB_DIRS  = libc dl librdi ports/lua ports/freetype libtoolkit
 
 DRIVERS  := $(shell find driver -mindepth 1 -maxdepth 1)
 DAEMONS  := $(shell find daemon -mindepth 1 -maxdepth 1)

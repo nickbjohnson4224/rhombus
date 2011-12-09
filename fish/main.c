@@ -136,18 +136,10 @@ int main() {
 	size_t i, n;
 	char *argv[100];
 
-	uint32_t *object0, *object1;
-	const char *symbol = "baz";
+	uint32_t *object;
 
-	object0 = dlopen("/lib/libc.so", 0);
-	printf("libc.so:\t%p\n", object0);
-
-	object1 = dlopen("/lib/libtest.so", 0);
-	printf("libtest.so:\t%p\n", object1);
-
-	printf("libtest.so:__zab\t%p\n", dlsym(object1, "__zab"));
-
-	printf("%d\n", ((int (*)(int)) dlsym(object1, symbol))(7));
+	object = dlopen("/lib/libc.so", 0);
+	printf("libc.so:\t%p\n", object);
 
 	setenv("PWD", "/");
 

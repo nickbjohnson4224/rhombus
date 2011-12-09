@@ -78,6 +78,11 @@ uint32_t elfc_relocate(struct elf_cache *cache, const struct elf32_rel *rel) {
 
 void elfc_relocate_all(struct elf_cache *cache) {
 	size_t i;
+
+	/* only relocate dynamic objects */
+	if (!cache->dynamic) {
+		return;
+	}
 	
 	/* add special entries to GOT for PLT resolution */
 	((uint32_t*) cache->pltgot)[1] = (uint32_t) cache->image;
@@ -94,6 +99,26 @@ void elfc_relocate_all(struct elf_cache *cache) {
 	if (cache->jmprel) {
 		for (i = 0; i < cache->jmpreln; i++) {
 			((uint32_t*) cache->image)[cache->jmprel[i].r_offset / 4] += (uint32_t) cache->image;
+		}
+	}
+}
+
+void elfc_relocate_exec(struct elf_cache *cache) {
+	size_t i;
+
+	/* only relocate dynamic objects */
+	if (!cache->dynamic) {
+		return;
+	}
+
+	/* add special entries to GOT for PLT resolution */
+	((uint32_t*) cache->pltgot)[1] = (uint32_t) cache->image;
+	((uint32_t*) cache->pltgot)[2] = (uint32_t) __plt_resolve;
+
+	/* perform normal relocations (data) */
+	if (cache->reltab) {
+		for (i = 0; i < cache->reltabn; i++) {
+			elfc_relocate(cache, &cache->reltab[i]);
 		}
 	}
 }
@@ -282,7 +307,7 @@ uint32_t elfc_resolve(struct elf_cache *cache, const char *symbol) {
  */
 
 void elf_gencache(struct elf_cache *cache, const struct elf32_ehdr *image) {
-	uintptr_t base = (uintptr_t) image;
+	uint32_t base = (uint32_t) image;
 	size_t i;
 
 	cache->image = image;
@@ -292,14 +317,19 @@ void elf_gencache(struct elf_cache *cache, const struct elf32_ehdr *image) {
 
 	/* calulate image size */
 	for (i = 0; cache->segtab[i].p_type == PT_LOAD || cache->segtab[i].p_type == PT_DYNAMIC; i++);
-	cache->vsize = cache->segtab[i - 1].p_vaddr + cache->segtab[i - 1].p_memsz;
+	if (i) cache->vsize = cache->segtab[i - 1].p_vaddr + cache->segtab[i - 1].p_memsz;
 
 	/* get DYNAMIC segment */
+	cache->dynamic = NULL;
 	for (i = 0; cache->segtab[i].p_type != PT_NULL; i++) {
 		if (cache->segtab[i].p_type == PT_DYNAMIC) {
 			cache->dynamic = (const struct elf32_dyn*) (base + cache->segtab[i].p_offset);
 			break;
 		}
+	}
+
+	if (!cache->dynamic) {
+		return;
 	}
 
 	/* get various DYNAMIC values */

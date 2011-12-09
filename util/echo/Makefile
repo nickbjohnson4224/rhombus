@@ -4,7 +4,7 @@ SOURCES += $(BUILDDIR)/lib/c0.o
 SUBDIR	:= util/echo
 TARGET	:= echo
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -lc
+LDFLAGS += -lc -pie
 ASFLAGS := -felf
 
 all: $(TARGET)
