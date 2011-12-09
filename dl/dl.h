@@ -51,21 +51,31 @@ void    __plt_resolve(void);
 int elf_load (const struct elf32_ehdr *image, uintptr_t base);
 int elf_check(const struct elf32_ehdr *image);
 
-const struct elf32_phdr *elf_get_segtab  (const struct elf32_ehdr *image);
-uintptr_t                elf_get_vsize   (const struct elf32_ehdr *image);
-const struct elf32_dyn  *elf_get_dynamic (const struct elf32_ehdr *image);
-const struct elf32_sym  *elf_get_symtab  (const struct elf32_ehdr *image);
-const char              *elf_get_strtab  (const struct elf32_ehdr *image);
-const char              *elf_get_soname  (const struct elf32_ehdr *image);
-const struct elf32_sym  *elf_get_symbol  (const struct elf32_ehdr *image, const char *symbol);
-const struct elf32_rel  *elf_get_reltab  (const struct elf32_ehdr *image, size_t *count);
-const struct elf32_rel  *elf_get_pltrel  (const struct elf32_ehdr *image, size_t *count);
+/* ELF parse acceleration via caching */
 
-uint32_t elf_relocate(struct elf32_ehdr *image, const struct elf32_rel *rel, const char *strtab, const struct elf32_sym *symtab);
-void     elf_relocate_all(struct elf32_ehdr *image);
+struct elf_cache {
+	const struct elf32_ehdr *image;
+	uint32_t                 vsize;
 
-uint32_t elf_resolve_local(const struct elf32_ehdr *image, const char *symbol);
-uint32_t elf_resolve      (const struct elf32_ehdr *image, const char *symbol);
+	const struct elf32_phdr *segtab;
+	const struct elf32_dyn  *dynamic;
+	const struct elf32_sym  *symtab;
+	const struct elf32_rel  *reltab;
+	uint32_t                 reltabn;
+	const struct elf32_rel  *jmprel;
+	uint32_t                 jmpreln;
+	const char              *strtab;
+	const char              *soname;
+	const uint32_t          *hash;
+	const uint32_t          *pltgot;
+};
+
+void elf_gencache(struct elf_cache *cache, const struct elf32_ehdr *image);
+
+uint32_t elfc_resolve_local(struct elf_cache *cache, const char *symbol);
+uint32_t elfc_resolve      (struct elf_cache *cache, const char *symbol);
+uint32_t elfc_relocate     (struct elf_cache *cache, const struct elf32_rel *rel);
+void     elfc_relocate_all (struct elf_cache *cache);
 
 int dl_enter(void *entry_ptr);
 

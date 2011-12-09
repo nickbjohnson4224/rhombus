@@ -90,7 +90,7 @@ For 0.9 Alpha:
 	+ dependency graph traversal
 	- dependency loading
 	- finishing touches
-	- dl optimization
+	+ dl optimization
 
 - shared libraries
    (-) ELF dynamic linking

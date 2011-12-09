@@ -25,7 +25,7 @@
 
 void *_load(void *image, size_t size, int flags) {
 	struct elf32_ehdr *elf32 = image;
-	const char *soname;
+	struct elf_cache cache;
 	char regname[28];
 	void *object;
 
@@ -34,14 +34,15 @@ void *_load(void *image, size_t size, int flags) {
 		return NULL;
 	}
 
-	soname = elf_get_soname(elf32);
+	elf_gencache(&cache, elf32);
 	strlcpy(regname, "dl.so:", 28);
-	strlcat(regname, soname, 28);
+	strlcat(regname, cache.soname, 28);
 
-	object = sltalloc(regname, elf_get_vsize(elf32));
-
+	object = sltalloc(regname, cache.vsize);
 	elf_load(elf32, (uintptr_t) object);
-	elf_relocate_all(object);
+
+	elf_gencache(&cache, object);
+	elfc_relocate_all(&cache);
 
 	return (void*) object;
 }

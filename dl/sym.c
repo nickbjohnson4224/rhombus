@@ -20,5 +20,9 @@
 #include "dl.h"
 
 void *_sym(void *object, const char *symbol) {
-	return (void*) elf_resolve(object, symbol);
+	struct elf_cache cache;
+
+	elf_gencache(&cache, object);
+
+	return (void*) elfc_resolve(&cache, symbol);
 }
