@@ -10,9 +10,10 @@ int bar(int x) {
 }
 
 int bar1(int x) {
-	return bar(x);
+	return 1 + bar(x - 1);
 }
 
-void *baz(void) {
-	return malloc(foo);
+int __zab(int);
+int baz(int x) {
+	return __zab(x + 1);
 }

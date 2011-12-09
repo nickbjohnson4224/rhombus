@@ -84,13 +84,23 @@ int load_dl(void *dl_image) {
 	return 0;
 }
 
-void *dlopen(const char *filename, int flags);
+void *dlopen(const char *filename, int flags) {
+	void *image = load_exec(filename);
 
-void *dlload (void *image, size_t size, int flags);
+	if (!image) {
+		return NULL;
+	}
 
-void  dlexec (void *object, char const **argv, char const **envp);
+	return dlload(image, msize(image), flags);
+}
 
-void  dlclose(void *object);
+void *dlload(void *image, size_t size, int flags) {
+	return dl->load(image, size, flags);
+}
+
+void dlexec(void *object, char const **argv, char const **envp);
+
+void dlclose(void *object);
 
 void *dlsym(void *object, const char *symbol) {
 	return dl->sym(object, symbol);

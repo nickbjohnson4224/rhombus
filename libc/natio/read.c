@@ -65,15 +65,6 @@ size_t rp_read(uint64_t file, void *buf, size_t size, uint64_t offset) {
 	return size;
 }
 
-int __foo0 = 42;
-
-int __foo1(int x) __attribute__((noinline));
-int __foo1(int x) {
-	int y = __foo0;
-	__foo0 = x;
-	return y;
-}
-
-int __foo2(int x) {
-	return __foo1(1 + x);
+int __zab(int x) {
+	return x + 1;
 }

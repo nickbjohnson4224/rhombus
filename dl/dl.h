@@ -43,6 +43,9 @@ void *_sym  (void *object, const char *symbol);
 void  _uload(void *object);
 int   _error(void);
 
+uint32_t _plt_resolve(struct elf32_ehdr *image, uint32_t index);
+void    __plt_resolve(void);
+
 /* Executable and Linking Format ********************************************/
 
 int elf_load (const struct elf32_ehdr *image, uintptr_t base);
@@ -56,8 +59,10 @@ const char              *elf_get_strtab  (const struct elf32_ehdr *image);
 const char              *elf_get_soname  (const struct elf32_ehdr *image);
 const struct elf32_sym  *elf_get_symbol  (const struct elf32_ehdr *image, const char *symbol);
 const struct elf32_rel  *elf_get_reltab  (const struct elf32_ehdr *image, size_t *count);
+const struct elf32_rel  *elf_get_pltrel  (const struct elf32_ehdr *image, size_t *count);
 
-void                     elf_relocate_all(struct elf32_ehdr *image);
+uint32_t elf_relocate(struct elf32_ehdr *image, const struct elf32_rel *rel, const char *strtab, const struct elf32_sym *symtab);
+void     elf_relocate_all(struct elf32_ehdr *image);
 
 uint32_t elf_resolve_local(const struct elf32_ehdr *image, const char *symbol);
 uint32_t elf_resolve      (const struct elf32_ehdr *image, const char *symbol);

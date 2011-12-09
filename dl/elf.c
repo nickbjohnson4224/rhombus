@@ -190,6 +190,27 @@ const char *elf_get_strtab(const struct elf32_ehdr *image) {
 	return NULL;
 }
 
+const uint32_t *elf_get_gotplt(const struct elf32_ehdr *image) {
+	const struct elf32_dyn *dynamic;
+	size_t i;
+
+	dynamic = elf_get_dynamic(image);
+
+	if (!dynamic) {
+		/* no DYNAMIC segment */
+		return NULL;
+	}
+
+	for (i = 0; dynamic[i].tag != DT_NULL; i++) {
+		if (dynamic[i].tag == DT_PLTGOT) {
+			return (const uint32_t*) ((uintptr_t) image + dynamic[i].val);
+		}
+	}
+
+	/* no GOT in DYNAMIC segment */
+	return NULL;
+}
+
 const struct elf32_rel *elf_get_reltab(const struct elf32_ehdr *image, size_t *count) {
 	const struct elf32_dyn *dynamic;
 	const struct elf32_rel *reltab = NULL;
@@ -240,7 +261,7 @@ const struct elf32_rel *elf_get_pltrel(const struct elf32_ehdr *image, size_t *c
 	return reltab;
 }
 
-void elf_relocate(struct elf32_ehdr *image, const struct elf32_rel *rel, 
+uint32_t elf_relocate(struct elf32_ehdr *image, const struct elf32_rel *rel, 
 		const char *strtab, const struct elf32_sym *symtab) {
 
 	const struct elf32_sym *symbol = NULL;
@@ -282,27 +303,39 @@ void elf_relocate(struct elf32_ehdr *image, const struct elf32_rel *rel,
 	default:
 		break;
 	}
+
+	return symbol_value;
 }	
 
 void elf_relocate_all(struct elf32_ehdr *image) {
 	const struct elf32_rel *reltab = NULL;
 	const struct elf32_sym *symtab = NULL;
+	uint32_t *got = NULL;
+	uint32_t *image32;
 	const char *strtab;
 	size_t count = 0;
 	size_t i;
 
 	symtab = elf_get_symtab(image);
 	strtab = elf_get_strtab(image);
+	got = (uint32_t*) elf_get_gotplt(image);
 	
+	got[1] = (uint32_t) image;
+	got[2] = (uint32_t) __plt_resolve;
+
 	reltab = elf_get_reltab(image, &count);
-	for (i = 0; i < count; i++) {
-		elf_relocate(image, &reltab[i], strtab, symtab);
+	if (reltab) {
+		for (i = 0; i < count; i++) {
+			elf_relocate(image, &reltab[i], strtab, symtab);
+		}
 	}
 
-	// TODO - do this lazily
 	reltab = elf_get_pltrel(image, &count);
-	for (i = 0; i < count; i++) {
-		elf_relocate(image, &reltab[i], strtab, symtab);
+	if (reltab) {
+		image32 = (void*) image;
+		for (i = 0; i < count; i++) {
+			image32[reltab[i].r_offset / 4] += (uint32_t) image;
+		}
 	}
 }
 
@@ -364,7 +397,7 @@ const struct elf32_ehdr *elf_get_needed(const struct elf32_ehdr *image, size_t i
 
 	soname = &strtab[elf_get_dynval(dynamic, DT_NEEDED, i)];
 
-	if (!soname) {
+	if (soname == strtab) {
 		return NULL;
 	}
 
@@ -444,7 +477,7 @@ uint32_t elf_resolve_local(const struct elf32_ehdr *image, const char *symbol) {
 	const struct elf32_sym *syment;
 
 	syment = elf_get_symbol(image, symbol);
-	if (!syment) {
+	if (!syment || !syment->st_value) {
 		return 0;
 	}
 

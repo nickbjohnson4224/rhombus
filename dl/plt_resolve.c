@@ -16,7 +16,15 @@
 
 #include "dl.h"
 
-int dl_plt_resolve(uint32_t *got, uint32_t index) {
+uint32_t _plt_resolve(struct elf32_ehdr *image, uint32_t index) {
+	const struct elf32_rel *reltab = NULL;
+	const struct elf32_sym *symtab = NULL;
+	const char *strtab;
+	size_t count = 0;
 
-	return 0;
+	symtab = elf_get_symtab(image);
+	strtab = elf_get_strtab(image);
+	
+	reltab = elf_get_pltrel(image, &count);
+	return elf_relocate(image, &reltab[index], strtab, symtab);
 }

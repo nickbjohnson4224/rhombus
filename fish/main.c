@@ -136,20 +136,18 @@ int main() {
 	size_t i, n;
 	char *argv[100];
 
-	void *image;
 	uint32_t *object0, *object1;
-	const char *symbol = "strcpy";
+	const char *symbol = "baz";
 
-	image = load_exec("/lib/libc.so");
-	object0 = dl->load(image, msize(image), 0);
+	object0 = dlopen("/lib/libc.so", 0);
 	printf("libc.so:\t%p\n", object0);
 
-	image = load_exec("/lib/libtest.so");
-	object1 = dl->load(image, msize(image), 0);
+	object1 = dlopen("/lib/libtest.so", 0);
 	printf("libtest.so:\t%p\n", object1);
 
-	printf("libc.so:%s\t%p\n", symbol, dlsym(object0, symbol));
-	printf("libtest.so:%s\t%p\n", symbol, dlsym(object1, symbol));
+	printf("libtest.so:__zab\t%p\n", dlsym(object1, "__zab"));
+
+	printf("%d\n", ((int (*)(int)) dlsym(object1, symbol))(7));
 
 	setenv("PWD", "/");
 

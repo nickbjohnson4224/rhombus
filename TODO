@@ -86,11 +86,17 @@ For 0.9 Alpha:
 	+ address space layout
 	+ shared object relocation
 	+ shared object symbol lookup (basic)
-	- dynamic symbol resolution (PLT)
+	+ dynamic symbol resolution (PLT)
 	+ dependency graph traversal
 	- dependency loading
 	- finishing touches
 	- dl optimization
+
+- shared libraries
+   (-) ELF dynamic linking
+	- shared library daemon?
+	- mmap-ed file loading
+	- transition all binaries to dynamic
 
 For 1.0 Beta:
 
