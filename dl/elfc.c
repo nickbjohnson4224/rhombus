@@ -68,7 +68,13 @@ uint32_t elfc_relocate(struct elf_cache *cache, const struct elf32_rel *rel) {
 	}
 
 	return symbol_value;
-}	
+}
+
+/*****************************************************************************
+ * elfc_relocate_all
+ *
+ * Perform all initial relocations on the cached ELF image <cache>.
+ */
 
 void elfc_relocate_all(struct elf_cache *cache) {
 	size_t i;
@@ -92,7 +98,14 @@ void elfc_relocate_all(struct elf_cache *cache) {
 	}
 }
 
-const struct elf32_ehdr *elfc_get_needed(struct elf_cache *cache, size_t index) {
+/*****************************************************************************
+ * elfc_get_needed
+ *
+ * Return a pointer to the <index>th shared object requested to be loaded by
+ * the cached ELF image <cache>.
+ */
+
+static const struct elf32_ehdr *elfc_get_needed(struct elf_cache *cache, size_t index) {
 	const struct slt32_entry *slt;
 	const char *soname;
 	char objname[28];
@@ -123,7 +136,13 @@ const struct elf32_ehdr *elfc_get_needed(struct elf_cache *cache, size_t index) 
 	return (const void*) slt->base;
 }
 
-uint32_t elfc_hash(const char *symbol) {
+/*****************************************************************************
+ * elfc_hash
+ *
+ * String hashing function defined in the ELF documentation.
+ */
+
+static uint32_t elfc_hash(const char *symbol) {
 	uint32_t h;
 	uint32_t g;
 
@@ -141,7 +160,14 @@ uint32_t elfc_hash(const char *symbol) {
 	return h;
 }
 
-const struct elf32_sym *elfc_get_symbol(struct elf_cache *cache, const char *symbol) {
+/*****************************************************************************
+ * elfc_get_symbol
+ *
+ * Find the symbol table entry for the symbol <symbol> in the cached ELF 
+ * image <cache>. Returns NULL on failure.
+ */
+
+static const struct elf32_sym *elfc_get_symbol(struct elf_cache *cache, const char *symbol) {
 	const uint32_t *bucket;
 	const uint32_t *chain;
 	uint32_t nbucket;
@@ -163,6 +189,7 @@ const struct elf32_sym *elfc_get_symbol(struct elf_cache *cache, const char *sym
 		}
 
 		if (!strcmp(&cache->strtab[cache->symtab[i].st_name], symbol)) {
+			/* found symbol */
 			return &cache->symtab[i];
 		}
 
@@ -172,7 +199,14 @@ const struct elf32_sym *elfc_get_symbol(struct elf_cache *cache, const char *sym
 	return NULL;
 }
 
-uint32_t elfc_resolve_local(struct elf_cache *cache, const char *symbol) {
+/*****************************************************************************
+ * elf_resolve_local
+ *
+ * Find the active value of the symbol <symbol> in the cached ELF image
+ * <cache>. Returns 0 on failure.
+ */
+
+static uint32_t elfc_resolve_local(struct elf_cache *cache, const char *symbol) {
 	const struct elf32_sym *syment;
 
 	syment = elfc_get_symbol(cache, symbol);
@@ -183,7 +217,15 @@ uint32_t elfc_resolve_local(struct elf_cache *cache, const char *symbol) {
 	return (syment->st_value + (uint32_t) cache->image);
 }
 
-uint32_t elfc_resolve_rec(struct elf_cache *cache, const char *symbol, uint32_t depth) {
+/*****************************************************************************
+ * elfc_resolve_rec
+ *
+ * Part of elfc_resolve. Recursively performs a depth-first search on the
+ * dependency tree of <cache>, checking only leaf nodes for symbols. The 
+ * breadth-first search is implemented as an iterated depth-first search.
+ */
+
+static uint32_t elfc_resolve_rec(struct elf_cache *cache, const char *symbol, uint32_t depth) {
 	const struct elf32_ehdr *dep;
 	struct elf_cache dep_cache;
 	uint32_t value;
@@ -196,21 +238,25 @@ uint32_t elfc_resolve_rec(struct elf_cache *cache, const char *symbol, uint32_t 
 	i = 0;
 	while (1) {
 		dep = elfc_get_needed(cache, i);
-		if (!dep) {
-			return 0;
-		}
+		if (!dep) return 0;
 		
 		elf_gencache(&dep_cache, dep);
 		value = elfc_resolve_rec(&dep_cache, symbol, depth - 1);
-		if (value) {
-			return value;
-		}
+		if (value) return value;
 
 		i++;
 	}
 
 	return 0;
 }
+
+/*****************************************************************************
+ * elfc_resolve
+ *
+ * Find the active value of the symbol <symbol> by performing a breadth-first 
+ * search on the dependency tree of <cache>. If no matching symbol is found, 
+ * 0 is returned.
+ */
 
 uint32_t elfc_resolve(struct elf_cache *cache, const char *symbol) {
 	uint32_t value;
@@ -226,6 +272,14 @@ uint32_t elfc_resolve(struct elf_cache *cache, const char *symbol) {
 
 	return 0;
 }
+
+/*****************************************************************************
+ * elf_gencache
+ *
+ * Generate an ELF cached image from an ELF image, storing the cache data in
+ * <cache>. This cache data is used to make lookups of various information
+ * about the image much faster.
+ */
 
 void elf_gencache(struct elf_cache *cache, const struct elf32_ehdr *image) {
 	uintptr_t base = (uintptr_t) image;
