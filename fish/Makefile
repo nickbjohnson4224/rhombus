@@ -4,7 +4,7 @@ SOURCES += $(BUILDDIR)/lib/c0.o
 SUBDIR	:= fish
 TARGET	:= fish
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
-LDFLAGS += -lc
+LDFLAGS += -Bdynamic -lc
 ASFLAGS := -felf
 
 all: $(TARGET)

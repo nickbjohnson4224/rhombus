@@ -17,6 +17,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include <rho/layout.h>
 #include <rho/page.h>
@@ -86,9 +87,21 @@ int load_dl(void *dl_image) {
 
 void *dlopen(const char *filename, int flags) {
 	void *image = load_exec(filename);
+	const char *depname;
+	char *deppath;
+	size_t i;
 
 	if (!image) {
 		return NULL;
+	}
+
+	for (i = 0;; i++) {
+		depname = dldep(image, i, 0);
+		if (!depname) break;
+
+		deppath = strvcat("/lib/", depname, NULL);
+		dlopen(deppath, 0);
+		free(deppath);
 	}
 
 	return dlload(image, msize(image), flags);
@@ -101,6 +114,10 @@ void *dlload(void *image, size_t size, int flags) {
 void dlexec(void *object, char const **argv, char const **envp);
 
 void dlclose(void *object);
+
+const char *dldep(void *object, uint32_t i, int loaded) {
+	return (const char*) dl->dep(object, i, loaded);
+}
 
 void *dlsym(void *object, const char *symbol) {
 	return dl->sym(object, symbol);

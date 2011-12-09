@@ -6,6 +6,7 @@ STATIC	:= librdi.a
 SHARED	:= librdi.so
 CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
 ASFLAGS := -felf
+LDFLAGS += -Bdynamic -lc
 
 .PHONY: headers_dir $(HEADERS) clean
 
@@ -27,7 +28,7 @@ $(STATIC): $(HEADERS) $(SOURCES)
 
 $(SHARED): $(HEADERS) $(SOURCES)
 	@ echo " LD	" $(SUBDIR)/$(SHARED)
-	@ $(LD) $(LDFLAGS) -shared $(SOURCES) -o $(SHARED) -soname librdi.so.1
+	@ $(LD) $(LDFLAGS) -shared $(SOURCES) -o $(SHARED) -soname $(SHARED).1
 	@ echo " CP	" $(SUBDIR)/$(SHARED) "->" $(BUILDDIR)/lib
 	@ cp $(SHARED) $(BUILDDIR)/lib
 

@@ -28,6 +28,7 @@ struct dl __interface__ = {
 	.load = _load,
 	.exec = _exec,
 
+	.dep = _dep,
 	.sym = _sym,
 
 	.slt_alloc     = sltalloc,

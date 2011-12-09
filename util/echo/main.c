@@ -18,6 +18,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <rho/exec.h>
+
 int main(int argc, char **argv) {
 	size_t n;
 

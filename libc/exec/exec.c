@@ -35,9 +35,12 @@
 
 int execiv(uint8_t *image, size_t size, char const **argv) {
 	extern char **environ;
+	const char *depname;
 	rp_t *fdtab_pack;
 	char *pack;
+	char *deppath;
 	void *pack_region;
+	uint32_t i;
 
 	if (!image) {
 		errno = ENOENT;
@@ -69,6 +72,16 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 		page_anon(pack_region, msize(pack), PROT_READ | PROT_WRITE);
 		memcpy(pack_region, pack, msize(pack));
 		free(pack);
+	}
+
+	/* load all dependencies */
+	for (i = 0;; i++) {
+		depname = dldep(image, i, 0);
+		if (!depname) break;
+
+		deppath = strvcat("/lib/", depname, NULL);
+		dlopen(deppath, 0);
+		free(deppath);
 	}
 
 	if (dl->exec(image, size, 0)) {

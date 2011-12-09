@@ -39,6 +39,7 @@ int   _exec(void *image, size_t size, int flags);
 int   _init(void *object);
 int   _fini(void *object);
 
+char *_dep  (void *object, uint32_t index, int loaded);
 void *_sym  (void *object, const char *symbol);
 void  _uload(void *object);
 int   _error(void);
@@ -72,6 +73,7 @@ struct elf_cache {
 
 void elf_gencache     (struct elf_cache *cache, const struct elf32_ehdr *image);
 void elf_gencache_exec(struct elf_cache *cache, const struct elf32_ehdr *image);
+void elf_gencache_img (struct elf_cache *cache, const struct elf32_ehdr *image);
 
 uint32_t elfc_resolve          (struct elf_cache *cache, const char *symbol);
 uint32_t elfc_relocate         (struct elf_cache *cache, const struct elf32_rel *rel);
