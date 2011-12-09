@@ -136,11 +136,6 @@ int main() {
 	size_t i, n;
 	char *argv[100];
 
-	uint32_t *object;
-
-	object = dlopen("/lib/libc.so", 0);
-	printf("libc.so:\t%p\n", object);
-
 	setenv("PWD", "/");
 
 	while (1) {

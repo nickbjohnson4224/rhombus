@@ -65,18 +65,12 @@ int _exec(void *image, size_t size, int flags) {
 	}
 
 	/* load executable */
-	if (exec->e_type == ET_EXEC) {
-		elf_load(exec, 0);
-		exec  = (void*) 0x100000;
-		entry = (void*) exec->e_entry;
-	}
-	else {
-		elf_load(exec, 0x100000);
-		entry = (void*) (exec->e_entry + 0x100000);
+	elf_load(exec, 0);
+	exec  = (void*) 0x100000;
+	entry = (void*) exec->e_entry;
 
-		elf_gencache(&cache, exec);
-		elfc_relocate_all(&cache);
-	}
+	elf_gencache_exec(&cache, exec);
+	elfc_relocate_all_exec(&cache);
 
 	/* remove executable image */
 	page_free(temp, size);

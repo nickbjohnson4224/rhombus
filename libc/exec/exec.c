@@ -71,7 +71,6 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 		free(pack);
 	}
 
-	
 	if (dl->exec(image, size, 0)) {
 		errno = ENOEXEC;
 		return -1;

@@ -3,7 +3,7 @@ SOURCES += $(patsubst %.s,%.o,$(shell find . -name "*.s"))
 SUBDIR	:= dl
 HEADERS := $(shell find . -name "*.h")
 TARGET	:= dl.so
-LDFLAGS	:= -T$(BUILDDIR)/$(SUBDIR)/link.ld
+LDFLAGS	:= -T$(BUILDDIR)/$(SUBDIR)/link.ld -static
 ASFLAGS := -felf
 
 all: $(TARGET)

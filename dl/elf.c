@@ -55,8 +55,24 @@ static void _elf_load_phdr(const struct elf32_ehdr *file, uintptr_t base, const 
 		else {
 			/* is a read-only data/code segment */
 
-			/* move memory */
-			page_self((void*) seg_base, dst, phdr->p_filesz);
+			if ((uint32_t) seg_base % PAGESZ) {
+				/* image not page-aligned; copy */
+
+				/* allocate memory */
+				page_anon(dst, phdr->p_memsz, PROT_READ | PROT_WRITE);
+				
+				/* copy data */
+				memcpy(dst, seg_base, phdr->p_filesz);
+
+				/* clear rest of segment */
+				memclr(&dst[phdr->p_filesz], phdr->p_memsz - phdr->p_filesz);
+			}
+			else {
+				/* image page-aligned; page flip */
+
+				/* move memory */
+				page_self((void*) seg_base, dst, phdr->p_filesz);
+			}
 		}
 
 		/* set proper permissions */

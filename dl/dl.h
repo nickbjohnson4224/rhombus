@@ -70,12 +70,14 @@ struct elf_cache {
 	const uint32_t          *pltgot;
 };
 
-void elf_gencache(struct elf_cache *cache, const struct elf32_ehdr *image);
+void elf_gencache     (struct elf_cache *cache, const struct elf32_ehdr *image);
+void elf_gencache_exec(struct elf_cache *cache, const struct elf32_ehdr *image);
 
-uint32_t elfc_resolve      (struct elf_cache *cache, const char *symbol);
-uint32_t elfc_relocate     (struct elf_cache *cache, const struct elf32_rel *rel);
-void     elfc_relocate_all (struct elf_cache *cache);
-void     elfc_relocate_exec(struct elf_cache *cache);
+uint32_t elfc_resolve          (struct elf_cache *cache, const char *symbol);
+uint32_t elfc_relocate         (struct elf_cache *cache, const struct elf32_rel *rel);
+void     elfc_relocate_all     (struct elf_cache *cache);
+uint32_t elfc_relocate_exec    (struct elf_cache *cache, const struct elf32_rel *rel);
+void     elfc_relocate_all_exec(struct elf_cache *cache);
 
 int dl_enter(void *entry_ptr);
 

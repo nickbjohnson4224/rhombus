@@ -65,7 +65,7 @@ image:	all
 	@ cp bin/* boot/bin
 	@ cp lib/dl.so boot/lib
 	@ cp lib/libc.so boot/lib
-	@ cp lib/libtest.so boot/lib
+	@ cp lib/librdi.so boot/lib
 	@ cp sbin/* boot/sbin
 #	@ cp -r etc/* boot/etc
 

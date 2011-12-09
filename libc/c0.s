@@ -18,6 +18,18 @@ section .text
 
 global _start
 extern _init
+extern main
+
+extern _GLOBAL_OFFSET_TABLE_
 
 _start:
+
+	call .getgot
+.getgot:
+	pop ebx
+	add ebx, _GLOBAL_OFFSET_TABLE_+$$-.getgot wrt ..gotpc
+
+	mov eax, [ebx+main wrt ..got]
+	push eax
+	
 	call _init wrt ..plt; libc initialization, runs main and exits

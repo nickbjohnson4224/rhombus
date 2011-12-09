@@ -105,7 +105,7 @@ static char *__type(rp_t source, int argc, char **argv) {
  * library.
  */
 
-void _init() {
+void _init(int (*_main)(int, char**)) {
 	extern int main(int argc, char **argv);
 	extern void _on_event(void);
 	struct slt32_entry *slt;
@@ -189,5 +189,5 @@ void _init() {
 	}
 
 	/* execute main program */
-	exit(main(argc, argv));
+	exit(_main(argc, argv));
 }

@@ -59,6 +59,12 @@ int main() {
 	/* Boot Image */
 	boot_image = tar_parse((void*) BOOT_IMAGE);
 
+	/* Load shared libraries for drivers */
+	file = tar_find(boot_image, "lib/libc.so");
+	dlload(file->start, file->size, 0);
+	file = tar_find(boot_image, "lib/librdi.so");
+	dlload(file->start, file->size, 0);
+
 	/* Initial Root Filesystem / Device Filesystem / System Filesystem (tmpfs) */
 	argv[0] = "tmpfs";
 	argv[1] = NULL;

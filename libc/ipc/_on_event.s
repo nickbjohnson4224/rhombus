@@ -19,6 +19,8 @@ global _on_event
 extern on_event
 extern _done
 
+extern _GLOBAL_OFFSET_TABLE_
+
 section .text
 
 _on_event:
@@ -28,6 +30,12 @@ _on_event:
 	push esi
 	push edx
 	push ecx
+
+	call _on_event.getgot
+.getgot:
+	pop ebx
+	add ebx, _GLOBAL_OFFSET_TABLE_+$$-.getgot wrt ..gotpc
+
 	call on_event wrt ..plt
 	add esp, 20
 
