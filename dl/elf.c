@@ -16,6 +16,7 @@
 
 #include <string.h>
 #include <rho/page.h>
+#include <rho/layout.h>
 
 #include "dl.h"
 
@@ -137,8 +138,7 @@ uint32_t elf_get_dynval(const struct elf32_dyn *dynamic, int32_t type, uint32_t 
 
 	for (i = 0; dynamic[i].tag != DT_NULL; i++) {
 		if (dynamic[i].tag == type) {
-			index--;
-			if (!index) {
+			if (!index--) {
 				return dynamic[i].val;
 			}
 		}
@@ -352,6 +352,34 @@ const uint32_t *elf_get_hash(const struct elf32_ehdr *image) {
 	return NULL;
 }
 
+const struct elf32_ehdr *elf_get_needed(const struct elf32_ehdr *image, size_t i) {
+	const struct elf32_dyn *dynamic;
+	const struct slt32_entry *slt;
+	const char *strtab;
+	const char *soname;
+	char objname[28];
+
+	dynamic = elf_get_dynamic(image);
+	strtab  = elf_get_strtab(image);
+
+	soname = &strtab[elf_get_dynval(dynamic, DT_NEEDED, i)];
+
+	if (!soname) {
+		return NULL;
+	}
+
+	strlcpy(objname, "dl.so:", 28);
+	strlcat(objname, soname, 28);
+
+	slt = sltget_name(objname);
+
+	if (!slt) {
+		return NULL;
+	}
+
+	return (const void*) slt->base;
+}
+
 uint32_t elf_hash(const char *symbol) {
 	uint32_t h;
 	uint32_t g;
@@ -423,7 +451,44 @@ uint32_t elf_resolve_local(const struct elf32_ehdr *image, const char *symbol) {
 	return (syment->st_value + (uint32_t) image);
 }
 
+uint32_t elf_resolve_rec(const struct elf32_ehdr *image, const char *symbol, uint32_t depth) {
+	const struct elf32_ehdr *dep;
+	uint32_t value;
+	size_t i;
+	
+	if (depth == 0) {
+		return elf_resolve_local(image, symbol);
+	}
+
+	i = 0;
+	while (1) {
+		dep = elf_get_needed(image, i);
+		if (!dep) {
+			return 0;
+		}
+		
+		value = elf_resolve_rec(dep, symbol, depth - 1);
+		if (value) {
+			return value;
+		}
+
+		i++;
+	}
+
+	return 0;
+}
+
 uint32_t elf_resolve(const struct elf32_ehdr *image, const char *symbol) {
-	// TODO - search the dependency graph
-	return elf_resolve_local(image, symbol);
+	uint32_t value;
+	uint32_t depth;
+	
+	for (depth = 0; depth < 10; depth++) {
+		value = elf_resolve_rec(image, symbol, depth);
+		
+		if (value) {
+			return value;
+		}
+	}
+
+	return 0;
 }
