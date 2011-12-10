@@ -18,12 +18,10 @@ For 0.9 Alpha:
 - graphics architecture improvements
 	- shared memory (mmap-style)
 	- canvas/blitter API
-	- virtual teletypes
+	- virtual screens
 
 - drivers
 	- PCI bus driver
-	- ISA bus driver
-	- ATA bus driver
 	- device manager
 	- ATA/ATAPI driver
 	- iso9660 driver

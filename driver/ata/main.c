@@ -20,120 +20,192 @@
 #include <rdi/core.h>
 #include <rdi/arch.h>
 
-struct ata_device {
-	uint16_t id[256];
-};
+#include "ata.h"
 
-#define PORT_DATA	0
-#define PORT_ERROR	1
-#define PORT_COUNT	2
-#define PORT_LBAL	3
-#define PORT_LBAM	4
-#define PORT_LBAH	5
-#define PORT_DRIVE	6
-#define PORT_STATUS	7
-#define PORT_CTRL	0x206
-#define PORT_ASTAT	0x206
+struct ata_drive ata[4];
 
-#define STATUS_ERR	0x01
-#define STATUS_DRQ	0x08
-#define STATUS_SRV	0x10
-#define STATUS_DF	0x20
-#define STATUS_RDY	0x40
-#define STATUS_BSY	0x80
+void ata_sleep400(uint8_t drive) {
 
-uint16_t port_base = 0x1F0;
-uint16_t drive_num = 42;
-
-void ata_delay(void) {
-
-	inb(port_base + PORT_STATUS);
-	inb(port_base + PORT_STATUS);
-	inb(port_base + PORT_STATUS);
-	inb(port_base + PORT_STATUS);
+	inb(ata[drive].base + REG_ASTAT);
+	inb(ata[drive].base + REG_ASTAT);
+	inb(ata[drive].base + REG_ASTAT);
+	inb(ata[drive].base + REG_ASTAT);
 }
 
-void ata_select(int num) {
-	
-	if (num == drive_num) return;
+void ata_select(uint8_t drive) {
 
-	if (num > 8) return;
-	port_base = (num & 4) ? ((num & 2) ? 0x168 : 0x1E8) : ((num & 2) ? 0x170 : 0x1F0);
-	drive_num = num;
-	
-	outb(port_base + PORT_DRIVE, (num & 1) ? 0xB0 : 0xA0);
-	ata_delay();
+	outb(ata[drive].base + REG_SELECT, SEL(drive) ? 0xB0 : 0xA0);
+	ata_sleep400(drive);
 }
 
-void ata_identify(uint16_t id[256]) {
-	
-	outb(port_base + PORT_COUNT, 0);
-	outb(port_base + PORT_LBAL, 0);
-	outb(port_base + PORT_LBAM, 0);
-	outb(port_base + PORT_LBAH, 0);
-	ata_delay();
+void ata_init(void) {
+	size_t dr, i;
+	uint8_t status, err, cl, ch;
+	uint16_t c;
+	uint16_t buffer[256];
 
-	outb(port_base + PORT_STATUS, 0xEC);
-	ata_delay();
-	
-	if (!inb(port_base + PORT_STATUS)) {
-		printf("no drive\n");
-		// no drive
-		id[0] = 0xFF;
-		return;
-	}
+	/* detect I/O ports */
+	ata[ATA0].base = 0x1F0;
+	ata[ATA1].base = 0x170;
+	ata[ATA0].dma  = 0; // FIXME
+	ata[ATA1].dma  = 0; // FIXME
 
-	while (inb(port_base + PORT_STATUS) & STATUS_BSY);
+	/* detect IRQ numbers */
+	ata[ATA0].irq = 14;
+	ata[ATA1].irq = 15;
 
-	if (inb(port_base + PORT_LBAM) || inb(port_base + PORT_LBAH)) {
-		printf("found non-ATA drive %d: %X %X\n", drive_num, inb(port_base + PORT_LBAM), inb(port_base + PORT_LBAH));
-		// ATAPI
-		id[0] = 0xFF;
-		return;
-	}
+	/* copy controller ports for drives */
 
-	while ((inb(port_base + PORT_STATUS) & (STATUS_DRQ | STATUS_ERR)) == 0);
+	/* ATA 0 master */
+	ata[ATA00].base = ata[ATA0].base;
+	ata[ATA00].dma  = ata[ATA0].dma;
+	ata[ATA00].irq  = ata[ATA0].irq;
 
-	if (inb(port_base + PORT_STATUS) & STATUS_ERR) {
-		// error
-		id[0] = 0xFF;
-		return;
-	}
+	/* ATA 0 slave */
+	ata[ATA01].base = ata[ATA0].base;
+	ata[ATA01].dma  = ata[ATA0].dma;
+	ata[ATA01].irq  = ata[ATA0].irq;
 
-	for (int i = 0; i < 256; i++) {
-		id[i] = inb(port_base + PORT_DATA);
+	/* ATA 1 master */
+	ata[ATA10].base = ata[ATA1].base;
+	ata[ATA10].dma  = ata[ATA1].dma;
+	ata[ATA10].irq  = ata[ATA1].irq;
+
+	/* ATA 1 slave */
+	ata[ATA11].base = ata[ATA1].base;
+	ata[ATA11].dma  = ata[ATA1].dma;
+	ata[ATA11].irq  = ata[ATA1].irq;
+
+	/* disable controller IRQs */
+	outw(ata[ATA0].base + REG_CTRL, CTRL_NEIN);
+	outw(ata[ATA1].base + REG_CTRL, CTRL_NEIN);
+
+	/* detect drives */
+	for (dr = 0; dr < 4; dr++) {
+		ata_select(dr);
+
+		/* send IDENTIFY command */
+		outb(ata[dr].base + REG_COUNT0, 0);
+		outb(ata[dr].base + REG_LBA0,   0);
+		outb(ata[dr].base + REG_LBA1,   0);
+		outb(ata[dr].base + REG_LBA2,   0);
+		ata_sleep400(dr);
+		outb(ata[dr].base + REG_CMD, CMD_ID);
+		ata_sleep400(dr);
+
+		/* read status */
+		status = inb(ata[dr].base + REG_STAT);
+
+		/* check for drive response */
+		if (!status) continue;
+
+		ata[dr].flags = FLAG_EXIST;
+
+		/* poll for response */
+		while (1) {
+			status = inb(ata[dr].base + REG_STAT);
+
+			if (status & STAT_ERROR) {
+				err = 1;
+				break;
+			}
+
+			if (!(status & STAT_BUSY) && (status & STAT_DRQ)) {
+				err = 0;
+				break;
+			}
+		}
+
+		/* try to catch ATAPI and SATA devices */
+		if (err) {
+			cl = inb(ata[dr].base + REG_LBA1);
+			ch = inb(ata[dr].base + REG_LBA2);
+			c = cl | (ch << 8);
+			
+			ata_sleep400(dr);
+
+			if (c == 0xEB14 || c == 0x9669) {
+				/* is ATAPI */
+				ata[dr].flags |= FLAG_ATAPI;
+				ata[dr].sectsize = 11;
+
+				/* use ATAPI IDENTIFY */
+				outb(ata[dr].base + REG_CMD, CMD_ATAPI_ID);
+				ata_sleep400(dr);
+			}
+			else if (c == 0xC33C) {
+				/* is SATA */
+				ata[dr].flags |= FLAG_SATA;
+			}
+			else {
+				/* unknown device; ignore */
+				ata[dr].flags = 0;
+				continue;
+			}
+		}
+		else {
+			/* assume 512-byte sectors for ATA */
+			ata[dr].sectsize = 9;
+		}
+
+		/* read in IDENTIFY space */
+		for (i = 0; i < 256; i++) {
+			buffer[i] = inw(ata[dr].base + REG_DATA);
+		}
+
+		ata[dr].signature    = *((uint16_t*) &buffer[ID_TYPE]);
+		ata[dr].capabilities = *((uint16_t*) &buffer[ID_CAP]);
+		ata[dr].commandsets  = *((uint32_t*) &buffer[ID_CMDSET]);
+
+		/* get LBA mode and disk size */
+		if (ata[dr].commandsets & (1 << 26)) {
+			/* is LBA48 */
+			ata[dr].flags |= FLAG_LONG;
+			ata[dr].size = *((uint64_t*) &buffer[ID_MAX_LBA48]);
+		}
+		else {
+			/* is LBA24 */
+			ata[dr].size = *((uint32_t*) &buffer[ID_MAX_LBA]);
+		}
+
+		/* get model string */
+		for (i = 0; i < 40; i += 2) {
+			ata[dr].model[i]   = buffer[ID_MODEL + (i / 2)] >> 8;
+			ata[dr].model[i+1] = buffer[ID_MODEL + (i / 2)] & 0xFF;
+		}
+		ata[dr].model[40] = '\0';
+		for (i = 39; i > 0; i--) {
+			if (ata[dr].model[i] == ' ') {
+				ata[dr].model[i] = '\0';
+			}
+			else break;
+		}
+
+		printf("found drive: ");
+
+		switch (dr) {
+		case ATA00: printf("ATA 0 Master\n"); break;
+		case ATA01: printf("ATA 0 Slave\n");  break;
+		case ATA10: printf("ATA 1 Master\n"); break;
+		case ATA11: printf("ATA 1 Slave\n");  break;
+		}
+
+		printf("\t");
+		printf((ata[dr].flags & FLAG_SATA) ? "S" : "P");
+		printf((ata[dr].flags & FLAG_ATAPI) ? "ATAPI " : "ATA ");
+		printf((ata[dr].flags & FLAG_LONG) ? "LBA48 " : "LBA24 ");
+		printf("\n");
+
+		printf("\tsize: %d KB (%d sectors)\n",
+			(uint32_t) ata[dr].size * (1 << ata[dr].sectsize) >> 10,
+			(uint32_t) ata[dr].size);
+		printf("\tmodel: %s\n", ata[dr].model);
 	}
 }
 
 int main(int argc, char **argv) {
-	struct ata_device dev[4];
-
-	for (int i = 0; i < 4; i++) {
-		
-		ata_select(i);
-
-		// perform IDENTIFY command
-		ata_identify(dev[i].id);
-
-		printf("port base: %X\n", port_base);
-
-		if (dev[i].id[0] != 0xFF) {
-			printf("drive %d:\n", i);
-			printf("\tword 0:\t\t%X\n",	dev[i].id[0]);
-			printf("\tword 83:\t%X\n", 	dev[i].id[83]);
-			printf("\tword 88:\t%X\n", 	dev[i].id[88]);
-			printf("\tword 93:\t%X\n", 	dev[i].id[93]);
-			printf("\tword 60:\t%X\n", 	dev[i].id[60]);
-			printf("\tword 61:\t%X\n", 	dev[i].id[61]);
-			printf("\tword 100:\t%X\n",	dev[i].id[100]);
-			printf("\tword 101:\t%X\n",	dev[i].id[101]);
-			printf("\tword 102:\t%X\n",	dev[i].id[102]);
-			printf("\tword 103:\t%X\n",	dev[i].id[103]);
-		}
-		else {
-			printf("no drive %d\n", i);
-		}
-	}
+	
+	ata_init();
 
 	return 0;
 }
