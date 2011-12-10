@@ -1,24 +1,6 @@
 For 0.9 Alpha:
 
-+ merge libdriver and libc
-+ move rcall handling to natio
-+ isolate VFS code from driver code
-+ move more functions to rcall (fs_*)
-+ non-recursive fs_find
-+ hard links
-+ symlinks
-+ better event system (textual)
-+ process tracker
-+ file locking
-+ top/ps equivalent
-+ proper session/controlling tty stuff
-
 + driver interface complete
-	+ I/O interface
-	+ VFS interface
-	+ core interface
-	+ security interface
-	+ event interface
 
 - kernel improvements
 	+ kernel robject tables
@@ -36,6 +18,7 @@ For 0.9 Alpha:
 - graphics architecture improvements
 	- shared memory (mmap-style)
 	- canvas/blitter API
+	- virtual teletypes
 
 - drivers
 	- PCI bus driver
@@ -48,24 +31,29 @@ For 0.9 Alpha:
 	- FAT32 driver
 
 - POSIXness
-	- start unistd.h as wrapper
-	- implement coreutils
+	- implement coreutils (port GNU?)
+
+	+ <dirent.h>
+	- <fcntl.h>
+	- <grp.h>
+	- <sys/ipc.h>
+	- <sys/msg.h>
+	- <sys/sem.h>
+	- <sys/stat.h>
+	- <sys/time.h>
+	- <sys/types.h>
+	- <sys/wait.h>
+	- <unistd.h>
+	- <utime.h>
 
 + ELF dynamic linking
-	+ address space layout
-	+ shared object relocation
-	+ shared object symbol lookup (basic)
-	+ dynamic symbol resolution (PLT)
-	+ dependency graph traversal
-	+ dependency loading
-	+ finishing touches
-	+ dl optimization
 
 - shared libraries
    (+) ELF dynamic linking
 	- shared library daemon?
 	- mmap-ed file loading
-	- transition all binaries to dynamic
+	+ transition all binaries to dynamic
+	- .init and .fini support
 
 For 1.0 Beta:
 
@@ -86,20 +74,21 @@ For 1.0 Beta:
 	- C standard library cleanup
 	- malloc performance testing
 	- floating point environment
-	- math library improvements
+	- math library improvements (port libm?)
 	- C standard library finalization
-	- C++ standard library
+	- C++ standard library (port LLVM libc++?)
 	- C++ testing
 
 - toolchain
 	(requires C++ standard library)
 	- port LLVM
 	- port Clang
+	+ port Lua
 	- port Python?
 
 - graphics improvements
 	- port SDL
-	- games?
+	- games? (at least Tetris)
 
 For 1.1 Beta:
 

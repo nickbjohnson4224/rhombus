@@ -72,6 +72,10 @@ void *_load(void *image, size_t size, int flags) {
 
 		if (flags & RLTD_NOW) elfc_relocate_now(&cache);
 		else                  elfc_relocate_all(&cache);
+
+		if (cache.init) {
+			cache.init();
+		}
 	}
 
 	return (void*) object;

@@ -21,8 +21,8 @@ struct dl {
 	void *(*load) (void *image, size_t size, int flags);
 	int   (*exec) (void *image, size_t size, int flags);
 
-	int   (*init) (void *object);
-	int   (*fini) (void *object);
+	void  (*init) (void *object);
+	void  (*fini) (void *object);
 
 	char *(*dep)  (void *object, uint32_t index, int loaded);
 	void *(*sym)  (void *object, const char *symbol);

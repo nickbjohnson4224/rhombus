@@ -98,6 +98,10 @@ static char *__type(rp_t source, int argc, char **argv) {
 	return strdup("proc");
 }
 
+void _init(void) {
+	return;
+}
+
 /****************************************************************************
  * __libc_init
  *

@@ -24,5 +24,6 @@
 #include "dl.h"
 
 void _uload(void *object) {
+	_fini(object);
 	sltfree_addr(object);
 }

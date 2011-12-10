@@ -379,6 +379,8 @@ void elf_gencache(struct elf_cache *cache, const struct elf32_ehdr *image, int l
 		case DT_PLTGOT:   cache->pltgot  = (const uint32_t*) (base + cache->dynamic[i].val); break;
 		case DT_HASH:     cache->hash    = (const uint32_t*) (base + cache->dynamic[i].val); break;
 		case DT_SONAME:   cache->soname  = (const char*) cache->dynamic[i].val; break;
+		case DT_INIT:     cache->init    = (void (*) (void)) (base + cache->dynamic[i].val); break;
+		case DT_FINI:     cache->fini    = (void (*) (void)) (base + cache->dynamic[i].val); break;
 		}
 	}
 

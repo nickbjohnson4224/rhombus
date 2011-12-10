@@ -14,37 +14,21 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <dlfcn.h>
+#include <stdint.h>
+#include <string.h>
 
-#include <rho/natio.h>
-#include <rho/proc.h>
-#include <rho/ipc.h>
-#include <rho/abi.h>
+#include <rho/layout.h>
+#include <rho/arch.h>
+#include <rho/exec.h>
 
-/****************************************************************************
- * exit
- *
- * Exit the current process with status <status>. Performs all functions
- * registered with atexit.
- */
+#include "dl.h"
 
-void exit(int status) {
-	struct __atexit_func *f;
+void _fini(void *object) {
+	struct elf_cache cache;
 
-	fflush(stderr);
-	fflush(stdout);
+	elf_gencache(&cache, object, 1);
 	
-	while (__atexit_func_list) {
-		f = __atexit_func_list;
-		f->function();
-		__atexit_func_list = f->next;
-		free(f);
+	if (cache.fini) {
+		cache.fini();
 	}
-
-	dl->fini(dlopen(NULL, 0));
-
-	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
-	__exit(status);
-} 
+}

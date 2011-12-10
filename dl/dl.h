@@ -36,8 +36,8 @@
 void *_load(void *image, size_t size, int flags);
 int   _exec(void *image, size_t size, int flags);
 
-int   _init(void *object);
-int   _fini(void *object);
+void  _init(void *object);
+void  _fini(void *object);
 
 char *_dep  (void *object, uint32_t index, int loaded);
 void *_sym  (void *object, const char *symbol);
@@ -57,6 +57,8 @@ struct elf_cache {
 	const struct elf32_ehdr *image;
 	uint32_t                 vsize;
 
+	void                   (*init)(void);
+	void                   (*fini)(void);
 	const struct elf32_phdr *segtab;
 	const struct elf32_dyn  *dynamic;
 	const struct elf32_sym  *symtab;
