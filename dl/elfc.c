@@ -28,12 +28,8 @@
 
 uint32_t elfc_relocate(struct elf_cache *cache, const struct elf32_rel *rel) {
 	const struct elf32_sym *symbol = NULL;
-	uint32_t *image32 = (void*) cache->image;
+	uint32_t *image32;
 	uint32_t symbol_value;
-
-	if (cache->image->e_type == ET_EXEC) {
-		return elfc_relocate_exec(cache, rel);
-	}
 
 	/* compute symbol value if needed */
 	switch (ELF32_R_TYPE(rel->r_info)) {
@@ -41,17 +37,24 @@ uint32_t elfc_relocate(struct elf_cache *cache, const struct elf32_rel *rel) {
 	case R_386_JMP_SLOT:
 	case R_386_32:
 		symbol = &cache->symtab[ELF32_R_SYM(rel->r_info)];
-		
+
 		if (symbol->st_value) {
-			symbol_value = symbol->st_value + (uint32_t) cache->image;
+			symbol_value = symbol->st_value;
+
+			if (cache->image->e_type != ET_EXEC) {
+				symbol_value += (uint32_t) cache->image;
+			}
 		}
 		else {
 			symbol_value = elfc_resolve(cache, &cache->strtab[symbol->st_name]);
 		}
+
 		break;
 	default:
 		symbol_value = 0;
 	}
+
+	image32 = (void*) ((cache->image->e_type == ET_EXEC) ? 0 : cache->image);
 
 	/* perform relocation */
 	switch (ELF32_R_TYPE(rel->r_info)) {
@@ -59,49 +62,6 @@ uint32_t elfc_relocate(struct elf_cache *cache, const struct elf32_rel *rel) {
 		break;
 	case R_386_RELATIVE:
 		image32[rel->r_offset / 4] += (uint32_t) cache->image;
-		break;
-	case R_386_GLOB_DAT:
-	case R_386_JMP_SLOT:
-		image32[rel->r_offset / 4] = symbol_value;
-		break;
-	case R_386_32:
-		image32[rel->r_offset / 4] += symbol_value;
-		break;
-	default:
-		break;
-	}
-
-	return symbol_value;
-}
-
-uint32_t elfc_relocate_exec(struct elf_cache *cache, const struct elf32_rel *rel) {
-	const struct elf32_sym *symbol = NULL;
-	uint32_t *image32 = (void*) 0;
-	uint32_t symbol_value;
-
-	/* compute symbol value if needed */
-	switch (ELF32_R_TYPE(rel->r_info)) {
-	case R_386_GLOB_DAT:
-	case R_386_JMP_SLOT:
-	case R_386_32:
-		symbol = &cache->symtab[ELF32_R_SYM(rel->r_info)];
-		
-		if (symbol->st_value) {
-			symbol_value = symbol->st_value;
-		}
-		else {
-			symbol_value = elfc_resolve(cache, &cache->strtab[symbol->st_name]);
-		}
-		break;
-	default:
-		symbol_value = 0;
-	}
-
-	/* perform relocation */
-	switch (ELF32_R_TYPE(rel->r_info)) {
-	case R_386_NONE:
-	case R_386_RELATIVE:
-		break;
 		break;
 	case R_386_GLOB_DAT:
 	case R_386_JMP_SLOT:
@@ -126,11 +86,6 @@ uint32_t elfc_relocate_exec(struct elf_cache *cache, const struct elf32_rel *rel
 void elfc_relocate_all(struct elf_cache *cache) {
 	size_t i;
 
-	if (cache->image->e_type == ET_EXEC) {
-		elfc_relocate_all_exec(cache);
-		return;
-	}
-
 	/* only relocate dynamic objects */
 	if (!cache->dynamic) {
 		return;
@@ -150,31 +105,9 @@ void elfc_relocate_all(struct elf_cache *cache) {
 	}
 
 	/* do stub relocations for PLT GOT entries */
-	if (cache->jmprel) {
+	if (cache->image->e_type == ET_DYN && cache->jmprel) {
 		for (i = 0; i < cache->jmpreln; i++) {
 			((uint32_t*) cache->image)[cache->jmprel[i].r_offset / 4] += (uint32_t) cache->image;
-		}
-	}
-}
-
-void elfc_relocate_all_exec(struct elf_cache *cache) {
-	size_t i;
-
-	/* only relocate dynamic objects */
-	if (!cache->dynamic) {
-		return;
-	}
-
-	/* add special entries to GOT for PLT resolution */
-	if (cache->pltgot) {
-		((uint32_t*) cache->pltgot)[1] = (uint32_t) cache->image;
-		((uint32_t*) cache->pltgot)[2] = (uint32_t) __plt_resolve;
-	}
-
-	/* perform normal relocations (data) */
-	if (cache->reltab) {
-		for (i = 0; i < cache->reltabn; i++) {
-			elfc_relocate_exec(cache, &cache->reltab[i]);
 		}
 	}
 }
@@ -321,7 +254,7 @@ static uint32_t elfc_resolve_rec(struct elf_cache *cache, const char *symbol, ui
 		dep = elfc_get_needed(cache, i);
 		if (!dep) return 0;
 		
-		elf_gencache(&dep_cache, dep);
+		elf_gencache(&dep_cache, dep, 1);
 		value = elfc_resolve_rec(&dep_cache, symbol, depth - 1);
 		if (value) return value;
 
@@ -357,50 +290,47 @@ uint32_t elfc_resolve(struct elf_cache *cache, const char *symbol) {
 /*****************************************************************************
  * elf_gencache
  *
- * Generate an ELF cached image from an ELF image, storing the cache data in
- * <cache>. This cache data is used to make lookups of various information
- * about the image much faster.
+ * Generate an ELF cached image from an ELF <loaded?> image, storing the 
+ * cache data in <cache>. This cache data is used to make lookups of various 
+ * information about the image much faster.
  */
 
-void elf_gencache(struct elf_cache *cache, const struct elf32_ehdr *image) {
-	uint32_t base = (uint32_t) image;
+void elf_gencache(struct elf_cache *cache, const struct elf32_ehdr *image, int loaded) {
+	uint32_t base = (uintptr_t) image;
 	size_t i;
 
-	if (image->e_type == ET_EXEC) {
-		elf_gencache_exec(cache, image);
-		return;
-	}
+	memclr(cache, sizeof(struct elf_cache));
 
+	/* save image location */
 	cache->image = image;
 
 	/* get segment table */
-	cache->segtab = (const struct elf32_phdr*) (base + image->e_phoff);
+	cache->segtab = (const struct elf32_phdr*) (image->e_phoff + (uintptr_t) image);
 
-	/* calulate image size */
-	for (i = 0; cache->segtab[i].p_type == PT_LOAD || cache->segtab[i].p_type == PT_DYNAMIC; i++);
-	if (i) cache->vsize = cache->segtab[i - 1].p_vaddr + cache->segtab[i - 1].p_memsz + 0x1000;
+	if (image->e_type == ET_DYN) {
+		/* calulate image size */
+		for (i = 0; cache->segtab[i].p_type == PT_LOAD || cache->segtab[i].p_type == PT_DYNAMIC; i++);
+		if (i) cache->vsize = cache->segtab[i - 1].p_vaddr + cache->segtab[i - 1].p_memsz + 0x1000;
+	}
+
+	if (image->e_type == ET_EXEC) {
+		if (loaded) base = 0;
+		else base -= (cache->segtab[0].p_vaddr - cache->segtab[0].p_offset);
+	}
 
 	/* get DYNAMIC segment */
-	cache->dynamic = NULL;
 	for (i = 0; cache->segtab[i].p_type != PT_NULL; i++) {
 		if (cache->segtab[i].p_type == PT_DYNAMIC) {
-			cache->dynamic = (const struct elf32_dyn*) (base + cache->segtab[i].p_offset);
+			cache->dynamic = (const struct elf32_dyn*) 
+				((!loaded || image->e_type == ET_DYN) 
+					? (uintptr_t) image + cache->segtab[i].p_offset
+					: cache->segtab[i].p_vaddr);
 			break;
 		}
 	}
 
-	if (!cache->dynamic) {
-		return;
-	}
-
 	/* get various DYNAMIC values */
-	cache->symtab = NULL;
-	cache->reltab = NULL;
-	cache->jmprel = NULL;
-	cache->strtab = NULL;
-	cache->pltgot = NULL;
-	cache->hash   = NULL;
-	cache->soname = NULL;
+	if (!cache->dynamic) return;
 	for (i = 0; cache->dynamic[i].tag != DT_NULL; i++) {
 		switch (cache->dynamic[i].tag) {
 		case DT_SYMTAB:   cache->symtab  = (const struct elf32_sym*) (base + cache->dynamic[i].val); break;
@@ -411,116 +341,6 @@ void elf_gencache(struct elf_cache *cache, const struct elf32_ehdr *image) {
 		case DT_STRTAB:   cache->strtab  = (const char*) (base + cache->dynamic[i].val); break;
 		case DT_PLTGOT:   cache->pltgot  = (const uint32_t*) (base + cache->dynamic[i].val); break;
 		case DT_HASH:     cache->hash    = (const uint32_t*) (base + cache->dynamic[i].val); break;
-		case DT_SONAME:   cache->soname  = (const char*) cache->dynamic[i].val; break;
-		}
-	}
-
-	cache->soname = (cache->soname) ? &cache->strtab[(uintptr_t) cache->soname] : NULL;
-}
-
-/*****************************************************************************
- * elf_gencache_exec
- *
- * Generate an ELF cached image from an ELF image, storing the cache data in
- * <cache>. This cache data is used to make lookups of various information
- * about the image much faster.
- */
-
-void elf_gencache_exec(struct elf_cache *cache, const struct elf32_ehdr *image) {
-	size_t i;
-
-	cache->image = image;
-
-	/* get segment table */
-	cache->segtab = (const struct elf32_phdr*) (image->e_phoff + (uintptr_t) image);
-
-	/* calulate image size */
-	cache->vsize = 0;
-
-	/* get DYNAMIC segment */
-	cache->dynamic = NULL;
-	for (i = 0; cache->segtab[i].p_type != PT_NULL; i++) {
-		if (cache->segtab[i].p_type == PT_DYNAMIC) {
-			cache->dynamic = (const struct elf32_dyn*) cache->segtab[i].p_vaddr;
-			break;
-		}
-	}
-
-	if (!cache->dynamic) {
-		return;
-	}
-
-	/* get various DYNAMIC values */
-	cache->symtab = NULL;
-	cache->reltab = NULL;
-	cache->jmprel = NULL;
-	cache->strtab = NULL;
-	cache->pltgot = NULL;
-	cache->hash   = NULL;
-	cache->soname = NULL;
-	for (i = 0; cache->dynamic[i].tag != DT_NULL; i++) {
-		switch (cache->dynamic[i].tag) {
-		case DT_SYMTAB:   cache->symtab  = (const struct elf32_sym*) cache->dynamic[i].val; break;
-		case DT_REL:      cache->reltab  = (const struct elf32_rel*) cache->dynamic[i].val; break;
-		case DT_RELSZ:    cache->reltabn = cache->dynamic[i].val / 8; break;
-		case DT_JMPREL:   cache->jmprel  = (const struct elf32_rel*) cache->dynamic[i].val; break;
-		case DT_PLTRELSZ: cache->jmpreln = cache->dynamic[i].val / 8; break;
-		case DT_STRTAB:   cache->strtab  = (const char*) cache->dynamic[i].val; break;
-		case DT_PLTGOT:   cache->pltgot  = (const uint32_t*) cache->dynamic[i].val; break;
-		case DT_HASH:     cache->hash    = (const uint32_t*) cache->dynamic[i].val; break;
-		case DT_SONAME:   cache->soname  = (const char*) cache->dynamic[i].val; break;
-		}
-	}
-
-	cache->soname = (cache->soname) ? &cache->strtab[(uintptr_t) cache->soname] : NULL;
-}
-
-void elf_gencache_img(struct elf_cache *cache, const struct elf32_ehdr *image) {	
-	uint32_t base  = (uint32_t) image;
-	uint32_t shift;
-	size_t i;
-
-	cache->image = image;
-
-	/* get segment table */
-	cache->segtab = (const struct elf32_phdr*) (base + image->e_phoff);
-
-	/* calulate image size */
-	cache->vsize = 0;
-
-	shift = base - (cache->segtab[0].p_vaddr - cache->segtab[0].p_offset);
-
-	/* get DYNAMIC segment */
-	cache->dynamic = NULL;
-	for (i = 0; cache->segtab[i].p_type != PT_NULL; i++) {
-		if (cache->segtab[i].p_type == PT_DYNAMIC) {
-			cache->dynamic = (const struct elf32_dyn*) (base + cache->segtab[i].p_offset);
-			break;
-		}
-	}
-
-	if (!cache->dynamic) {
-		return;
-	}
-
-	/* get various DYNAMIC values */
-	cache->symtab = NULL;
-	cache->reltab = NULL;
-	cache->jmprel = NULL;
-	cache->strtab = NULL;
-	cache->pltgot = NULL;
-	cache->hash   = NULL;
-	cache->soname = NULL;
-	for (i = 0; cache->dynamic[i].tag != DT_NULL; i++) {
-		switch (cache->dynamic[i].tag) {
-		case DT_SYMTAB:   cache->symtab  = (const struct elf32_sym*) (shift + cache->dynamic[i].val); break;
-		case DT_REL:      cache->reltab  = (const struct elf32_rel*) (shift + cache->dynamic[i].val); break;
-		case DT_RELSZ:    cache->reltabn = cache->dynamic[i].val / 8; break;
-		case DT_JMPREL:   cache->jmprel  = (const struct elf32_rel*) (shift + cache->dynamic[i].val); break;
-		case DT_PLTRELSZ: cache->jmpreln = cache->dynamic[i].val / 8; break;
-		case DT_STRTAB:   cache->strtab  = (const char*) (shift + cache->dynamic[i].val); break;
-		case DT_PLTGOT:   cache->pltgot  = (const uint32_t*) (shift + cache->dynamic[i].val); break;
-		case DT_HASH:     cache->hash    = (const uint32_t*) (shift + cache->dynamic[i].val); break;
 		case DT_SONAME:   cache->soname  = (const char*) cache->dynamic[i].val; break;
 		}
 	}

@@ -35,7 +35,7 @@ void *_pull(void *image, size_t size, int flags) {
 		return NULL;
 	}
 
-	elf_gencache(&cache, elf32);
+	elf_gencache(&cache, elf32, 0);
 	strlcpy(regname, "dl.img:", 28);
 	strlcat(regname, cache.soname, 28);
 

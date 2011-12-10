@@ -88,7 +88,7 @@ int _exec(void *image, size_t size, int flags) {
 	exec  = (void*) 0x100000;
 	entry = (void*) exec->e_entry;
 
-	elf_gencache(&cache, exec);
+	elf_gencache(&cache, exec, 1);
 	elfc_relocate_all(&cache);
 
 	/* remove executable image */

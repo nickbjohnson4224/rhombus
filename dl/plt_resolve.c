@@ -19,6 +19,6 @@
 uint32_t _plt_resolve(struct elf32_ehdr *image, uint32_t index) {
 	struct elf_cache cache;
 
-	elf_gencache(&cache, image);
+	elf_gencache(&cache, image, 1);
 	return elfc_relocate(&cache, &cache.jmprel[index / 8]);
 }

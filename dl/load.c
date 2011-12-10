@@ -34,14 +34,14 @@ void *_load(void *image, size_t size, int flags) {
 		return NULL;
 	}
 
-	elf_gencache(&cache, elf32);
+	elf_gencache(&cache, elf32, 0);
 	strlcpy(regname, "dl.obj:", 28);
 	strlcat(regname, cache.soname, 28);
 
 	object = sltalloc(regname, cache.vsize);
 	elf_load(elf32, (uintptr_t) object);
 
-	elf_gencache(&cache, object);
+	elf_gencache(&cache, object, 1);
 	elfc_relocate_all(&cache);
 
 	return (void*) object;

@@ -28,12 +28,7 @@ char *_dep(void *object, uint32_t index, int loaded) {
 	const char *name;
 	size_t i;
 
-	if (loaded) {
-		elf_gencache(&cache, object);
-	}
-	else {
-		elf_gencache_img(&cache, object);
-	}
+	elf_gencache(&cache, object, loaded);
 
 	if (!cache.dynamic) {
 		return NULL;

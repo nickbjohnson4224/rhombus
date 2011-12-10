@@ -22,7 +22,6 @@
 void *_sym(void *object, const char *symbol) {
 	struct elf_cache cache;
 
-	elf_gencache(&cache, object);
-
+	elf_gencache(&cache, object, 1);
 	return (void*) elfc_resolve(&cache, symbol);
 }
