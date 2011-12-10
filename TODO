@@ -1,34 +1,3 @@
-For 0.7 Alpha: (complete)
-
-+ "link" page flag
-+ shared library manager
-+ userspace exec
-+ dynamic linker
-+ daemon control
-+ event protocol
-+ thread operations
-+ timeouts for I/O
-+ driver interface revision
-
-For 0.8 Alpha: (complete)
-
-+ fill in math function stubs
-+ test math functions
-+ finish printf
-+ finish scanf
-+ fix I/O memory leak
-+ process groups
-+ broadcast messages
-+ signals from terminal (esp. ctrl-C)
-+ standardize graphics API
-+ standardize input API
-+ vm86 support
-+ VESA video driver
-+ proper terminal driver
-+ add rcallf
-+ libc unit testing (string)
-+ start libc documentation
-
 For 0.9 Alpha:
 
 + merge libdriver and libc
