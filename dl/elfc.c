@@ -205,7 +205,7 @@ static const struct elf32_ehdr *elfc_get_needed(struct elf_cache *cache, size_t 
 		return NULL;
 	}
 
-	strlcpy(objname, "dl.so:", 28);
+	strlcpy(objname, "dl.obj:", 28);
 	strlcat(objname, soname, 28);
 
 	slt = sltget_name(objname);

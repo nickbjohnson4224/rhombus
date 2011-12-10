@@ -17,12 +17,17 @@
 #include <string.h>
 
 #include <rho/layout.h>
+#include <rho/page.h>
 
 void *sltalloc(const char *name, size_t size) {
 	struct slt32_entry  *slt = (void*) SLT_BASE;
 	struct slt32_header *slt_hdr = (void*) SLT_BASE;
 	uint32_t base;
 	uint32_t i, t;
+
+	if (sltget_name(name)) {
+		sltfree_name(name);
+	}
 
 	size = (size & 0xFFF) ? (size & ~0xFFF) + 0x1000 : size;
 	base = 0;
@@ -67,6 +72,8 @@ void sltfree_addr(void *addr) {
 	i = slt_hdr->first;
 
 	if (slt[i].base <= (uint32_t) addr && (uint32_t) addr > slt[i].base + slt[i].size) {
+		page_free((void*) slt[i].base, slt[i].size);
+
 		slt_hdr->first = slt[i].next;
 		slt[i].next = slt_hdr->free;
 		slt_hdr->free = i;
@@ -77,6 +84,8 @@ void sltfree_addr(void *addr) {
 	else while (slt[i].next) {
 		if (slt[slt[i].next].base <= (uint32_t) addr 
 				&& (uint32_t) addr < slt[slt[i].next].base + slt[slt[i].next].size) {
+			page_free((void*) slt[slt[i].next].base, slt[slt[i].next].size);
+
 			t = slt[i].next;
 			slt[i].next = slt[slt[i].next].next;
 			slt[t].next = slt_hdr->free;
@@ -103,6 +112,8 @@ void sltfree_name(const char *name) {
 	i = slt_hdr->first;
 
 	if (slt[i].hash == hash && !strcmp(slt[i].name, name)) {
+		page_free((void*) slt[i].base, slt[i].size);
+
 		slt_hdr->first = slt[i].next;
 		slt[i].next = slt_hdr->free;
 		slt_hdr->free = i;
@@ -112,6 +123,8 @@ void sltfree_name(const char *name) {
 	}
 	else while (slt[i].next) {
 		if (slt[slt[i].next].hash == hash && !strcmp(slt[slt[i].next].name, name)) {
+			page_free((void*) slt[slt[i].next].base, slt[slt[i].next].size);
+
 			t = slt[i].next;
 			slt[i].next = slt[slt[i].next].next;
 			slt[t].next = slt_hdr->free;

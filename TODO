@@ -88,7 +88,7 @@ For 0.9 Alpha:
 	+ shared object symbol lookup (basic)
 	+ dynamic symbol resolution (PLT)
 	+ dependency graph traversal
-	- dependency loading
+	+ dependency loading
 	- finishing touches
 	+ dl optimization
 

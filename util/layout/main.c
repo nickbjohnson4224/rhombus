@@ -14,27 +14,23 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #include <rho/layout.h>
-#include <rho/arch.h>
 #include <rho/exec.h>
 
-#include "dl.h"
+int main(int argc, char **argv) {
+	struct slt32_entry  *slt     = (void*) SLT_BASE;
+	struct slt32_header *slt_hdr = (void*) SLT_BASE;
+	size_t i;
 
-__attribute__ ((section (".head")))
-struct dl __interface__ = {
-	.load = _load,
-	.pull = _pull,
-	.exec = _exec,
+	i = slt_hdr->first;
+	while (slt[i].next) {
+		printf("entry at %p size %p hash %p name %s\n", slt[i].base, slt[i].size, slt[i].hash, slt[i].name);
+		i = slt[i].next;
+	}
 
-	.dep = _dep,
-	.sym = _sym,
-
-	.slt_alloc     = sltalloc,
-	.slt_free_addr = sltfree_addr,
-	.slt_free_name = sltfree_name,
-	.slt_get_addr  = sltget_addr,
-	.slt_get_name  = sltget_name,
-};
+	return 0;
+}

@@ -20,21 +20,34 @@
 #include <rho/layout.h>
 #include <rho/arch.h>
 #include <rho/exec.h>
+#include <rho/page.h>
 
 #include "dl.h"
 
-__attribute__ ((section (".head")))
-struct dl __interface__ = {
-	.load = _load,
-	.pull = _pull,
-	.exec = _exec,
+void *_pull(void *image, size_t size, int flags) {
+	struct elf32_ehdr *elf32 = image;
+	struct elf_cache cache;
+	char regname[28];
+	void *object;
 
-	.dep = _dep,
-	.sym = _sym,
+	/* check executable */
+	if (!elf32 || elf_check(elf32)) {
+		return NULL;
+	}
 
-	.slt_alloc     = sltalloc,
-	.slt_free_addr = sltfree_addr,
-	.slt_free_name = sltfree_name,
-	.slt_get_addr  = sltget_addr,
-	.slt_get_name  = sltget_name,
-};
+	elf_gencache(&cache, elf32);
+	strlcpy(regname, "dl.img:", 28);
+	strlcat(regname, cache.soname, 28);
+
+	object = sltalloc(regname, size);
+	
+//	if ((uintptr_t) elf32 % PAGESZ) {
+		page_anon(object, size, PROT_READ | PROT_WRITE);
+		memcpy(object, elf32, size);
+//	}
+//	else {
+//		page_self(object, elf32, size);
+//	}
+
+	return (void*) object;
+}

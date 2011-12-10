@@ -40,6 +40,7 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 	char *pack;
 	char *deppath;
 	void *pack_region;
+	void *object;
 	uint32_t i;
 
 	if (!image) {
@@ -74,14 +75,16 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 		free(pack);
 	}
 
-	/* load all dependencies */
-	for (i = 0;; i++) {
-		depname = dldep(image, i, 0);
-		if (!depname) break;
+	/* pull all dependencies */
+	if (getppid() != 1) { // XXX - hack to prevent this from running on init
+		for (i = 0;; i++) {
+			depname = dldep(image, i, 0);
+			if (!depname) break;
 
-		deppath = strvcat("/lib/", depname, NULL);
-		dlopen(deppath, 0);
-		free(deppath);
+			deppath = strvcat("/lib/", depname, NULL);
+			object = dlpopen(deppath, 0);
+			free(deppath);
+		}
 	}
 
 	if (dl->exec(image, size, 0)) {

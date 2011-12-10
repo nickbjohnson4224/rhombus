@@ -34,6 +34,7 @@
  */
 
 void *_load(void *image, size_t size, int flags);
+void *_pull(void *image, size_t size, int flags);
 int   _exec(void *image, size_t size, int flags);
 
 int   _init(void *object);

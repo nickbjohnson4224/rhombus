@@ -23,18 +23,30 @@
 
 #include "dl.h"
 
-__attribute__ ((section (".head")))
-struct dl __interface__ = {
-	.load = _load,
-	.pull = _pull,
-	.exec = _exec,
+char *_dep(void *object, uint32_t index, int loaded) {
+	struct elf_cache cache;
+	const char *name;
+	size_t i;
 
-	.dep = _dep,
-	.sym = _sym,
+	if (loaded) {
+		elf_gencache(&cache, object);
+	}
+	else {
+		elf_gencache_img(&cache, object);
+	}
 
-	.slt_alloc     = sltalloc,
-	.slt_free_addr = sltfree_addr,
-	.slt_free_name = sltfree_name,
-	.slt_get_addr  = sltget_addr,
-	.slt_get_name  = sltget_name,
-};
+	if (!cache.dynamic) {
+		return NULL;
+	}
+
+	name = NULL;
+	for (i = 0; cache.dynamic[i].tag != DT_NULL; i++) {
+		if (cache.dynamic[i].tag == DT_NEEDED) {
+			if (!index--) {
+				name = &cache.strtab[cache.dynamic[i].val];
+			}
+		}
+	}
+
+	return (char*) name;
+}

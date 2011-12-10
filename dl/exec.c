@@ -32,6 +32,9 @@ int _exec(void *image, size_t size, int flags) {
 	void  *entry;
 	size_t i;
 
+	const char *soname;
+	char imgname[28];
+
 	/* check executable */
 	if (elf_check(image)) {
 		return 1;
@@ -40,7 +43,7 @@ int _exec(void *image, size_t size, int flags) {
 	/*** POINT OF MAYBE RETURNING IF YOU, y'know, have to... ***/
 
 	/* copy executable high */
-	temp = exec = (void*) sltalloc("dl.img.exec", size);
+	temp = exec = (void*) sltalloc("dl.img:exec", size);
 
 	if ((uintptr_t) image % PAGESZ) {
 		/* not aligned, copy */
@@ -53,6 +56,22 @@ int _exec(void *image, size_t size, int flags) {
 	}
 
 	/*** POINT OF NO RETURN ***/
+
+	/* load dependencies */
+	for (i = 0;; i++) {
+		soname = _dep(exec, i, 0);
+		if (!soname) break;
+
+		strlcpy(imgname, "dl.img:", 28);
+		strlcat(imgname, soname, 28);
+
+		slt = sltget_name(imgname);
+		if (!slt) continue;
+
+		_load((void*) slt->base, slt->size, 0);
+
+		sltfree_name(imgname);
+	}
 
 	/* clear lower memory */
 	slt     = (void*) SLT_BASE;
@@ -74,7 +93,7 @@ int _exec(void *image, size_t size, int flags) {
 
 	/* remove executable image */
 	page_free(temp, size);
-	sltfree_name("dl.img.exec");
+	sltfree_name("dl.img:exec");
 
 	/* reset event handler */
 	_when(0);

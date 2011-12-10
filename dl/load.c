@@ -35,7 +35,7 @@ void *_load(void *image, size_t size, int flags) {
 	}
 
 	elf_gencache(&cache, elf32);
-	strlcpy(regname, "dl.so:", 28);
+	strlcpy(regname, "dl.obj:", 28);
 	strlcat(regname, cache.soname, 28);
 
 	object = sltalloc(regname, cache.vsize);

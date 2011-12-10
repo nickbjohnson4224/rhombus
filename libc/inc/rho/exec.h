@@ -46,6 +46,7 @@ char **loadarg(char *pack);
 
 struct dl {
 	void *(*load) (void *image, size_t size, int flags);
+	void *(*pull) (void *image, size_t size, int flags);
 	int   (*exec) (void *image, size_t size, int flags);
 
 	int   (*init) (void *object);
@@ -66,7 +67,9 @@ struct dl {
 extern struct dl *dl;
 
 void       *dlopen (const char *filename, int flags);
+void       *dlpopen(const char *filename, int flags);
 void       *dlload (void *image, size_t size, int flags);
+void       *dlpull (void *image, size_t size, int flags);
 void        dlinit (void *object);
 void        dlfini (void *object);
 void        dlexec (void *object, char const **argv, char const **envp);

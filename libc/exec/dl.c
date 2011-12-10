@@ -111,6 +111,34 @@ void *dlload(void *image, size_t size, int flags) {
 	return dl->load(image, size, flags);
 }
 
+void *dlpopen(const char *filename, int flags) {
+	void *image;
+	const char *depname;
+	char *deppath;
+	size_t i;
+
+	image = load_exec(filename);
+
+	if (!image) {
+		return NULL;
+	}
+
+	for (i = 0;; i++) {
+		depname = dldep(image, i, 0);
+		if (!depname) break;
+
+		deppath = strvcat("/lib/", depname, NULL);
+		dlpopen(deppath, 0);
+		free(deppath);
+	}
+
+	return dlpull(image, msize(image), flags);
+}
+
+void *dlpull(void *image, size_t size, int flags) {
+	return dl->pull(image, size, flags);
+}
+
 void dlexec(void *object, char const **argv, char const **envp);
 
 void dlclose(void *object);

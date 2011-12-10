@@ -231,9 +231,6 @@ static struct heap_node *_find_node(uintptr_t index) {
 		// construct new tree (only happens on first allocation)
 		_tree = new_heap_node();
 
-		if (sltget_name("libc.heap")) {
-			sltfree_name("libc.heap");
-		}
 		sltalloc("libc.heap", 0x20000000);
 		slt = sltget_name("libc.heap");
 
