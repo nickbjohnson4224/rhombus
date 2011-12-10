@@ -86,69 +86,48 @@ int load_dl(void *dl_image) {
 }
 
 void *dlopen(const char *filename, int flags) {
-	void *image = load_exec(filename);
-	const char *depname;
-	char *deppath;
-	size_t i;
-
-	if (!image) {
-		return NULL;
-	}
-
-	for (i = 0;; i++) {
-		depname = dldep(image, i, 0);
-		if (!depname) break;
-
-		deppath = strvcat("/lib/", depname, NULL);
-		dlopen(deppath, 0);
-		free(deppath);
-	}
-
-	return dlload(image, msize(image), flags);
-}
-
-void *dlload(void *image, size_t size, int flags) {
-	return dl->load(image, size, flags);
-}
-
-void *dlpopen(const char *filename, int flags) {
 	void *image;
 	const char *depname;
 	char *deppath;
 	size_t i;
 
-	image = load_exec(filename);
+	if (filename) {
 
-	if (!image) {
-		return NULL;
+		// TODO - LD_LIBRARY_PATH support
+		image = load_exec(filename);
+
+		if (!image) {
+			return NULL;
+		}
+
+		if ((flags & RLTD_LOCAL) == 0) {
+			for (i = 0;; i++) {
+				depname = dl->dep(image, i, 0);
+				if (!depname) break;
+	
+				deppath = strvcat("/lib/", depname, NULL);
+				dlopen(deppath, flags);
+				free(deppath);
+			}
+		}
+
+		return dl->load(image, msize(image), flags);
 	}
-
-	for (i = 0;; i++) {
-		depname = dldep(image, i, 0);
-		if (!depname) break;
-
-		deppath = strvcat("/lib/", depname, NULL);
-		dlpopen(deppath, 0);
-		free(deppath);
+	else {
+		return (void*) (sltget_name("sys.exec")->base);
 	}
-
-	return dlpull(image, msize(image), flags);
-}
-
-void *dlpull(void *image, size_t size, int flags) {
-	return dl->pull(image, size, flags);
-}
-
-void dlexec(void *object, char const **argv, char const **envp);
-
-void dlclose(void *object);
-
-const char *dldep(void *object, uint32_t i, int loaded) {
-	return (const char*) dl->dep(object, i, loaded);
 }
 
 void *dlsym(void *object, const char *symbol) {
 	return dl->sym(object, symbol);
 }
 
-char *dlerror(void);
+char *dlerror(void) {
+	// XXX - stubbed
+	return strdup("");
+}
+
+void dlclose(void *object) {
+	dl->fini(object);
+	dl->uload(object);
+}

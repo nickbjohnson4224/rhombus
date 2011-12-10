@@ -78,11 +78,11 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 	/* pull all dependencies */
 	if (getppid() != 1) { // XXX - hack to prevent this from running on init
 		for (i = 0;; i++) {
-			depname = dldep(image, i, 0);
+			depname = dl->dep(image, i, 0);
 			if (!depname) break;
 
 			deppath = strvcat("/lib/", depname, NULL);
-			object = dlpopen(deppath, 0);
+			object = dlopen(deppath, RLTD_LAZY | RLTD_GLOBAL | RLTD_IMAGE);
 			free(deppath);
 		}
 	}

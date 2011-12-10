@@ -26,11 +26,11 @@
 __attribute__ ((section (".head")))
 struct dl __interface__ = {
 	.load = _load,
-	.pull = _pull,
 	.exec = _exec,
 
 	.dep = _dep,
 	.sym = _sym,
+	.uload = _uload,
 
 	.slt_alloc     = sltalloc,
 	.slt_free_addr = sltfree_addr,

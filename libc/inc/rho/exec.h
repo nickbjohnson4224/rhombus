@@ -19,6 +19,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <dlfcn.h>
 
 /* executable loading *******************************************************/
 
@@ -41,41 +42,5 @@ int exec   (const char *path);
 
 char  *packarg(const char **argv);
 char **loadarg(char *pack);
-
-/* dynamic linker interface *************************************************/
-
-struct dl {
-	void *(*load) (void *image, size_t size, int flags);
-	void *(*pull) (void *image, size_t size, int flags);
-	int   (*exec) (void *image, size_t size, int flags);
-
-	int   (*init) (void *object);
-	int   (*fini) (void *object);
-
-	char *(*dep)  (void *object, uint32_t index, int loaded);
-	void *(*sym)  (void *object, const char *symbol);
-    void  (*uload)(void *object);
-	int   (*error)(void);
-
-	void *(*slt_alloc)    (const char *name, size_t size);
-	void  (*slt_free_addr)(void *addr);
-	void  (*slt_free_name)(const char *name);
-	struct slt32_entry *(*slt_get_addr)(void *addr);
-	struct slt32_entry *(*slt_get_name)(const char *name);
-};
-
-extern struct dl *dl;
-
-void       *dlopen (const char *filename, int flags);
-void       *dlpopen(const char *filename, int flags);
-void       *dlload (void *image, size_t size, int flags);
-void       *dlpull (void *image, size_t size, int flags);
-void        dlinit (void *object);
-void        dlfini (void *object);
-void        dlexec (void *object, char const **argv, char const **envp);
-void        dlclose(void *object);
-const char *dldep  (void *object, uint32_t index, int loaded);
-void       *dlsym  (void *object, const char *symbol);
-char       *dlerror(void);
 
 #endif/*__RLIBC_EXEC_H*/

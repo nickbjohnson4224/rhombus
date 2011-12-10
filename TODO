@@ -82,18 +82,18 @@ For 0.9 Alpha:
 	- start unistd.h as wrapper
 	- implement coreutils
 
-- ELF dynamic linking
++ ELF dynamic linking
 	+ address space layout
 	+ shared object relocation
 	+ shared object symbol lookup (basic)
 	+ dynamic symbol resolution (PLT)
 	+ dependency graph traversal
 	+ dependency loading
-	- finishing touches
+	+ finishing touches
 	+ dl optimization
 
 - shared libraries
-   (-) ELF dynamic linking
+   (+) ELF dynamic linking
 	- shared library daemon?
 	- mmap-ed file loading
 	- transition all binaries to dynamic

@@ -27,7 +27,6 @@ int _exec(void *image, size_t size, int flags) {
 	struct slt32_header *slt_hdr;
 	struct slt32_entry *slt;
 	struct elf32_ehdr *exec;
-	void  *temp;
 	struct elf_cache cache;
 	void  *entry;
 	size_t i;
@@ -43,7 +42,7 @@ int _exec(void *image, size_t size, int flags) {
 	/*** POINT OF MAYBE RETURNING IF YOU, y'know, have to... ***/
 
 	/* copy executable high */
-	temp = exec = (void*) sltalloc("dl.img:exec", size);
+	exec = (void*) sltalloc("dl.img:exec", size);
 
 	if ((uintptr_t) image % PAGESZ) {
 		/* not aligned, copy */
@@ -68,7 +67,7 @@ int _exec(void *image, size_t size, int flags) {
 		slt = sltget_name(imgname);
 		if (!slt) continue;
 
-		_load((void*) slt->base, slt->size, 0);
+		_load((void*) slt->base, slt->size, RLTD_LAZY | RLTD_GLOBAL | RLTD_OVERWRITE);
 
 		sltfree_name(imgname);
 	}
@@ -92,7 +91,6 @@ int _exec(void *image, size_t size, int flags) {
 	elfc_relocate_all(&cache);
 
 	/* remove executable image */
-	page_free(temp, size);
 	sltfree_name("dl.img:exec");
 
 	/* reset event handler */

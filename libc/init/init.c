@@ -99,13 +99,13 @@ static char *__type(rp_t source, int argc, char **argv) {
 }
 
 /****************************************************************************
- * _init
+ * __libc_init
  *
  * Function called at beginning of all processes, used to initialize the C
  * library.
  */
 
-void _init(int (*_main)(int, char**)) {
+void __libc_init(int (*_main)(int, char**)) {
 	extern int main(int argc, char **argv);
 	extern void _on_event(void);
 	struct slt32_entry *slt;

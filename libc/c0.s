@@ -17,7 +17,7 @@
 section .text
 
 global _start
-extern _init
+extern __libc_init
 extern main
 
 extern _GLOBAL_OFFSET_TABLE_
@@ -32,4 +32,4 @@ _start:
 	mov eax, [ebx+main wrt ..got]
 	push eax
 	
-	call _init wrt ..plt; libc initialization, runs main and exits
+	call __libc_init wrt ..plt; libc initialization, runs main and exits

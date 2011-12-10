@@ -26,7 +26,8 @@
 void *_load(void *image, size_t size, int flags) {
 	struct elf32_ehdr *elf32 = image;
 	struct elf_cache cache;
-	char regname[28];
+	char objname[28];
+	const char *prefix;
 	void *object;
 
 	/* check executable */
@@ -34,15 +35,44 @@ void *_load(void *image, size_t size, int flags) {
 		return NULL;
 	}
 
+	/* select namespace */
+	if (flags & RLTD_LOCAL) {
+		if (flags & RLTD_IMAGE) prefix = "dl.limg:";
+		else                    prefix = "dl.lobj:";
+	}
+	else {
+		if (flags & RLTD_IMAGE) prefix = "dl.img:";
+		else                    prefix = "dl.obj:";
+	}
+
 	elf_gencache(&cache, elf32, 0);
-	strlcpy(regname, "dl.obj:", 28);
-	strlcat(regname, cache.soname, 28);
+	strlcpy(objname, prefix, 28);
+	strlcat(objname, cache.soname, 28);
 
-	object = sltalloc(regname, cache.vsize);
-	elf_load(elf32, (uintptr_t) object);
+	if (sltget_name(objname)) {
+		if ((flags & RLTD_OVERWRITE) == 0) {
+			return (void*) sltget_name(objname)->base;
+		}
+	}
+	else {
+		if (flags & RLTD_NOLOAD) {
+			return NULL;
+		}
+	}
 
-	elf_gencache(&cache, object, 1);
-	elfc_relocate_all(&cache);
+	if (flags & RLTD_IMAGE) {
+		object = sltalloc(objname, size);
+		page_anon(object, size, PROT_READ | PROT_WRITE);
+		memcpy(object, elf32, size);
+	}
+	else {
+		object = sltalloc(objname, cache.vsize);
+		elf_load(elf32, (uintptr_t) object);
+		elf_gencache(&cache, object, 1);
+
+		if (flags & RLTD_NOW) elfc_relocate_now(&cache);
+		else                  elfc_relocate_all(&cache);
+	}
 
 	return (void*) object;
 }

@@ -34,7 +34,6 @@
  */
 
 void *_load(void *image, size_t size, int flags);
-void *_pull(void *image, size_t size, int flags);
 int   _exec(void *image, size_t size, int flags);
 
 int   _init(void *object);
@@ -43,7 +42,6 @@ int   _fini(void *object);
 char *_dep  (void *object, uint32_t index, int loaded);
 void *_sym  (void *object, const char *symbol);
 void  _uload(void *object);
-int   _error(void);
 
 uint32_t _plt_resolve(struct elf32_ehdr *image, uint32_t index);
 void    __plt_resolve(void);
@@ -77,6 +75,7 @@ void elf_gencache(struct elf_cache *cache, const struct elf32_ehdr *image, int l
 uint32_t elfc_resolve     (struct elf_cache *cache, const char *symbol);
 uint32_t elfc_relocate    (struct elf_cache *cache, const struct elf32_rel *rel);
 void     elfc_relocate_all(struct elf_cache *cache);
+void     elfc_relocate_now(struct elf_cache *cache);
 
 int dl_enter(void *entry_ptr);
 

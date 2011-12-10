@@ -113,6 +113,42 @@ void elfc_relocate_all(struct elf_cache *cache) {
 }
 
 /*****************************************************************************
+ * elfc_relocate_now
+ *
+ * Perform all initial relocations on the cached ELF image <cache>, including
+ * PLT relocations.
+ */
+
+void elfc_relocate_now(struct elf_cache *cache) {
+	size_t i;
+
+	/* only relocate dynamic objects */
+	if (!cache->dynamic) {
+		return;
+	}
+	
+	/* add special entries to GOT for PLT resolution */
+	if (cache->pltgot) {
+		((uint32_t*) cache->pltgot)[1] = (uint32_t) cache->image;
+		((uint32_t*) cache->pltgot)[2] = (uint32_t) __plt_resolve;
+	}
+
+	/* perform normal relocations (data) */
+	if (cache->reltab) {
+		for (i = 0; i < cache->reltabn; i++) {
+			elfc_relocate(cache, &cache->reltab[i]);
+		}
+	}
+
+	/* do full relocations for PLT GOT entries */
+	if (cache->image->e_type == ET_DYN && cache->jmprel) {
+		for (i = 0; i < cache->jmpreln; i++) {
+			elfc_relocate(cache, &cache->jmprel[i]);
+		}
+	}
+}
+
+/*****************************************************************************
  * elfc_get_needed
  *
  * Return a pointer to the <index>th shared object requested to be loaded by
@@ -307,15 +343,16 @@ void elf_gencache(struct elf_cache *cache, const struct elf32_ehdr *image, int l
 	/* get segment table */
 	cache->segtab = (const struct elf32_phdr*) (image->e_phoff + (uintptr_t) image);
 
-	if (image->e_type == ET_DYN) {
-		/* calulate image size */
-		for (i = 0; cache->segtab[i].p_type == PT_LOAD || cache->segtab[i].p_type == PT_DYNAMIC; i++);
-		if (i) cache->vsize = cache->segtab[i - 1].p_vaddr + cache->segtab[i - 1].p_memsz + 0x1000;
+	/* calulate image size */
+	for (i = 0; i < cache->image->e_phnum; i++) {
+		if ((cache->segtab[i].p_vaddr + cache->segtab[i].p_memsz) > cache->vsize) {
+			cache->vsize = cache->segtab[i].p_vaddr + cache->segtab[i].p_memsz;
+		}
 	}
 
+	/* adjust base for executables */
 	if (image->e_type == ET_EXEC) {
-		if (loaded) base = 0;
-		else base -= (cache->segtab[0].p_vaddr - cache->segtab[0].p_offset);
+		base -= (cache->segtab[0].p_vaddr - cache->segtab[0].p_offset);
 	}
 
 	/* get DYNAMIC segment */
@@ -329,7 +366,7 @@ void elf_gencache(struct elf_cache *cache, const struct elf32_ehdr *image, int l
 		}
 	}
 
-	/* get various DYNAMIC values */
+	/* get various DYNAMIC segment values */
 	if (!cache->dynamic) return;
 	for (i = 0; cache->dynamic[i].tag != DT_NULL; i++) {
 		switch (cache->dynamic[i].tag) {
@@ -345,5 +382,6 @@ void elf_gencache(struct elf_cache *cache, const struct elf32_ehdr *image, int l
 		}
 	}
 
+	/* lookup soname */
 	cache->soname = (cache->soname) ? &cache->strtab[(uintptr_t) cache->soname] : NULL;
 }
