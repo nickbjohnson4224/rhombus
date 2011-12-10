@@ -105,19 +105,21 @@ void ata_init(void) {
 		while (1) {
 			status = inb(ata[dr].base + REG_STAT);
 
-			if (status & STAT_ERROR) {
+			if (status & STAT_ERROR){
 				err = 1;
 				break;
 			}
 
-			if (!(status & STAT_BUSY) && (status & STAT_DRQ)) {
-				err = 0;
-				break;
+			if (status & STAT_BUSY) {
+				continue;
 			}
+
+			err = 0;
+			break;
 		}
 
 		/* try to catch ATAPI and SATA devices */
-		if (err) {
+		if (err && (inb(ata[dr].base + REG_LBA1) || inb(ata[dr].base + REG_LBA2))) {
 			cl = inb(ata[dr].base + REG_LBA1);
 			ch = inb(ata[dr].base + REG_LBA2);
 			c = cl | (ch << 8);
@@ -148,24 +150,49 @@ void ata_init(void) {
 			ata[dr].sectsize = 9;
 		}
 
+		/* wait for IDENTIFY to be ready */
+		while (1) {
+			status = inb(ata[dr].base + REG_STAT);
+
+			if (status & STAT_ERROR) {
+				err = 1;
+				break;
+			}
+
+			if (!(status & STAT_BUSY) && (status & STAT_DRQ)) {
+				err = 0;
+				break;
+			}
+		}
+
 		/* read in IDENTIFY space */
 		for (i = 0; i < 256; i++) {
 			buffer[i] = inw(ata[dr].base + REG_DATA);
 		}
 
-		ata[dr].signature    = *((uint16_t*) &buffer[ID_TYPE]);
-		ata[dr].capabilities = *((uint16_t*) &buffer[ID_CAP]);
-		ata[dr].commandsets  = *((uint32_t*) &buffer[ID_CMDSET]);
+		if (!buffer[ID_TYPE]) {
+			/* no drive */
+			ata[dr].flags = 0;
+			continue;
+		}
+
+		ata[dr].signature    = buffer[ID_TYPE];
+		ata[dr].capabilities = buffer[ID_CAP];
+		ata[dr].commandsets  = buffer[ID_CMDSET] | (uint32_t) buffer[ID_CMDSET+1] << 16;
 
 		/* get LBA mode and disk size */
 		if (ata[dr].commandsets & (1 << 26)) {
 			/* is LBA48 */
 			ata[dr].flags |= FLAG_LONG;
-			ata[dr].size = *((uint64_t*) &buffer[ID_MAX_LBA48]);
+			ata[dr].size   = (uint64_t) buffer[ID_MAX_LBA48+0];
+			ata[dr].size  |= (uint64_t) buffer[ID_MAX_LBA48+1] << 16;
+			ata[dr].size  |= (uint64_t) buffer[ID_MAX_LBA48+2] << 32;
+			ata[dr].size  |= (uint64_t) buffer[ID_MAX_LBA48+3] << 48;
 		}
 		else {
 			/* is LBA24 */
-			ata[dr].size = *((uint32_t*) &buffer[ID_MAX_LBA]);
+			ata[dr].size  = (uint32_t) buffer[ID_MAX_LBA+0];
+			ata[dr].size |= (uint32_t) buffer[ID_MAX_LBA+1] << 16;
 		}
 
 		/* get model string */
