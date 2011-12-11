@@ -29,6 +29,9 @@ struct mqueue_msg {
 struct mqueue {
 	struct mqueue_msg *back;
 	struct mqueue_msg *front;
+
+	uint32_t wl_tid;
+
 	bool mutex;
 };
 
@@ -42,6 +45,8 @@ static bool   mqueue_policy[256];
  * is true, messages from the port are queued. If <do_queue> is false, 
  * messages from the port are not queued. By default, all ports are set to
  * queue.
+ *
+ * Note that mqueue_policy[port] is set to the NOT of <do_queue>.
  */
 
 void mqueue_set_policy(uint8_t port, bool do_queue) {	
@@ -58,6 +63,7 @@ void mqueue_set_policy(uint8_t port, bool do_queue) {
 
 int mqueue_push(struct msg *msg) {
 	struct mqueue_msg *node;
+	uint32_t wl_tid;
 	uint8_t port;
 
 	if (!msg) {
@@ -86,7 +92,14 @@ int mqueue_push(struct msg *msg) {
 	if (mqueue[port].back)   mqueue[port].back->next = node;
 	mqueue[port].back = node;
 
+	wl_tid = mqueue[port].wl_tid;
+	mqueue[port].wl_tid = 0;
+
 	mutex_free(&mqueue[port].mutex);
+
+	if (wl_tid) {
+		wake(wl_tid - 1);
+	}
 
 	return 0;
 }
@@ -131,5 +144,39 @@ struct msg *mqueue_pull(uint8_t port, uint64_t source) {
 
 	msg = node->msg;
 	free(node);
+	return msg;
+}
+
+/*****************************************************************************
+ * mqueue_wait
+ *
+ * Find the first message in the message queue with port <port> and source
+ * <source. If <source> is zero, any source matches. If there is no match,
+ * this function blocks until a match is found by mqueue_push(). Returns the
+ * found message on success, waits forever on failure.
+ */
+
+struct msg *mqueue_wait(uint8_t port, uint64_t source) {
+	struct msg *msg;
+
+	msg = mqueue_pull(port, source);
+
+	while (!msg) {
+		
+		mutex_spin(&mqueue[port].mutex);
+		if (mqueue[port].wl_tid) {
+			mutex_free(&mqueue[port].mutex);
+			sleep();
+			msg = mqueue_pull(port, source);
+			continue;
+		}
+		mqueue[port].wl_tid = gettid() + 1;
+		mutex_free(&mqueue[port].mutex);
+
+		stop();
+
+		msg = mqueue_pull(port, source);
+	}
+
 	return msg;
 }

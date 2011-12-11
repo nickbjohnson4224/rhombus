@@ -50,6 +50,12 @@ struct thread *syscall_stop(struct thread *image) {
 	}
 	else {
 		thread_freeze(thread);
-		return image;
+
+		if (thread == image) {
+			return schedule_next();
+		}
+		else {
+			return image;
+		}
 	}
 }

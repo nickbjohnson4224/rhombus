@@ -20,15 +20,5 @@
 #include <rho/ipc.h>
 
 struct msg *mwait(uint8_t port, uint64_t source) {
-	struct msg *msg;
-	
-	while (1) {
-		msg = mqueue_pull(port, source);
-
-		if (msg) break;
-
-		sleep();
-	}
-
-	return msg;
+	return mqueue_wait(port, source);
 }
