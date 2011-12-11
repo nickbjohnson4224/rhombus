@@ -22,10 +22,17 @@
 
 #include "ata.h"
 
-int ata_send_lba(uint8_t drive, uint64_t sector) {
+int ata_send_lba(uint8_t drive, uint64_t sector, uint16_t count) {
 	uint8_t lba[8];
 	uint8_t head;
 	int lba48;
+
+	if (count > 256) {
+		return -1;
+	}
+	else if (count == 256) {
+		count = 0;
+	}
 
 	ata_select(drive);
 
@@ -47,17 +54,13 @@ int ata_send_lba(uint8_t drive, uint64_t sector) {
 	lba[1] = (sector >> 8)  & 0xFF;
 	lba[0] = (sector >> 0)  & 0xFF;
 
-	printf("pies %x\n", inb(ata[drive].base + REG_STAT));
-
 	/* wait for drive to be ready */
 	if (ata_wait(drive)) return -1;
-
-	printf("lies\n");
 
 	/* send LBA */
 	outb(ata[drive].base + REG_SELECT, (SEL(drive) ? 0xF0 : 0xE0) | head);
 	ata_sleep400(drive);
-	outb(ata[drive].base + REG_COUNT0, 0x01);
+	outb(ata[drive].base + REG_COUNT0, count);
 	outb(ata[drive].base + REG_LBA0, lba[0]);
 	outb(ata[drive].base + REG_LBA1, lba[1]);
 	outb(ata[drive].base + REG_LBA2, lba[2]);

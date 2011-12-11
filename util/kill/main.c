@@ -21,15 +21,35 @@
 
 int main(int argc, char **argv) {
 	uint32_t pid;
+	int signum;
 
 	if (argc < 2) {
 		fprintf(stderr, "%s: pid not supplied", argv[0]);
 		return 1;
 	}
 
-	pid = atoi(argv[1]);
+	if (argc == 3) {
+		signum = atoi(&argv[1][1]);
+		pid = atoi(argv[2]);
+	}
+	else {
+		signum = SIGTERM;
+		pid = atoi(argv[1]);
+	}
 
-	kill(pid, SIGTERM);
+	if (kill(pid, signum)) {
+		printf("Error sending signal.\n");
+		return 1;
+	}
+
+	if (signum == SIGNUKE) {
+		if (pid > 0) {
+			printf("Nuked PID %d.\n", pid);
+		}
+		else {
+			printf("Nuked PID %d and children.\n", -pid);
+		}
+	}
 
 	return 0;
 }

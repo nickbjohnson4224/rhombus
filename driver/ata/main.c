@@ -16,9 +16,13 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <rdi/core.h>
 #include <rdi/arch.h>
+#include <rdi/io.h>
+
+#include <rho/mutex.h>
 
 #include "ata.h"
 
@@ -60,6 +64,7 @@ void ata_init(void) {
 	uint8_t status, err, cl, ch;
 	uint16_t c;
 	uint16_t buffer[256];
+//	struct robject *robject;
 
 	/* detect I/O ports */
 	ata[ATA0].base = 0x1F0;
@@ -218,16 +223,81 @@ void ata_init(void) {
 			(uint32_t) ata[dr].size * (1 << ata[dr].sectsize) >> 10,
 			(uint32_t) ata[dr].size);
 		printf("\tmodel: %s\n", ata[dr].model);
+
+
 	}
 }
 
-int main(int argc, char **argv) {
-	uint8_t buffer[512];
+size_t ata_read(struct robject *self, rp_t source, uint8_t *buffer, size_t size, off_t offset) {
+	uint32_t drive;
+	uint8_t *buffer2;
+	uint32_t buf2off;
+	uint64_t sector;
+	uint16_t count;
+	uint16_t i;
+
+	mutex_spin(&self->driver_mutex);
+
+	drive = (uint32_t) robject_data(self, "drive");
 	
+	if (offset >= ata[drive].size << ata[drive].sectsize) {
+		return 0;
+	}
+
+	if (offset + size > ata[drive].size << ata[drive].sectsize) {
+		size = (ata[drive].size << ata[drive].sectsize) - offset;
+	}
+
+	buf2off = offset & ((1 << ata[drive].sectsize) - 1);
+	count   = ((size + buf2off) >> ata[drive].sectsize) + 1;
+	buffer2 = malloc(count << ata[drive].sectsize);
+	sector  = offset >> ata[drive].sectsize;
+
+	for (i = 0; i < count;) {
+		if (count - i > 256) {
+			pio_read(drive, sector, 256, (void*) &buffer2[i << ata[drive].sectsize]);
+			i += 256;
+		}
+		else {
+			pio_read(drive, sector, count - i, (void*) &buffer[i << ata[drive].sectsize]);
+			break;
+		}
+	}
+
+	memcpy(buffer, &buffer2[buf2off], size);
+
+	mutex_free(&self->driver_mutex);
+
+	return size;
+}
+
+int main(int argc, char **argv) {
+	struct robject *robject;
+	off_t *disksize;
+	uint32_t dr;
+	
+	rdi_init();
 	ata_init();
 
-	printf("reading a sector from ATA 0 Master:\n");
-	pio_read(ATA00, 0, (void*) buffer);
+	for (dr = ATA00; dr <= ATA11; dr++) {
+
+		if (!ata[dr].flags) {
+			continue;
+		}
+		
+		robject = rdi_file_cons(robject_new_index(), ACCS_READ);
+
+		disksize = malloc(sizeof(off_t));
+		*disksize = ata[dr].size << ata[dr].sectsize;
+		robject_set_data(robject, "size", disksize);
+		robject_set_data(robject, "drive", (void*) dr);
+		robject_set_data(robject, "name", strdup(ata[dr].model));
+	}
+	
+	rdi_global_read_hook = ata_read;
+
+	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
+	_done();
 
 	return 0;
 }

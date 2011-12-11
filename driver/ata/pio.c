@@ -22,16 +22,21 @@
 
 #include "ata.h"
 
-static void ata_pio_read   (uint8_t drive, uint64_t sector, uint16_t *buffer);
-static void ata_pio_write  (uint8_t drive, uint64_t sector, uint16_t *buffer);
-static void atapi_pio_read (uint8_t drive, uint64_t sector, uint16_t *buffer);
-static void atapi_pio_write(uint8_t drive, uint64_t sector, uint16_t *buffer);
+static void ata_pio_read   (uint8_t drive, uint64_t sector, uint16_t count, uint16_t *buffer);
+static void ata_pio_write  (uint8_t drive, uint64_t sector, uint16_t count, uint16_t *buffer);
+static void atapi_pio_read (uint8_t drive, uint64_t sector, uint16_t count, uint16_t *buffer);
+static void atapi_pio_write(uint8_t drive, uint64_t sector, uint16_t count, uint16_t *buffer);
 
-static void ata_pio_read(uint8_t drive, uint64_t sector, uint16_t *buffer) {
-	size_t i;
+static void ata_pio_read(uint8_t drive, uint64_t sector, uint16_t count, uint16_t *buffer) {
+	size_t i, j;
 	int lba48 = 0;
 
-	lba48 = ata_send_lba(drive, sector);
+	lba48 = ata_send_lba(drive, sector, count);
+	if (lba48 == -1) {
+		printf("drive error\n");
+		return;
+	}
+
 	outb(ata[drive].base + REG_CMD, (lba48) ? CMD_READ_PIO48 : CMD_READ_PIO);
 
 	if (ata_wait(drive)) {
@@ -39,27 +44,20 @@ static void ata_pio_read(uint8_t drive, uint64_t sector, uint16_t *buffer) {
 		return;
 	}
 
-	for (i = 0; i < (uint32_t) (1 << ata[drive].sectsize) >> 1; i++) {
-		buffer[i] = inw(ata[drive].base + REG_DATA);
-		printf("read %x\n", buffer[i]);
+	for (j = 0; j < count; j++) {
+		for (i = 0; i < (uint32_t) (1 << ata[drive].sectsize) >> 1; i++) {
+			buffer[i + j * (1 << (ata[drive].sectsize - 1))] = inw(ata[drive].base + REG_DATA);
+		}
+		ata_sleep400(drive);
 	}
-	ata_sleep400(drive);
 }
 
-static void ata_pio_write(uint8_t drive, uint64_t sector, uint16_t *buffer);
-
-static void atapi_pio_read(uint8_t drive, uint64_t sector, uint16_t *buffer);
-
-static void atapi_pio_write(uint8_t drive, uint64_t sector, uint16_t *buffer);
-
-void pio_read(uint8_t drive, uint64_t sector, uint16_t *buffer) {
+void pio_read(uint8_t drive, uint64_t sector, uint16_t count, uint16_t *buffer) {
 	
 	if (ata[drive].flags & FLAG_ATAPI) {
 		
 	}
 	else {
-		ata_pio_read(drive, sector, buffer);
+		ata_pio_read(drive, sector, count, buffer);
 	}
 }
-
-void pio_write(uint8_t drive, uint64_t sector, uint16_t *buffer);

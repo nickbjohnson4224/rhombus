@@ -131,11 +131,11 @@ void ata_sleep400(uint8_t drive);
 
 void ata_select(uint8_t drive);
 
-int ata_send_lba(uint8_t drive, uint64_t sector);
+int ata_send_lba(uint8_t drive, uint64_t sector, uint16_t count);
 
 /* PIO ***********************************************************************/
 
-void pio_write(uint8_t drive, uint64_t sector, uint16_t *buffer);
-void pio_read (uint8_t drive, uint64_t sector, uint16_t *buffer);
+void pio_write(uint8_t drive, uint64_t sector, uint16_t count, uint16_t *buffer);
+void pio_read (uint8_t drive, uint64_t sector, uint16_t count, uint16_t *buffer);
 
 #endif/*ATA_H*/

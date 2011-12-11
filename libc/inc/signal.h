@@ -39,6 +39,7 @@
 #define SIGILL  PORT_ILL
 #define SIGUSR1 PORT_USER1
 #define SIGUSR2 PORT_USER2
+#define SIGNUKE 0xFF
 
 #define SIGMAX  16
 

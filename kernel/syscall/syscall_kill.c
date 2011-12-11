@@ -33,6 +33,10 @@
  * If <target> is negative, the signal is sent to <target> and all of its
  * offspring (recursively).
  *
+ * if <signal> is 255 (0xFF), then no signal is sent; instead, if the caller
+ * is privileged or has the same user ID as the target, the target is 
+ * immediately killed with no notification.
+ *
  * Returns zero on success, nonzero on error.
  */
 
@@ -59,6 +63,13 @@ struct thread *syscall_kill(struct thread *image) {
 		/* return zero unless otherwise specified */
 		image->eax = 0;
 
+		if (signal == 0xFF && 
+				(image->proc->user == 0 
+				|| image->proc->user == process_get(target)->user)) {
+			process_kill(process_get(target));
+			return image;
+		}
+
 		/* send signal */
 		return thread_send(image, target, signal, NULL);
 
@@ -68,9 +79,8 @@ struct thread *syscall_kill(struct thread *image) {
 		_signal_subtree(image, -target, signal);
 
 		image->eax = 0;
+		return image;
 	}
-
-	return image;
 }
 
 static void _signal_subtree(struct thread *image, pid_t root, uint8_t signal) {
@@ -78,11 +88,19 @@ static void _signal_subtree(struct thread *image, pid_t root, uint8_t signal) {
 	int i;
 
 	proc = process_get(root);
+	if (!proc) return;
 
 	for (i = 0; i < MAX_PID; i++) {
 		if (process_get(i) && process_get(i)->parent && process_get(i)->parent->pid == root) {
 			_signal_subtree(image, i, signal);
 		}
+	}
+
+	if (signal == 0xFF 
+			&& (image->proc->user == 0 
+			|| image->proc->user == image->user)) {
+		process_kill(proc);
+		return;
 	}
 
 	process_freeze(proc);
