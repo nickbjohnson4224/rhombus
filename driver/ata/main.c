@@ -32,6 +32,23 @@ void ata_sleep400(uint8_t drive) {
 	inb(ata[drive].base + REG_ASTAT);
 }
 
+int ata_wait(uint8_t drive) {
+	uint8_t status;
+	int i;
+
+	for (i = 0;; i++) {
+		status = inb(ata[drive].base + REG_STAT);
+
+		if (!(status & STAT_BUSY)) {
+			return 0;
+		}
+
+		if (i > 4 && ((status & STAT_ERROR) || (status & STAT_FAULT))) {
+			return status;
+		}
+	}
+}
+
 void ata_select(uint8_t drive) {
 
 	outb(ata[drive].base + REG_SELECT, SEL(drive) ? 0xB0 : 0xA0);
@@ -102,21 +119,7 @@ void ata_init(void) {
 		ata[dr].flags = FLAG_EXIST;
 
 		/* poll for response */
-		while (1) {
-			status = inb(ata[dr].base + REG_STAT);
-
-			if (status & STAT_ERROR){
-				err = 1;
-				break;
-			}
-
-			if (status & STAT_BUSY) {
-				continue;
-			}
-
-			err = 0;
-			break;
-		}
+		err = ata_wait(dr);
 
 		/* try to catch ATAPI and SATA devices */
 		if (err && (inb(ata[dr].base + REG_LBA1) || inb(ata[dr].base + REG_LBA2))) {
@@ -151,19 +154,7 @@ void ata_init(void) {
 		}
 
 		/* wait for IDENTIFY to be ready */
-		while (1) {
-			status = inb(ata[dr].base + REG_STAT);
-
-			if (status & STAT_ERROR) {
-				err = 1;
-				break;
-			}
-
-			if (!(status & STAT_BUSY) && (status & STAT_DRQ)) {
-				err = 0;
-				break;
-			}
-		}
+		err = ata_wait(dr);
 
 		/* read in IDENTIFY space */
 		for (i = 0; i < 256; i++) {
@@ -231,8 +222,12 @@ void ata_init(void) {
 }
 
 int main(int argc, char **argv) {
+	uint8_t buffer[512];
 	
 	ata_init();
+
+	printf("reading a sector from ATA 0 Master:\n");
+	pio_read(ATA00, 0, (void*) buffer);
 
 	return 0;
 }

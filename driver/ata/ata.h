@@ -65,7 +65,7 @@ extern struct ata_drive ata[4];
 #define REG_LBA2    0x0005
 #define REG_SELECT  0x0006
 #define REG_CMD     0x0007
-#define REG_STAT    0x0008
+#define REG_STAT    0x0007
 #define REG_COUNT1  0x0008
 #define REG_LBA3    0x0009
 #define REG_LBA4    0x000A
@@ -121,6 +121,8 @@ extern struct ata_drive ata[4];
 
 /* driver internal functions *************************************************/
 
+int ata_wait(uint8_t drive);
+
 void ata_sleep400(uint8_t drive);
 
 #define SEL(d) ((d) & 1)
@@ -128,5 +130,12 @@ void ata_sleep400(uint8_t drive);
 #define SLAVE  1
 
 void ata_select(uint8_t drive);
+
+int ata_send_lba(uint8_t drive, uint64_t sector);
+
+/* PIO ***********************************************************************/
+
+void pio_write(uint8_t drive, uint64_t sector, uint16_t *buffer);
+void pio_read (uint8_t drive, uint64_t sector, uint16_t *buffer);
 
 #endif/*ATA_H*/
