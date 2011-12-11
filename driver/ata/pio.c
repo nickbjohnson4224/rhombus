@@ -29,6 +29,7 @@ static void atapi_pio_write(uint8_t drive, uint64_t sector, uint16_t count, uint
 
 static void ata_pio_read(uint8_t drive, uint64_t sector, uint16_t count, uint16_t *buffer) {
 	size_t i, j;
+	uint16_t word;
 	int lba48 = 0;
 
 	lba48 = ata_send_lba(drive, sector, count);
@@ -46,7 +47,8 @@ static void ata_pio_read(uint8_t drive, uint64_t sector, uint16_t count, uint16_
 
 	for (j = 0; j < count; j++) {
 		for (i = 0; i < (uint32_t) (1 << ata[drive].sectsize) >> 1; i++) {
-			buffer[i + j * (1 << (ata[drive].sectsize - 1))] = inw(ata[drive].base + REG_DATA);
+			word = inw(ata[drive].base + REG_DATA);
+			buffer[i + j * (1 << (ata[drive].sectsize - 1))] = word;
 		}
 		ata_sleep400(drive);
 	}

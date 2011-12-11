@@ -239,7 +239,7 @@ size_t ata_read(struct robject *self, rp_t source, uint8_t *buffer, size_t size,
 	mutex_spin(&self->driver_mutex);
 
 	drive = (uint32_t) robject_data(self, "drive");
-	
+
 	if (offset >= ata[drive].size << ata[drive].sectsize) {
 		return 0;
 	}
@@ -249,7 +249,7 @@ size_t ata_read(struct robject *self, rp_t source, uint8_t *buffer, size_t size,
 	}
 
 	buf2off = offset & ((1 << ata[drive].sectsize) - 1);
-	count   = ((size + buf2off) >> ata[drive].sectsize) + 1;
+	count   = ((size + buf2off) >> ata[drive].sectsize);
 	buffer2 = malloc(count << ata[drive].sectsize);
 	sector  = offset >> ata[drive].sectsize;
 
@@ -259,7 +259,7 @@ size_t ata_read(struct robject *self, rp_t source, uint8_t *buffer, size_t size,
 			i += 256;
 		}
 		else {
-			pio_read(drive, sector, count - i, (void*) &buffer[i << ata[drive].sectsize]);
+			pio_read(drive, sector, count - i, (void*) &buffer2[i << ata[drive].sectsize]);
 			break;
 		}
 	}

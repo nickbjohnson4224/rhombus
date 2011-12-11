@@ -60,7 +60,6 @@ struct thread *fault_page(struct thread *image) {
 		debug_printf("user stack: %x - %x\n", image->stack, image->stack + SEGSZ);
 		debug_printf("user stack dump: (ebp = %x)\n", image->ebp);
 		debug_dumpi((void*) image->useresp, 30);
-		debug_panic("page fault exception");
 
 		process_freeze(image->proc);
 		return thread_send(image, image->proc->pid, PORT_PAGE, NULL);
