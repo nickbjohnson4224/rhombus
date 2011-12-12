@@ -4,7 +4,7 @@ HEADERS := $(shell find inc -name "*.h")
 SUBDIR	:= librdi
 STATIC	:= librdi.a
 SHARED	:= librdi.so
-CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc
+CFLAGS  += -I$(BUILDDIR)/$(SUBDIR)/inc -fPIC
 ASFLAGS := -felf
 LDFLAGS += -Bdynamic -lc
 

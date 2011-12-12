@@ -17,6 +17,7 @@
 #include <interrupt.h>
 #include <string.h>
 #include <space.h>
+#include <debug.h>
 #include <irq.h>
 #include <cpu.h>
 
@@ -80,6 +81,11 @@ struct thread *int_handler(struct thread *image) {
 		if (new_image && new_image != image) {
 			image = thread_switch(image, new_image);
 		}
+	}
+
+	if (!new_image) {
+		/* idle */
+		cpu_idle(&__idle_thread.useresp);
 	}
 
 	/* set IOPL=3 if root, IOPL=0 if other user or vm86 */

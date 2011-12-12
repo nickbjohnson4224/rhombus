@@ -164,6 +164,10 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	init->thread[0]->cs      = 0x1B;
 	init->thread[0]->eflags  = cpu_get_eflags() | 0x3200; /* IF, IOPL = 3 */
 
+	/* bootstrap idle thread */
+	idle->thread[0] = &__idle_thread;
+	__idle_thread.proc = idle;
+
 	/* load dl */
 	if (elf_check_file(dl_image)) {
 		debug_panic("dl.so is not a valid ELF executable");

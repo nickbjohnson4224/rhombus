@@ -22,6 +22,8 @@
 #include <irq.h>
 #include <cpu.h>
 
+struct thread __idle_thread;
+
 /****************************************************************************
  * thread_alloc
  *
@@ -64,6 +66,8 @@ struct thread *thread_exit(struct thread *image) {
 struct thread *thread_send(struct thread *image, pid_t target, portid_t port, struct msg *msg) {
 	struct process *p_targ;
 	struct thread *new_image;
+
+	if (image && (image->proc->pid == 0)) image = NULL;
 
 	/* find target process */
 	p_targ = process_get(target);
@@ -254,8 +258,8 @@ uintptr_t thread_bind(struct thread *thread, struct process *proc) {
 
 struct thread *thread_switch(struct thread *old, struct thread *new) {
 
-	if (!new) {
-		cpu_idle();
+	if (!new || new->proc->pid == 0) {
+		cpu_idle(&__idle_thread.useresp);
 	}
 
 	/* save FPU state */

@@ -23,7 +23,7 @@
 /* general CPU operations ***************************************************/
 
 void cpu_set_stack(void *ptr);
-void cpu_idle(void);
+void cpu_idle(void *stack);
 void cpu_halt(void);
 
 /* floating point unit operations *******************************************/

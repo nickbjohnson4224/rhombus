@@ -81,6 +81,8 @@ struct thread {
 
 /* thread operations *******************************************************/
 
+extern struct thread __idle_thread;
+
 struct thread *thread_alloc (void);
 void           thread_free  (struct thread *thread);
 struct thread *thread_switch(struct thread *old, struct thread *new);

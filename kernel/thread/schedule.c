@@ -71,10 +71,11 @@ void schedule_remove(struct thread *thread) {
 
 	if (schedule_queue.out == thread) {
 		schedule_queue.out = thread->next;
-		return;
+		if (schedule_queue.in == thread) {
+			schedule_queue.in = NULL;
+		}
 	}
-
-	for (temp = schedule_queue.out; temp->next; temp = temp->next) {
+	else for (temp = schedule_queue.out; temp->next; temp = temp->next) {
 		if (temp->next == thread) {
 			temp->next = thread->next;
 

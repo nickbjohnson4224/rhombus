@@ -38,9 +38,11 @@ static char *buffer;
 static size_t buffer_top;
 static size_t buffer_size;
 static bool mutex;
+static uint32_t waiting_tid;
 
 void _push_line(char *l) {
 	struct line *line;
+	uint32_t tid;
 	
 	line = calloc(sizeof(struct line), 1);
 	line->data = l;
@@ -58,7 +60,14 @@ void _push_line(char *l) {
 		line_buf_out->next = line;
 		line_buf_out = line;
 	}
+
+	tid = waiting_tid;
+	waiting_tid = 0;
 	mutex_free(&mutex);
+
+	if (tid) {
+		wake(tid - 1);
+	}
 }
 
 char *_pop_line(void) {
@@ -68,8 +77,9 @@ char *_pop_line(void) {
 	mutex_spin(&mutex);
 	if (!line_buf_out) {
 		while (1) {
+			waiting_tid = gettid() + 1;
 			mutex_free(&mutex);
-			sleep();
+			stop();
 			mutex_spin(&mutex);
 			if (line_buf_out) break;
 		}

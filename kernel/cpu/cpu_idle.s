@@ -1,4 +1,4 @@
-; Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+; Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
 ; 
 ; Permission to use, copy, modify, and distribute this software for any
 ; purpose with or without fee is hereby granted, provided that the above
@@ -14,10 +14,20 @@
 
 [bits 32]
 
+section .bss
+
+global cpu_idle_stack
+cpu_idle_stack:
+	resb 200
+cpu_idle_stack_top:
+	resb 200
+
 section .text
 
 global cpu_idle
 cpu_idle:
-	mov eax, [esp]
+	mov esp, [esp+4]
 	sti
-	jmp $
+.halt:
+	hlt
+	jmp .halt
