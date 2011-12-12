@@ -22,6 +22,13 @@
 #include <irq.h>
 #include <cpu.h>
 
+/****************************************************************************
+ * __idle_thread
+ *
+ * A statically-allocated thread structure used by the idle process for
+ * interrupt handling purposes.
+ */
+
 struct thread __idle_thread;
 
 /****************************************************************************
@@ -66,8 +73,6 @@ struct thread *thread_exit(struct thread *image) {
 struct thread *thread_send(struct thread *image, pid_t target, portid_t port, struct msg *msg) {
 	struct process *p_targ;
 	struct thread *new_image;
-
-	if (image && (image->proc->pid == 0)) image = NULL;
 
 	/* find target process */
 	p_targ = process_get(target);

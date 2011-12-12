@@ -78,14 +78,9 @@ struct thread *int_handler(struct thread *image) {
 	if (_int_handler[image->num]) {
 		new_image = _int_handler[image->num](image);
 
-		if (new_image && new_image != image) {
+		if (new_image != image) {
 			image = thread_switch(image, new_image);
 		}
-	}
-
-	if (!new_image) {
-		/* idle */
-		cpu_idle(&__idle_thread.useresp);
 	}
 
 	/* set IOPL=3 if root, IOPL=0 if other user or vm86 */
