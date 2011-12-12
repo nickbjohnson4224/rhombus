@@ -192,11 +192,11 @@ int main(int argc, char **argv) {
 
 	// launch shell
 	pid = fork();
-	if (pid < 0) {
+	if (pid == 0) {
 		setenv("PATH", "/bin");
-		ropen(0, RP_CONS(-pid, term->index), STAT_READER);
-		ropen(1, RP_CONS(-pid, term->index), STAT_WRITER);
-		ropen(2, RP_CONS(-pid, term->index), STAT_WRITER);
+		ropen(0, RP_CONS(getppid(), term->index), STAT_READER);
+		ropen(1, RP_CONS(getppid(), term->index), STAT_WRITER);
+		ropen(2, RP_CONS(getppid(), term->index), STAT_WRITER);
 		exec("/bin/fish");
 	}
 

@@ -24,9 +24,11 @@ int fork(void) {
 	int pid;
 
 	pid = _fork();
+	if (pid < 0) return pid;
+
 	resetpid();
 
-	if (pid < 0) {
+	if (pid == 0) {
 		__reconnect();
 	}
 

@@ -39,7 +39,7 @@ static uint64_t start(struct tar_file *file, char const **argv) {
 
 	pid = fork();
 
-	if (pid < 0) {
+	if (pid == 0) {
 		execiv(file->start, file->size, argv);
 		abort();
 	}

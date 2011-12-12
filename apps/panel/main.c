@@ -29,19 +29,19 @@ void panel_window_event(struct widget *widget, const char *event) {
 	uint32_t old_tags, tag;
 
 	if (!strcmp(get_name(widget), "launch_terminal") && !strcmp(event, "clicked")) {
-		if (fork() < 0) {
+		if (fork() == 0) {
 			exec("/sbin/fbterm");
 			exit(1);
 		}
 	}
 	if (!strcmp(get_name(widget), "launch_testtoolkit") && !strcmp(event, "clicked")) {
-		if (fork() < 0) {
+		if (fork() == 0) {
 			exec("/bin/testtoolkit");
 			exit(1);
 		}
 	}
 	if (!strcmp(get_name(widget), "halt") && !strcmp(event, "clicked")) {
-		if (fork() < 0) {
+		if (fork() == 0) {
 			exec("/bin/halt");
 			exit(1);
 		}

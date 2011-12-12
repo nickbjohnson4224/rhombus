@@ -203,10 +203,10 @@ int main(int argc, char **argv) {
 
 	// launch shell
 	pid = fork();
-	if (pid < 0) {
+	if (pid == 0) {
 		setenv("PATH", "/bin");
-		stdout = stderr = fdopen(RP_CONS(-pid, 0), "w");
-		stdin = fdopen(RP_CONS(-pid, 0), "r");
+		stdout = stderr = fdopen(RP_CONS(getppid(), 0), "w");
+		stdin = fdopen(RP_CONS(getppid(), 0), "r");
 		exec("/bin/fish");
 	}
 

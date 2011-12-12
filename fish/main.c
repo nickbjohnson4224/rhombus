@@ -60,7 +60,7 @@ int fish_exec_bg(int argc, char **argv, FILE *in, FILE *out, FILE *err) {
 	int pid;
 
 	pid = fork();
-	if (pid < 0) {
+	if (pid == 0) {
 
 		if (in)  stdin  = in;
 		if (out) stdout = out;
@@ -90,7 +90,7 @@ int fish_exec_fg(int argc, char **argv, FILE *in, FILE *out, FILE *err) {
 	int pid;
 
 	pid = fork();
-	if (pid < 0) {
+	if (pid == 0) {
 		if (in)  stdin  = in;
 		if (out) stdout = out;
 		if (err) stderr = err;

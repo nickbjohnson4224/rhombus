@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,15 +17,16 @@
 #include <interrupt.h>
 #include <process.h>
 #include <thread.h>
+#include <debug.h>
 
 /*****************************************************************************
  * syscall_fork (int 0x48)
  *
  * (no arguments)
  *
- * Copies the current process and the current thread. Returns zero on failure.
- * Returns the negative parent pid in the child and the positive child pid in
- * the parent on success.
+ * Copies the current process and the current thread. Returns negative on 
+ * failure. Returns the zero in the child and the positive child pid in the 
+ * parent on success.
  */
 
 struct thread *syscall_fork(struct thread *image) {
@@ -36,7 +37,7 @@ struct thread *syscall_fork(struct thread *image) {
 	child = process_clone(parent, image);
 
 	if (!child) {
-		image->eax = 0;
+		image->eax = -1;
 		return image;
 	}
 
@@ -46,8 +47,8 @@ struct thread *syscall_fork(struct thread *image) {
 	/* Switch to child */
 	image = thread_switch(image, child->thread[0]);
 
-	/* (now in child) Set return value to negative parent's PID */
-	image->eax = -((uint32_t) parent->pid);
+	/* (now in child) Set return value to 0 */
+	image->eax = 0;
 
 	return image;
 }

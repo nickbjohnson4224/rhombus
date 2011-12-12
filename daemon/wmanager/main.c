@@ -348,7 +348,7 @@ int main(int argc, char **argv) {
 
 	stdout = stderr = fopen("/dev/serial", "w");
 
-	if (fork() < 0) {
+	if (fork() == 0) {
 		exec("/sbin/mouse");
 	}
 	mwait(PORT_CHILD, 0);
@@ -395,7 +395,7 @@ int main(int argc, char **argv) {
 
 	current_tags = 1;
 
-	if (fork() < 0) {
+	if (fork() == 0) {
 		exec("/bin/panel");
 	}
 
