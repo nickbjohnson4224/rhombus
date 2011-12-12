@@ -17,38 +17,26 @@
 #include <interrupt.h>
 #include <process.h>
 #include <thread.h>
-#include <debug.h>
-#include <irq.h>
 
 /****************************************************************************
- * syscall_exit (int 0x49)
+ * syscall_reap (int 0x55)
  *
- * EAX: exit status
+ * EAX: child PID
  *
- * Exits the current process, switching to init temporarily, then switching
- * to the next schedulable thread. If init calls this syscall, the kernel
- * halts. Does not return on success.
+ * XXX - document
  */
 
-struct thread *syscall_exit(struct thread *image) {
-	struct thread *new_image;
-	uint16_t pid;
-	uint32_t parent;
+struct thread *syscall_reap(struct thread *image) {
+	struct process *child;
 
-	pid = image->proc->pid;
+	child = process_get(image->eax);
 
-	if (pid == 1) {
-		debug_panic("init died");
+	if (child && child->parent == image->proc) {
+		image->eax = process_reap(child);
+	}
+	else {
+		image->eax = -1;
 	}
 
-	parent = image->proc->parent->pid;
-
-	process_switch(process_get(1));
-
-	new_image = thread_send(image, parent, PORT_CHILD, NULL);
-
-	image->proc->status = image->eax;
-	process_kill(image->proc);
-
-	return new_image;
+	return image;
 }

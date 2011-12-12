@@ -41,6 +41,7 @@
 #define SYSCALL_VM86	0x52
 #define SYSCALL_NAME	0x53
 #define SYSCALL_RTAB	0x54
+#define SYSCALL_REAP	0x55
 
 struct thread *syscall_send(struct thread *image);
 struct thread *syscall_done(struct thread *image);
@@ -63,5 +64,6 @@ struct thread *syscall_kill(struct thread *image);
 struct thread *syscall_vm86(struct thread *image);
 struct thread *syscall_name(struct thread *image);
 struct thread *syscall_rtab(struct thread *image);
+struct thread *syscall_reap(struct thread *image);
 
 #endif/*KERNEL_SYSCALL_H*/

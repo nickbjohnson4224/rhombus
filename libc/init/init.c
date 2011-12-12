@@ -42,6 +42,17 @@ static void __ignore(struct msg *msg) {
 	free(msg);
 }
 
+static void __reap(struct msg *msg) {
+	uint32_t status;
+
+	status = _reap(RP_PID(msg->source));
+
+	msg->length = sizeof(uint32_t);
+	((uint32_t*) msg->data)[0] = status;
+
+	mqueue_push(msg);
+}
+
 /****************************************************************************
  * __rcall_handler
  *
@@ -169,6 +180,7 @@ void __libc_init(int (*_main)(int, char**)) {
 	when(PORT_RCALL, __rcall_handler);
 	when(PORT_EVENT, __ignore);
 	when(PORT_CLOSE, __ignore);
+	when(PORT_CHILD, __reap);
 
 	/* set up basic rcall handlers */
 	rcall_hook("ping", __ping);

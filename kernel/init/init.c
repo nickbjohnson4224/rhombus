@@ -203,6 +203,7 @@ struct thread *init(struct multiboot *mboot, uint32_t mboot_magic) {
 	int_set_handler(SYSCALL_VM86, syscall_vm86);
 	int_set_handler(SYSCALL_NAME, syscall_name);
 	int_set_handler(SYSCALL_RTAB, syscall_rtab);
+	int_set_handler(SYSCALL_REAP, syscall_reap);
 
 	/* register fault handlers */
 	int_set_handler(FAULT_DE, fault_float);

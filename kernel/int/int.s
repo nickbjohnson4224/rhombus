@@ -1,4 +1,4 @@
-; Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+; Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
 ; 
 ; Permission to use, copy, modify, and distribute this software for any
 ; purpose with or without fee is hereby granted, provided that the above
@@ -93,6 +93,7 @@ INTN	81	; kill
 INTN	82	; vm86
 INTN	83	; name
 INTN	84	; rtab
+INTN	85	; reap
 
 extern int_handler
 extern fpu_save

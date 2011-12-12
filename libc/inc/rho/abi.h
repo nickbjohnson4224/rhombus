@@ -88,6 +88,7 @@ int         _proc(uint32_t pid, uint32_t selector, uint32_t value);
 int         _kill(uint32_t target, uint8_t signal);
 int         _name(char *name, uint32_t pid, uint32_t operation);
 int         _rtab(uint32_t operation, uint64_t a, uint64_t b);
+uint32_t    _reap(uint32_t pid);
 
 #define GPID_SELF	0
 #define GPID_PARENT	1

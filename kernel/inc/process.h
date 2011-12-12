@@ -50,6 +50,7 @@ struct process {
 	uid_t    user;
 	intid_t  rirq;
 	char     name[16];
+	uint32_t status;
 
 	struct process *parent;
 
@@ -67,6 +68,7 @@ struct process *process_alloc (void);
 struct process *process_clone (struct process *parent, struct thread *active);
 void            process_free  (struct process *proc);
 void            process_kill  (struct process *proc);
+uint32_t        process_reap  (struct process *proc);
 void            process_touch (pid_t pid);
 void            process_switch(struct process *proc);
 

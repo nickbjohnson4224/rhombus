@@ -18,6 +18,7 @@
 #include <thread.h>
 #include <string.h>
 #include <space.h>
+#include <debug.h>
 #include <cpu.h>
 #include <irq.h>
 
@@ -183,13 +184,22 @@ void process_thaw(struct process *proc) {
 /****************************************************************************
  * process_kill
  *
- * Frees a process entirely.
+ * Frees a process and its address space. All children of this process are 
+ * adopted by init (PID 1). The process structure itself is not freed, and 
+ * remains in memory until it is reaped by its parent.
  */
 
 void process_kill(struct process *proc) {
 	size_t i;
 
 	rtab_free(proc);
+
+	/* give children to init */
+	for (i = 0; i < MAX_PID; i++) {
+		if (process_get(i) && process_get(i)->parent == proc) {
+			process_get(i)->parent = process_get(1);
+		}
+	}
 
 	if (proc->rirq != IRQ_NULL) {
 		irq_set_redirect(0, proc->rirq);
@@ -202,7 +212,27 @@ void process_kill(struct process *proc) {
 	}
 
 	space_free(proc->space);
-	process_free(proc);
+	proc->space = 0;
+}
+
+/****************************************************************************
+ * process_reap
+ *
+ * Free a process structure, returning its exit status. If the given process
+ * is still active, it is not freed, but its current status is still 
+ * returned.
+ */
+
+uint32_t process_reap(struct process *proc) {
+	uint32_t status;
+	
+	status = proc->status;
+
+	if (!proc->space) {
+		process_free(proc);
+	}
+
+	return status;
 }
 
 /****************************************************************************

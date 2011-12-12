@@ -45,6 +45,5 @@ void exit(int status) {
 
 	dl->fini(dlopen(NULL, 0));
 
-	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
 	__exit(status);
 } 
