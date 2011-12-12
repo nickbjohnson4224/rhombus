@@ -19,6 +19,8 @@
 #include <errno.h>
 #include <stdio.h>
 
+#include <sys/wait.h>
+
 #include <rho/natio.h>
 #include <rho/proc.h>
 #include <rho/exec.h>
@@ -71,7 +73,7 @@ int pipe_exec_fg(char const **argv, int in, int out) {
 	}
 	close(in);
 	close(out);
-	mwait(PORT_CHILD, pid);
+	waitpid(pid, NULL, 0);
 
 	return 0;
 }

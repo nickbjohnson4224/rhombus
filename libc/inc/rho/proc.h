@@ -74,4 +74,11 @@ int      setname(const char *name);
 char    *getname(uint32_t pid);
 char    *getname_s();
 
+/* exit status flags *******************************************************/
+
+#define EXIT_ABORT  0x00010000
+#define EXIT_SIGNAL 0x00020000
+#define EXIT_DUMPED 0x00040000
+#define EXIT_STOP   0x00080000
+
 #endif/*__RLIBC_PROC_H*/

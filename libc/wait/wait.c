@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,16 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
-#include <rho/proc.h>
-
-/****************************************************************************
- * abort
- *
- * Exit process abnormally.
- */
-
-void abort(void) {
-	exit(EXIT_FAILURE | EXIT_ABORT);
+pid_t wait(int *status) {
+	return waitpid(-1, status, 0);
 }

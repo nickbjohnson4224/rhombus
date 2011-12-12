@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,16 +14,23 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
+#ifndef __RLIBC_SYS_WAIT_H
+#define __RLIBC_SYS_WAIT_H
 
+#include <sys/types.h>
 #include <rho/proc.h>
 
-/****************************************************************************
- * abort
- *
- * Exit process abnormally.
- */
+#define WNOHANG 0x0001
 
-void abort(void) {
-	exit(EXIT_FAILURE | EXIT_ABORT);
-}
+#define WIFEXITED(status)   (((status) & (EXIT_SIGNAL | EXIT_STOP | EXIT_ABORT)) == 0)
+#define WEXITSTATUS(status) ((status) & 0xFF)
+#define WIFSIGNALED(status) ((status) & EXIT_SIGNAL)
+#define WTERMSIG(status)    (((status) >> 8) & 0xFF)
+#define WCOREDUMP(status)   ((status) & EXIT_DUMPED)
+#define WIFSTOPPED(status)  ((status) & EXIT_STOP)
+#define WSTOPSIG(status)    (((status) >> 8) & 0xFF)
+
+pid_t wait(int *status);
+pid_t waitpid(pid_t pid, int *status, int options);
+
+#endif/*__RLIBC_SYS_WAIT_H*/

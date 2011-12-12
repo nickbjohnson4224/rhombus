@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -25,14 +25,14 @@
  * Print an error message and abort.
  */
 
-static void _sigpanic(const char *message) {
+static void _sigpanic(int signum, const char *message) {
 
 	_stop(-1);
 
 	fprintf(stderr,
 		"%s (pid %d \"%s\" terminated)\n", message, getpid(), getname_s());
-
-	abort();
+	
+	exit(EXIT_FAILURE | ((signum & 0xFF) << 8) | EXIT_SIGNAL);
 }
 
 /****************************************************************************
@@ -45,13 +45,13 @@ static void _sigpanic(const char *message) {
 void __sig_default(int signum) {
 	
 	switch (signum) {
-	case SIGQUIT:	_sigpanic("Termination request");		break;
-	case SIGTERM:	_sigpanic("Termination request");		break;
-	case SIGABRT:	_sigpanic("Abnormal termination");		break;
-	case SIGKILL:	_sigpanic("Process killed");			break;
-	case SIGINT:	_sigpanic("Process interrupted");		break;
-	case SIGFPE:	_sigpanic("Floating point exception");	break;
-	case SIGSEGV:	_sigpanic("Segmentation fault");		break;
-	case SIGILL:	_sigpanic("Illegal operation");			break;
+	case SIGQUIT:	_sigpanic(signum, "Termination request");		break;
+	case SIGTERM:	_sigpanic(signum, "Termination request");		break;
+	case SIGABRT:	_sigpanic(signum, "Abnormal termination");		break;
+	case SIGKILL:	_sigpanic(signum, "Process killed");			break;
+	case SIGINT:	_sigpanic(signum, "Process interrupted");		break;
+	case SIGFPE:	_sigpanic(signum, "Floating point exception");	break;
+	case SIGSEGV:	_sigpanic(signum, "Segmentation fault");		break;
+	case SIGILL:	_sigpanic(signum, "Illegal operation");			break;
 	}
 }

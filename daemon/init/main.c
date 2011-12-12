@@ -20,6 +20,8 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include <sys/wait.h>
+
 #include <rho/layout.h>
 #include <rho/natio.h>
 #include <rho/proc.h>
@@ -44,7 +46,7 @@ static uint64_t start(struct tar_file *file, char const **argv) {
 		abort();
 	}
 
-	mwait(PORT_CHILD, pid);
+	waitpid(pid, NULL, 0);
 
 	return RP_CONS(pid, 1);
 }
@@ -145,10 +147,7 @@ int main() {
 	fs_plink("/sys/pipe", start(file, argv), NULL);
 
 	setname("init");
-	
-	mwait(PORT_CHILD, 0);
+	done();
 
-	printf("INIT PANIC: system daemon died\n");
-	for(;;);
 	return 0;
 }

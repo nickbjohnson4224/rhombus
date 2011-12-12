@@ -38,4 +38,6 @@ typedef uint32_t gid_t;
 // size types
 typedef size_t ssize_t;
 
+typedef int pid_t;
+
 #endif/*__RLIBC_SYS_TYPES_H*/

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,14 +16,29 @@
 
 #include <stdlib.h>
 
-#include <rho/proc.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
-/****************************************************************************
- * abort
- *
- * Exit process abnormally.
- */
+#include <rho/ipc.h>
 
-void abort(void) {
-	exit(EXIT_FAILURE | EXIT_ABORT);
+pid_t waitpid(pid_t pid, int *status, int options) {
+	struct msg *msg;
+	
+	if (pid == -1) {
+		msg = (options & WNOHANG) ? mqueue_pull(PORT_CHILD, 0) : mwait(PORT_CHILD, 0);
+		pid = RP_PID(msg->source);
+	}
+	else {
+		msg = (options & WNOHANG) 
+			? mqueue_pull(PORT_CHILD, RP_CONS(pid, 0)) 
+			: mwait(PORT_CHILD, RP_CONS(pid, 0));
+	}
+	
+	if (status) {
+		*status = *((uint32_t*) msg->data);
+	}
+
+	free(msg);
+
+	return pid;
 }
