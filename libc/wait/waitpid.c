@@ -25,7 +25,9 @@ pid_t waitpid(pid_t pid, int *status, int options) {
 	struct msg *msg;
 	
 	if (pid == -1) {
-		msg = (options & WNOHANG) ? mqueue_pull(PORT_CHILD, 0) : mwait(PORT_CHILD, 0);
+		msg = (options & WNOHANG) 
+			? mqueue_pull(PORT_CHILD, 0) 
+			: mwait(PORT_CHILD, 0);
 		pid = RP_PID(msg->source);
 	}
 	else {

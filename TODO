@@ -24,6 +24,11 @@ For 0.9 Alpha:
 	- PCI bus driver
 	- device manager
 	- ATA/ATAPI driver
+		+ ATA read support
+		- ATAPI read support
+		- ATA write support
+		- ATAPI write support
+		- optimizations
 	- iso9660 driver
 	- ext2 driver
 	- FAT32 driver
