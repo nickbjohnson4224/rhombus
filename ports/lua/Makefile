@@ -2,7 +2,7 @@
 
 # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
 
-CFLAGS  += -Wno-cast-align
+CFLAGS  += -Wno-cast-align -DLUA_USE_DLOPEN
 RANLIB  := i586-pc-rhombus-ranlib
 RM      := rm -f
 LIBS    := $(BUILDDIR)/lib/c0.o -Bdynamic -lc

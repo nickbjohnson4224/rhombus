@@ -67,7 +67,7 @@ int _exec(void *image, size_t size, int flags) {
 		slt = sltget_name(imgname);
 		if (!slt) continue;
 
-		_load((void*) slt->base, slt->size, RLTD_LAZY | RLTD_GLOBAL | RLTD_OVERWRITE);
+		_load((void*) slt->base, slt->size, RTLD_LAZY | RTLD_GLOBAL | RTLD_OVERWRITE);
 
 		sltfree_name(imgname);
 	}

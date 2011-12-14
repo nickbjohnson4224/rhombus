@@ -82,7 +82,7 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 			if (!depname) break;
 
 			deppath = strvcat("/lib/", depname, NULL);
-			object = dlopen(deppath, RLTD_LAZY | RLTD_GLOBAL | RLTD_IMAGE);
+			object = dlopen(deppath, RTLD_LAZY | RTLD_GLOBAL | RTLD_IMAGE);
 			free(deppath);
 		}
 	}

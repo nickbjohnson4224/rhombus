@@ -100,7 +100,7 @@ void *dlopen(const char *filename, int flags) {
 			return NULL;
 		}
 
-		if ((flags & RLTD_LOCAL) == 0) {
+		if ((flags & RTLD_LOCAL) == 0) {
 			for (i = 0;; i++) {
 				depname = dl->dep(image, i, 0);
 				if (!depname) break;

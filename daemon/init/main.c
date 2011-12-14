@@ -63,9 +63,9 @@ int main() {
 
 	/* Load shared libraries for drivers */
 	file = tar_find(boot_image, "lib/libc.so.1");
-	if (file) dl->load(file->start, file->size, RLTD_LAZY | RLTD_GLOBAL | RLTD_IMAGE);
+	if (file) dl->load(file->start, file->size, RTLD_LAZY | RTLD_GLOBAL | RTLD_IMAGE);
 	file = tar_find(boot_image, "lib/librdi.so.1");
-	if (file) dl->load(file->start, file->size, RLTD_LAZY | RLTD_GLOBAL | RLTD_IMAGE);
+	if (file) dl->load(file->start, file->size, RTLD_LAZY | RTLD_GLOBAL | RTLD_IMAGE);
 
 	/* Initial Root Filesystem / Device Filesystem / System Filesystem (tmpfs) */
 	argv[0] = "tmpfs";

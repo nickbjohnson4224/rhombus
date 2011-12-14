@@ -37,14 +37,14 @@ struct dl {
 
 extern struct dl *dl;
 
-#define RLTD_LAZY      0x0000
-#define RLTD_NOW       0x0001
+#define RTLD_LAZY      0x0000
+#define RTLD_NOW       0x0001
 
-#define RLTD_GLOBAL    0x0000
-#define RLTD_LOCAL     0x0002
-#define RLTD_IMAGE     0x0004
-#define RLTD_OVERWRITE 0x0008
-#define RLTD_NOLOAD    0x0010
+#define RTLD_GLOBAL    0x0000
+#define RTLD_LOCAL     0x0002
+#define RTLD_IMAGE     0x0004
+#define RTLD_OVERWRITE 0x0008
+#define RTLD_NOLOAD    0x0010
 
 void *dlopen (const char *filename, int flags);
 void  dlclose(void *object);
