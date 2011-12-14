@@ -1,0 +1,167 @@
+This libc-specific TODO is for tracking the completeness of the C library by
+header file. The contents of this list must be implemented and checked by the
+1.0 beta release. A '-' indicates that the item has not been accomplished,
+a '=' indicates that the item has been partially implemented, a '+' indicates 
+that the item has been implemented completely, and a '*' indicates that the 
+item has been checked against the standard, and a '#' indicates that the item
+has been documented fully and has unit tests which it passes.
+
+C Standard API (non-math):
+
+	16 / 19 started
+	16 / 19 implemented
+	16 / 19 checked
+	0  / 19 tested
+
+	* <assert.h>
+	* <ctype.h>
+	* <errno.h>
+	- <inttypes.h>
+	* <iso646.h>
+	* <limits.h>
+	* <locale.h>
+	* <setjmp.h>
+	* <signal.h>
+	* <stdarg.h>
+	* <stdbool.h>
+	* <stddef.h>
+	* <stdint.h>
+	* <stdio.h>
+	* <stdlib.h>
+	* <string.h>
+	* <time.h>
+	- <wchar.h>
+	- <wctype.h>
+
+Math API:
+
+	1 / 5 started
+	0 / 5 implemented
+	0 / 5 checked
+	0 / 5 tested
+
+	- <complex.h>
+	- <fenv.h>
+	- <float.h>
+	= <math.h>
+		+ ceil
+		+ floor
+		+ fabs
+		+ modf
+		+ fmod
+		+ pow
+		+ exp
+		+ log
+		+ log10
+		+ log2
+		+ sqrt
+		+ ldexp
+		+ frexp
+		+ sin
+		+ cos
+		+ tan
+		+ asin
+		+ acos
+		+ atan
+		+ atan2
+		+ sinh
+		+ cosh
+		+ tanh
+		- (various C99 extensions)
+	- <tgmath.h>
+
+Native API: (? means unstable API)
+
+	4  / 14 stable
+
+	? <rhombus.h>
+	+ <rho/arch.h>
+	* <rho/elf.h>
+	? <rho/exec.h>
+	? <rho/types.h>
+	? <rho/graph.h>
+	+ <rho/ipc.h>
+	? <rho/layout.h>
+	? <rho/mutex.h>
+	? <rho/natio.h>
+	+ <rho/page.h>
+	? <rho/path.h>
+	? <rho/proc.h>
+	? <rho/types.h>
+
+	Eternally unstable:
+
+	? <rho/abi.h>
+	? <rho/struct.h>
+
+POSIX API:
+
+	6  / 18 started
+	4  / 18 implemented
+	3  / 18 checked
+	0  / 18 tested
+
+	* <cpio.h>
+	* <dirent.h>
+		+ DIR
+		+ NAME_MAX
+		+ struct dirent
+		+ closedir()
+		+ opendir()
+		+ readdir()
+		+ readdir_r()
+		+ rewinddir()
+		+ seekdir()
+		+ telldir()
+	= <dflcn.h>
+		+ dlopen()
+		+ dlclose()
+		+ dlsym()
+		- dlerror()
+	- <fcntl.h>
+	- <grp.h>
+	- <pthread.h>
+	- <pwd.h>
+	- <sys/ipc.h>
+	- <sys/msg.h>
+	- <sys/sem.h>
+	- <sys/stat.h>
+	- <sys/time.h>
+	+ <sys/types.h>
+	- <sys/utsname.h>
+	= <sys/wait.h>
+		+ wait()
+		+ waitpid()
+		- waitid()
+		- wait3()
+		- wait4()
+	* <tar.h>
+	- <termios.h>
+	- <unistd.h>
+	- <utime.h>
+
+POSIX C library extensions:
+
+	0  / 19 implemented
+	0  / 19 checked
+	0  / 19 tested
+
+	- <assert.h>
+	- <ctype.h>
+	- <errno.h>
+	- <inttypes.h>
+	- <iso646.h>
+	- <limits.h>
+	- <locale.h>
+	- <setjmp.h>
+	- <signal.h>
+	- <stdarg.h>
+	- <stdbool.h>
+	- <stddef.h>
+	- <stdint.h>
+	- <stdio.h>
+	- <stdlib.h>
+	- <string.h>
+	- <time.h>
+	- <wchar.h>
+	- <wctype.h>

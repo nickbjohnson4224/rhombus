@@ -33,6 +33,17 @@ For 0.9 Alpha:
 	- ext2 driver
 	- FAT32 driver
 
++ ELF dynamic linking
+
+- shared libraries
+   (+) ELF dynamic linking
+	- shared library daemon?
+	- mmap-ed file loading
+	+ transition all binaries to dynamic
+	- .init and .fini support
+
+For 1.0 Beta:
+
 - POSIXness
 	- implement coreutils (port GNU?)
 
@@ -48,17 +59,6 @@ For 0.9 Alpha:
 	- <sys/wait.h>
 	- <unistd.h>
 	- <utime.h>
-
-+ ELF dynamic linking
-
-- shared libraries
-   (+) ELF dynamic linking
-	- shared library daemon?
-	- mmap-ed file loading
-	+ transition all binaries to dynamic
-	- .init and .fini support
-
-For 1.0 Beta:
 
 - CLI improvements
 	- terminal performance

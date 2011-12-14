@@ -1,0 +1,43 @@
+/*
+ * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * 
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+#ifndef __RLIBC_CPIO_H
+#define __RLIBC_CPIO_H
+
+#define C_IRUSR  0000400
+#define C_IWUSR  0000200
+#define C_IXUSR  0000100
+#define C_IRGRP  0000040
+#define C_IWGRP  0000020
+#define C_IXGRP  0000010
+#define C_IROTH  0000004
+#define C_IWOTH  0000002
+#define C_IXOTH  0000001
+#define C_ISUID  0004000
+#define C_ISGID  0002000
+#define C_ISVTX  0001000
+#define C_ISDIR  0040000
+#define C_ISFIFO 0010000
+#define C_ISREG  0100000
+#define C_ISBLK  0060000
+#define C_ISCHR  0020000
+#define C_ISCTG  0110000
+#define C_ISLNK  0120000
+#define C_ISSOCK 0140000
+
+#define MAGIC "070707"
+
+#endif/*__RLIBC_CPIO_H*/
