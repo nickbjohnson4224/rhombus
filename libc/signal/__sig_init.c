@@ -29,7 +29,7 @@
  */
 
 static void _sigwrap(struct msg *msg) {
-	__raise(RP_PID(msg->source), msg->port);
+	__raise((int) RP_PID(msg->source), msg->port);
 	free(msg);
 }
 
@@ -47,7 +47,7 @@ void __sig_init(void) {
 
 	for (i = 0; i < SIGMAX; i++) {
 		__sighandlerv[i] = SIG_DFL;
-		when(i, _sigwrap);
+		when((uint8_t) i, _sigwrap);
 	}
 
 	mutex_free(&__sigmutex);

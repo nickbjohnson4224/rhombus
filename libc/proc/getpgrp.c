@@ -18,5 +18,5 @@
 #include <rho/abi.h>
 
 int getpgrp(void) {
-	return _gpid(GPID_GROUP);
+	return (int) _gpid(GPID_GROUP);
 }

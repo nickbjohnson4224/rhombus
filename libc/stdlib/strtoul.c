@@ -75,8 +75,8 @@ unsigned long int strtoul(const char *nptr, char **endptr, int base) {
 	}
 
 	while (nptr[i] && __isbdigit(nptr[i], base)) {
-		sum *= base;
-		sum += __digit(nptr[i], base);
+		sum *= (uint32_t) base;
+		sum += (uint32_t) __digit(nptr[i], base);
 		i++;
 	}
 

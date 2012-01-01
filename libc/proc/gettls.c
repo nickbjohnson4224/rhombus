@@ -33,5 +33,5 @@
 uint32_t gettls(void) {
 	int x;
 
-	return ((uint32_t) &x) & ~(0x3FFFFF);
+	return ((uint32_t) &x) & ~(0x3FFFFFU);
 }

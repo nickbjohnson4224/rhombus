@@ -26,5 +26,5 @@
  */
 
 int raise(int signum) {
-	return kill(getpid(), signum);
+	return kill((int) getpid(), signum);
 }

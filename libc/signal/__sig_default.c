@@ -27,7 +27,7 @@
 
 static void _sigpanic(int signum, const char *message) {
 
-	_stop(-1);
+	_stop((uint32_t) -1);
 
 	fprintf(stderr,
 		"%s (pid %d \"%s\" terminated)\n", message, getpid(), getname_s());

@@ -28,5 +28,5 @@
  */
 
 int kill(int pid, int signum) {
-	return _kill(pid, signum);
+	return _kill((uint32_t) pid, (uint8_t) signum);
 }

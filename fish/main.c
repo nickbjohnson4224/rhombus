@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2012 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -72,7 +72,7 @@ int fish_exec_bg(int argc, char **argv, FILE *in, FILE *out, FILE *err) {
 		memcpy(_argv, argv, sizeof(char*) * argc);
 		_argv[argc] = NULL;
 
-		if (execv(_argv[0], _argv)) {
+		if (execvp(_argv[0], _argv)) {
 			if (errno == ENOENT) {
 				fprintf(stderr, "%s: %s: command not found\n", getname_s(), argv[0]);
 			}
@@ -101,7 +101,7 @@ int fish_exec_fg(int argc, char **argv, FILE *in, FILE *out, FILE *err) {
 		memcpy(_argv, argv, sizeof(char*) * argc);
 		_argv[argc] = NULL;
 
-		if (execv(_argv[0], _argv)) {
+		if (execvp(_argv[0], _argv)) {
 			if (errno == ENOENT) {
 				fprintf(stderr, "%s: %s: command not found\n", getname_s(), argv[0]);
 			}

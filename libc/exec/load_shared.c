@@ -23,7 +23,7 @@
 
 void *load_shared(const char *soname) {
 	int fd;
-	uint64_t size;
+	uint32_t size;
 	char *path;
 	void *image;
 
@@ -49,7 +49,7 @@ void *load_shared(const char *soname) {
 	}
 	else {
 		/* read whole file into buffer */
-		size = rp_size(fd_rp(fd));
+		size = (uint32_t) rp_size(fd_rp(fd));
 
 		if (!size) {
 			return NULL;

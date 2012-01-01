@@ -34,7 +34,7 @@ int pipe_exec_bg(char const **argv, int in, int out) {
 		ropen(0, fd_rp(in), STAT_READER);
 		ropen(1, fd_rp(out), STAT_WRITER);
 
-		if (execv(argv[0], argv)) {
+		if (execvp(argv[0], argv)) {
 			if (errno == ENOENT) {
 				fprintf(stderr, "%s: %s: command not found\n", getname_s(), argv[0]);
 			}
@@ -60,7 +60,7 @@ int pipe_exec_fg(char const **argv, int in, int out) {
 		ropen(0, fd_rp(in), STAT_READER);
 		ropen(1, fd_rp(out), STAT_WRITER);
 
-		if (execv(argv[0], argv)) {
+		if (execvp(argv[0], argv)) {
 			if (errno == ENOENT) {
 				fprintf(stderr, "%s: %s: command not found\n", getname_s(), argv[0]);
 			}

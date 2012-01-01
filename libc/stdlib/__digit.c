@@ -31,7 +31,7 @@ int __digit(char digit, int base) {
 		val = digit - '0';
 	}
 	else if (isalpha(digit)) {
-		digit = toupper(digit);
+		digit = (char) toupper(digit);
 		val = digit - 'A' + 10;
 	}
 	else {

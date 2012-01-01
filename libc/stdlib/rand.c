@@ -159,7 +159,7 @@ uint32_t randmod(uint32_t n, uint32_t mod) {
 	value /= RAND_MAX;
 	value *= mod;
 
-	return value;
+	return (uint32_t) value;
 }
 
 /*****************************************************************************

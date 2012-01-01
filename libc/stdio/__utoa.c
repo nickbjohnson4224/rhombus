@@ -47,8 +47,8 @@ int __utoa(char *buffer, unsigned int n, int b, bool ucase) {
 	}
 
 	for (i = 0; n; i++) {
-		buffer[i] = d[n % b];
-		n /= b;
+		buffer[i] = d[n % (unsigned int) b];
+		n /= (unsigned int) b;
 	}
 
 	buffer[i] = '\0';

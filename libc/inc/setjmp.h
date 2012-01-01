@@ -35,10 +35,12 @@ typedef struct __jmp_buf jmp_buf[1];
 
 /* save stack context *******************************************************/
 
+#define _setjmp setjmp
 int setjmp(jmp_buf env);
 
 /* load stack context *******************************************************/
 
+#define _longjmp longjmp
 int longjmp(jmp_buf env, int val);
 
 #endif/*__RLIBC_SETJMP_H*/

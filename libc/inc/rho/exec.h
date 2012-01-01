@@ -26,6 +26,11 @@
 void *load_exec  (const char *name);
 void *load_shared(const char *soname);
 
+/* path resolution **********************************************************/
+
+char *path_resolve  (const char *file);
+char *ldpath_resolve(const char *soname);
+
 /* execute ******************************************************************/
 
 /* with executable image */
@@ -36,7 +41,9 @@ int execi  (uint8_t *image, size_t size);
 /* from filesystem */
 int execve (const char *path, char const **argv, char const **envp);
 int execv  (const char *path, char const **argv);
-int exec   (const char *path);
+
+int execvpe(const char *file, char const **argv, char const **envp);
+int execvp (const char *file, char const **argv);
 
 /* things to save on exec ***************************************************/
 

@@ -45,5 +45,5 @@ void exit(int status) {
 
 	dl->fini(dlopen(NULL, 0));
 
-	__exit(status);
+	__exit((uint32_t) status);
 } 

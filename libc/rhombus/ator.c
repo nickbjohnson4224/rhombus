@@ -40,13 +40,13 @@ uint64_t ator(const char *str) {
 
 	// extract pid
 	substr = struntil(str, ".", &str);
-	pid = atoi(substr);
+	pid = (uint32_t) atoi(substr);
 	free(substr);
 
 	str++;
 
 	// extract index
-	index = atoi(str);
+	index = (uint32_t) atoi(str);
 
 	return RP_CONS(pid, index);
 }

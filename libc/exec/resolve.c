@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2012 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,15 +15,45 @@
  */
 
 #include <stdlib.h>
-#include <ctype.h>
-#include <math.h>
+#include <string.h>
 
-/****************************************************************************
- * strtod
- *
- * Convert a string to a floating point number.
- */
+#include <rho/natio.h>
+#include <rho/exec.h>
+#include <rho/path.h>
 
-double strtod(const char *nptr, char **endptr) {	
-	return (double) strtold(nptr, endptr);
-} 
+char *path_resolve(const char *file) {
+	int fd;
+	char *path;
+	char *temp;
+
+	if (file[0] == '/' || file[0] == '@') {
+		path = strdup(file);
+	}
+	else {
+		path = strvcat(getenv("PATH"), "/", file, NULL);
+	}
+
+	temp = path;
+	path = path_simplify(temp);
+	free(temp);
+
+	fd = ropen(-1, fs_find(path), STAT_READER);
+
+	if (fd < 0) {
+		free(path);
+		return NULL;
+	}
+
+	if (!rp_type(fd_rp(fd), "file")) {
+		free(path);
+		close(fd);
+		return NULL;
+	}
+
+	close(fd);
+	return path;
+}
+
+char *ldpath_resolve(const char *soname) {
+	return NULL;
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2012 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -30,19 +30,10 @@
  * success, NULL on failure.
  */
 
-void *load_exec(const char *name) {
+void *load_exec(const char *path) {
 	int fd;
-	uint64_t size;
-	char *path;
+	uint32_t size;
 	void *image;
-
-	/* attempt to find requested file */
-	if (name[0] == '/' || name[0] == '@') {
-		path = strdup(name);
-	}
-	else {
-		path = strvcat(getenv("PATH"), "/", name, NULL);
-	}
 
 	fd = ropen(-1, fs_find(path), STAT_READER);
 
@@ -52,7 +43,7 @@ void *load_exec(const char *name) {
 	}
 	else {
 		/* read whole file into buffer */
-		size = rp_size(fd_rp(fd));
+		size = (size_t) rp_size(fd_rp(fd));
 
 		if (!size) {
 			return NULL;

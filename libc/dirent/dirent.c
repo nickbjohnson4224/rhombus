@@ -138,14 +138,14 @@ void rewinddir(DIR *dirp) {
 void seekdir(DIR *dirp, long int loc) {
 	
 	if (dirp) {
-		dirp->dirpos = loc;
+		dirp->dirpos = (size_t) loc;
 	}
 }
 
 long int telldir(DIR *dirp) {
 	
 	if (dirp) {
-		return dirp->dirpos;
+		return (long int) dirp->dirpos;
 	}
 
 	return -1;

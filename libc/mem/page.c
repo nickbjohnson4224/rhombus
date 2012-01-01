@@ -31,7 +31,7 @@ int page(void *addr, size_t length, int prot, int source, uintptr_t off) {
 		length = length / PAGESZ;
 	}
 
-	return _page((uintptr_t) addr, length, prot, source, off);
+	return _page((uintptr_t) addr, length, (uint32_t) prot, source, off);
 }
 
 int page_free(void *addr, size_t length) {

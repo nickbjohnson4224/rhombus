@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011-2012 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -67,7 +67,7 @@ int fd_set(int fd, rp_t rp, int mode) {
 
 		// reallocate table
 		_fdtab_size = fd + 1;
-		_fdtab = realloc(_fdtab, _fdtab_size * sizeof(struct fdtab));
+		_fdtab = realloc(_fdtab, (uint32_t) _fdtab_size * sizeof(struct fdtab));
 
 		// clear remainder of table
 		for (i = fd; i < _fdtab_size; i++) {

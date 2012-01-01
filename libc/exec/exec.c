@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2012 Nick Johnson <nickbjohnson4224 at gmail.com>
  * Copyright (C) 2011 Jaagup Repan <jrepan at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
@@ -36,16 +36,38 @@
 int execiv(uint8_t *image, size_t size, char const **argv) {
 	extern char **environ;
 	const char *depname;
+	char const **argv2;
 	rp_t *fdtab_pack;
 	char *pack;
 	char *deppath;
+	char *interpname;
 	void *pack_region;
 	void *object;
-	uint32_t i;
+	uint32_t i, j;
 
 	if (!image) {
 		errno = ENOENT;
 		return -1;
+	}
+
+	/* catch #! scripts */
+	if (image[0] == '#' && image[1] == '!') {
+		interpname = struntil((char*) &image[2], "\n", NULL);
+		free(image);
+
+		argv2 = (const char **) strparse(interpname, " ");
+
+		for (i = 0; argv[i];  i++);
+		for (j = 0; argv2[j]; j++);
+
+		argv2 = realloc(argv2, sizeof(const char*) * (i + j + 1));
+
+		for (i = 0; argv[i]; i++) {
+			argv2[j + i] = argv[i];
+		}
+		argv2[j + i] = NULL;
+
+		execv(argv2[0], argv2);
 	}
 
 	/* save standard streams and filesystem root */
@@ -105,6 +127,16 @@ int execi(uint8_t *image, size_t size) {
 	return execiv(image, size, NULL);
 }
 
+int execvp(const char *file, char const **argv) {
+	char *path;
+
+	path = path_resolve(file);
+	if (!path) return -1;
+
+	argv[0] = path;
+	return execv(path, argv);
+}
+
 int execv(const char *path, char const **argv) {
 	void *image;
 
@@ -113,6 +145,7 @@ int execv(const char *path, char const **argv) {
 }
 
 int exec(const char *path) {
-	const char *argv[] = { path, NULL };
+	char const *argv[] = { path, NULL };
+
 	return execv(path, argv);
 }
