@@ -84,7 +84,7 @@ char *path_resolve(const char *file) {
 	}
 }
 
-char *ldpath_resolve(const char *soname) {
+char *ldpath_resolve(const char *file) {
 	size_t i;
 	char *path;
 	char *temp;
