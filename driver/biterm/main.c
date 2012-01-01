@@ -193,7 +193,7 @@ int main(int argc, char **argv) {
 	// launch shell
 	pid = fork();
 	if (pid == 0) {
-		setenv("PATH", "/bin");
+		setenv("PATH", "/bin:/sbin");
 		ropen(0, RP_CONS(getppid(), term->index), STAT_READER);
 		ropen(1, RP_CONS(getppid(), term->index), STAT_WRITER);
 		ropen(2, RP_CONS(getppid(), term->index), STAT_WRITER);

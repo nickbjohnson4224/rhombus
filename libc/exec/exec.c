@@ -35,6 +35,11 @@
 
 int execiv(uint8_t *image, size_t size, char const **argv) {
 	extern char **environ;
+
+	return execive(image, size, argv, (char const **) environ);
+}
+
+int execive(uint8_t *image, size_t size, char const **argv, char const **envp) {
 	const char *depname;
 	char const **argv2;
 	rp_t *fdtab_pack;
@@ -89,7 +94,7 @@ int execiv(uint8_t *image, size_t size, char const **argv) {
 	}
 
 	/* save environment variables */
-	pack = packenv((const char **) environ);
+	pack = packenv((const char **) envp);
 	if (pack) {
 		pack_region = sltalloc("libc.env", msize(pack));
 		page_anon(pack_region, msize(pack), PROT_READ | PROT_WRITE);

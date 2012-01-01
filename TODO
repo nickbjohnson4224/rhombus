@@ -14,6 +14,7 @@ For 0.9 Alpha:
 	+ stdio buffering
 	- user/password manager
 	- login shell
+	- exec* cleanup
 
 - graphics architecture improvements
 	- shared memory (mmap-style)
@@ -41,6 +42,8 @@ For 0.9 Alpha:
 	- mmap-ed file loading
 	+ transition all binaries to dynamic
 	- .init and .fini support
+
+- build system improvements
 
 For 1.0 Beta:
 

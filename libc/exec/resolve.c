@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -21,37 +22,66 @@
 #include <rho/exec.h>
 #include <rho/path.h>
 
-char *path_resolve(const char *file) {
+bool is_file(const char *path) {
 	int fd;
-	char *path;
-	char *temp;
-
-	if (file[0] == '/' || file[0] == '@') {
-		path = strdup(file);
-	}
-	else {
-		path = strvcat(getenv("PATH"), "/", file, NULL);
-	}
-
-	temp = path;
-	path = path_simplify(temp);
-	free(temp);
 
 	fd = ropen(-1, fs_find(path), STAT_READER);
 
 	if (fd < 0) {
-		free(path);
-		return NULL;
+		return false;
 	}
 
 	if (!rp_type(fd_rp(fd), "file")) {
-		free(path);
 		close(fd);
-		return NULL;
+		return false;
 	}
 
 	close(fd);
-	return path;
+	return true;
+}
+
+char *path_resolve(const char *file) {
+	size_t i;
+	char *path;
+	char *temp;
+	char **paths;
+
+	if (file[0] == '/' || file[0] == '@') {
+		path = strdup(file);
+
+		if (is_file(path)) {
+			return path;
+		}
+		else {
+			free(path);
+			return NULL;
+		}
+	}
+	else {
+		paths = strparse(getenv("PATH"), ":");
+
+		for (i = 0; paths[i]; i++) {
+			path = strvcat(paths[i], "/", file, NULL);
+
+			temp = path;
+			path = path_simplify(temp);
+			free(temp);
+
+			if (is_file(path)) {
+				for (; paths[i]; i++) {
+					free(paths[i]);
+				}
+				free(paths);
+				return path;
+			}
+			
+			free(path);
+			free(paths[i]);
+		}
+
+		free(paths);
+		return NULL;
+	}
 }
 
 char *ldpath_resolve(const char *soname) {
