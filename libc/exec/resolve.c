@@ -85,5 +85,56 @@ char *path_resolve(const char *file) {
 }
 
 char *ldpath_resolve(const char *soname) {
+	size_t i;
+	char *path;
+	char *temp;
+	char **paths;
+
+	if (file[0] == '/' || file[0] == '@') {
+		path = strdup(file);
+
+		if (is_file(path)) {
+			return path;
+		}
+		else {
+			free(path);
+			return NULL;
+		}
+	}
+	else {
+		paths = strparse(getenv("LD_LIBRARY_PATH"), ":");
+
+		for (i = 0; paths[i]; i++) {
+			path = strvcat(paths[i], "/", file, NULL);
+
+			temp = path;
+			path = path_simplify(temp);
+			free(temp);
+
+			if (is_file(path)) {
+				for (; paths[i]; i++) {
+					free(paths[i]);
+				}
+				free(paths);
+				return path;
+			}
+			
+			free(path);
+			free(paths[i]);
+		}
+
+		free(paths);
+
+		temp = strvcat("/lib/", file, NULL);
+		path = path_simplify(temp);
+		free(temp);
+
+		if (is_file(path)) {
+			return path;
+		}
+
+		free(path);
+		return NULL;
+	}
 	return NULL;
 }

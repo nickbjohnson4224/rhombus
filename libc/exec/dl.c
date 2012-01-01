@@ -88,13 +88,14 @@ int load_dl(void *dl_image) {
 void *dlopen(const char *filename, int flags) {
 	void *image;
 	const char *depname;
+	char *path;
 	char *deppath;
 	size_t i;
 
 	if (filename) {
-
-		// TODO - LD_LIBRARY_PATH support
-		image = load_exec(filename);
+		path = ldpath_resolve(filename);
+		image = load_exec(path);
+		free(path);
 
 		if (!image) {
 			return NULL;
