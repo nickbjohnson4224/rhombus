@@ -181,7 +181,7 @@ int main(int argc, char **argv) {
 	rdi_global_cons_link_hook = tarfs_link_cons;
 
 	/* daemonize */
-	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
+	msendb(RP_CONS(getppid(), 0), ACTION_CHILD);
 	_done();
 
 	return EXIT_SUCCESS;

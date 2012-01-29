@@ -31,7 +31,7 @@
  * is provided, the returned pages are remapped to that address.
  *
  * protocol:
- *   port: PORT_MMAP
+ *   action: ACTION_MMAP
  *
  *   request:
  *   	uint64_t offset
@@ -91,7 +91,7 @@ void *rp_mmap(rp_t rp, void *addr, size_t size, off_t offset, int prot) {
 	msg->source = RP_CURRENT_THREAD;
 	msg->target = rp;
 	msg->length = sizeof(uint64_t) + 2 * sizeof(uint32_t);
-	msg->port   = PORT_MMAP;
+	msg->action = ACTION_MMAP;
 	msg->arch   = ARCH_NAT;
 	((uint64_t*) msg->data)[0] = offset;
 	((uint32_t*) msg->data)[2] = size;
@@ -109,7 +109,7 @@ void *rp_mmap(rp_t rp, void *addr, size_t size, off_t offset, int prot) {
 	}
 
 	// recieve message
-	msg = mwait(PORT_REPLY, rp);
+	msg = mwait(ACTION_REPLY, rp);
 
 	// check message
 	if (msg->length != size + PAGESZ - sizeof(struct msg)) {

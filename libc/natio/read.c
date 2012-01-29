@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2012 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -29,7 +29,7 @@
  * the number of bytes read.
  *
  * protocol:
- *   port: PORT_READ
+ *   action: ACTION_READ
  *
  *   request:
  *     uint64_t offset
@@ -47,13 +47,13 @@ size_t rp_read(uint64_t file, void *buf, size_t size, uint64_t offset) {
 	msg->source = RP_CURRENT_THREAD;
 	msg->target = file;
 	msg->length = sizeof(uint64_t) + sizeof(uint32_t);
-	msg->port   = PORT_READ;
+	msg->action = ACTION_READ;
 	msg->arch   = ARCH_NAT;
 	((uint64_t*) msg->data)[0] = offset;
 	((uint32_t*) msg->data)[2] = size;
 
 	if (msend(msg)) return 0;
-	msg = mwait(PORT_REPLY, file);
+	msg = mwait(ACTION_REPLY, file);
 
 	if (size > msg->length) {
 		size = msg->length;

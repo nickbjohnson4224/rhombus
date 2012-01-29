@@ -35,11 +35,11 @@ int rp_reset(uint64_t file) {
 	msg->source = RP_CURRENT_THREAD;
 	msg->target = file;
 	msg->length = 0;
-	msg->port   = PORT_RESET;
+	msg->action = ACTION_RESET;
 	msg->arch   = ARCH_NAT;
 
 	if (msend(msg)) return 1;
-	msg = mwait(PORT_REPLY, file);
+	msg = mwait(ACTION_REPLY, file);
 
 	free(msg);
 	return 0;

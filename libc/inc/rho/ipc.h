@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2012 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -22,45 +22,46 @@
 #include <rho/natio.h>
 #include <rho/arch.h>
 
-/* port numbers ************************************************************/
+/* action numbers ***********************************************************/
 
 // kernel events and signals
-#define PORT_QUIT	0
-#define PORT_TERM	1
-#define PORT_ABORT	2
-#define PORT_KILL	3
-#define PORT_STOP	4
-#define PORT_CONT	5
-#define PORT_TRAP	6
-#define PORT_INT	7
-#define PORT_IRQ	8
-#define PORT_ALARM	9
-#define PORT_CHILD	10
-#define PORT_FLOAT	11
-#define PORT_PAGE	12
-#define PORT_ILL	13
-#define PORT_USER1	14
-#define PORT_USER2	15
+#define ACTION_QUIT  0
+#define ACTION_TERM  1
+#define ACTION_ABORT 2
+#define ACTION_KILL  3
+#define ACTION_STOP  4
+#define ACTION_CONT  5
+#define ACTION_TRAP  6
+#define ACTION_INT   7
+#define ACTION_IRQ   8
+#define ACTION_ALARM 9
+#define ACTION_CHILD 10
+#define ACTION_FLOAT 11
+#define ACTION_PAGE  12
+#define ACTION_ILL   13
+#define ACTION_USER1 14
+#define ACTION_USER2 15
 
 // I/O and similar
-#define PORT_REPLY	16
-#define PORT_READ	17
-#define PORT_WRITE	18
-#define PORT_SYNC	19
-#define PORT_RESET	20
-#define PORT_SHARE	21
-#define PORT_RCALL	22
-#define PORT_EVENT	23
-#define PORT_CLOSE	24
-#define PORT_MMAP	25
+#define ACTION_REPLY 16
+#define ACTION_READ  17
+#define ACTION_WRITE 18
+#define ACTION_SYNC  19
+#define ACTION_RESET 20
+#define ACTION_SHARE 21
+#define ACTION_RCALL 22
+#define ACTION_EVENT 23
+#define ACTION_CLOSE 24
+#define ACTION_MMAP  25
 
 /* message structure ********************************************************/
 
 struct msg {
 	uint64_t source; // resource pointer of source
 	uint64_t target; // resource pointer of target
+	uint64_t key;    // authentication key for action
 	uint32_t length; // length of _data_ (not whole message)
-	uint8_t  port;   // port (to be) sent to
+	uint8_t  action; // action requested
 	uint8_t  arch;   // architecture (i.e. byte order)
 	uint16_t padding;
 	uint8_t  data[]; // contained data

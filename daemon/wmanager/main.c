@@ -351,7 +351,7 @@ int main(int argc, char **argv) {
 	if (fork() == 0) {
 		exec("/sbin/mouse");
 	}
-	mwait(PORT_CHILD, 0);
+	mwait(ACTION_CHILD, 0);
 
 	rdi_init();
 

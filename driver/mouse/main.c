@@ -147,7 +147,7 @@ int main(int argc, char **argv) {
 #endif
 
 	fs_plink("/dev/mouse", RP_CONS(getpid(), mouse->index), NULL);
-	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
+	msendb(RP_CONS(getppid(), 0), ACTION_CHILD);
 
 #if USE_IRQ
 	_done();

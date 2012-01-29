@@ -24,7 +24,7 @@
 #include <rho/ipc.h>
 
 int msend(struct msg *msg) {
-	uint8_t  port;
+	uint8_t  action;
 	uint32_t count;
 	uint32_t target_pid;
 	int err;
@@ -40,14 +40,14 @@ int msend(struct msg *msg) {
 	}
 
 	/* extract data */
-	port = msg->port;
+	action = msg->action;
 	target_pid = RP_PID(msg->target);
 	count = msg->length + sizeof(struct msg);
 
 	/* calculate page count */
 	count = (count % PAGESZ) ? (count / PAGESZ) + 1 : count / PAGESZ;
 
-	err = _send((uintptr_t) msg, count, port, target_pid);
+	err = _send((uintptr_t) msg, count, action, target_pid);
 	free(msg);
 
 	return err;

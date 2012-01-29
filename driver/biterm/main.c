@@ -200,7 +200,7 @@ int main(int argc, char **argv) {
 		exec("/bin/fish");
 	}
 
-	msendb(getppid(), PORT_CHILD);
+	msendb(getppid(), ACTION_CHILD);
 	_done();
 
 	return 0;

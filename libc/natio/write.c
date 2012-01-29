@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2012 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -29,7 +29,7 @@
  * the number of bytes written.
  *
  * protocol:
- *   port: PORT_WRITE
+ *   port: ACTION_WRITE
  *
  *   request:
  *     uint64_t offset
@@ -47,13 +47,13 @@ size_t rp_write(uint64_t file, void *buf, size_t size, uint64_t offset) {
 	msg->source = RP_CURRENT_THREAD;
 	msg->target = file;
 	msg->length = sizeof(uint64_t) + size;
-	msg->port   = PORT_WRITE;
+	msg->action = ACTION_WRITE;
 	msg->arch   = ARCH_NAT;
 	((uint64_t*) msg->data)[0] = offset;
 	memcpy(&msg->data[sizeof(uint64_t)], buf, size);
 
 	if (msend(msg)) return 0;
-	msg = mwait(PORT_REPLY, file);
+	msg = mwait(ACTION_REPLY, file);
 
 	if (msg->length != sizeof(uint32_t)) {
 		size = 0;

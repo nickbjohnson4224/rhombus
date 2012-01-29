@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011-2012 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -31,7 +31,7 @@ int mreply(struct msg *msg) {
 	
 	msg->target = target;
 	msg->source = source;
-	msg->port   = PORT_REPLY;
+	msg->action = ACTION_REPLY;
 
 	return msend(msg);
 }

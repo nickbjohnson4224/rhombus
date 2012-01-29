@@ -23,7 +23,7 @@
 #include <rho/ipc.h>
 
 /*****************************************************************************
- * share
+ * share (DEPRECATED)
  *
  * Share pages of memory with another process. The pages are shared with the
  * page permissions <prot>. This call also has an <offset>, which may be used
@@ -31,7 +31,7 @@
  * zero on success, nonzero on error.
  *
  * protocol:
- *   port: PORT_SHARE
+ *   action: ACTION_SHARE
  *
  *   request:
  *     uint64_t offset
@@ -56,7 +56,7 @@ int rp_share(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot) {
 	msg->source = RP_CURRENT_THREAD;
 	msg->target = rp;
 	msg->length = PAGESZ - sizeof(struct msg) + size;
-	msg->port   = PORT_SHARE;
+	msg->action = ACTION_SHARE;
 	msg->arch   = ARCH_NAT;
 	((uint64_t*) msg->data)[0] = offset;
 
@@ -64,7 +64,7 @@ int rp_share(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot) {
 	page_prot(&msg->data[PAGESZ - sizeof(struct msg)], size, prot);
 
 	if (msend(msg)) return 1;
-	msg = mwait(PORT_REPLY, rp);
+	msg = mwait(ACTION_REPLY, rp);
 	
 	if (msg->length != 1) {
 		err = 1;

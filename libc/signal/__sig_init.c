@@ -29,7 +29,7 @@
  */
 
 static void _sigwrap(struct msg *msg) {
-	__raise((int) RP_PID(msg->source), msg->port);
+	__raise((int) RP_PID(msg->source), msg->action);
 	free(msg);
 }
 

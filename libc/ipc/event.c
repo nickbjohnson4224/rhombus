@@ -39,7 +39,7 @@ bool m_event_handler;
  * virtual packet register and redirects the event to proper event handler.
  */
 
-void on_event(size_t count, uint32_t port, uint32_t source, uint32_t source_idx, uint32_t target_idx) {
+void on_event(size_t count, uint32_t action, uint32_t source, uint32_t source_idx, uint32_t target_idx) {
 	struct msg *msg;
 
 	if (count) {
@@ -75,7 +75,7 @@ void on_event(size_t count, uint32_t port, uint32_t source, uint32_t source_idx,
 		msg->source = RP_CONS(source, source_idx);
 		msg->target = RP_CONS(getpid(), target_idx);
 		msg->length = 0;
-		msg->port   = port;
+		msg->action = action;
 		msg->arch   = ARCH_NAT;
 	}
 
@@ -85,9 +85,9 @@ void on_event(size_t count, uint32_t port, uint32_t source, uint32_t source_idx,
 
 	mutex_spin(&m_event_handler);
 	
-	if (event_handler[port]) {
+	if (event_handler[action]) {
 		mutex_free(&m_event_handler);
-		event_handler[port](msg);
+		event_handler[action](msg);
 	}
 	else {
 		mutex_free(&m_event_handler);

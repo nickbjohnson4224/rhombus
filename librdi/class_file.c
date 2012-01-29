@@ -91,7 +91,7 @@ static void __rdi_read(struct msg *msg) {
 	reply->source = msg->target;
 	reply->target = msg->source;
 	reply->length = size;
-	reply->port   = PORT_REPLY;
+	reply->action = ACTION_REPLY;
 	reply->arch   = ARCH_NAT;
 
 	source = msg->source;
@@ -255,7 +255,7 @@ static void __rdi_mmap(struct msg *msg) {
 	reply->source = msg->target;
 	reply->target = msg->source;
 	reply->length = PAGESZ + size - sizeof(struct msg);
-	reply->port   = PORT_REPLY;
+	reply->action = ACTION_REPLY;
 	reply->arch   = ARCH_NAT;
 
 	page_self(pages, &reply->data[PAGESZ - sizeof(struct msg)], size);
@@ -343,12 +343,12 @@ void __rdi_class_file_setup() {
 	robject_set_data(rdi_class_file, "type", (void*) "file");
 	robject_set_data(rdi_class_file, "name", (void*) "RDI-class-file");
 
-	when(PORT_READ,  __rdi_read);
-	when(PORT_WRITE, __rdi_write);
-	when(PORT_SYNC,  __rdi_sync);
-	when(PORT_RESET, __rdi_reset);
-	when(PORT_SHARE, __rdi_share);
-	when(PORT_MMAP,  __rdi_mmap);
+	when(ACTION_READ,  __rdi_read);
+	when(ACTION_WRITE, __rdi_write);
+	when(ACTION_SYNC,  __rdi_sync);
+	when(ACTION_RESET, __rdi_reset);
+	when(ACTION_SHARE, __rdi_share);
+	when(ACTION_MMAP,  __rdi_mmap);
 }
 
 struct robject *rdi_file_cons(uint32_t index, uint32_t access) {

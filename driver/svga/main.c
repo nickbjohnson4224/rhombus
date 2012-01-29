@@ -169,7 +169,7 @@ int main(int argc, char **argv) {
 
 	/* register the driver as /dev/svga0 */
 	fs_plink("/dev/svga0", RP_CONS(getpid(), canvas->index), NULL);
-	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
+	msendb(RP_CONS(getppid(), 0), ACTION_CHILD);
 	_done();
 
 	return 0;

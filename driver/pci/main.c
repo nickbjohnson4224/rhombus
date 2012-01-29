@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
 
 	rdi_global_read_hook = pci_read;
 
-	msendb(getppid(), PORT_CHILD);
+	msendb(getppid(), ACTION_CHILD);
 	_done();
 
 	return 0;

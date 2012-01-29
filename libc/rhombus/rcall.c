@@ -54,12 +54,12 @@ static char *__rcall(uint64_t rp, const char *args) {
 	msg->source = RP_CURRENT_THREAD;
 	msg->target = rp;
 	msg->length = length;
-	msg->port   = PORT_RCALL;
+	msg->action = ACTION_RCALL;
 	msg->arch   = ARCH_NAT;
 	memcpy(msg->data, args, length);
 
 	if (msend(msg)) return NULL;
-	msg = mwait(PORT_REPLY, rp);
+	msg = mwait(ACTION_REPLY, rp);
 
 	if (msg->length && msg->data[0] != '\0') {
 		rets = strdup((char*) msg->data);

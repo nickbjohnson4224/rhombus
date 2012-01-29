@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011-2012 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -41,16 +41,16 @@ static bool   mqueue_policy[256];
 /*****************************************************************************
  * mqueue_set_policy
  *
- * Set the policy for queueing messages from a specified port. If <do_queue>
- * is true, messages from the port are queued. If <do_queue> is false, 
- * messages from the port are not queued. By default, all ports are set to
- * queue.
+ * Set the policy for queueing messages for a specified action. If <do_queue>
+ * is true, messages from the action port are queued. If <do_queue> is false, 
+ * messages from the action port are not queued. By default, all action ports 
+ * are set to queue.
  *
- * Note that mqueue_policy[port] is set to the NOT of <do_queue>.
+ * Note that mqueue_policy[action] is set to the NOT of <do_queue>.
  */
 
-void mqueue_set_policy(uint8_t port, bool do_queue) {	
-	mqueue_policy[port] = (do_queue) ? false : true;
+void mqueue_set_policy(uint8_t action, bool do_queue) {	
+	mqueue_policy[action] = (do_queue) ? false : true;
 }
 
 /*****************************************************************************
@@ -64,19 +64,19 @@ void mqueue_set_policy(uint8_t port, bool do_queue) {
 int mqueue_push(struct msg *msg) {
 	struct mqueue_msg *node;
 	uint32_t wl_tid;
-	uint8_t port;
+	uint8_t action;
 
 	if (!msg) {
 		return 1;
 	}
 
-	port = msg->port;
+	action = msg->action;
 
-	if (mqueue_policy[port] == true) {
+	if (mqueue_policy[action] == true) {
 		return 0;
 	}
 
-	mutex_spin(&mqueue[port].mutex);
+	mutex_spin(&mqueue[action].mutex);
 
 	node = malloc(sizeof(struct mqueue_msg));
 
@@ -85,17 +85,17 @@ int mqueue_push(struct msg *msg) {
 	}
 	
 	node->next = NULL;
-	node->prev = mqueue[port].back;
+	node->prev = mqueue[action].back;
 	node->msg  = msg;
 
-	if (!mqueue[port].front) mqueue[port].front = node;
-	if (mqueue[port].back)   mqueue[port].back->next = node;
-	mqueue[port].back = node;
+	if (!mqueue[action].front) mqueue[action].front = node;
+	if (mqueue[action].back)   mqueue[action].back->next = node;
+	mqueue[action].back = node;
 
-	wl_tid = mqueue[port].wl_tid;
-	mqueue[port].wl_tid = 0;
+	wl_tid = mqueue[action].wl_tid;
+	mqueue[action].wl_tid = 0;
 
-	mutex_free(&mqueue[port].mutex);
+	mutex_free(&mqueue[action].mutex);
 
 	if (wl_tid) {
 		wake(wl_tid - 1);
@@ -107,40 +107,40 @@ int mqueue_push(struct msg *msg) {
 /*****************************************************************************
  * mqueue_pull
  *
- * Find the first message in the message queue with port <port> and source
+ * Find the first message in the message queue with action <action> and source
  * <source>. If <source> is zero, any source matches. Returns the found
  * message on success, NULL on failure.
  */
 
-struct msg *mqueue_pull(uint8_t port, uint64_t source) {
+struct msg *mqueue_pull(uint8_t action, uint64_t source) {
 	struct mqueue_msg *node;
 	struct msg *msg;
 	
-	mutex_spin(&mqueue[port].mutex);
+	mutex_spin(&mqueue[action].mutex);
 
 	if (source) {
-		for (node = mqueue[port].front; node; node = node->next) {
+		for (node = mqueue[action].front; node; node = node->next) {
 			if (node->msg->source == source) {
 				break;
 			}
 		}
 	}
 	else {
-		node = mqueue[port].front;
+		node = mqueue[action].front;
 	}
 	
 	if (!node) {
-		mutex_free(&mqueue[port].mutex);
+		mutex_free(&mqueue[action].mutex);
 		return NULL;
 	}
 
 	if (node->prev) node->prev->next = node->next;
-	else mqueue[port].front = node->next;
+	else mqueue[action].front = node->next;
 
 	if (node->next) node->next->prev = node->prev;
-	else mqueue[port].back = node->prev;
+	else mqueue[action].back = node->prev;
 
-	mutex_free(&mqueue[port].mutex);
+	mutex_free(&mqueue[action].mutex);
 
 	msg = node->msg;
 	free(node);
@@ -150,32 +150,32 @@ struct msg *mqueue_pull(uint8_t port, uint64_t source) {
 /*****************************************************************************
  * mqueue_wait
  *
- * Find the first message in the message queue with port <port> and source
+ * Find the first message in the message queue with action <action> and source
  * <source. If <source> is zero, any source matches. If there is no match,
  * this function blocks until a match is found by mqueue_push(). Returns the
  * found message on success, waits forever on failure.
  */
 
-struct msg *mqueue_wait(uint8_t port, uint64_t source) {
+struct msg *mqueue_wait(uint8_t action, uint64_t source) {
 	struct msg *msg;
 
-	msg = mqueue_pull(port, source);
+	msg = mqueue_pull(action, source);
 
 	while (!msg) {
 		
-		mutex_spin(&mqueue[port].mutex);
-		if (mqueue[port].wl_tid) {
-			mutex_free(&mqueue[port].mutex);
+		mutex_spin(&mqueue[action].mutex);
+		if (mqueue[action].wl_tid) {
+			mutex_free(&mqueue[action].mutex);
 			sleep();
-			msg = mqueue_pull(port, source);
+			msg = mqueue_pull(action, source);
 			continue;
 		}
-		mqueue[port].wl_tid = gettid() + 1;
-		mutex_free(&mqueue[port].mutex);
+		mqueue[action].wl_tid = gettid() + 1;
+		mutex_free(&mqueue[action].mutex);
 
 		stop();
 
-		msg = mqueue_pull(port, source);
+		msg = mqueue_pull(action, source);
 	}
 
 	return msg;

@@ -233,7 +233,7 @@ static void __rcall_handler(struct msg *msg) {
 	reply->source = msg->target;
 	reply->target = msg->source;
 	reply->length = strlen(rets) + 1;
-	reply->port   = PORT_REPLY;
+	reply->action = ACTION_REPLY;
 	reply->arch   = ARCH_NAT;
 	strcpy((char*) reply->data, rets);
 	free(rets);
@@ -273,8 +273,8 @@ void __rdi_class_core_setup(void) {
 	robject_set_call(rdi_class_core, "set-access", _set_access, STAT_ADMIN);
 
 	// set rcall and close handlers
-	when(PORT_RCALL, __rcall_handler);
-	when(PORT_CLOSE, __close_handler);
+	when(ACTION_RCALL, __rcall_handler);
+	when(ACTION_CLOSE, __close_handler);
 
 	// set constructor
 	rcall_hook("cons", _cons);

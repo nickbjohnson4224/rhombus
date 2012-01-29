@@ -70,7 +70,7 @@ static void __rcall_handler(struct msg *msg) {
 	reply->source = msg->target;
 	reply->target = msg->source;
 	reply->length = strlen(rets) + 1;
-	reply->port   = PORT_REPLY;
+	reply->action = ACTION_REPLY;
 	reply->arch   = ARCH_NAT;
 	strcpy((char*) reply->data, rets);
 	free(rets);
@@ -168,19 +168,19 @@ void __libc_init(int (*_main)(int, char**)) {
 
 	/* set up signals */
 	__sig_init();
-	when(PORT_CHILD, NULL);
+	when(ACTION_CHILD, NULL);
 
 	/* set up I/O handlers */
-	when(PORT_REPLY, NULL);
-	when(PORT_READ,  __reject);
-	when(PORT_WRITE, __reject);
-	when(PORT_SYNC,	 __reject);
-	when(PORT_RESET, __reject);
-	when(PORT_SHARE, __reject);
-	when(PORT_RCALL, __rcall_handler);
-	when(PORT_EVENT, __ignore);
-	when(PORT_CLOSE, __ignore);
-	when(PORT_CHILD, __reap);
+	when(ACTION_REPLY, NULL);
+	when(ACTION_READ,  __reject);
+	when(ACTION_WRITE, __reject);
+	when(ACTION_SYNC,	 __reject);
+	when(ACTION_RESET, __reject);
+	when(ACTION_SHARE, __reject);
+	when(ACTION_RCALL, __rcall_handler);
+	when(ACTION_EVENT, __ignore);
+	when(ACTION_CLOSE, __ignore);
+	when(ACTION_CHILD, __reap);
 
 	/* set up basic rcall handlers */
 	rcall_hook("ping", __ping);

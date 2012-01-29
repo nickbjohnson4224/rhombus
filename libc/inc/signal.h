@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2012 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -23,22 +23,22 @@
 
 /* signal numbers */
 
-#define SIGQUIT PORT_QUIT
-#define SIGTERM	PORT_TERM
-#define SIGABRT PORT_ABORT
-#define SIGKILL PORT_KILL
-#define SIGSTOP PORT_STOP
-#define SIGCONT PORT_CONT
-#define SIGTRAP PORT_TRAP
-#define SIGINT  PORT_INT
-#define SIGIRQ	PORT_IRQ
-#define SIGALRM PORT_ALARM
-#define SIGCHLD PORT_CHILD
-#define SIGFPE  PORT_FLOAT
-#define SIGSEGV PORT_PAGE
-#define SIGILL  PORT_ILL
-#define SIGUSR1 PORT_USER1
-#define SIGUSR2 PORT_USER2
+#define SIGQUIT ACTION_QUIT
+#define SIGTERM	ACTION_TERM
+#define SIGABRT ACTION_ABORT
+#define SIGKILL ACTION_KILL
+#define SIGSTOP ACTION_STOP
+#define SIGCONT ACTION_CONT
+#define SIGTRAP ACTION_TRAP
+#define SIGINT  ACTION_INT
+#define SIGIRQ	ACTION_IRQ
+#define SIGALRM ACTION_ALARM
+#define SIGCHLD ACTION_CHILD
+#define SIGFPE  ACTION_FLOAT
+#define SIGSEGV ACTION_PAGE
+#define SIGILL  ACTION_ILL
+#define SIGUSR1 ACTION_USER1
+#define SIGUSR2 ACTION_USER2
 #define SIGNUKE 0xFF
 
 #define SIGMAX  16

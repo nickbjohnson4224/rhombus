@@ -21,7 +21,7 @@
 #include <rho/proc.h>
 #include <rho/ipc.h>
 
-int msendv(uint64_t target, uint8_t port, void *data, size_t length) {
+int msendv(uint64_t target, uint8_t action, void *data, size_t length) {
 	struct msg *msg;
 
 	msg = aalloc(sizeof(struct msg) + length, PAGESZ);
@@ -29,7 +29,7 @@ int msendv(uint64_t target, uint8_t port, void *data, size_t length) {
 	msg->source = RP_CONS(getpid(), 0);
 	msg->target = target;
 	msg->length = length;
-	msg->port   = port;
+	msg->action = action;
 	msg->arch   = ARCH_NAT;
 
 	if (data) {

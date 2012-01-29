@@ -159,7 +159,7 @@ int main(int argc, char **argv) {
 	fs_plink("/dev/kbd", RP_CONS(getpid(), keyboard->index), NULL);
 
 	// daemonize
-	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
+	msendb(RP_CONS(getppid(), 0), ACTION_CHILD);
 	_done();
 	
 	return 0;

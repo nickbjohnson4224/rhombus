@@ -21,7 +21,7 @@
 int daemonize(void) {
 
 	/* play dead */
-	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
+	msendb(RP_CONS(getppid(), 0), ACTION_CHILD);
 
 	/* end current thread */
 	_done();

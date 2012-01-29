@@ -211,7 +211,7 @@ int main(int argc, char **argv) {
 	}
 
 	// daemonize
-	msendb(RP_CONS(getppid(), 0), PORT_CHILD);
+	msendb(RP_CONS(getppid(), 0), ACTION_CHILD);
 	_done();
 
 	return 0;

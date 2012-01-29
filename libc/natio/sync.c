@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2009-2012 Nick Johnson <nickbjohnson4224 at gmail.com>
  * Copyright (C) 2011 Jaagup Repan <jrepan at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
@@ -38,11 +38,11 @@ int rp_sync(uint64_t file) {
 	msg->source = RP_CURRENT_THREAD;
 	msg->target = file;
 	msg->length = 0;
-	msg->port   = PORT_SYNC;
+	msg->action = ACTION_SYNC;
 	msg->arch   = ARCH_NAT;
 
 	if (msend(msg)) return 1;
-	msg = mwait(PORT_REPLY, file);
+	msg = mwait(ACTION_REPLY, file);
 
 	free(msg);
 	return 0;

@@ -36,7 +36,7 @@ void rdi_set_irq(uint8_t irq, void (*_irq)(struct msg *msg)) {
 	_rirq(irq);
 
 	/* register IRQ handler */
-	when(PORT_IRQ, _irq);
+	when(ACTION_IRQ, _irq);
 	_rdi_callback_irq = _irq;
 }
 

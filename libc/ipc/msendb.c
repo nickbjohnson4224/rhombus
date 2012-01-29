@@ -20,7 +20,7 @@
 #include <rho/proc.h>
 #include <rho/ipc.h>
 
-int msendb(uint64_t target, uint8_t port) {
+int msendb(uint64_t target, uint8_t action) {
 	struct msg *msg;
 
 	msg = aalloc(sizeof(struct msg), PAGESZ);
@@ -28,7 +28,7 @@ int msendb(uint64_t target, uint8_t port) {
 	msg->source = RP_CONS(getpid(), 0);
 	msg->target = target;
 	msg->length = 0;
-	msg->port   = port;
+	msg->action = action;
 	msg->arch   = ARCH_NAT;
 	
 	return msend(msg);

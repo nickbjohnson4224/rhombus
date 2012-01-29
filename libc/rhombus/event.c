@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011-2012 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -36,7 +36,7 @@ int event(rp_t rp, const char *value) {
 	msg->source = RP_CONS(getpid(), 0);
 	msg->target = rp;
 	msg->length = strlen(value) + 1;
-	msg->port   = PORT_EVENT;
+	msg->action = ACTION_EVENT;
 	msg->arch   = ARCH_NAT;
 	strcpy((char*) msg->data, value);
 
@@ -80,7 +80,7 @@ static void __event_handler(struct msg *msg) {
 int event_hook(const char *type, event_t hook) {
 	
 	event_table = s_table_set(event_table, type, (void*) (uintptr_t) hook);
-	when(PORT_EVENT, __event_handler);
+	when(ACTION_EVENT, __event_handler);
 
 	return 0;
 }

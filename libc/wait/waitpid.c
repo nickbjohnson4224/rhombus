@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011-2012 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,14 +26,14 @@ pid_t waitpid(pid_t pid, int *status, int options) {
 	
 	if (pid == -1) {
 		msg = (options & WNOHANG) 
-			? mqueue_pull(PORT_CHILD, 0) 
-			: mwait(PORT_CHILD, 0);
+			? mqueue_pull(ACTION_CHILD, 0) 
+			: mwait(ACTION_CHILD, 0);
 		pid = RP_PID(msg->source);
 	}
 	else {
 		msg = (options & WNOHANG) 
-			? mqueue_pull(PORT_CHILD, RP_CONS(pid, 0)) 
-			: mwait(PORT_CHILD, RP_CONS(pid, 0));
+			? mqueue_pull(ACTION_CHILD, RP_CONS(pid, 0)) 
+			: mwait(ACTION_CHILD, RP_CONS(pid, 0));
 	}
 	
 	if (status) {
