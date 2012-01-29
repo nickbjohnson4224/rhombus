@@ -29,7 +29,7 @@
 long int strtol(const char *nptr, char **endptr, int base) {
 	size_t i;
 	int32_t sum;
-	bool neg;
+	bool neg = false;
 
 	i = 0;
 	sum = 0;

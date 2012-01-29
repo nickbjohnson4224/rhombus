@@ -29,7 +29,7 @@
 unsigned long int strtoul(const char *nptr, char **endptr, int base) {
 	size_t i;
 	uint32_t sum;
-	bool neg;
+	bool neg = false;
 
 	i = 0;
 	sum = 0;

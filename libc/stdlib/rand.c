@@ -235,7 +235,7 @@ uint32_t rands(void *state) {
 
 void memrands(void *p, size_t n, void *state) {
 	uint8_t *byte = p;
-	uint32_t value;
+	uint32_t value = 0;
 	size_t i;
 	
 	for (i = 0; i < n; i++) {

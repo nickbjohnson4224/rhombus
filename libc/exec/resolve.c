@@ -22,7 +22,7 @@
 #include <rho/exec.h>
 #include <rho/path.h>
 
-bool is_file(const char *path) {
+static bool is_file(const char *path) {
 	int fd;
 
 	fd = ropen(-1, fs_find(path), STAT_READER);

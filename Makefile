@@ -16,10 +16,10 @@ AR := i586-pc-rhombus-ar
 AS := nasm
 PP := cpp
 
-CFLAGS	:= -pipe -Wall -Werror -Wextra -pedantic -std=c99
+CFLAGS	:= -pipe -Wall -Wextra -pedantic -std=c99 -Werror
 CFLAGS	+= -Wpointer-arith -Wwrite-strings
 CFLAGS	+= -Wno-unused-parameter -Wno-unused-function
-CFLAGS	+= -O3 -fomit-frame-pointer
+CFLAGS	+= -O0 -fomit-frame-pointer
 CFLAGS	+= -I$(BUILDDIR)/inc -ffreestanding -fPIC
 LDFLAGS := -L$(BUILDDIR)/lib -Bdynamic
 ARFLAGS := rcs
