@@ -37,7 +37,7 @@ int rp_access(rp_t rp, uint32_t user) {
 		return 0;
 	}
 
-	reply = rcall(rp, "get-access %d", user);
+	reply = rcall(rp, 0, "get-access %d", user);
 
 	if (iserror(reply)) {
 		errno = geterror(reply);

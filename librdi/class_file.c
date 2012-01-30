@@ -284,7 +284,7 @@ static void __rdi_sync(struct msg *msg) {
 		return;
 	}
 
-	free(robject_call(file, msg->source, "sync"));
+	free(robject_call(file, msg->source, msg->key, "sync"));
 
 	merror(msg);
 }
@@ -309,7 +309,7 @@ static void __rdi_reset(struct msg *msg) {
 		return;
 	}
 
-	free(robject_call(file, msg->source, "reset"));
+	free(robject_call(file, msg->source, msg->key, "reset"));
 
 	merror(msg);
 }

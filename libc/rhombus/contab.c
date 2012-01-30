@@ -224,10 +224,10 @@ static int _rp_connect(rp_t rp, int status) {
 	char *reply;
 
 	if (status) {
-		reply = rcall(rp, "open %d", status);
+		reply = rcall(rp, 0, "open %d", status);
 	}
 	else {
-		reply = rcall(rp, "close");
+		reply = rcall(rp, 0, "close");
 	}
 
 	if (iserror(reply)) {

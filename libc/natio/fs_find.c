@@ -79,10 +79,10 @@ static rp_t __fs_find(const char *path, int linkmax, int link) {
 	if (!path_s) return RP_NULL;
 
 	if (link) {
-		reply = rcall(root, "find -L %s", path_s);
+		reply = rcall(root, 0, "find -L %s", path_s);
 	}
 	else {
-		reply = rcall(root, "find %s", path_s);
+		reply = rcall(root, 0, "find %s", path_s);
 	}
 
 	free(path_s);

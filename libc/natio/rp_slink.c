@@ -31,7 +31,7 @@
 int rp_slink(uint64_t rp, const char *link) {
 	char *reply;
 
-	reply = rcall(rp, "set-link %s", link);
+	reply = rcall(rp, 0, "set-link %s", link);
 
 	if (iserror(reply)) {
 		errno = geterror(reply);

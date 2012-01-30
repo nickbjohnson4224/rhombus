@@ -31,7 +31,7 @@
 char *rp_list(rp_t dir) {
 	char *reply;
 
-	reply = rcall(dir, "list");
+	reply = rcall(dir, 0, "list");
 	
 	if (!reply) {
 		return strdup("");

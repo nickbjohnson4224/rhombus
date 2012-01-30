@@ -145,7 +145,7 @@ int main(int argc, char **argv) {
 			return 1;
 		}
 
-		ret = rcall(wmanager, "createwindow");
+		ret = rcall(wmanager, 0, "createwindow");
 		kbd_dev = fb_dev = ator(ret);
 		free(ret);
 

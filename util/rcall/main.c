@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
 	}
 	if (args[0]) args[strlen(args)-1] = '\0';
 
-	reply = rcall(ctrl, args);
+	reply = rcall(ctrl, 0, args);
 
 	if (!reply) {
 		printf("! nosys (not implemented)\n");

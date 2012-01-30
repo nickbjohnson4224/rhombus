@@ -15,6 +15,7 @@
  */
 
 #include <stdlib.h>
+#include <time.h>
 
 #include <rho/struct.h>
 #include <rho/mutex.h>
@@ -36,6 +37,13 @@ struct robject *robject_cons(uint32_t index, struct robject *parent) {
 	robject->data_table = NULL;
 	robject->open_table = NULL;
 	robject->accs_table = NULL;
+
+	// generate random keys
+	// XXX SEC - this should be replaced with a secure RNG ASAP
+	srand(time(NULL) + index + (uint32_t) parent + (uint32_t) robject);
+	for (int i = 0; i < 8; i++) {
+		robject->key[i] = (uint64_t) rand() | (uint64_t) rand() << 32ULL;
+	}
 
 	if (index) {
 		robject_set(index, robject);

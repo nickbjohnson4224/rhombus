@@ -102,7 +102,7 @@ void robject_event(struct robject *ro, const char *event) {
 	}
 }
 
-char *robject_call(struct robject *ro, rp_t source, const char *args) {
+char *robject_call(struct robject *ro, rp_t source, rk_t key, const char *args) {
 	rcall_t call;
 	int argc;
 	int status;

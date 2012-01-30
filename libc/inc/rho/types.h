@@ -22,6 +22,9 @@
 // resource pointer type
 typedef uint64_t rp_t;
 
+// resource action key type
+typedef uint64_t rk_t;
+
 // file offset type
 typedef uint64_t off_t;
 

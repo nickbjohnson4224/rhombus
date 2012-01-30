@@ -35,7 +35,7 @@ int rp_admin(rp_t rp, uint32_t user, int access) {
 		return 1;
 	}
 
-	reply = rcall(rp, "set-access %d %d", user, access);
+	reply = rcall(rp, 0, "set-access %d %d", user, access);
 
 	if (iserror(reply)) {
 		errno = geterror(reply);

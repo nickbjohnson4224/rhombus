@@ -33,7 +33,7 @@ int rp_type(rp_t rp, const char *type) {
 		return 0;
 	}
 
-	reply = rcall(rp, "type");
+	reply = rcall(rp, 0, "type");
 
 	if (iserror(reply)) {
 		errno = geterror(reply);

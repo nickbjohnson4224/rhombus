@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011-2012 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -32,7 +32,7 @@ static char *__type(struct robject *self, rp_t src, int argc, char **argv) {
 	char *final_type;
 
 	type = robject_data(self, "type");	
-	parent_type = robject_call(self->parent, src, "type");
+	parent_type = robject_call(self->parent, src, 0, "type");
 
 	if (parent_type) {
 		if (type) {
@@ -171,6 +171,26 @@ static char *_set_access(struct robject *r, rp_t src, int argc, char **argv) {
 	return strdup("T");
 }
 
+static char *_get_key(struct robject *r, rp_t src, int argc, char **argv) {
+	uint32_t action;
+
+	if (argc != 2) {
+		return errorstr(EINVAL);
+	}
+
+	action = atoi(argv[1]);
+
+	if (action > 8) {
+		errorstr(EINVAL);
+	}
+
+	if (robject_check_access(r, src, 1 << action)) {
+		return saprintf("%u %u", r->key[action]);
+	}
+
+	return errorstr(EACCES);
+}
+
 rdi_cons_hook rdi_global_cons_file_hook;
 rdi_cons_hook rdi_global_cons_dir_hook;
 rdi_cons_hook rdi_global_cons_link_hook;
@@ -221,7 +241,7 @@ static void __rcall_handler(struct msg *msg) {
 			return;
 		}
 
-		rets = robject_call(ro, msg->source, (const char*) msg->data);
+		rets = robject_call(ro, msg->source, msg->key, (const char*) msg->data);
 		if (!rets) rets = strdup("");
 	}
 	else {	
@@ -248,7 +268,7 @@ static void __close_handler(struct msg *msg) {
 	ro = robject_get(RP_INDEX(msg->target));
 	if (!ro) return;
 
-	free(robject_call(ro, msg->source, "close"));
+	free(robject_call(ro, msg->source, msg->key, "close"));
 	free(msg);
 }
 
@@ -271,6 +291,7 @@ void __rdi_class_core_setup(void) {
 	robject_set_call(rdi_class_core, "find", __find, 0);
 	robject_set_call(rdi_class_core, "get-access", _get_access, 0);
 	robject_set_call(rdi_class_core, "set-access", _set_access, STAT_ADMIN);
+	robject_set_call(rdi_class_core, "get-key", _get_key, 0);
 
 	// set rcall and close handlers
 	when(ACTION_RCALL, __rcall_handler);

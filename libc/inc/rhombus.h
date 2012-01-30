@@ -141,10 +141,101 @@ int dup  (int fd);
 int dup2 (int fd, int newfd);
 
 /*****************************************************************************
+ * Resource Action Classes
+ *
+ * Resources have a multitude of different actions that can be performed on
+ * them with both the builtin I/O messages (read, write, mmap, sync, reset) 
+ * and with the open-ended rcall messages. Different drivers and resources 
+ * within those drivers may expose different sets of actions. To impose some 
+ * order on this, actions are divided into "action classes". Whether or not a
+ * process can perform an action is dependent on that action's class.
+ *
+ * The eight action classes are as follows:
+ *
+ * 0 - AC_NULL
+ * 
+ *   The default action class. Actions of class AC_NULL are not restricted by
+ *   the native access control system, although they may implement their own
+ *   based on source and key information.
+ *
+ *   Example actions: find, ping, name, stat, get-key, get-access, get-ac
+ *
+ * 1 - AC_READ
+ *
+ *   The action class for actions that read data from a resource. If the data
+ *   is not potentially sensitive (like whether the resource exists or not)
+ *   then the AC_NULL class would be used instead.
+ *
+ *   Example actions: read, size, list, get-link
+ *
+ * 2 - AC_WRITE
+ *
+ *   The action class for actions that write data to a resource.
+ *
+ *   Example actions: write, sync, reset, finish, set-link
+ *
+ * 3 - AC_ALTER
+ *
+ *   The action class for actions that alter the directory structure or the
+ *   existence of resources, but not for those that change the permissions of
+ *   existing resources.
+ *
+ *   Example actions: create, delete, link, unlink, 
+ *
+ * 4 - AC_ADMIN
+ *
+ *   The action class for actions that modify the permissions of existing
+ *   resources.
+ *
+ *   Example actions: set-access
+ *
+ * 5 - AC_EVENT
+ *
+ *   The action class for actions that change the event subscriber list of a
+ *   resource.
+ *
+ *   Example actions: listen, un-listen
+ *
+ * 6 - AC_LOCK
+ *
+ *   The action class for actions that create both advisory and mandatory read 
+ *   and write locks on a resource.
+ *
+ *   Example actions: lock, unlock
+ *
+ * 7 - AC_ROOT
+ *
+ *   The action class for administrative actions pertaining to the driver
+ *   itself. Generally very driver-specific.
+ *
+ *   Example actions: power-down, hard-reset
+ */
+
+#define AC_NULL  0
+#define AC_READ  1
+#define AC_WRITE 2
+#define AC_ALTER 3
+#define AC_ADMIN 4
+#define AC_EVENT 5
+#define AC_LOCK  6
+#define AC_ROOT  7
+
+/*****************************************************************************
+ * Resource Action Keys
+ *
+ * Every resource has a set of "action keys", one for each action class that
+ * may be performed on it. These action keys are used to authenticate actions
+ * performed on a resource.
+ */
+
+rk_t rp_getkey (rp_t rp, int action);
+int  rp_getkeys(rp_t rp, rk_t keys[8]);
+
+/*****************************************************************************
  * Resource Access Control Lists
  *
  * Every resource has a set of access bitmaps that determine which processes
- * and users can perform which functions on that resource. 
+ * and users can perform which actions on that resource. 
  *
  * The following flags correspond to bits that may be set in the access
  * bitmap. Permissions can be assigned on a per-user basis.
@@ -195,7 +286,7 @@ int rp_admin (rp_t rp, uint32_t user, int access);
  */
 
 // perform an rcall
-char *rcall (rp_t rp, const char *fmt, ...);
+char *rcall (rp_t rp, rk_t key, const char *fmt, ...);
 char *frcall(int fd, const char *fmt, ...);
 
 // root rcall hook format
@@ -258,6 +349,7 @@ int fevent(int fd, const char *value);
  *     find
  *     get-access
  *     set-access
+ *     get-key
  *
  *   "event" - is capable of (but not guaranteed to be) emitting events.
  *

@@ -32,7 +32,7 @@ int robject_is_type(const char *typestr, const char *type) {
 int robject_check_type(struct robject *ro, const char *type) {
 	char *typestr;
 
-	typestr = robject_call(ro, 0, "type");
+	typestr = robject_call(ro, 0, 0, "type");
 
 	if (!typestr) {
 		return 0;

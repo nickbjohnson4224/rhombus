@@ -1,11 +1,11 @@
 BUILDDIR=$(PWD)
 
-LIB_DIRS  = libc dl librdi ports/lua ports/freetype libtoolkit
+LIB_DIRS  = libc dl librdi ports/lua ports/freetype
 
 DRIVERS  := $(shell find driver -mindepth 1 -maxdepth 1)
-DAEMONS  := $(shell find daemon -mindepth 1 -maxdepth 1)
+DAEMONS  := daemon/init
 UTILS    := $(shell find util   -mindepth 1 -maxdepth 1)
-APPS     := $(shell find apps   -mindepth 1 -maxdepth 1)
+APPS     := apps/calico
 
 BIN_DIRS  = kernel fish
 BIN_DIRS += $(DRIVERS) $(DAEMONS) $(UTILS) $(APPS)

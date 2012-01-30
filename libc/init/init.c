@@ -174,7 +174,7 @@ void __libc_init(int (*_main)(int, char**)) {
 	when(ACTION_REPLY, NULL);
 	when(ACTION_READ,  __reject);
 	when(ACTION_WRITE, __reject);
-	when(ACTION_SYNC,	 __reject);
+	when(ACTION_SYNC,  __reject);
 	when(ACTION_RESET, __reject);
 	when(ACTION_SHARE, __reject);
 	when(ACTION_RCALL, __rcall_handler);

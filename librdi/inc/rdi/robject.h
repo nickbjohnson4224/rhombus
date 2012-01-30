@@ -33,10 +33,6 @@
  * The things contained within this sublibrary are used to send, route, and
  * recieve requests to and from robjects, usually via the low-level message 
  * passing IPC layer.
- *
- * For normal processes, this framework is used only to handle rcall requests
- * to the process head, and generally has only one instantiated robject at
- * index 0.
  */
 
 // defined below
@@ -70,6 +66,9 @@ struct robject {
 	bool     mutex; // OPT - this should be a readers/writer lock
 	bool     driver_mutex;
 	uint32_t index; // object index within process; do not modify
+
+	// keys - generated at object construction; do not modify
+	uint64_t key[8];
 	
 	// parent interface (for defaulting messages to)
 	struct robject *parent;
@@ -108,7 +107,7 @@ void robject_set_default_access(struct robject *ro, int access);
 
 // basic interface
 void  robject_event(struct robject *ro, const char *event);
-char *robject_call (struct robject *ro, rp_t source, const char *args);
+char *robject_call (struct robject *ro, rp_t source, rk_t key, const char *args);
 void *robject_data (struct robject *ro, const char *field);
 
 int   robject_open (struct robject *ro, rp_t source, int access);

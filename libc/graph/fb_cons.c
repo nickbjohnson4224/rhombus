@@ -46,7 +46,7 @@ struct fb *fb_cons(uint64_t rp) {
 	fb->flags = 0;
 	
 	// check video mode
-	mode = rcall(rp, "getmode");
+	mode = rcall(rp, 0, "getmode");
 
 	if (!mode) {
 		close(fb->fd);
@@ -86,6 +86,6 @@ struct fb *fb_createwindow() {
 		return NULL;
 	}
 	
-	ret = rcall(wmanager, "createwindow");
+	ret = rcall(wmanager, 0, "createwindow");
 	return fb_cons(ator(ret));
 }

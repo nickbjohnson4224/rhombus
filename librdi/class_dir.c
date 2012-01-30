@@ -282,7 +282,7 @@ void rdi_vfs_add(struct robject *root, const char *path, struct robject *r) {
 
 	path1 = path_name(path);
 	call = saprintf("link %s %r", path1, RP_CONS(getpid(), r->index));
-	free(robject_call(dir, 0, call));
+	free(robject_call(dir, 0, 0, call));
 	free(call);
 	free(path1);
 }

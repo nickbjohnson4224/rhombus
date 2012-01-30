@@ -43,7 +43,7 @@ int fb_setmode(struct fb *fb, int xdim, int ydim) {
 	}
 
 	sprintf(args, "setmode %d %d 32", xdim, ydim);
-	ret = rcall(fb->rp, args);
+	ret = rcall(fb->rp, 0, args);
 
 	if (!ret) {
 		return 1;

@@ -25,34 +25,35 @@
 /* action numbers ***********************************************************/
 
 // kernel events and signals
-#define ACTION_QUIT  0
-#define ACTION_TERM  1
-#define ACTION_ABORT 2
-#define ACTION_KILL  3
-#define ACTION_STOP  4
-#define ACTION_CONT  5
-#define ACTION_TRAP  6
-#define ACTION_INT   7
-#define ACTION_IRQ   8
-#define ACTION_ALARM 9
-#define ACTION_CHILD 10
-#define ACTION_FLOAT 11
-#define ACTION_PAGE  12
-#define ACTION_ILL   13
-#define ACTION_USER1 14
-#define ACTION_USER2 15
+#define ACTION_QUIT   0
+#define ACTION_TERM   1
+#define ACTION_ABORT  2
+#define ACTION_KILL   3
+#define ACTION_STOP   4
+#define ACTION_CONT   5
+#define ACTION_TRAP   6
+#define ACTION_INT    7
+#define ACTION_IRQ    8
+#define ACTION_ALARM  9
+#define ACTION_CHILD  10
+#define ACTION_FLOAT  11
+#define ACTION_PAGE   12
+#define ACTION_ILL    13
+#define ACTION_USER1  14
+#define ACTION_USER2  15
 
 // I/O and similar
-#define ACTION_REPLY 16
-#define ACTION_READ  17
-#define ACTION_WRITE 18
-#define ACTION_SYNC  19
-#define ACTION_RESET 20
-#define ACTION_SHARE 21
-#define ACTION_RCALL 22
-#define ACTION_EVENT 23
-#define ACTION_CLOSE 24
-#define ACTION_MMAP  25
+#define ACTION_REPLY  16
+#define ACTION_READ   17
+#define ACTION_WRITE  18
+#define ACTION_SYNC   19
+#define ACTION_RESET  20
+#define ACTION_SHARE  21
+#define ACTION_RCALL  22
+#define ACTION_EVENT  23
+#define ACTION_CLOSE  24
+#define ACTION_MMAP   25
+#define ACTION_FINISH 26
 
 /* message structure ********************************************************/
 

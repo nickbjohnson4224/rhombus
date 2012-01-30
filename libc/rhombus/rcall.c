@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011-2012 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -33,7 +33,7 @@
  * Returns NULL on error or empty return string.
  *
  * protocol:
- *   port: PORT_RCALL
+ *   port: ACTION_RCALL
  *
  *   request:
  *     char args[]
@@ -42,7 +42,7 @@
  *     char rets[]
  */
 
-static char *__rcall(uint64_t rp, const char *args) {
+static char *__rcall(rp_t rp, rk_t key, const char *args) {
 	struct msg *msg;
 	size_t length;
 	char *rets;
@@ -53,6 +53,7 @@ static char *__rcall(uint64_t rp, const char *args) {
 	if (!msg) return NULL;
 	msg->source = RP_CURRENT_THREAD;
 	msg->target = rp;
+	msg->key    = key;
 	msg->length = length;
 	msg->action = ACTION_RCALL;
 	msg->arch   = ARCH_NAT;
@@ -82,7 +83,7 @@ static char *__rcall(uint64_t rp, const char *args) {
  * routines. Returns NULL on error or empty return string.
  */
 
-char *rcall(rp_t rp, const char *fmt, ...) {
+char *rcall(rp_t rp, rk_t key, const char *fmt, ...) {
 	va_list ap;
 	char *args;
 	char *ret;
@@ -99,7 +100,7 @@ char *rcall(rp_t rp, const char *fmt, ...) {
 		}
 
 		// perform rcall
-		ret = __rcall(rp, args);
+		ret = __rcall(rp, key, args);
 
 		// free argument string
 		free(args);
@@ -107,7 +108,7 @@ char *rcall(rp_t rp, const char *fmt, ...) {
 	else {
 		
 		// just use the format string
-		ret = __rcall(rp, fmt);
+		ret = __rcall(rp, key, fmt);
 	}
 
 	return ret;
@@ -133,7 +134,7 @@ char *frcall(int fd, const char *fmt, ...) {
 		}
 
 		// perform rcall
-		ret = __rcall(rp, args);
+		ret = __rcall(rp, 0, args);
 
 		// free argument string
 		free(args);
@@ -141,7 +142,7 @@ char *frcall(int fd, const char *fmt, ...) {
 	else {
 		
 		// just use the format string
-		ret = __rcall(rp, fmt);
+		ret = __rcall(rp, 0, fmt);
 	}
 
 	return ret;

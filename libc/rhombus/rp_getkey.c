@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2012 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <rhombus.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
@@ -22,42 +23,34 @@
 #include <rho/natio.h>
 
 /*****************************************************************************
- * rp_size
+ * rp_getkey
  *
- * Returns the file size of <file> in bytes. If this value is zero, the file
- * may not exist, be the wrong type, or be a character device. checktype can 
- * be used to differentiate between these cases.
+ * Attempts to obtain an access key for a certain action class on a resource.
+ * Returns the access key on success, zero on failure (valid keys are not 
+ * allowed to be zero.)
  */
 
-off_t rp_size(rp_t file) {
-	uint32_t size0, size1;
-	uint64_t size;
+uint64_t rp_getkey(rp_t rp, int action) {
+	uint64_t key;
+	uint32_t key_low, key_hi;
 	char *reply;
 
-	if (!file) {
+	if (!rp) {
 		return 0;
 	}
 
-	reply = rcall(file, 0, "size");
+	reply = rcall(rp, 0, "get-key %d", action);
 
-	if (!reply) {
-		errno = ENOSYS;
-		return 0;
-	}
-
-	if (reply[0] == '!') {
-		if      (!strcmp(reply, "! nfound")) errno = ENOENT;
-		else if (!strcmp(reply, "! nosys"))  errno = ENOSYS;
-		else if (!strcmp(reply, "! denied")) errno = EACCES;
-		else                                 errno = EUNK;
+	if (iserror(reply)) {
+		errno = geterror(reply);
 		free(reply);
 		return 0;
 	}
 
-	size0 = 0;
-	sscanf(reply, "%u:%u", &size0, &size1);
-	size = size1 | (uint64_t) size0 << 32;
+	sscanf(reply, "%u %u", &key_low, &key_hi);
 	free(reply);
 
-	return size;
+	key = (uint64_t) key_low | (uint64_t) key_hi << 32ULL;
+
+	return key;
 }
