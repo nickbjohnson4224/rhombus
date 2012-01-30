@@ -33,9 +33,7 @@ char *fs_list(const char *path) {
 	rp_t dir;
 
 	dir = fs_find(path);
-	rp_setstat(dir, STAT_READER);
 	list = rp_list(dir);
-	rp_clrstat(dir, STAT_READER);
 
 	return list;
 }

@@ -22,7 +22,7 @@
 
 int main(int argc, char **argv) {
 	
-	frcall(stdout->fd, "clear");
+	frcall(stdout->fd, AC_WRITE, "clear");
 	
 	return 0;
 }

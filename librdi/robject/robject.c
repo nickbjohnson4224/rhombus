@@ -17,6 +17,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include <rho/struct.h>
 #include <rho/natio.h>
@@ -30,12 +31,12 @@
  * various field manipulations
  */
 
-void robject_set_call(struct robject *ro, const char *call, rcall_t hook, int status) {
+void robject_set_call(struct robject *ro, const char *call, rcall_t hook, int class) {
 	
 	if (ro) {
 		mutex_spin(&ro->mutex);
 		ro->call_table = s_table_set(ro->call_table, call, (void*) (uintptr_t) hook);
-		ro->call_stat_table = s_table_set(ro->call_stat_table, call, (void*) status);
+		ro->call_class = s_table_set(ro->call_class, call, (void*) class);
 		mutex_free(&ro->mutex);
 	}
 }
@@ -90,14 +91,14 @@ void *robject_get_data(struct robject *ro, const char *field) {
  */
 
 static void _iter(void *arg0, const char *key, void *value) {
-	if ((int) value & STAT_EVENT) event(atoi(key), arg0);
+	event(atoi(key), arg0);
 }
 
 void robject_event(struct robject *ro, const char *event) {
 	
 	if (ro) {
 		mutex_spin(&ro->mutex);
-		s_table_iter(ro->open_table, (void*) event, _iter);
+		s_table_iter(ro->subs_table, (void*) event, _iter);
 		mutex_free(&ro->mutex);
 	}
 }
@@ -105,37 +106,39 @@ void robject_event(struct robject *ro, const char *event) {
 char *robject_call(struct robject *ro, rp_t source, rk_t key, const char *args) {
 	rcall_t call;
 	int argc;
-	int status;
 	char **argv;
 	char *rets;
 
 	// parse argument list
 	argv = strparse(args, " ");
 	if (!argv) return NULL;
-
 	for (argc = 0; argv[argc]; argc++);
 
+	// get requested hook
 	call = robject_get_call(ro, argv[0]);
 
 	if (!call) {
+		// no hook; free argument list and return ENOSYS
 		for (argc = 0; argv[argc]; argc++) free(argv[argc]);
 		free(argv);
 
-		return NULL;
+		return errorstr(ENOSYS);
 	}
 
+#ifdef KEYSEC
 	if (source) {
-		// check access and status restrictions
+
+		// get call action class
 		mutex_spin(&ro->mutex);
-		status = (int) s_table_get(ro->call_stat_table, argv[0]);
+		uint32_t class = (uint32_t) s_table_get(ro->call_class, argv[0]);	
 		mutex_free(&ro->mutex);
 
-		if (status) {
-			if (!robject_check_status(ro, source, status)) {
-				return strdup("! denied");
-			}
+		// check key
+		if (class > 8 || key != ro->key[class]) {
+			return errorstr(EACCES);
 		}
 	}
+#endif
 
 	rets = call(ro, source, argc, argv);
 
@@ -147,65 +150,6 @@ char *robject_call(struct robject *ro, rp_t source, rk_t key, const char *args) 
 
 void *robject_data(struct robject *ro, const char *field) {
 	return robject_get_data(ro, field);
-}
-
-int robject_open(struct robject *ro, rp_t source, int status) {
-
-	if (ro) {
-		mutex_spin(&ro->mutex);
-		ro->open_table = s_table_setv(ro->open_table, (void*) status, "%d", RP_PID(source));
-		mutex_free(&ro->mutex);
-	}
-
-	return 0;
-}
-
-int robject_stat(struct robject *ro, rp_t source) {
-	int status = 0;
-
-	if (ro) {
-		mutex_spin(&ro->mutex);
-		status = (int) s_table_getv(ro->open_table, "%d", RP_PID(source));
-		mutex_free(&ro->mutex);
-	}
-
-	return status;
-}
-
-int robject_check_status(struct robject *ro, rp_t source, int status) {
-	return ((status & robject_stat(ro, source)) == status);
-}
-
-static void _iter2(void *arg0, const char *key, void *value) {
-	int *arg = arg0;
-
-	if (((int) value & arg[0]) == arg[0]) {
-		arg[1]++;
-	}
-}
-
-int robject_count_status(struct robject *ro, int status) {
-	int arg[2];
-
-	arg[0] = status;
-	arg[1] = 0;
-
-	if (ro) {
-		mutex_spin(&ro->mutex);
-		s_table_iter(ro->open_table, (void*) arg, _iter2);
-		mutex_free(&ro->mutex);
-	}
-
-	return arg[1];
-}
-
-void robject_close(struct robject *ro, rp_t source) {
-
-	if (ro) {
-		mutex_spin(&ro->mutex);
-		ro->open_table = s_table_setv(ro->open_table, NULL, "%d", RP_PID(source));
-		mutex_free(&ro->mutex);
-	}
 }
 
 int robject_get_access(struct robject *ro, rp_t source) {

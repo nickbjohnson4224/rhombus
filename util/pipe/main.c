@@ -31,8 +31,8 @@ int pipe_exec_bg(char const **argv, int in, int out) {
 	pid = fork();
 	if (pid == 0) {
 
-		ropen(0, fd_rp(in), STAT_READER);
-		ropen(1, fd_rp(out), STAT_WRITER);
+		ropen(0, fd_rp(in), ACCS_READ);
+		ropen(1, fd_rp(out), ACCS_WRITE);
 
 		if (execvp(argv[0], argv)) {
 			if (errno == ENOENT) {
@@ -57,8 +57,8 @@ int pipe_exec_fg(char const **argv, int in, int out) {
 	pid = fork();
 	if (pid == 0) {
 
-		ropen(0, fd_rp(in), STAT_READER);
-		ropen(1, fd_rp(out), STAT_WRITER);
+		ropen(0, fd_rp(in), ACCS_READ);
+		ropen(1, fd_rp(out), ACCS_WRITE);
 
 		if (execvp(argv[0], argv)) {
 			if (errno == ENOENT) {

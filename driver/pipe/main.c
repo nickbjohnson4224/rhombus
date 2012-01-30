@@ -102,7 +102,7 @@ size_t pipe_read(struct robject *self, rp_t source, uint8_t *buffer, size_t size
 		datum = pipe_getc(pipe);
 
 		while (datum == ERR_EMPTY) {
-			if (!robject_count_status(self, STAT_WRITER)) {
+			if (robject_get_data(self, "finished")) {
 				datum = ERR_EOF;
 				break;
 			}
@@ -141,8 +141,6 @@ struct robject *pipe_file_cons(rp_t source, int argc, char **argv) {
 	new_r = rdi_file_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
 	pipe = pipe_new();
 	robject_set_data(new_r, "pipe", pipe);
-
-	robject_open(new_r, source, STAT_OPEN | STAT_READER | STAT_WRITER);
 
 	return new_r;
 }

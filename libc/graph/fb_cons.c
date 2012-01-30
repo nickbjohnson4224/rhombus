@@ -41,7 +41,7 @@ struct fb *fb_cons(uint64_t rp) {
 
 	// allocate and setup framebuffer
 	fb = malloc(sizeof(struct fb));
-	fb->fd    = ropen(-1, rp, STAT_WRITER);
+	fb->fd    = ropen(-1, rp, ACCS_WRITE);
 	fb->mutex = false;
 	fb->flags = 0;
 	

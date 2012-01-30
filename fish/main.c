@@ -38,14 +38,7 @@ int fish_cd(int argc, char **argv) {
 	path = path_simplify(argv[1]);
 
 	if (path && fs_find(path)) {
-		if (checktype(path, "dir")) {
-			setenv("PWD", path);
-		}
-		else {
-			fprintf(stderr, "%s: %s: not a directory\n", getname_s(), argv[1]);
-			free(path);
-			return 1;
-		}
+		setenv("PWD", path);
 	}
 	else {
 		fprintf(stderr, "%s: %s: no such directory\n", getname_s(), argv[1]);
@@ -112,9 +105,9 @@ int fish_exec_fg(int argc, char **argv, FILE *in, FILE *out, FILE *err) {
 			abort();
 		}
 	}
-	frcall(stdout->fd, "set_fgjob %d", pid);
+	frcall(stdout->fd, AC_ROOT, "set_fgjob %d", pid);
 	waitpid(pid, NULL, 0);
-	frcall(stdout->fd, "set_fgjob %d", 0);
+	frcall(stdout->fd, AC_ROOT, "set_fgjob %d", 0);
 	
 	return 0;
 }

@@ -85,8 +85,4 @@ int rp_slink(rp_t rp, const char *link);
 int rp_plink(rp_t rp, rp_t link_rp, const char *link_path);
 int rp_link (rp_t dir, const char *name, rp_t link);
 
-/* robject type system ******************************************************/
-
-bool checktype(const char *path, const char *type);
-
 #endif/*__RLIBC_NATIO_H*/

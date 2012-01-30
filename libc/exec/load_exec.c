@@ -35,7 +35,7 @@ void *load_exec(const char *path) {
 	uint32_t size;
 	void *image;
 
-	fd = ropen(-1, fs_find(path), STAT_READER);
+	fd = ropen(-1, fs_find(path), ACCS_READ);
 
 	if (fd < 0 || !rp_type(fd_rp(fd), "file")) {
 		/* file not found */

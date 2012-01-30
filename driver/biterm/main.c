@@ -155,8 +155,8 @@ int main(int argc, char **argv) {
 		}
 	}
 	else {
-		kbd_dev = ropen(-1, fs_find(argv[1]), STAT_EVENT);
-		fb_dev  = ropen(-1, fs_find(argv[2]), STAT_READER | STAT_WRITER | STAT_EVENT);
+		kbd_dev = ropen(-1, fs_find(argv[1]), ACCS_EVENT);
+		fb_dev  = ropen(-1, fs_find(argv[2]), ACCS_READ | ACCS_WRITE | ACCS_EVENT);
 
 		if (kbd_dev < 0) {
 			fprintf(stderr, "%s: %s: keyboard not found\n", argv[0], argv[1]);
@@ -183,10 +183,10 @@ int main(int argc, char **argv) {
 	// set up keyboard
 	event_hook("key", fbterm_key_event);
 
-	robject_set_call(term, "clear",       fbterm_rcall_clear,       STAT_WRITER);
-	robject_set_call(term, "set_fgjob",   fbterm_rcall_set_fgjob,   STAT_WRITER);
-	robject_set_call(term, "set_fgcolor", fbterm_rcall_set_fgcolor, STAT_WRITER);
-	robject_set_call(term, "set_bgcolor", fbterm_rcall_set_bgcolor, STAT_WRITER);
+	robject_set_call(term, "clear",       fbterm_rcall_clear,       AC_WRITE);
+	robject_set_call(term, "set_fgjob",   fbterm_rcall_set_fgjob,   AC_WRITE);
+	robject_set_call(term, "set_fgcolor", fbterm_rcall_set_fgcolor, AC_WRITE);
+	robject_set_call(term, "set_bgcolor", fbterm_rcall_set_bgcolor, AC_WRITE);
 	rdi_global_read_hook  = fbterm_read;
 	rdi_global_write_hook = fbterm_write;
 
@@ -194,9 +194,9 @@ int main(int argc, char **argv) {
 	pid = fork();
 	if (pid == 0) {
 		setenv("PATH", "/bin:/sbin");
-		ropen(0, RP_CONS(getppid(), term->index), STAT_READER);
-		ropen(1, RP_CONS(getppid(), term->index), STAT_WRITER);
-		ropen(2, RP_CONS(getppid(), term->index), STAT_WRITER);
+		ropen(0, RP_CONS(getppid(), term->index), AC_WRITE);
+		ropen(1, RP_CONS(getppid(), term->index), AC_WRITE);
+		ropen(2, RP_CONS(getppid(), term->index), AC_WRITE);
 		exec("/bin/fish");
 	}
 

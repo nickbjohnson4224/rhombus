@@ -192,8 +192,6 @@ void process_thaw(struct process *proc) {
 void process_kill(struct process *proc) {
 	size_t i;
 
-	rtab_free(proc);
-
 	/* give children to init */
 	for (i = 0; i < MAX_PID; i++) {
 		if (process_get(i) && process_get(i)->parent == proc) {

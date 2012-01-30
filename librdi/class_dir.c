@@ -223,10 +223,10 @@ void __rdi_class_dir_setup() {
 	
 	rdi_class_dir = robject_cons(0, rdi_class_core);
 
-	robject_set_call(rdi_class_dir, "find",   _find,   0);
-	robject_set_call(rdi_class_dir, "list",   _list,   STAT_READER);
-	robject_set_call(rdi_class_dir, "link",   _link,   STAT_WRITER);
-	robject_set_call(rdi_class_dir, "unlink", _unlink, STAT_WRITER);
+	robject_set_call(rdi_class_dir, "find",   _find,   AC_NULL);
+	robject_set_call(rdi_class_dir, "list",   _list,   AC_READ);
+	robject_set_call(rdi_class_dir, "link",   _link,   AC_ALTER);
+	robject_set_call(rdi_class_dir, "unlink", _unlink, AC_ALTER);
 
 	robject_set_data(rdi_class_dir, "type", (void*) "dir");
 	robject_set_data(rdi_class_dir, "name", (void*) "RDI-class-dir");

@@ -47,14 +47,6 @@ int fevent(int fd, const char *value) {
 	return event(fd_rp(fd), value);
 }
 
-int event_subscribe(rp_t rp) {
-	return rp_setstat(rp, STAT_EVENT);
-}
-
-int event_unsubscribe(rp_t rp) {
-	return rp_clrstat(rp, STAT_EVENT);
-}
-
 static void __event_handler(struct msg *msg) {
 	event_t hook;
 	char **argv;

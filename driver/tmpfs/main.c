@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
 	root = rdi_dir_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
 
 	// set interface functions
-	robject_set_call(rdi_class_file, "reset", tmpfs_reset, STAT_WRITER);
+	robject_set_call(rdi_class_file, "reset", tmpfs_reset, AC_WRITE);
 	rdi_global_read_hook  = tmpfs_read;
 	rdi_global_write_hook = tmpfs_write;
 	rdi_global_cons_file_hook = tmpfs_file_cons;

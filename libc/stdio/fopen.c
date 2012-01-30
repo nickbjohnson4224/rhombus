@@ -68,12 +68,12 @@ FILE *fopen(const char *path, const char *mode) {
 
 	// check read permissions
 	if (mode[0] == 'r' || mode[1] == '+') {
-		status |= STAT_READER;
+		status |= ACCS_READ;
 	}
 
 	// check write permissions
 	if (mode[0] == 'w' || mode[0] == 'a' || mode[1] == '+') {
-		status |= STAT_WRITER;
+		status |= ACCS_WRITE;
 	}
 
 	// open file for real

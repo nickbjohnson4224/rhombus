@@ -56,17 +56,13 @@ static void __rdi_read(struct msg *msg) {
 		return;
 	}
 
-	if (!robject_check_status(file, msg->source, STAT_READER)) {
-		// access denied (connection not open)
+#ifdef KEYSEC
+	if (msg->key != file->key[AC_READ]) {
+		// access denied (key invalid)
 		merror(msg);
 		return;
 	}
-
-	if (!robject_check_type(file, "file")) {
-		// robject is not a file
-		merror(msg);
-		return;
-	}
+#endif
 	
 	if (rdi_global_read_hook) {
 		// use global hook if defined
@@ -120,18 +116,14 @@ static void __rdi_write(struct msg *msg) {
 		return;
 	}
 
-	if (!robject_check_status(file, msg->source, STAT_WRITER)) {
+#ifdef KEYSEC
+	if (msg->key != file->key[AC_WRITE]) {
 		// access denied
 		merror(msg);
 		return;
 	}
+#endif
 
-	if (!robject_check_type(file, "file")) {
-		// robject is not a file
-		merror(msg);
-		return;
-	}
-	
 	if (rdi_global_write_hook) {
 		// use global hook if defined
 		write_hook = rdi_global_write_hook;
@@ -168,16 +160,18 @@ static void __rdi_share(struct msg *msg) {
 	}
 
 	file = robject_get(RP_INDEX(msg->target));
-	if (!file || !robject_check_type(file, "share")) {
+	if (!file) {
 		merror(msg);
 		return;
 	}
 
-	if (!robject_check_access(file, msg->source, ACCS_READ | ACCS_WRITE)) {
+#ifdef KEYSEC
+	if (msg->key != file->key[AC_WRITE]) {
 		// access denied
 		merror(msg);
 		return;
 	}
+#endif
 
 	if (!rdi_global_share_hook) {
 		merror(msg);
@@ -218,23 +212,20 @@ static void __rdi_mmap(struct msg *msg) {
 
 	prot = ((uint32_t*) msg->data)[3];
 
+#ifdef KEYSEC
 	if (prot & PROT_WRITE) {
-		if (!robject_check_status(file, msg->source, STAT_WRITER)) {
+		if (msg->key != file->key[AC_WRITE]) {
 			merror(msg);
 			return;
 		}
 	}
 	else {
-		if (!robject_check_status(file, msg->source, STAT_READER)) {
+		if (msg->key != file->key[AC_READ]) {
 			merror(msg);
 			return;
 		}
 	}
-
-	if (!robject_check_type(file, "share")) {
-		merror(msg);
-		return;
-	}
+#endif
 
 	if (!rdi_global_mmap_hook) {
 		merror(msg);
@@ -273,17 +264,6 @@ static void __rdi_sync(struct msg *msg) {
 		return;
 	}
 
-	if (!robject_check_type(file, "file")) {
-		merror(msg);
-		return;
-	}
-	
-	if (!robject_check_access(file, msg->source, ACCS_WRITE)) {
-		// access denied
-		merror(msg);
-		return;
-	}
-
 	free(robject_call(file, msg->source, msg->key, "sync"));
 
 	merror(msg);
@@ -294,17 +274,6 @@ static void __rdi_reset(struct msg *msg) {
 
 	file = robject_get(RP_INDEX(msg->target));
 	if (!file) {
-		merror(msg);
-		return;
-	}
-
-	if (!robject_check_type(file, "file")) {
-		merror(msg);
-		return;
-	}
-
-	if (!robject_check_access(file, msg->source, ACCS_WRITE)) {
-		// access denied
 		merror(msg);
 		return;
 	}
@@ -331,14 +300,21 @@ static char *_reset(struct robject *r, rp_t src, int argc, char **argv) {
 	return errorstr(ENOSYS);
 }
 
+static char *_finish(struct robject *r, rp_t src, int argc, char **argv) {	
+	robject_set_data(r, "finished", (void*) 1);
+
+	return strdup("T");
+}
+
 struct robject *rdi_class_file;
 
 void __rdi_class_file_setup() {
 	
 	rdi_class_file = robject_cons(0, rdi_class_core);
 
-	robject_set_call(rdi_class_file, "size",  _size,  0);
-	robject_set_call(rdi_class_file, "reset", _reset, 0);
+	robject_set_call(rdi_class_file, "size",   _size,   AC_NULL);
+	robject_set_call(rdi_class_file, "reset",  _reset,  AC_NULL);
+	robject_set_call(rdi_class_file, "finish", _finish, AC_WRITE);
 
 	robject_set_data(rdi_class_file, "type", (void*) "file");
 	robject_set_data(rdi_class_file, "name", (void*) "RDI-class-file");

@@ -92,7 +92,7 @@ INTN	80	; proc
 INTN	81	; kill
 INTN	82	; vm86
 INTN	83	; name
-INTN	84	; rtab
+
 INTN	85	; reap
 
 extern int_handler

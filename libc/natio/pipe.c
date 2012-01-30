@@ -33,8 +33,8 @@ int pipe(int pipefd[2]) {
 		return -1;
 	}
 
-	pipefd[0] = ropen(-1, rp, STAT_READER);
-	pipefd[1] = ropen(-1, rp, STAT_WRITER);
+	pipefd[0] = ropen(-1, rp, ACCS_READ);
+	pipefd[1] = ropen(-1, rp, ACCS_WRITE);
 
 	return 0;
 }

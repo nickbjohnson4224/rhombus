@@ -30,15 +30,8 @@ DIR *opendir(const char *dirname) {
 	dirp = malloc(sizeof(DIR));
 	if (!dirp) return NULL;
 
-	dirp->fd = open(dirname, STAT_READER);
+	dirp->fd = open(dirname, ACCS_READ);
 	if (dirp->fd < 0) {
-		free(dirp);
-		return NULL;
-	}
-
-	if (!rp_type(fd_rp(dirp->fd), "dir")) {
-		errno = ENOTDIR;
-		close(dirp->fd);
 		free(dirp);
 		return NULL;
 	}

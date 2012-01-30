@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include <rho/struct.h>
+#include <rho/mutex.h>
 #include <rho/proc.h>
 #include <rho/ipc.h>
 #include <rho/abi.h>
@@ -61,47 +63,6 @@ static char *__ping(struct robject *self, rp_t src, int argc, char **argv) {
 
 static char *__find(struct robject *self, rp_t src, int argc, char **argv) {
 	return rtoa(RP_CONS(getpid(), self->index));
-}
-
-static char *__open(struct robject *self, rp_t src, int argc, char **argv) {
-	int status;
-
-	if (argc == 2) {
-		status = atoi(argv[1]);
-	}
-	else if (argc == 1) {
-		status = STAT_OPEN;
-	}
-	else {
-		return errorstr(EINVAL);
-	}
-
-	if (!robject_check_access(self, src, status &~ STAT_OPEN)) {
-		return errorstr(EACCES);
-	}
-
-	if (status) {
-		rtab_open(RP_PID(src), RP_CONS(getpid(), self->index));
-	}
-
-	robject_open(self, src, status);
-	
-	return strdup("T");
-}
-
-static char *__close(struct robject *self, rp_t src, int argc, char **argv) {
-
-	if (argc == 1) {
-		robject_close(self, src);
-		return strdup("T");
-	}
-	else {
-		return errorstr(EINVAL);
-	}
-}
-
-static char *__stat(struct robject *self, rp_t src, int argc, char **argv) {
-	return saprintf("%d", robject_stat(self, src));
 }
 
 static char *__name(struct robject *self, rp_t src, int argc, char **argv) {
@@ -190,6 +151,23 @@ static char *_get_key(struct robject *r, rp_t src, int argc, char **argv) {
 
 	return errorstr(EACCES);
 }
+static char *_listen(struct robject *r, rp_t src, int argc, char **argv) {
+
+	mutex_spin(&r->mutex);
+	r->subs_table = s_table_setv(r->subs_table, (void*) 1, "%d", RP_PID(src));
+	mutex_free(&r->mutex);
+
+	return strdup("T");
+}
+
+static char *_un_listen(struct robject *r, rp_t src, int argc, char **argv) {
+	
+	mutex_spin(&r->mutex);
+	r->subs_table = s_table_setv(r->subs_table, (void*) 0, "%d", RP_PID(src));
+	mutex_free(&r->mutex);
+
+	return strdup("T");
+}
 
 rdi_cons_hook rdi_global_cons_file_hook;
 rdi_cons_hook rdi_global_cons_dir_hook;
@@ -219,8 +197,6 @@ static char *_cons(rp_t src, int argc, char **argv) {
 		}
 
 		if (new_robject) {
-			rtab_open(src, RP_CONS(getpid(), new_robject->index));
-			robject_open(new_robject, src, STAT_OPEN | robject_stat(new_robject, src));
 			return rtoa(RP_CONS(getpid(), new_robject->index));
 		}
 	}
@@ -262,16 +238,6 @@ static void __rcall_handler(struct msg *msg) {
 	msend(reply);
 }
 
-static void __close_handler(struct msg *msg) {
-	struct robject *ro;
-
-	ro = robject_get(RP_INDEX(msg->target));
-	if (!ro) return;
-
-	free(robject_call(ro, msg->source, msg->key, "close"));
-	free(msg);
-}
-
 struct robject *rdi_class_core;
 
 void __rdi_class_core_setup(void) {
@@ -282,20 +248,18 @@ void __rdi_class_core_setup(void) {
 	robject_set_data(rdi_class_core, "type", (void*) "event basic");
 	robject_set_data(rdi_class_core, "name", (void*) "RDI-class-core");
 
-	robject_set_call(rdi_class_core, "type", __type, 0);
-	robject_set_call(rdi_class_core, "ping", __ping, 0);
-	robject_set_call(rdi_class_core, "name", __name, 0);
-	robject_set_call(rdi_class_core, "open", __open, 0);
-	robject_set_call(rdi_class_core, "close", __close, STAT_OPEN);
-	robject_set_call(rdi_class_core, "stat", __stat, 0);
-	robject_set_call(rdi_class_core, "find", __find, 0);
-	robject_set_call(rdi_class_core, "get-access", _get_access, 0);
-	robject_set_call(rdi_class_core, "set-access", _set_access, STAT_ADMIN);
-	robject_set_call(rdi_class_core, "get-key", _get_key, 0);
+	robject_set_call(rdi_class_core, "type", __type, AC_NULL);
+	robject_set_call(rdi_class_core, "ping", __ping, AC_NULL);
+	robject_set_call(rdi_class_core, "name", __name, AC_NULL);
+	robject_set_call(rdi_class_core, "find", __find, AC_NULL);
+	robject_set_call(rdi_class_core, "get-access", _get_access, AC_NULL);
+	robject_set_call(rdi_class_core, "set-access", _set_access, AC_ADMIN);
+	robject_set_call(rdi_class_core, "get-key", _get_key, AC_NULL);
+	robject_set_call(rdi_class_core, "listen", _listen, AC_EVENT);
+	robject_set_call(rdi_class_core, "un-listen", _un_listen, AC_EVENT);
 
 	// set rcall and close handlers
 	when(ACTION_RCALL, __rcall_handler);
-	when(ACTION_CLOSE, __close_handler);
 
 	// set constructor
 	rcall_hook("cons", _cons);

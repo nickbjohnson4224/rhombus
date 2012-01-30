@@ -164,7 +164,7 @@ static int_raw_handler_t idt_raw[256] = {
 	/* system calls */
 	int64, 	int65, 	int66, 	int67, 	int68, 	int69, 	int70, 	int71, 
 	int72, 	int73, 	int74, 	int75, 	int76, 	int77, 	int78, 	int79, 
-	int80,	int81, 	int82, 	int83, 	int84, 	int85, 	NULL, 	NULL, 
+	int80,	int81, 	int82, 	int83, 	NULL, 	int85, 	NULL, 	NULL, 
 	NULL, 	NULL, 	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,
 };
 

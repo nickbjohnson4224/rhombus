@@ -34,9 +34,7 @@ off_t fs_size(const char *path) {
 	rp_t file;
 
 	file = fs_find(path);
-	if (!rp_setstat(file, STAT_READER)) return 0;
 	size = rp_size(file);
-	rp_clrstat(file, STAT_READER);
 
 	return size;
 }

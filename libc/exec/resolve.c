@@ -22,24 +22,6 @@
 #include <rho/exec.h>
 #include <rho/path.h>
 
-static bool is_file(const char *path) {
-	int fd;
-
-	fd = ropen(-1, fs_find(path), STAT_READER);
-
-	if (fd < 0) {
-		return false;
-	}
-
-	if (!rp_type(fd_rp(fd), "file")) {
-		close(fd);
-		return false;
-	}
-
-	close(fd);
-	return true;
-}
-
 char *path_resolve(const char *file) {
 	size_t i;
 	char *path;
@@ -49,13 +31,7 @@ char *path_resolve(const char *file) {
 	if (file[0] == '/' || file[0] == '@') {
 		path = strdup(file);
 
-		if (is_file(path)) {
-			return path;
-		}
-		else {
-			free(path);
-			return NULL;
-		}
+		return path;
 	}
 	else {
 		paths = strparse(getenv("PATH"), ":");
@@ -67,16 +43,11 @@ char *path_resolve(const char *file) {
 			path = path_simplify(temp);
 			free(temp);
 
-			if (is_file(path)) {
-				for (; paths[i]; i++) {
-					free(paths[i]);
-				}
-				free(paths);
-				return path;
+			for (; paths[i]; i++) {
+				free(paths[i]);
 			}
-			
-			free(path);
-			free(paths[i]);
+			free(paths);
+			return path;
 		}
 
 		free(paths);
@@ -93,13 +64,7 @@ char *ldpath_resolve(const char *file) {
 	if (file[0] == '/' || file[0] == '@') {
 		path = strdup(file);
 
-		if (is_file(path)) {
-			return path;
-		}
-		else {
-			free(path);
-			return NULL;
-		}
+		return path;
 	}
 	else {
 		paths = strparse(getenv("LD_LIBRARY_PATH"), ":");
@@ -111,16 +76,11 @@ char *ldpath_resolve(const char *file) {
 			path = path_simplify(temp);
 			free(temp);
 
-			if (is_file(path)) {
-				for (; paths[i]; i++) {
-					free(paths[i]);
-				}
-				free(paths);
-				return path;
+			for (; paths[i]; i++) {
+				free(paths[i]);
 			}
-			
-			free(path);
-			free(paths[i]);
+			free(paths);
+			return path;
 		}
 
 		free(paths);
@@ -129,12 +89,7 @@ char *ldpath_resolve(const char *file) {
 		path = path_simplify(temp);
 		free(temp);
 
-		if (is_file(path)) {
-			return path;
-		}
-
-		free(path);
-		return NULL;
+		return path;
 	}
 	return NULL;
 }

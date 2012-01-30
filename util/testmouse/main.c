@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2011 Jaagup Repän <jrepan at gmail.com>
- * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011-2012 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,6 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdlib.h>
 #include <stdio.h>
 
 #include <rho/natio.h>
@@ -38,7 +39,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	event_subscribe(mousefd);
+	free(rcall(mousefd, 0, "listen"));
 	event_hook("mouse", mouse_event);
 
 	_done();

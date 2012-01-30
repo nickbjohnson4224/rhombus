@@ -72,9 +72,9 @@ void __rdi_class_link_setup() {
 	
 	rdi_class_link = robject_cons(0, rdi_class_core);
 
-	robject_set_call(rdi_class_link, "find",     _find,     0);
-	robject_set_call(rdi_class_link, "set-link", _set_link, STAT_WRITER);
-	robject_set_call(rdi_class_link, "get-link", _get_link, STAT_READER);
+	robject_set_call(rdi_class_link, "find",     _find,     AC_NULL);
+	robject_set_call(rdi_class_link, "set-link", _set_link, AC_WRITE);
+	robject_set_call(rdi_class_link, "get-link", _get_link, AC_READ);
 
 	robject_set_data(rdi_class_link, "type", (void*) "link");
 	robject_set_data(rdi_class_link, "name", (void*) "RDI-class-link");

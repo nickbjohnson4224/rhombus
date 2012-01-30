@@ -36,9 +36,5 @@ rp_t fs_open(const char *path, int status) {
 		return 0;
 	}
 
-	if (rp_setstat(rp, status)) {
-		return 0;
-	}
-
 	return rp;
 }

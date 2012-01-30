@@ -158,12 +158,12 @@ int main(int argc, char **argv) {
 	buffer = aalloc(svga.w * svga.h * 4, PAGESZ);
 
 	/* set up driver interface */
-	robject_set_call(canvas, "getmode",   svga_rcall_getmode,   STAT_READER);
-	robject_set_call(canvas, "listmodes", svga_rcall_listmodes, STAT_READER);
-	robject_set_call(canvas, "unshare",   svga_rcall_unshare,   STAT_WRITER);
-	robject_set_call(canvas, "setmode",   svga_rcall_setmode,   STAT_WRITER);
-	robject_set_call(canvas, "syncrect",  svga_rcall_syncrect,  STAT_WRITER);
-	robject_set_call(canvas, "sync",      svga_rcall_sync,      STAT_WRITER);
+	robject_set_call(canvas, "getmode",   svga_rcall_getmode,   AC_READ);
+	robject_set_call(canvas, "listmodes", svga_rcall_listmodes, AC_READ);
+	robject_set_call(canvas, "unshare",   svga_rcall_unshare,   AC_WRITE);
+	robject_set_call(canvas, "setmode",   svga_rcall_setmode,   AC_WRITE);
+	robject_set_call(canvas, "syncrect",  svga_rcall_syncrect,  AC_WRITE);
+	robject_set_call(canvas, "sync",      svga_rcall_sync,      AC_WRITE);
 	rdi_global_share_hook = svga_share;
 	rdi_global_mmap_hook  = svga_mmap;
 

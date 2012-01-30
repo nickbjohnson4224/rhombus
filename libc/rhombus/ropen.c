@@ -15,6 +15,7 @@
  */
 
 #include <rhombus.h>
+#include <stdlib.h>
 
 /*****************************************************************************
  * ropen
@@ -31,9 +32,6 @@
  */
 
 int ropen(int fd, rp_t rp, int mode) {
-	int old_mode;
-	int err;
-	rp_t old_rp;
 
 	if (!rp) {
 		// simply clear file descriptor
@@ -47,31 +45,16 @@ int ropen(int fd, rp_t rp, int mode) {
 		fd = fd_alloc();
 	}
 
-	mode |= STAT_OPEN;
-
-	old_mode = fd_mode(fd);
-	old_rp = fd_rp(fd);
-
-	err = 0;
-	if (old_rp == rp) {
-		// open new connection
-		err += rp_setstat(rp, mode);
-
-		// close old connection
-		err += rp_clrstat(rp, old_mode &~ mode);
-	}
-	else {
-
-		// open new connection
-		err += rp_setstat(rp, mode);
-
-		// close old connection
-		if (old_rp) err += rp_clrstat(old_rp, old_mode);
+	if (fd_set(fd, rp, mode)) {
+		return -1;
 	}
 
-	if (err) {
-		return -err;
+	fd_pullkey(fd);
+
+	if (mode & ACCS_EVENT) {
+		// register for events
+		free(rcall(rp, fd_getkey(fd, AC_EVENT), "listen"));
 	}
 
-	return (fd_set(fd, rp, mode)) ? -1 : fd;
+	return fd;
 }

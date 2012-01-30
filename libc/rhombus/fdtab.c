@@ -25,6 +25,7 @@
 struct fdtab {
 	int mode;		// file connection status
 	rp_t rp;		// file resource pointer
+	rk_t key[8];	// file action keys
 	uint64_t pos;	// file position
 };
 
@@ -82,6 +83,51 @@ int fd_set(int fd, rp_t rp, int mode) {
 	mutex_free(&_fdtab_mutex);
 
 	return 0;
+}
+
+int fd_pullkey(int fd) {
+
+	if (fd < 0 || fd >= _fdtab_size) {
+		// file descriptor out of range
+		return -1;
+	}
+
+	mutex_spin(&_fdtab_mutex);
+
+	for (int i = 0; i < 8; i++) {
+		if (_fdtab[fd].mode & (1 << i)) {
+			_fdtab[fd].key[i] = rp_getkey(_fdtab[fd].rp, i);
+		}
+		else {
+			_fdtab[fd].key[i] = 0ULL;
+		}
+	}
+
+	mutex_free(&_fdtab_mutex);
+
+	return 0;
+}
+
+rk_t fd_getkey(int fd, int action) {
+	rk_t key;
+	
+	if (fd < 0 || fd >= _fdtab_size) {
+		// file descriptor out of range
+		return 0ULL;
+	}
+
+	if (action < 0 || action >= 8) {
+		// action class out of range
+		return 0ULL;
+	}
+
+	mutex_spin(&_fdtab_mutex);
+
+	key = _fdtab[fd].key[action];
+
+	mutex_free(&_fdtab_mutex);
+
+	return key;
 }
 
 int fd_mode(int fd) {

@@ -2,7 +2,7 @@ BUILDDIR=$(PWD)
 
 LIB_DIRS  = libc dl librdi ports/lua ports/freetype
 
-DRIVERS  := $(shell find driver -mindepth 1 -maxdepth 1)
+DRIVERS  := driver/ata driver/biterm driver/kbd driver/mouse driver/pci driver/pipe/ driver/serial driver/svga driver/tarfs driver/time driver/tmpfs
 DAEMONS  := daemon/init
 UTILS    := $(shell find util   -mindepth 1 -maxdepth 1)
 APPS     := apps/calico

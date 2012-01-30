@@ -114,7 +114,7 @@ char *rcall(rp_t rp, rk_t key, const char *fmt, ...) {
 	return ret;
 }
 
-char *frcall(int fd, const char *fmt, ...) {
+char *frcall(int fd, int aclass, const char *fmt, ...) {
 	va_list ap;
 	char *args;
 	char *ret;
@@ -134,7 +134,7 @@ char *frcall(int fd, const char *fmt, ...) {
 		}
 
 		// perform rcall
-		ret = __rcall(rp, 0, args);
+		ret = __rcall(rp, fd_getkey(fd, aclass), args);
 
 		// free argument string
 		free(args);
@@ -142,7 +142,7 @@ char *frcall(int fd, const char *fmt, ...) {
 	else {
 		
 		// just use the format string
-		ret = __rcall(rp, 0, fmt);
+		ret = __rcall(rp, fd_getkey(fd, aclass), fmt);
 	}
 
 	return ret;

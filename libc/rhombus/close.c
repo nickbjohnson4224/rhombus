@@ -15,6 +15,7 @@
  */
 
 #include <rhombus.h>
+#include <stdlib.h>
 
 /*****************************************************************************
  * close
@@ -24,17 +25,21 @@
  */
 
 int close(int fd) {
-	int mode = fd_mode(fd);
-	rp_t rp  = fd_rp(fd);
+	rp_t rp = fd_rp(fd);
 
 	if (!rp) {
 		// is not valid file descriptor
 		return -1;
 	}
 
-	if (rp_clrstat(rp, mode)) {
-		// could not close connection
-		return -1;
+	if (fd_mode(fd) & ACCS_EVENT) {
+		// stop listening to events
+		free(rcall(rp, fd_getkey(fd, AC_EVENT), "un-listen"));
+	}
+
+	if (fd_mode(fd) & ACCS_WRITE) {
+		// finish writing
+		free(rcall(rp, fd_getkey(fd, AC_WRITE), "finish"));
 	}
 
 	// clear file descriptor entry

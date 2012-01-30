@@ -41,7 +41,7 @@ void *load_shared(const char *soname) {
 
 	return NULL;
 
-	fd = ropen(-1, fs_find(path), STAT_READER);
+	fd = ropen(-1, fs_find(path), ACCS_READ);
 
 	if (fd < 0 || !rp_type(fd_rp(fd), "file")) {
 		/* file not found */
