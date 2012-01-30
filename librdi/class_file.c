@@ -56,13 +56,11 @@ static void __rdi_read(struct msg *msg) {
 		return;
 	}
 
-#ifdef KEYSEC
 	if (msg->key != file->key[AC_READ]) {
 		// access denied (key invalid)
 		merror(msg);
 		return;
 	}
-#endif
 	
 	if (rdi_global_read_hook) {
 		// use global hook if defined
@@ -116,13 +114,11 @@ static void __rdi_write(struct msg *msg) {
 		return;
 	}
 
-#ifdef KEYSEC
 	if (msg->key != file->key[AC_WRITE]) {
 		// access denied
 		merror(msg);
 		return;
 	}
-#endif
 
 	if (rdi_global_write_hook) {
 		// use global hook if defined
@@ -165,13 +161,11 @@ static void __rdi_share(struct msg *msg) {
 		return;
 	}
 
-#ifdef KEYSEC
 	if (msg->key != file->key[AC_WRITE]) {
 		// access denied
 		merror(msg);
 		return;
 	}
-#endif
 
 	if (!rdi_global_share_hook) {
 		merror(msg);
@@ -212,7 +206,6 @@ static void __rdi_mmap(struct msg *msg) {
 
 	prot = ((uint32_t*) msg->data)[3];
 
-#ifdef KEYSEC
 	if (prot & PROT_WRITE) {
 		if (msg->key != file->key[AC_WRITE]) {
 			merror(msg);
@@ -225,7 +218,6 @@ static void __rdi_mmap(struct msg *msg) {
 			return;
 		}
 	}
-#endif
 
 	if (!rdi_global_mmap_hook) {
 		merror(msg);

@@ -41,9 +41,9 @@ void *load_shared(const char *soname) {
 
 	return NULL;
 
-	fd = ropen(-1, fs_find(path), ACCS_READ);
+	fd = open(path, ACCS_READ);
 
-	if (fd < 0 || !rp_type(fd_rp(fd), "file")) {
+	if (fd < 0) {
 		/* file not found */
 		return NULL;
 	}
@@ -61,7 +61,7 @@ void *load_shared(const char *soname) {
 			return NULL;
 		}
 
-		if (rp_read(fd_rp(fd), image, size, 0) != size) {
+		if (rp_read(fd_rp(fd), fd_getkey(fd, AC_READ), image, size, 0) != size) {
 			free(image);
 			close(fd);
 			return NULL;

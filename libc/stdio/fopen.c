@@ -84,7 +84,7 @@ FILE *fopen(const char *path, const char *mode) {
 
 	// reset (erase) the file contents
 	if (mode[0] == 'w') {
-		rp_reset(rp);
+		rp_reset(rp, fd_getkey(fd, AC_WRITE));
 	}
 
 	// open a stream on the file

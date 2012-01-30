@@ -36,7 +36,8 @@ int fflush(FILE *stream) {
 	mutex_spin(&stream->mutex);
 
 	if (stream->buffer && stream->buffpos) {
-		size = rp_write(fd_rp(stream->fd), stream->buffer, stream->buffpos, stream->position);
+		size = rp_write(fd_rp(stream->fd), fd_getkey(stream->fd, AC_WRITE), 
+			stream->buffer, stream->buffpos, stream->position);
 		stream->position += size;
 		stream->buffpos -= size;
 	}

@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <rhombus.h>
+
 #include <string.h>
 #include <stdlib.h>
 
@@ -39,7 +41,7 @@ int fb_setmode(struct fb *fb, int xdim, int ydim) {
 
 	if (fb->flags & FB_SHARED) {
 		// release shared memory
-		rp_share(fb->rp, NULL, 0, 0, 0);
+		rp_share(fb->rp, fd_getkey(fb->fd, AC_WRITE), NULL, 0, 0, 0);
 	}
 
 	sprintf(args, "setmode %d %d 32", xdim, ydim);

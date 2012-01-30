@@ -30,10 +30,6 @@
 #define _POSIX_VERSION  200112L
 #define _POSIX2_VERSION 200112L
 
-unsigned int alarm(unsigned int seconds);
-int chdir(const char *path);
-size_t confstr(int, char *, size_t);
-
 /* File access **************************************************************/
 
 int access(const char *pathname, int mode); 				// TODO
@@ -50,7 +46,12 @@ int dup   (int fd);
 int dup2  (int fd, int newfd);
 int pipe  (int pipefd[2]);
 
-int isatty(int); 											// TODO
+int isatty (int fd);										// TODO
+int isafile(int fd);										// TODO
+int isadir (int fd);										// TODO
+int isalink(int fd);										// TODO
+int isashm (int fd);										// TODO
+int isaevnt(int fd);										// TODO
 
 /* Links ********************************************************************/
 
@@ -63,11 +64,11 @@ ssize_t readlink(const char * restrict, char * restrict, size_t); // TODO
 
 /* I/O **********************************************************************/
 
-off_t   lseek (int fd, off_t offset, int whence);
-ssize_t read  (int fd, void *buf, size_t count);
-ssize_t pread (int fd, void *buf, size_t count, off_t offset);
-ssize_t write (int fd, const void *buf, size_t count);
-ssize_t pwrite(int fd, const void *buf, size_t count, off_t offset);
+off_t   lseek (int fd, off_t offset, int whence);					// TODO
+ssize_t read  (int fd, void *buf, size_t count);					// TODO
+ssize_t pread (int fd, void *buf, size_t count, off_t offset); 		// TODO
+ssize_t write (int fd, const void *buf, size_t count); 				// TODO
+ssize_t pwrite(int fd, const void *buf, size_t count, off_t offset);// TODO
 
 /* Execution ****************************************************************/
 
@@ -121,5 +122,9 @@ long int sysconf(int);
 pid_t tcgetpgrp(int);
 char *ttyname(int);
 int ttyname_r(int, char *, size_t);
+
+unsigned int alarm(unsigned int seconds);
+int chdir(const char *path);
+size_t confstr(int, char *, size_t);
 
 #endif/*__RLIBC_UNISTD_H*/

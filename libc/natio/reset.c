@@ -27,13 +27,14 @@
  * Deletes the contents of the file <file>.
  */
 
-int rp_reset(uint64_t file) {
+int rp_reset(uint64_t file, rk_t key) {
 	struct msg *msg;
 
 	msg = aalloc(sizeof(struct msg), PAGESZ);
 	if (!msg) return 1;
 	msg->source = RP_CURRENT_THREAD;
 	msg->target = file;
+	msg->key    = key;
 	msg->length = 0;
 	msg->action = ACTION_RESET;
 	msg->arch   = ARCH_NAT;

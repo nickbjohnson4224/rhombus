@@ -155,8 +155,8 @@ int main(int argc, char **argv) {
 		}
 	}
 	else {
-		kbd_dev = ropen(-1, fs_find(argv[1]), ACCS_EVENT);
-		fb_dev  = ropen(-1, fs_find(argv[2]), ACCS_READ | ACCS_WRITE | ACCS_EVENT);
+		kbd_dev = open(argv[1], ACCS_EVENT);
+		fb_dev  = open(argv[2], ACCS_READ | ACCS_WRITE | ACCS_EVENT);
 
 		if (kbd_dev < 0) {
 			fprintf(stderr, "%s: %s: keyboard not found\n", argv[0], argv[1]);

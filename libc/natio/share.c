@@ -42,7 +42,7 @@
  *     uint8_t err;
  */
 
-int rp_share(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot) {
+int rp_share(uint64_t rp, rk_t key, void *buf, size_t size, uint64_t offset, int prot) {
 	struct msg *msg;
 	int err;
 
@@ -55,6 +55,7 @@ int rp_share(uint64_t rp, void *buf, size_t size, uint64_t offset, int prot) {
 	if (!msg) return 1;
 	msg->source = RP_CURRENT_THREAD;
 	msg->target = rp;
+	msg->key    = key;
 	msg->length = PAGESZ - sizeof(struct msg) + size;
 	msg->action = ACTION_SHARE;
 	msg->arch   = ARCH_NAT;

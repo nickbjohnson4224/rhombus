@@ -39,13 +39,14 @@
  *     uint8_t data[]
  */
 
-size_t rp_read(uint64_t file, void *buf, size_t size, uint64_t offset) {
+size_t rp_read(uint64_t file, rk_t key, void *buf, size_t size, uint64_t offset) {
 	struct msg *msg;
 
 	msg = aalloc(sizeof(struct msg) + sizeof(uint64_t) + sizeof(uint32_t), PAGESZ);
 	if (!msg) return 0;
 	msg->source = RP_CURRENT_THREAD;
 	msg->target = file;
+	msg->key    = key;
 	msg->length = sizeof(uint64_t) + sizeof(uint32_t);
 	msg->action = ACTION_READ;
 	msg->arch   = ARCH_NAT;
@@ -63,8 +64,4 @@ size_t rp_read(uint64_t file, void *buf, size_t size, uint64_t offset) {
 
 	free(msg);
 	return size;
-}
-
-int __zab(int x) {
-	return x + 1;
 }

@@ -121,11 +121,7 @@ rk_t fd_getkey(int fd, int action) {
 		return 0ULL;
 	}
 
-	mutex_spin(&_fdtab_mutex);
-
 	key = _fdtab[fd].key[action];
-
-	mutex_free(&_fdtab_mutex);
 
 	return key;
 }

@@ -50,7 +50,8 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
 	// no buffering
 	if (stream->flags & FILE_NBF) {
 
-		ret = rp_write(fd_rp(stream->fd), (void*) ptr, size * nmemb, stream->position);
+		ret = rp_write(fd_rp(stream->fd), fd_getkey(stream->fd, AC_WRITE),
+			(void*) ptr, size * nmemb, stream->position);
 		stream->position += ret;
 
 		if (size == 0) {
@@ -109,7 +110,7 @@ static int __bufwrite(FILE *stream) {
 	
 	for (pos = 0; pos < stream->buffpos;) {
 
-		count = rp_write(fd_rp(stream->fd), 
+		count = rp_write(fd_rp(stream->fd), fd_getkey(stream->fd, AC_WRITE), 
 			stream->buffer, stream->buffpos - pos, stream->position);
 
 		if (count == 0) {
@@ -131,7 +132,8 @@ static int __nobufwrite(FILE *stream, void *data, size_t size) {
 	
 	for (pos = 0; pos < size;) {
 
-		count = rp_write(fd_rp(stream->fd), data, size - pos, stream->position);
+		count = rp_write(fd_rp(stream->fd), fd_getkey(stream->fd, AC_WRITE),
+			data, size - pos, stream->position);
 
 		if (count == 0) {
 			return -1;

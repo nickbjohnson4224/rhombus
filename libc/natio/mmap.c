@@ -43,7 +43,7 @@
  *   	uint8_t pages[]
  */
 
-void *rp_mmap(rp_t rp, void *addr, size_t size, off_t offset, int prot) {
+void *rp_mmap(rp_t rp, rk_t key, void *addr, size_t size, off_t offset, int prot) {
 	struct msg *msg;
 	int allocated;
 
@@ -90,6 +90,7 @@ void *rp_mmap(rp_t rp, void *addr, size_t size, off_t offset, int prot) {
 	// format message
 	msg->source = RP_CURRENT_THREAD;
 	msg->target = rp;
+	msg->key    = key;
 	msg->length = sizeof(uint64_t) + 2 * sizeof(uint32_t);
 	msg->action = ACTION_MMAP;
 	msg->arch   = ARCH_NAT;

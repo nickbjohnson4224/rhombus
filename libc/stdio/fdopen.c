@@ -67,7 +67,7 @@ FILE *fdopen(int fd, const char *mode) {
 
 	// reset (erase) the file contents
 	if (mode[0] == 'w') {
-		rp_reset(fd_rp(fd));
+		rp_reset(fd_rp(fd), fd_getkey(fd, AC_WRITE));
 	}
 
 	stream = calloc(sizeof(FILE), 1);

@@ -39,13 +39,14 @@
  *     uint32_t size
  */
 
-size_t rp_write(uint64_t file, void *buf, size_t size, uint64_t offset) {
+size_t rp_write(uint64_t file, rk_t key, void *buf, size_t size, uint64_t offset) {
 	struct msg *msg;
 
 	msg = aalloc(sizeof(struct msg) + sizeof(uint64_t) + size, PAGESZ);
 	if (!msg) return 0;
 	msg->source = RP_CURRENT_THREAD;
 	msg->target = file;
+	msg->key    = key;
 	msg->length = sizeof(uint64_t) + size;
 	msg->action = ACTION_WRITE;
 	msg->arch   = ARCH_NAT;

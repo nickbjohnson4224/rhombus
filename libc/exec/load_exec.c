@@ -55,7 +55,7 @@ void *load_exec(const char *path) {
 			return NULL;
 		}
 
-		if (rp_read(fd_rp(fd), image, size, 0) != size) {
+		if (rp_read(fd_rp(fd), fd_getkey(fd, AC_READ), image, size, 0) != size) {
 			free(image);
 			close(fd);
 			return NULL;
