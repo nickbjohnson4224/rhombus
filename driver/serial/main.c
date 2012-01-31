@@ -68,8 +68,8 @@ int main(int argc, char **argv) {
 	rdi_global_write_hook = serial_write;
 	
 	// daemonize
-	msendb(RP_CONS(getppid(), 0), ACTION_CHILD);
-	_done();
+	msendb(getppid(), ACTION_CHILD);
+	done();
 
 	return 0;
 }

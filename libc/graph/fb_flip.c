@@ -46,8 +46,8 @@ int fb_flip(struct fb *fb) {
 
 	if (fb->flags & FB_SHARED) {
 		// shared: just sync
-		ret = rcall(fd_rp(fb->fd), 0, "syncrect %d %d %d %d", fb->minx, fb->miny, 
-			fb->maxx - fb->minx, fb->maxy - fb->miny);
+		ret = frcall(fb->fd, AC_WRITE, "syncrect %d %d %d %d",
+			fb->minx, fb->miny, fb->maxx - fb->minx, fb->maxy - fb->miny);
 		if (!ret || !strcmp(ret, "")) {
 			mutex_free(&fb->mutex);
 			return 1;

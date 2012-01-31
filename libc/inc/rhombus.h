@@ -83,7 +83,7 @@ rp_t ator(const char *str);
 
 int  fd_alloc(void);
 int  fd_set    (int fd, rp_t rp, int mode);
-int  fd_pullkey(int fd);
+int  fd_genkeys(int fd);
 rk_t fd_getkey (int fd, int action);
 int  fd_mode   (int fd);
 rp_t fd_rp     (int fd);
@@ -165,7 +165,7 @@ int dup2 (int fd, int newfd);
  *   The action class for administrative actions pertaining to the driver
  *   itself. Generally very driver-specific.
  *
- *   Example actions: power-down, hard-reset
+ *   Example actions: set-fg, power-down, hard-reset
  */
 
 #define AC_NULL  0
@@ -185,8 +185,7 @@ int dup2 (int fd, int newfd);
  * performed on a resource.
  */
 
-rk_t rp_getkey (rp_t rp, int action);
-int  rp_getkeys(rp_t rp, rk_t keys[8]);
+rk_t rp_getkey(rp_t rp, int action);
 
 /*****************************************************************************
  * Resource Access Control Lists
@@ -223,8 +222,11 @@ int  rp_getkeys(rp_t rp, rk_t keys[8]);
 
 #define ACCS_READ  (1 << AC_READ)
 #define ACCS_WRITE (1 << AC_WRITE)
+#define ACCS_ALTER (1 << AC_ALTER)
 #define ACCS_ADMIN (1 << AC_ADMIN)
 #define ACCS_EVENT (1 << AC_EVENT)
+#define ACCS_LOCK  (1 << AC_LOCK)
+#define ACCS_ROOT  (1 << AC_ROOT)
 
 int rp_access(rp_t rp, uint32_t user);
 int rp_admin (rp_t rp, uint32_t user, int access);

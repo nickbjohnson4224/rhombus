@@ -41,12 +41,12 @@ struct fb *fb_cons(uint64_t rp) {
 
 	// allocate and setup framebuffer
 	fb = malloc(sizeof(struct fb));
-	fb->fd    = ropen(-1, rp, ACCS_WRITE);
+	fb->fd    = ropen(-1, rp, ACCS_READ | ACCS_WRITE);
 	fb->mutex = false;
 	fb->flags = 0;
 	
 	// check video mode
-	mode = rcall(rp, 0, "getmode");
+	mode = frcall(fb->fd, AC_READ, "getmode");	
 
 	if (!mode) {
 		close(fb->fd);

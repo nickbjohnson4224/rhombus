@@ -58,7 +58,7 @@ int rp_ulink(rp_t dir, const char *name) {
 		return 1;
 	}
 
-	reply = rcall(dir, 0, "unlink %s", name);
+	reply = rcall(dir, rp_getkey(dir, AC_ALTER), "unlink %s", name);
 	
 	if (iserror(reply)) {
 		errno = geterror(reply);
@@ -99,7 +99,7 @@ int rp_link(uint64_t dir, const char *name, uint64_t link) {
 		return 1;
 	}
 
-	reply = rcall(dir, 0, "link %s %r", name, link);
+	reply = rcall(dir, rp_getkey(dir, AC_ALTER), "link %s %r", name, link);
 
 	if (iserror(reply)) {
 		errno = geterror(reply);

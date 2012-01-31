@@ -85,7 +85,7 @@ int fd_set(int fd, rp_t rp, int mode) {
 	return 0;
 }
 
-int fd_pullkey(int fd) {
+int fd_genkeys(int fd) {
 
 	if (fd < 0 || fd >= _fdtab_size) {
 		// file descriptor out of range

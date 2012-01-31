@@ -136,6 +136,7 @@ int main(int argc, char **argv) {
 	rdi_init();
 
 	term = rdi_file_cons(robject_new_index(), ACCS_READ | ACCS_WRITE);
+	
 	robject_set_data(term, "type", (void*) "term");
 
 	if (argc < 3) {

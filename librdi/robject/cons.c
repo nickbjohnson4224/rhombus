@@ -40,8 +40,8 @@ struct robject *robject_cons(uint32_t index, struct robject *parent) {
 
 	// generate random keys
 	// XXX SEC - this should be replaced with a secure RNG ASAP
-	srand(time(NULL) + index + (uint32_t) parent + (uint32_t) robject);
-	for (int i = 0; i < 8; i++) {
+	robject->key[0] = 0ULL;
+	for (int i = 1; i < 8; i++) {
 		robject->key[i] = (uint64_t) rand() | (uint64_t) rand() << 32ULL;
 	}
 

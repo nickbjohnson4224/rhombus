@@ -125,7 +125,6 @@ char *robject_call(struct robject *ro, rp_t source, rk_t key, const char *args) 
 		return errorstr(ENOSYS);
 	}
 
-#ifdef KEYSEC
 	if (source) {
 
 		// get call action class
@@ -134,11 +133,10 @@ char *robject_call(struct robject *ro, rp_t source, rk_t key, const char *args) 
 		mutex_free(&ro->mutex);
 
 		// check key
-		if (class > 8 || key != ro->key[class]) {
+		if (class != 0 && (class > 8 || key != ro->key[class])) {
 			return errorstr(EACCES);
 		}
 	}
-#endif
 
 	rets = call(ro, source, argc, argv);
 

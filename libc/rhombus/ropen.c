@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Nick Johnson <nickbjohnson4224 at gmail.com>
+ * Copyright (C) 2011-2012 Nick Johnson <nickbjohnson4224 at gmail.com>
  * 
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -49,7 +49,7 @@ int ropen(int fd, rp_t rp, int mode) {
 		return -1;
 	}
 
-	fd_pullkey(fd);
+	fd_genkeys(fd);
 
 	if (mode & ACCS_EVENT) {
 		// register for events
