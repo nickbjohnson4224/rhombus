@@ -399,7 +399,7 @@ char *__format(const char **_fmt, va_list *argp) {
 	/* read value */
 	switch (type) {
 	case TYPE_STRING:	val_s = va_arg(*argp, const char *); 	break;
-	case TYPE_CHAR:		val_c = va_arg(*argp, char); 			break;
+	case TYPE_CHAR:		val_c = va_arg(*argp, int); 			break;
 	case TYPE_LITERAL:	val_c = '%';							break;
 	case TYPE_INT:		val_i = va_arg(*argp, int);				break;
 	case TYPE_UINT:		val_u = va_arg(*argp, unsigned int);	break;
