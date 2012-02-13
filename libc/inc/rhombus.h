@@ -63,7 +63,7 @@
  */
 
 #define RP_CONS(pid, idx) ((((uint64_t) (idx)) << 32) | (uint64_t) (pid))
-#define RP_INDEX(rp)      ((uint32_t) ((rp) >> 32))
+#define RP_INDEX(rp)      ((uint32_t) ((rp) >> 32) & 0xFFFFFFFF)
 #define RP_PID(rp)        ((uint32_t) ((rp) & 0xFFFFFFFF))
 #define RP_HEAD(rp)       ((uint64_t) ((rp) & 0xFFFFFFFF))
 #define RP_NULL           ((uint64_t) 0)
@@ -81,7 +81,7 @@ rp_t ator(const char *str);
  * File Descriptors
  */
 
-int  fd_alloc(void);
+int  fd_alloc  (void);
 int  fd_set    (int fd, rp_t rp, int mode);
 int  fd_genkeys(int fd);
 rk_t fd_getkey (int fd, int action);

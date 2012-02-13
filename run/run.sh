@@ -3,4 +3,4 @@
 export BUILDDIR=${PWD}
 
 #bochs -qf ${BUILDDIR}/run/bochsrc.txt
-qemu -cpu qemu32 -cdrom ${BUILDDIR}/run/rhombus.iso -no-reboot -serial stdio -hda ${BUILDDIR}/run/boot.tar
+qemu-system-i386 -cdrom ${BUILDDIR}/run/rhombus.iso -no-reboot -serial stdio -hda ${BUILDDIR}/run/boot.tar

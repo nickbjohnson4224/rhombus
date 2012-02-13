@@ -102,7 +102,7 @@ size_t pipe_read(struct robject *self, rp_t source, uint8_t *buffer, size_t size
 		datum = pipe_getc(pipe);
 
 		while (datum == ERR_EMPTY) {
-			if (robject_get_data(self, "finished")) {
+			if (robject_data(self, "finished")) {
 				datum = ERR_EOF;
 				break;
 			}
